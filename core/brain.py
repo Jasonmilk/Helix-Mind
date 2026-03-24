@@ -18,57 +18,70 @@ class Brain:
         hippocampus = self.memory.read("hippocampus")
 
         prompt = (
-            "你现在是 Helix 的【大脑】。你需要将用户的模糊需求拆解为可由【手脚(执行单元)】一步步执行的具体动作。\n"
-            f"【基因锁限制】:\n{gene_lock}\n\n"
-            f"【当前短期记忆】:\n{hippocampus}\n\n"
-            f"【用户需求】:\n{user_requirement}\n\n"
-            "请输出 JSON 格式的数组，每个元素是一个独立且具体的动作指令。例如：\n"
-            '["读取 config.yaml 文件", "修改 port 为 8080", "重启服务"]\n'
-            "不要输出任何其他废话，只输出纯 JSON 数组。"
+            f"【元认知】:\n{gene_lock}\n\n"
+            f"【历史背景】:\n{hippocampus[-1000:]}\n\n" # 仅取最近1000字，减压
+            f"【当前需求】:\n{user_requirement}\n\n"
+            "作为大脑，请将需求拆解为JSON数组。格式: [\"步骤1\", \"步骤2\"]。只输出JSON。"
         )
 
-        headers = {"Content-Type": "application/json"}
-        if settings.tuck_api_key:
-            headers["Authorization"] = f"Bearer {settings.tuck_api_key}"
-            
-        payload = {"model": self.model, "messages":[{"role": "user", "content": prompt}], "temperature": 0.2}
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {getattr(settings, 'tuck_api_key', 'dummy')}"
+        }
+        
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.2,
+            "stream": True # 【关键：开启流式】
+        }
 
-        # 重试机制
-        for attempt in range(settings.max_retries):
+        # --- KV-Cache 接力重试逻辑 ---
+        for attempt in range(1, 5):
             try:
-                async with httpx.AsyncClient(timeout=120.0) as client:
-                    resp = await client.post(settings.tuck_url, json=payload, headers=headers)
-                    resp.raise_for_status()
-                    reply = resp.json()["choices"][0]["message"]["content"]
-                    
-                    tasks = self._extract_json_array(reply)
-                    if tasks:
-                        self.memory.append_todo(tasks)
-                        logger.info(f"大脑成功拆解 {len(tasks)} 个任务。")
-                        return tasks
-                    else:
-                        raise ValueError("无法从模型回复中提取有效的 JSON 数组。")
+                print(f"\n🧠 [大脑思考中] 接力第 {attempt}/4 次...")
+                async with httpx.AsyncClient(timeout=300.0) as client:
+                    async with client.stream("POST", settings.tuck_url, json=payload, headers=headers) as resp:
+                        if resp.status_code == 504:
+                            print(f"⚠️ [504] 预填充超时，正在利用 KV-Cache 重新接力...")
+                            continue
+                        
+                        resp.raise_for_status()
+                        full_content = ""
+                        # 持续接收流，维持 TCP 活性
+                        async for line in resp.aiter_lines():
+                            if line.startswith("data: ") and "[DONE]" not in line:
+                                try:
+                                    chunk = json.loads(line[6:])
+                                    content = chunk["choices"][0].get("delta", {}).get("content", "")
+                                    if content:
+                                        full_content += content
+                                        if len(full_content) % 50 == 0: print(".", end="", flush=True)
+                                except: pass
+                        
+                        # 剥离 R1 的思考过程
+                        if "</think>" in full_content:
+                            full_content = full_content.split("</think>")[-1].strip()
+                        
+                        tasks = self._extract_json_array(full_content)
+                        if tasks:
+                            self.memory.append_todo(tasks)
+                            print(f"\n✅ 大脑拆解成功: {len(tasks)} 条指令已入栈。")
+                            return tasks
                         
             except Exception as e:
-                logger.warning(f"大脑思考失败 (尝试 {attempt + 1}/{settings.max_retries}): {e}")
-                if attempt == settings.max_retries - 1:
-                    # 彻底失败，写入精简错误到海马体
-                    error_msg = f"【大脑拆解彻底失败】: 需求 '{user_requirement[:20]}...', 报错: {str(e)}"
-                    self.memory.write("hippocampus", error_msg, append=True)
-                await asyncio.sleep(2) # 退避重试
-        return[]
+                print(f"\n❌ [大脑故障] 尝试 {attempt}: {e}")
+                await asyncio.sleep(5)
+        
+        print("\n🚨 [致命] 大脑连续接力失败，任务中断。")
+        return []
 
     def _extract_json_array(self, text: str) -> list | None:
-        """强健的正则 JSON 提取器"""
         try:
-            # 1. 尝试直接解析
             return json.loads(text)
-        except json.JSONDecodeError:
-            # 2. 正则寻找方括号包裹的数组内容
+        except:
             match = re.search(r'\[.*\]', text, re.DOTALL)
             if match:
-                try:
-                    return json.loads(match.group(0))
-                except:
-                    pass
+                try: return json.loads(match.group(0))
+                except: pass
         return None
