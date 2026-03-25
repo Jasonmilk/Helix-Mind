@@ -3,6 +3,7 @@ import json
 import re
 import logging
 import asyncio
+import sys
 from core.memory_manager import MemoryManager
 from core.dag_manager import DAGManager
 from config import settings
@@ -32,96 +33,110 @@ class Brain:
 
         last_action = ""
         
-        # 限制最多 5 跳，防止死循环破产
+        print("\n" + "═"*60)
+        print("🌌 神经符号逻辑引擎 (Neuro-Symbolic Engine) 已激活")
+        print("═"*60 + "\n")
+
         for hop in range(5):
-            # 物理截流：如果历史记录过长，切掉早期的步骤，只留 System, 需求和最后 2 步
             if len(messages) > 7:
-                messages =[messages[0]] + messages[-4:]
+                messages = [messages[0]] + messages[-4:]
 
             payload = {"model": self.model, "messages": messages, "temperature": 0.3, "stream": True}
             
-            logger.info(f"🧠 [Brain Hop {hop+1}/5] 深度推演中...")
+            print(f"\n\033[1;36m🧠 [因果跳跃 {hop+1}/5] 脑波深潜中...\033[0m")
             try:
                 async with httpx.AsyncClient(timeout=300.0) as client:
                     async with client.stream("POST", settings.tuck_url, json=payload, headers=headers) as resp:
                         if resp.status_code == 504:
-                            logger.warning(f"⚠️ [504] 网关超时，缓存接力中...")
+                            print(f"\033[1;33m⚠️ [504] 网关超时，正在通过 KV-Cache 物理击穿...\033[0m")
                             continue
                         resp.raise_for_status()
                         
                         full_content = ""
-                        async for line in resp.aiter_lines():
-                            if line.startswith("data: ") and "[DONE]" not in line:
-                                try:
-                                    chunk = json.loads(line[6:])
-                                    content = chunk["choices"][0].get("delta", {}).get("content", "")
-                                    if content:
-                                        full_content += content
-                                        if len(full_content) % 50 == 0: print(".", end="", flush=True)
-                                except: pass
+                        # 赛博朋克级视觉体验：灰色打印思维链
+                        for line in resp.iter_lines():
+                            if line:
+                                decoded_line = line.decode('utf-8', errors='replace')
+                                if decoded_line.startswith("data: ") and "[DONE]" not in decoded_line:
+                                    try:
+                                        chunk = json.loads(decoded_line[6:])
+                                        content = chunk["choices"][0].get("delta", {}).get("content", "")
+                                        if content:
+                                            full_content += content
+                                            # 实时终端打印，90m 代表暗灰色，极具科幻感
+                                            sys.stdout.write(f"\033[90m{content}\033[0m")
+                                            sys.stdout.flush()
+                                    except Exception: pass
                         
-                        logger.info(" [接收完毕]")
+                        print("\n\033[1;32m[脑波接收完毕]\033[0m\n")
                         messages.append({"role": "assistant", "content": full_content})
                         
-                        # 剥离 R1 的思维链
                         action_text = full_content.split("</think>")[-1].strip() if "</think>" in full_content else full_content
                         
-                        # 防止模型卡在重复指令里出不来
                         if action_text == last_action:
-                            logger.warning("⚠️ 发现重复动作，强制纠偏。")
+                            print("\033[1;33m⚠️ 发现重复动作，强制纠偏。\033[0m")
                             messages.append({"role": "user", "content": "[系统警告] 你的动作与上一步完全重复！请改变思路或执行 FINISH。"})
                             continue
                         last_action = action_text
 
-                        # --- 宽容的正则解析器 ---
-                        
-                        # 1. FINISH 解析
+                        # --- 动作路由 ---
                         finish_match = re.search(r"\[ACTION:\s*FINISH\((.*?)\)\]", action_text, re.DOTALL | re.IGNORECASE)
                         if finish_match:
                             tasks = self._extract_json_array(finish_match.group(1))
                             if tasks:
                                 self.memory.append_todo(tasks)
-                                logger.info(f"✅ 大脑推导完毕，拆解出 {len(tasks)} 个原子任务入栈！")
+                                print(f"\033[1;32m✅ 逻辑闭环达成！拆解出 {len(tasks)} 个物理任务入栈。\033[0m")
                                 return tasks
-                                
-                        # 2. FETCH 解析
+
                         fetch_match = re.search(r"\[ACTION:\s*FETCH\((.*?)\)\]", action_text, re.IGNORECASE)
                         if fetch_match:
                             node_id = fetch_match.group(1).strip(' "\'')
-                            logger.info(f"🔍 提取节点: {node_id}")
+                            print(f"\033[1;34m🔍 提取 DAG 节点: {node_id}\033[0m")
                             node_data = self.dag.fetch_node(node_id)
                             messages.append({"role": "user", "content": f"【FETCH 结果】:\n{node_data}"})
                             continue
                             
-                        # 3. WRITE_NODE 解析
                         write_match = re.search(r"\[ACTION:\s*WRITE_NODE\((.*?)\)\]", action_text, re.DOTALL | re.IGNORECASE)
                         if write_match:
                             args = write_match.group(1).split(';;', 3)
                             if len(args) == 4:
                                 res = self.dag.write_node(args[0].strip(), args[1].strip(), args[2].strip(), args[3].strip())
-                                logger.info(f"✍️ 写入节点: {args[0].strip()}")
+                                print(f"\033[1;35m✍️ 缔造新真理节点: {args[0].strip()}\033[0m")
                                 messages.append({"role": "user", "content": f"【WRITE 结果】: {res}"})
                                 continue
-                                
-                        # 4. TENTACLE 解析
+
+                        # 【补全终极拼图】：接入真实的 Helix-Tentacle
                         tentacle_match = re.search(r"\[ACTION:\s*TENTACLE\((.*?)\)\]", action_text, re.IGNORECASE)
                         if tentacle_match:
                             query = tentacle_match.group(1).strip()
-                            logger.info(f"🐙 触手搜索: {query}")
-                            mock_data = f"[Tentacle 暂未实装] 无法检索 '{query}'，请依靠现有图谱或直接 FINISH 分解任务。"
-                            messages.append({"role": "user", "content": f"【TENTACLE 结果】:\n{mock_data}"})
+                            print(f"\033[1;35m🐙 发现知识断层！召唤 Helix-Tentacle 前往外网脱水: {query}\033[0m")
+                            try:
+                                # 假设您的触手微服务运行在 8010 端口
+                                async with httpx.AsyncClient(timeout=60.0) as t_client:
+                                    t_resp = await t_client.post(
+                                        "http://127.0.0.1:8010/v1/tentacle/search_and_dehydrate", 
+                                        json={"query": query}
+                                    )
+                                    t_resp.raise_for_status()
+                                    dehydrated_knowledge = t_resp.json().get("result", "脱水失败，未获取到有效信息。")
+                                    dehydrated_knowledge = dehydrated_knowledge[:2000] # 防爆截断
+                                    
+                                    print(f"\033[1;32m✅ 触手脱水成功，返回 {len(dehydrated_knowledge)} 字节暗物质。\033[0m")
+                                    messages.append({"role": "user", "content": f"【TENTACLE 物理脱水报告】:\n{dehydrated_knowledge}\n\n请基于此外部知识继续推演，并尝试固化为节点。"})
+                            except Exception as te:
+                                print(f"\033[1;31m❌ [Tentacle Error] 触手连接失败: {te}\033[0m")
+                                messages.append({"role": "user", "content": f"【TENTACLE 触手断裂】: 无法获取外部网络数据 ({te})。请仅基于现有 DAG 尝试完成推理，或直接 FINISH。"})
                             continue
 
-                        # 无合法 ACTION 的降级处理
-                        logger.warning("⚠️ 未检测到规范的 [ACTION]，纠偏中...")
+                        print("\033[1;33m⚠️ 未检测到规范的 [ACTION]，强制纠偏中...\033[0m")
                         messages.append({"role": "user", "content": "【系统警告】未检测到规范的 [ACTION: xxx]。请严格遵循格式！"})
 
             except Exception as e:
-                logger.error(f"❌ 引擎故障: {e}")
+                print(f"\033[1;31m❌ 大脑故障: {e}\033[0m")
                 await asyncio.sleep(5)
                 
-        logger.error("🚨 大脑因果寻路超载 (5跳)，强制中止。")
-        return[]
+        print("\033[1;31m🚨 大脑因果寻路超载 (5跳)，强制中止。\033[0m")
+        return []
 
     def _extract_json_array(self, text: str) -> list | None:
         try: return json.loads(text)
