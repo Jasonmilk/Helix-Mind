@@ -24,11 +24,11 @@ class Brain:
 
     def _load_persona(self) -> str:
         persona_path = Path(__file__).parent.parent / "personas" / "dag_thinker.json"
-        if not persona_path.exists(): return ""
+        if not persona_path.exists():
+            return ""
         try:
             with open(persona_path, "r", encoding="utf-8") as f:
-                persona = json.load(f)
-                return persona.get("system_prompt", "")
+                return json.load(f).get("system_prompt", "")
         except Exception as e:
             print(f"\033[1;31m❌ 加载人格文件失败: {e}\033[0m")
             return ""
@@ -40,12 +40,12 @@ class Brain:
         messages = []
         if self.persona_prompt:
             messages.append({"role": "system", "content": self.persona_prompt})
-            
         messages.append({
             "role": "user",
             "content": f"【基因锁】:\n{gene_lock}\n\n【全局地图】:\n{dag_index}\n\n【用户需求】:\n{user_requirement}\n\n请开始推导。"
         })
 
+        # 不再需要 X-Tuck-Persona 头，人格已通过 system 消息注入
         headers = {"Content-Type": "application/json"}
         if settings.tuck_api_key:
             headers["Authorization"] = f"Bearer {settings.tuck_api_key}"
@@ -61,21 +61,21 @@ class Brain:
 
             payload = {"model": self.model, "messages": messages, "temperature": 0.4, "stream": True}
             print(f"\n\033[1;36m🧠 [因果跳跃 {hop+1}/5] 脑波深潜中...\033[0m")
-            
+
             try:
                 async with httpx.AsyncClient(timeout=300.0) as client:
                     async with client.stream("POST", settings.tuck_url, json=payload, headers=headers) as resp:
                         if resp.status_code == 504:
-                            print(f"\033[1;33m⚠️[504] 网关超时...\033[0m")
+                            print(f"\033[1;33m⚠️[504] 网关超时，接力中...\033[0m")
                             continue
                         resp.raise_for_status()
 
                         full_content = ""
-                        # 使用异步迭代器，防止 block 错误
                         async for line in resp.aiter_lines():
                             if line.startswith("data: "):
                                 data = line[6:]
-                                if data == "[DONE]": break
+                                if data == "[DONE]":
+                                    break
                                 try:
                                     chunk = json.loads(data)
                                     content = chunk["choices"][0].get("delta", {}).get("content", "")
@@ -83,7 +83,8 @@ class Brain:
                                         full_content += content
                                         sys.stdout.write(f"\033[90m{content}\033[0m")
                                         sys.stdout.flush()
-                                except json.JSONDecodeError: continue
+                                except json.JSONDecodeError:
+                                    continue
 
                         print("\n\033[1;32m[脑波接收完毕]\033[0m\n")
                         messages.append({"role": "assistant", "content": full_content})
@@ -96,41 +97,56 @@ class Brain:
                             continue
                         last_action = action_text
 
-                        feedback_msgs =[]
+                        feedback_msgs = []
                         is_finished = False
                         final_tasks = []
 
-                        # 1. 解析 FETCH
+                        # 1. FETCH
                         for fetch_match in re.finditer(r"\[ACTION:\s*FETCH\((.*?)\)\]", action_text, re.IGNORECASE):
                             node_id = fetch_match.group(1).strip(' "\'')
                             print(f"\033[1;34m🔍 提取 DAG 节点: {node_id}\033[0m")
                             feedback_msgs.append(f"【FETCH {node_id} 结果】:\n{self.dag.fetch_node(node_id)}")
 
-                        # 2. 解析 TENTACLE
+                        # 2. TENTACLE (修正字段为 text，适配返回结构)
                         for ten_match in re.finditer(r"\[ACTION:\s*TENTACLE\((.*?)\)\]", action_text, re.IGNORECASE):
                             query = ten_match.group(1).strip()
                             print(f"\033[1;35m🐙 召唤 Helix-Tentacle: {query}\033[0m")
                             try:
-                                async with httpx.AsyncClient(timeout=60.0) as t_client:
-                                    # 修正触手 URL 为 /process
-                                    t_resp = await t_client.post("http://127.0.0.1:8010/v1/tentacle/process", json={"query": query})
+                                async with httpx.AsyncClient(timeout=120.0) as t_client:
+                                    t_payload = {"text": query}
+                                    t_resp = await t_client.post(
+                                        "http://127.0.0.1:8010/v1/tentacle/process",
+                                        json=t_payload
+                                    )
+                                    if t_resp.status_code == 422:
+                                        err_detail = t_resp.text
+                                        print(f"\033[1;31m❌ [Tentacle 422 校验失败]: {err_detail}\033[0m")
+                                        raise Exception(f"数据格式不匹配: {err_detail}")
                                     t_resp.raise_for_status()
                                     data = t_resp.json()
-                                    result = data.get("result", data.get("answer", "脱水失败"))[:2000]
-                                    feedback_msgs.append(f"【TENTACLE {query} 报告】:\n{result}")
+                                    # 适配触手实际返回结构：优先 dehydrated_content，其次 outline
+                                    result = data.get("dehydrated_content", data.get("outline", "脱水失败"))[:2000]
+                                    print(f"\033[1;32m✅ 触手脱水成功！\033[0m")
+                                    print(f"\033[90m数据预览: {result[:200]}...\033[0m")
+                                    feedback_msgs.append(f"【TENTACLE 报告】:\n{result}")
                             except Exception as te:
                                 print(f"\033[1;31m❌ [Tentacle Error] 连接失败: {te}\033[0m")
-                                feedback_msgs.append(f"【TENTACLE 断裂】无法获取 '{query}' 外部数据 ({te})。请仅基于现有 DAG 尝试推理。")
+                                feedback_msgs.append(f"【TENTACLE 断裂】无法获取外部数据 ({te})。请仅基于现有 DAG 尝试推理。")
 
-                        # 3. 解析 WRITE_NODE
+                        # 3. WRITE_NODE
                         for write_match in re.finditer(r"\[ACTION:\s*WRITE_NODE\((.*?)\)\]", action_text, re.DOTALL | re.IGNORECASE):
                             args = write_match.group(1).split(';;', 3)
                             if len(args) == 4:
-                                res = self.dag.write_node(args[0].strip(), args[1].strip(), args[2].strip(), args[3].strip())
+                                res = self.dag.write_node(
+                                    args[0].strip(),
+                                    args[1].strip(),
+                                    args[2].strip(),
+                                    args[3].strip()
+                                )
                                 print(f"\033[1;35m✍️ 缔造新真理节点: {args[0].strip()}\033[0m")
                                 feedback_msgs.append(f"【WRITE 结果】: {res}")
 
-                        # 4. 解析 FINISH
+                        # 4. FINISH
                         finish_match = re.search(r"\[ACTION:\s*FINISH\((.*?)\)\]", action_text, re.DOTALL | re.IGNORECASE)
                         if finish_match:
                             tasks = self._extract_json_array(finish_match.group(1))
@@ -138,7 +154,6 @@ class Brain:
                                 is_finished = True
                                 final_tasks = tasks
 
-                        # 动作结果反馈给模型
                         if feedback_msgs:
                             messages.append({"role": "user", "content": "\n".join(feedback_msgs) + "\n请继续。"})
 
@@ -159,10 +174,13 @@ class Brain:
         return []
 
     def _extract_json_array(self, text: str) -> list | None:
-        try: return json.loads(text)
+        try:
+            return json.loads(text)
         except:
             match = re.search(r'\[.*\]', text, re.DOTALL)
             if match:
-                try: return json.loads(match.group(0))
-                except: pass
+                try:
+                    return json.loads(match.group(0))
+                except:
+                    pass
         return None
