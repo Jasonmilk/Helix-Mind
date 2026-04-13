@@ -1,0 +1,21 @@
+# 虚拟环境
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# 敏感配置
+.env
+.env.*
+SAFE_ENV_RESCUED.txt
+
+# 数据库与本地数据
+*.db
+*.duckdb
+memory_dag/sessions/
+knowledge_base/data/
+
+# 系统与日志
+.DS_Store
+*.log

@@ -1,0 +1,6 @@
+click
+pydantic
+pydantic-settings
+duckdb
+redis
+python-dotenv
