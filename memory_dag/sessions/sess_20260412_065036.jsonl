@@ -1,0 +1,2 @@
+{"session_id": "sess_20260412_065036", "step_id": "step_001", "action": "ana_kb_fetch", "params": {"node_id": "algo_quick_sort", "mode": "summary"}, "intent": "用户想了解快速排序算法，我需要从知识库中调取相关公理。", "handler": "qwen2.5-coder:7b", "method": "LLM_inference", "duration_ms": 5, "success": true}
+{"session_id": "sess_20260412_065036", "step_id": "step_002", "action": "ana_finish", "params": {"actions": ["已提供快速排序信息"], "confidence": 0.95}, "intent": "已成功从知识库获取快速排序的信息，任务完成。", "handler": "qwen2.5-coder:7b", "method": "LLM_inference", "duration_ms": 5, "success": true}

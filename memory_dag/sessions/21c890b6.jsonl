@@ -1,0 +1,2 @@
+{"session_id": "21c890b6", "loop_id": 0, "action": "session_start", "params": {"task": "echo hello", "direct": true}, "result": "success", "reasoning": "Starting new agent session", "ts": "2026-04-11T19:20:40.514277Z", "tool_result": null, "error": null}
+{"session_id": "21c890b6", "loop_id": 1, "action": "session_end", "params": {"result_summary": "hello"}, "result": "success", "reasoning": "Session completed", "ts": "2026-04-11T19:20:40.514459Z", "tool_result": null, "error": null}
