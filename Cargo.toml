@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/helix-mind-core",
+    "crates/helix-mind-storage",
+    "crates/helix-mind-retrieval",
+    "crates/helix-mind-metabolism",
+    "crates/helix-mind-federation",
+    "crates/helix-mind-api",
+    "crates/helix-mind-reincarnation",
+    "crates/helix-mind-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+opt-level = 3
+
+[profile.extreme]
+inherits = "release"
+opt-level = "z"
+strip = "symbols"

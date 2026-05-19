@@ -1,0 +1,24 @@
+[package]
+name = "helix-mind-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+helix-mind-core = { path = "../helix-mind-core" }
+helix-mind-storage = { path = "../helix-mind-storage" }
+helix-mind-retrieval = { path = "../helix-mind-retrieval" }
+helix-mind-metabolism = { path = "../helix-mind-metabolism" }
+helix-mind-federation = { path = "../helix-mind-federation" }
+helix-mind-reincarnation = { path = "../helix-mind-reincarnation" }
+tonic = "0.10"
+prost = "0.12"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+thiserror = "1"
+
+[build-dependencies]
+tonic-build = "0.10"
+prost = "0.12"

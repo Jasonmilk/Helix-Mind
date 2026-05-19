@@ -1,0 +1,14 @@
+[package]
+name = "helix-mind-retrieval"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+helix-mind-core = { path = "../helix-mind-core" }
+helix-mind-storage = { path = "../helix-mind-storage" }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+uuid = { version = "1", features = ["v4"] }
+tracing = "0.1"
+thiserror = "1"
+chrono = "0.4.44"
