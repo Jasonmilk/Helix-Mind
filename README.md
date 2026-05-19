@@ -1,5 +1,8 @@
-# Helix-Mind (Rust)
+# Helix-Mind
+
 Lightweight Memory Hub for Digital Lifeforms | My First Rust Project
+
+[中文文档](README.zh-CN.md) | English
 
 > Stones need no energy, hence they are immortal.  
 > Plants consume almost nothing, hence they live long.  
