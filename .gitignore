@@ -1,21 +1,27 @@
-# 虚拟环境
-venv/
-.venv/
-env/
-__pycache__/
-*.pyc
+# Rust build artifacts
+/target/
+**/*.rs.bk
 
-# 敏感配置
-.env
-.env.*
-SAFE_ENV_RESCUED.txt
-
-# 数据库与本地数据
-*.db
-*.duckdb
-memory_dag/sessions/
-knowledge_base/data/
-
-# 系统与日志
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 .DS_Store
+
+# Local configuration files (may contain API keys or personal data)
+config.toml
+gene_lock.md
+
+# Runtime data directories
+data/
+federation/
+
+# Model files (too large for Git)
+models/*.onnx
+models/*.bin
+
+# Temporary files
+*.tmp
 *.log
