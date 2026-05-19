@@ -48,14 +48,14 @@ pub async fn handle_helix_query(
             helix_mind_core::graph::CognitiveMode::Anchor => 1,
             helix_mind_core::graph::CognitiveMode::Imagination => 2,
         },
-        mode_negotiation: result.mode_negotiation,
+        mode_negotiation: result.mode_negotiation.unwrap_or_default(),
         nodes: result.nodes.into_iter().map(super::layer1::convert_node).collect(),
         edges: result.edges.into_iter().map(super::layer1::convert_edge).collect(),
         trace_id: result.trace_id.to_string(),
         latency_ms: result.latency_ms,
         tokens_consumed: result.tokens_consumed,
         is_partial: result.is_partial,
-        exhaustion_reason: result.exhaustion_reason,
+        exhaustion_reason: result.exhaustion_reason.unwrap_or_default(),
     };
 
     Ok(Response::new(response))
@@ -66,7 +66,7 @@ pub async fn handle_helix_consolidate(
     request: Request<HelixConsolidateRequest>,
 ) -> Result<Response<HelixConsolidateResult>, Status> {
     let req = request.into_inner();
-    let success = match req.type_.as_str() {
+    let success = match req.r#type.as_str() {
         "digest" => {
             service.metabolism.trigger_digest().await.map_err(|e| Status::internal(e.to_string()))?;
             true
@@ -90,8 +90,8 @@ pub async fn handle_helix_consolidate(
 
 pub async fn handle_federated_share(
     service: &HelixMindServiceImpl,
-    request: Request<FederatedDAGShareRequest>,
-) -> Result<Response<FederatedDAGShareResponse>, Status> {
+    request: Request<FederatedDagShareRequest>,
+) -> Result<Response<FederatedDagShareResponse>, Status> {
     let req = request.into_inner();
     let target = if req.target_helix_id.is_empty() { None } else { Some(req.target_helix_id) };
     let cid = service.federation.share_dag(target).await.map_err(|e| Status::internal(e.to_string()))?;

@@ -38,7 +38,8 @@ pub async fn handle_remember(
     node.content = helix_mind_core::graph::NodeContent::Text(req.content);
     node.sensitivity = Some(helix_mind_core::graph::Sensitivity::Private);
 
-    service.storage.upsert_node(&node).await.map_err(|e| Status::internal(e.to_string()))?;
+    service.storage.write_node(node, helix_mind_storage::WritePriority::Critical).await
+    .map_err(|e| Status::internal(e.to_string()))?;.map_err(|e| Status::internal(e.to_string()))?;
 
     Ok(Response::new(RememberResponse {
         node_id: node.id.to_string(),
@@ -60,7 +61,7 @@ pub async fn handle_forget(
 }
 
 // Convert core Node to proto Node
-fn convert_node(node: helix_mind_core::graph::Node) -> Node {
+pub(crate) fn convert_node(node: helix_mind_core::graph::Node) -> Node {
     Node {
         id: node.id.to_string(),
         node_type: format!("{:?}", node.node_type),
@@ -70,8 +71,12 @@ fn convert_node(node: helix_mind_core::graph::Node) -> Node {
         is_recessive: node.is_recessive,
         sensitivity: node.sensitivity.map(|s| format!("{:?}", s)).unwrap_or_default(),
         generation: node.generation,
-        created_at: Some(prost_types::Timestamp::from(chrono::DateTime::<chrono::Utc>::from(node.created_at))),
-        last_accessed_at: Some(prost_types::Timestamp::from(chrono::DateTime::<chrono::Utc>::from(node.last_accessed_at))),
+        created_at: Some(prost_types::Timestamp::from(
+    std::time::SystemTime::from(node.created_at),
+)),
+        last_accessed_at: Some(prost_types::Timestamp::from(
+    std::time::SystemTime::from(node.last_accessed_at),
+)),
         access_count: node.access_count,
         initial_impact: node.initial_impact,
         corrected_by: node.corrected_by.map(|u| u.to_string()).unwrap_or_default(),
@@ -81,7 +86,7 @@ fn convert_node(node: helix_mind_core::graph::Node) -> Node {
 }
 
 // Convert core Edge to proto Edge
-fn convert_edge(edge: helix_mind_core::graph::Edge) -> Edge {
+pub(crate) fn convert_edge(edge: helix_mind_core::graph::Edge) -> Edge {
     Edge {
         source_id: edge.source_id.to_string(),
         target_id: edge.target_id.to_string(),

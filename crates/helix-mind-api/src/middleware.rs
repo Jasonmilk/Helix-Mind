@@ -12,12 +12,12 @@ impl ValidationLayer {
 }
 
 impl Interceptor for ValidationLayer {
-    fn call(&self, mut request: Request<()>) -> Result<Request<()>, Status> {
+    fn call(&mut self, mut request: Request<()>) -> Result<Request<()>, Status> {
         // 1. Validate request metadata
         // TODO: Validate auth token if needed
 
         // 2. Log request
-        let method = request.method().map(|m| m.path()).unwrap_or("unknown");
+        let method = let method = request.uri().path().to_string();.map(|m| m.path()).unwrap_or("unknown");
         tracing::debug!("API request: {}", method);
 
         // 3. Check system load

@@ -1,6 +1,5 @@
 use tonic::{Request, Response, Status};
 
-// 使用 tonic 内置的健康检查类型，不需要自定义 proto
 pub mod proto {
     tonic::include_proto!("grpc.health.v1");
 }
@@ -14,6 +13,8 @@ pub struct HealthServiceImpl;
 
 #[tonic::async_trait]
 impl proto::health_server::Health for HealthServiceImpl {
+    type WatchStream = tokio_stream::wrappers::ReceiverStream<Result<HealthCheckResponse, Status>>;
+
     async fn check(
         &self,
         _request: Request<HealthCheckRequest>,
@@ -26,7 +27,7 @@ impl proto::health_server::Health for HealthServiceImpl {
     async fn watch(
         &self,
         _request: Request<HealthCheckRequest>,
-    ) -> Result<tonic::Response<tonic::codec::Streaming<HealthCheckResponse>>, Status> {
+    ) -> Result<Response<Self::WatchStream>, Status> {
         Err(Status::unimplemented("watch not implemented"))
     }
 }

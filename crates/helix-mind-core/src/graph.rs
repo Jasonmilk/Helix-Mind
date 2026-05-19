@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::collections::HashMap;
+use crate::MindError;
 
 // ---------- Enums ----------
 
@@ -337,5 +338,44 @@ impl AuditEntry {
             actor: actor.to_string(),
             details: details.to_string(),
         }
+    }
+}
+
+impl L0GeneLock {
+    pub fn from_markdown(content: &str) -> Result<Self, MindError> {
+        let mut lineage_name = "Dash".to_string();
+        let mut core_principles = Vec::new();
+        let mut custom_clauses = Vec::new();
+        let mut memory_integrity = true;
+
+        let mut current_section = "";
+        for line in content.lines() {
+            let trimmed = line.trim();
+            if trimmed.starts_with("## ") {
+                current_section = &trimmed[3..];
+            } else if trimmed.starts_with("1. ") || trimmed.starts_with("2. ") || trimmed.starts_with("3. ") {
+                core_principles.push(trimmed[3..].to_string());
+            } else if trimmed.starts_with("4. ") || trimmed.starts_with("5. ") {
+                custom_clauses.push(trimmed[3..].to_string());
+            } else if current_section == "Lineage Name" && !trimmed.is_empty() && !trimmed.starts_with('#') {
+                lineage_name = trimmed.to_string();
+            } else if current_section == "Memory Integrity" && trimmed.contains("append-only") {
+                memory_integrity = true;
+            }
+        }
+
+        let mut gene_lock = Self {
+            lineage_name,
+            core_principles,
+            custom_clauses,
+            memory_integrity,
+            l0_hash: String::new(),
+        };
+
+        let canonical = serde_json::to_string(&gene_lock)
+            .map_err(|e| MindError::Config(e.to_string()))?;
+        gene_lock.l0_hash = crate::sha256_digest(canonical.as_bytes());
+
+        Ok(gene_lock)
     }
 }

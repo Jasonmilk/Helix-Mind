@@ -15,3 +15,5 @@ pub fn sha256_digest(data: &[u8]) -> String {
     hasher.update(data);
     format!("{:x}", hasher.finalize())
 }
+
+pub mod audit;

@@ -12,12 +12,12 @@ use tonic::Status;
 use super::*;
 
 pub struct HelixMindServiceImpl {
-    config: Config,
-    storage: Arc<StorageEngine>,
-    retrieval: Arc<RetrievalEngine>,
-    metabolism: Arc<MetabolismEngine>,
-    federation: Arc<FederationEngine>,
-    reincarnation: Arc<ReincarnationEngine>,
+    pub(crate) config: Config,
+    pub(crate) storage: Arc<StorageEngine>,
+    pub(crate) retrieval: Arc<RetrievalEngine>,
+    pub(crate) metabolism: Arc<MetabolismEngine>,
+    pub(crate) federation: Arc<FederationEngine>,
+    pub(crate) reincarnation: Arc<ReincarnationEngine>,
 }
 
 impl HelixMindServiceImpl {
@@ -39,7 +39,7 @@ impl HelixMindServiceImpl {
         }
     }
 
-    pub async fn start(self, addr: &str) -> Result<(), helix_mind_core::error::MindError> {
+    pub async fn start(self, addr: &str) -> Result<(), Box<dyn std::error::Error>> {
         let service = HelixMindServer::new(self)
             .max_decoding_message_size(1024 * 1024 * 10) // 10MB
             .layer(super::middleware::ValidationLayer::new());
@@ -114,8 +114,8 @@ impl helix_mind_server::HelixMind for HelixMindServiceImpl {
 
     async fn federated_dag_share(
         &self,
-        request: Request<FederatedDAGShareRequest>,
-    ) -> Result<Response<FederatedDAGShareResponse>, Status> {
+        request: Request<FederatedDagShareRequest>,
+    ) -> Result<Response<FederatedDagShareResponse>, Status> {
         super::layer3::handle_federated_share(self, request).await
     }
 
