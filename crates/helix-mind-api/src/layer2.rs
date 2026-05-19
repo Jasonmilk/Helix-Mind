@@ -1,3 +1,4 @@
+use crate::proto::*;
 use super::*;
 use tonic::{Request, Response, Status};
 

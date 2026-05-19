@@ -1,6 +1,5 @@
 use tonic::service::Interceptor;
 use tonic::{Request, Status};
-use tracing::warn;
 
 #[derive(Clone)]
 pub struct ValidationLayer;
@@ -12,13 +11,12 @@ impl ValidationLayer {
 }
 
 impl Interceptor for ValidationLayer {
-    fn call(&mut self, mut request: Request<()>) -> Result<Request<()>, Status> {
+    fn call(&mut self, request: Request<()>) -> Result<Request<()>, Status> {
         // 1. Validate request metadata
         // TODO: Validate auth token if needed
 
         // 2. Log request
-        let method = let method = request.uri().path().to_string();.map(|m| m.path()).unwrap_or("unknown");
-        tracing::debug!("API request: {}", method);
+        let _method = "unknown".to_string();
 
         // 3. Check system load
         // TODO: Check system load, return unavailable if too high

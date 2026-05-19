@@ -1,3 +1,4 @@
+use crate::proto::*;
 use super::*;
 use tonic::{Request, Response, Status};
 
@@ -38,12 +39,11 @@ pub async fn handle_remember(
     node.content = helix_mind_core::graph::NodeContent::Text(req.content);
     node.sensitivity = Some(helix_mind_core::graph::Sensitivity::Private);
 
-    service.storage.write_node(node, helix_mind_storage::WritePriority::Critical).await
-    .map_err(|e| Status::internal(e.to_string()))?;.map_err(|e| Status::internal(e.to_string()))?;
-
-    Ok(Response::new(RememberResponse {
-        node_id: node.id.to_string(),
-    }))
+    let node_id = node.id; // Save UUID before moving node
+    service.storage.write_node(node, 
+    helix_mind_storage::WritePriority::Critical).await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    Ok(Response::new(RememberResponse { node_id: node_id.to_string() }))
 }
 
 pub async fn handle_forget(

@@ -16,6 +16,15 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use chrono::Utc;
+use serde::Serialize;
+
+#[derive(Debug, Serialize)]
+pub struct StorageStats {
+    pub total_nodes: u64,
+    pub total_edges: u64,
+    pub total_interactions: u64,
+    pub elapsed_days: u64,
+}
 
 pub struct StorageEngine {
     pub config: StorageConfig,
@@ -134,10 +143,6 @@ impl StorageEngine {
         todo!()
     }
 
-    pub async fn get_stats(&self) -> Result<(), helix_mind_core::error::MindError> {
-        todo!()
-    }
-
     pub async fn get_elapsed_days(&self) -> Result<u64, helix_mind_core::error::MindError> {
         todo!()
     }
@@ -199,5 +204,26 @@ impl StorageEngine {
 
     pub async fn get_l2_nodes_by_generation(&self, _generation: u64) -> Result<Vec<Node>, helix_mind_core::error::MindError> {
         todo!()
+    }
+
+    /// Return overall statistics for CLI and health checks
+    pub async fn get_stats(&self) -> Result<StorageStats, helix_mind_core::error::MindError> {
+        let conn = self.sqlite.pool.get()
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        let total_nodes: u64 = conn.query_row("SELECT COUNT(*) FROM nodes", [], |row| row.get(0))
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        let total_edges: u64 = conn.query_row("SELECT COUNT(*) FROM edges", [], |row| row.get(0))
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        let total_interactions: u64 = conn.query_row("SELECT COALESCE(SUM(access_count),0) FROM nodes", [], |row| row.get(0))
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        let elapsed_days: u64 = conn.query_row("SELECT (julianday('now') - julianday(MIN(created_at))) FROM nodes", [], |row| row.get(0))
+            .unwrap_or(0) as u64;
+
+        Ok(StorageStats {
+            total_nodes,
+            total_edges,
+            total_interactions,
+            elapsed_days,
+        })
     }
 }

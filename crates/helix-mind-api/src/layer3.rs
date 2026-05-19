@@ -1,3 +1,4 @@
+use crate::proto::*;
 use super::*;
 use tonic::{Request, Response, Status};
 
@@ -96,7 +97,7 @@ pub async fn handle_federated_share(
     let target = if req.target_helix_id.is_empty() { None } else { Some(req.target_helix_id) };
     let cid = service.federation.share_dag(target).await.map_err(|e| Status::internal(e.to_string()))?;
 
-    Ok(Response::new(FederatedDAGShareResponse {
+    Ok(Response::new(FederatedDagShareResponse {
         cid,
     }))
 }
@@ -122,8 +123,8 @@ pub async fn handle_reload_gene_lock(
     let lock = helix_mind_core::graph::L0GeneLock::from_markdown(&content).map_err(|e| Status::internal(e.to_string()))?;
 
     // Write audit log
-    let audit = helix_mind_core::audit::AuditEntry::new(
-        helix_mind_core::audit::AuditEventType::GeneLockReloaded,
+    let audit = helix_mind_core::AuditEntry::new(
+        helix_mind_core::AuditEventType::GeneLockReloaded,
         "api",
         &format!("Gene lock reloaded, hash: {}", lock.l0_hash),
     );
@@ -155,8 +156,8 @@ pub async fn handle_sync_human_view(
     let conflicts = sync.sync(&public_nodes).await.map_err(|e| Status::internal(e.to_string()))?;
 
     // Write audit log
-    let audit = helix_mind_core::audit::AuditEntry::new(
-        helix_mind_core::audit::AuditEventType::HumanViewSynced,
+    let audit = helix_mind_core::AuditEntry::new(
+        helix_mind_core::AuditEventType::HumanViewSynced,
         "api",
         "Human view synced",
     );

@@ -4,20 +4,19 @@ use helix_mind_retrieval::RetrievalEngine;
 use helix_mind_metabolism::MetabolismEngine;
 use helix_mind_federation::FederationEngine;
 use helix_mind_reincarnation::ReincarnationEngine;
+use crate::proto::helix_mind_server::HelixMindServer;
+use crate::proto::*;          // 导入所有 gRPC 消息类型
 use std::sync::Arc;
-use tonic::Request;
-use tonic::Response;
-use tonic::Status;
-
-use super::*;
+use tonic::{Request, Response, Status};
+use std::net::SocketAddr;
 
 pub struct HelixMindServiceImpl {
-    pub(crate) config: Config,
-    pub(crate) storage: Arc<StorageEngine>,
-    pub(crate) retrieval: Arc<RetrievalEngine>,
-    pub(crate) metabolism: Arc<MetabolismEngine>,
-    pub(crate) federation: Arc<FederationEngine>,
-    pub(crate) reincarnation: Arc<ReincarnationEngine>,
+    pub config: Config,
+    pub storage: Arc<StorageEngine>,
+    pub retrieval: Arc<RetrievalEngine>,
+    pub metabolism: Arc<MetabolismEngine>,
+    pub federation: Arc<FederationEngine>,
+    pub reincarnation: Arc<ReincarnationEngine>,
 }
 
 impl HelixMindServiceImpl {
@@ -38,105 +37,59 @@ impl HelixMindServiceImpl {
             reincarnation,
         }
     }
+}
 
-    pub async fn start(self, addr: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let service = HelixMindServer::new(self)
-            .max_decoding_message_size(1024 * 1024 * 10) // 10MB
-            .layer(super::middleware::ValidationLayer::new());
-
-        tonic::transport::Server::builder()
-            .add_service(service)
-            .serve(addr.parse()?)
-            .await?;
-
-        Ok(())
-    }
+pub async fn serve(addr: SocketAddr, service: HelixMindServiceImpl) -> Result<(), Box<dyn std::error::Error>> {
+    let server = HelixMindServer::new(service);
+    tonic::transport::Server::builder()
+        .add_service(server)
+        .serve(addr)
+        .await?;
+    Ok(())
 }
 
 #[tonic::async_trait]
-impl helix_mind_server::HelixMind for HelixMindServiceImpl {
-    // Layer 1
-    async fn query(
-        &self,
-        request: Request<QueryRequest>,
-    ) -> Result<Response<QueryResponse>, Status> {
+impl crate::proto::helix_mind_server::HelixMind for HelixMindServiceImpl {
+    async fn query(&self, request: Request<QueryRequest>) -> Result<Response<QueryResponse>, Status> {
         if !self.config.api.layer1_enabled {
             return Err(Status::unavailable("Layer 1 API is disabled"));
         }
         super::layer1::handle_query(self, request).await
     }
-
-    async fn remember(
-        &self,
-        request: Request<RememberRequest>,
-    ) -> Result<Response<RememberResponse>, Status> {
+    async fn remember(&self, request: Request<RememberRequest>) -> Result<Response<RememberResponse>, Status> {
         if !self.config.api.layer1_enabled {
             return Err(Status::unavailable("Layer 1 API is disabled"));
         }
         super::layer1::handle_remember(self, request).await
     }
-
-    async fn forget(
-        &self,
-        request: Request<ForgetRequest>,
-    ) -> Result<Response<ForgetResponse>, Status> {
+    async fn forget(&self, request: Request<ForgetRequest>) -> Result<Response<ForgetResponse>, Status> {
         if !self.config.api.layer1_enabled {
             return Err(Status::unavailable("Layer 1 API is disabled"));
         }
         super::layer1::handle_forget(self, request).await
     }
-
-    // Layer 2
-    async fn advanced_query(
-        &self,
-        request: Request<AdvancedQueryRequest>,
-    ) -> Result<Response<QueryResponse>, Status> {
+    async fn advanced_query(&self, request: Request<AdvancedQueryRequest>) -> Result<Response<QueryResponse>, Status> {
         if !self.config.api.layer2_enabled {
             return Err(Status::unavailable("Layer 2 API is disabled"));
         }
         super::layer2::handle_advanced_query(self, request).await
     }
-
-    // Layer 3
-    async fn helix_query(
-        &self,
-        request: Request<HelixQueryRequest>,
-    ) -> Result<Response<HelixQueryResult>, Status> {
+    async fn helix_query(&self, request: Request<HelixQueryRequest>) -> Result<Response<HelixQueryResult>, Status> {
         super::layer3::handle_helix_query(self, request).await
     }
-
-    async fn helix_consolidate(
-        &self,
-        request: Request<HelixConsolidateRequest>,
-    ) -> Result<Response<HelixConsolidateResult>, Status> {
+    async fn helix_consolidate(&self, request: Request<HelixConsolidateRequest>) -> Result<Response<HelixConsolidateResult>, Status> {
         super::layer3::handle_helix_consolidate(self, request).await
     }
-
-    async fn federated_dag_share(
-        &self,
-        request: Request<FederatedDagShareRequest>,
-    ) -> Result<Response<FederatedDagShareResponse>, Status> {
+    async fn federated_dag_share(&self, request: Request<FederatedDagShareRequest>) -> Result<Response<FederatedDagShareResponse>, Status> {
         super::layer3::handle_federated_share(self, request).await
     }
-
-    async fn trigger_reincarnation(
-        &self,
-        request: Request<TriggerReincarnationRequest>,
-    ) -> Result<Response<TriggerReincarnationResponse>, Status> {
+    async fn trigger_reincarnation(&self, request: Request<TriggerReincarnationRequest>) -> Result<Response<TriggerReincarnationResponse>, Status> {
         super::layer3::handle_reincarnation(self, request).await
     }
-
-    async fn reload_gene_lock(
-        &self,
-        request: Request<ReloadGeneLockRequest>,
-    ) -> Result<Response<ReloadGeneLockResponse>, Status> {
+    async fn reload_gene_lock(&self, request: Request<ReloadGeneLockRequest>) -> Result<Response<ReloadGeneLockResponse>, Status> {
         super::layer3::handle_reload_gene_lock(self, request).await
     }
-
-    async fn sync_human_view(
-        &self,
-        request: Request<SyncHumanViewRequest>,
-    ) -> Result<Response<SyncHumanViewResponse>, Status> {
+    async fn sync_human_view(&self, request: Request<SyncHumanViewRequest>) -> Result<Response<SyncHumanViewResponse>, Status> {
         super::layer3::handle_sync_human_view(self, request).await
     }
 }

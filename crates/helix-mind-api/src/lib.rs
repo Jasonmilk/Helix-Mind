@@ -5,8 +5,10 @@ pub mod server;
 pub mod health;
 pub mod middleware;
 
-// Generated proto code
-tonic::include_proto!("helix_mind");
+// Generated proto code — exposed as crate::proto
+pub mod proto {
+    tonic::include_proto!("helix_mind");
+}
 
-pub use helix_mind::helix_mind_server::HelixMindServer;
-pub use self::server::HelixMindServiceImpl;
+pub use server::HelixMindServiceImpl;
+pub use server::serve;
