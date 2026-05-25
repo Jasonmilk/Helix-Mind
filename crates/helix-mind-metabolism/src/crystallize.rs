@@ -3,7 +3,6 @@ use helix_mind_storage::StorageEngine;
 use helix_mind_storage::WritePriority;
 use std::sync::Arc;
 use tracing::info;
-use uuid::Uuid;
 
 pub struct Crystallize {
     config: MetabolismConfig,
@@ -28,19 +27,19 @@ impl Crystallize {
         l2_node.content = helix_mind_core::graph::NodeContent::Structured(
             std::collections::HashMap::from_iter(vec![
                 ("summary".into(), summary.clone()),
-            ])
+            ]),
         );
         l2_node.heat = 0.5;
         l2_node.sensitivity = Some(helix_mind_core::graph::Sensitivity::Public);
         l2_node.derived_from = idle_l3.iter().map(|n| n.id).collect();
 
-        // 修复：使用 helix_mind_core::sha256_digest
+        // Check if an L2 with this content already exists
         let content_hash = helix_mind_core::sha256_digest(summary.as_bytes());
-        
         if let Some(existing) = self.storage.lookup_l2_by_hash(&content_hash).await? {
+            // Link L3 nodes to existing L2
             for l3_node in &idle_l3 {
                 let edge = helix_mind_core::graph::Edge {
-                    source_id: existing,
+                    source_id: existing.id,
                     target_id: l3_node.id,
                     weight: 0.8,
                     relation_type: helix_mind_core::graph::RelationType::Refines,
@@ -49,15 +48,17 @@ impl Crystallize {
                 self.storage.add_edge(&edge).await?;
             }
         } else {
-            // 修复关键步骤：在移动所有权之前，先保存 ID
+            // Save L2 node ID before moving ownership
             let l2_node_id = l2_node.id;
-            
-            // 传递所有权
-            self.storage.write_node(l2_node, WritePriority::Critical).await?;
-            
-            // 使用保存的 ID
-            self.storage.insert_l2_content_index(&content_hash, &l2_node_id).await?;
-            
+            // Transfer ownership
+            self.storage
+                .write_node(l2_node, WritePriority::Critical)
+                .await?;
+            // Use saved ID
+            self.storage
+                .insert_l2_content_index(&content_hash, &l2_node_id)
+                .await?;
+
             for l3_node in &idle_l3 {
                 let edge = helix_mind_core::graph::Edge {
                     source_id: l2_node_id,
@@ -74,8 +75,12 @@ impl Crystallize {
         Ok(())
     }
 
-    async fn summarize_with_llm(&self, nodes: &[helix_mind_core::graph::Node]) -> Result<String, helix_mind_core::error::MindError> {
-        let mut prompt = "Summarize the following observations into a single empirical principle:\n".to_string();
+    async fn summarize_with_llm(
+        &self,
+        nodes: &[helix_mind_core::graph::Node],
+    ) -> Result<String, helix_mind_core::error::MindError> {
+        let mut prompt =
+            "Summarize the following observations into a single empirical principle:\n".to_string();
         for node in nodes {
             if let helix_mind_core::graph::NodeContent::Text(t) = &node.content {
                 prompt.push_str("- ");
@@ -86,8 +91,8 @@ impl Crystallize {
         prompt.push_str("\nPrinciple:");
 
         let client = reqwest::Client::new();
-        // 修复：手动转换 reqwest 错误
-        let resp: serde_json::Value = client.post(&self.config.llm_gateway_url)
+        let resp: serde_json::Value = client
+            .post(&self.config.llm_gateway_url)
             .json(&serde_json::json!({
                 "model": "llama3",
                 "prompt": prompt,
@@ -95,16 +100,24 @@ impl Crystallize {
             }))
             .send()
             .await
-            .map_err(|e| helix_mind_core::error::MindError::Metabolism(format!("LLM request failed: {}", e)))?
+            .map_err(|e| {
+                helix_mind_core::error::MindError::Metabolism(format!(
+                    "LLM request failed: {}",
+                    e
+                ))
+            })?
             .json()
             .await
-            .map_err(|e| helix_mind_core::error::MindError::Metabolism(format!("LLM parse failed: {}", e)))?;
+            .map_err(|e| {
+                helix_mind_core::error::MindError::Metabolism(format!(
+                    "LLM response parse failed: {}",
+                    e
+                ))
+            })?;
 
-        let summary = resp["response"].as_str()
-            .ok_or_else(|| helix_mind_core::error::MindError::Metabolism("Invalid LLM response".into()))?
-            .trim()
-            .to_string();
-
-        Ok(summary)
+        Ok(resp["response"]
+            .as_str()
+            .unwrap_or("No summary generated")
+            .to_string())
     }
 }

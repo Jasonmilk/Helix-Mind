@@ -22,9 +22,12 @@ pub async fn handle_helix_query(
             vigilance: ec.vigilance,
             latency_limit_ms: ec.latency_limit_ms,
             system_load: ec.system_load,
+            familiarity: 0.5,   // v3.3 default
+            impasse_depth: 0,   // v3.3 default
         }
     } else {
         helix_mind_core::graph::EnergyContext::default()
+        // Default already includes familiarity: 0.5, impasse_depth: 0
     };
 
     let autonomy_level = match req.autonomy_level {
@@ -34,14 +37,18 @@ pub async fn handle_helix_query(
         _ => return Err(Status::invalid_argument("Invalid autonomy level")),
     };
 
-    let result = service.retrieval.query(
-        &req.query,
-        suggested_mode,
-        &energy_context,
-        req.include_recessive,
-        req.allow_imagination,
-        autonomy_level,
-    ).await.map_err(|e| Status::internal(e.to_string()))?;
+    let result = service
+        .retrieval
+        .query(
+            &req.query,
+            suggested_mode,
+            &energy_context,
+            req.include_recessive,
+            req.allow_imagination,
+            autonomy_level,
+        )
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
 
     let response = HelixQueryResult {
         effective_mode: match result.effective_mode {
@@ -50,13 +57,33 @@ pub async fn handle_helix_query(
             helix_mind_core::graph::CognitiveMode::Imagination => 2,
         },
         mode_negotiation: result.mode_negotiation.unwrap_or_default(),
-        nodes: result.nodes.into_iter().map(super::layer1::convert_node).collect(),
-        edges: result.edges.into_iter().map(super::layer1::convert_edge).collect(),
+        nodes: result
+            .nodes
+            .into_iter()
+            .map(super::layer1::convert_node)
+            .collect(),
+        edges: result
+            .edges
+            .into_iter()
+            .map(super::layer1::convert_edge)
+            .collect(),
         trace_id: result.trace_id.to_string(),
         latency_ms: result.latency_ms,
         tokens_consumed: result.tokens_consumed,
         is_partial: result.is_partial,
         exhaustion_reason: result.exhaustion_reason.unwrap_or_default(),
+        // v3.3 new fields
+        impasse_level: result.impasse_level as i32,
+        stages_attempted: result.stages_attempted as i32,
+        suggested_actions: result
+            .suggested_actions
+            .into_iter()
+            .map(|a| SuggestedAction {
+                action_type: a.action_type,
+                parameters: a.parameters.to_string(),
+                reason: a.reason,
+            })
+            .collect(),
     };
 
     Ok(Response::new(response))
@@ -69,20 +96,31 @@ pub async fn handle_helix_consolidate(
     let req = request.into_inner();
     let success = match req.r#type.as_str() {
         "digest" => {
-            service.metabolism.trigger_digest().await.map_err(|e| Status::internal(e.to_string()))?;
+            service
+                .metabolism
+                .trigger_digest()
+                .await
+                .map_err(|e| Status::internal(e.to_string()))?;
             true
         }
         "crystallize" => {
-            service.metabolism.trigger_crystallize().await.map_err(|e| Status::internal(e.to_string()))?;
+            service
+                .metabolism
+                .trigger_crystallize()
+                .await
+                .map_err(|e| Status::internal(e.to_string()))?;
             true
         }
         "hibernate" => {
-            service.metabolism.trigger_hibernate().await.map_err(|e| Status::internal(e.to_string()))?;
+            service
+                .metabolism
+                .trigger_hibernate()
+                .await
+                .map_err(|e| Status::internal(e.to_string()))?;
             true
         }
         _ => return Err(Status::invalid_argument("Invalid consolidation type")),
     };
-
     Ok(Response::new(HelixConsolidateResult {
         success,
         message: "Consolidation completed".into(),
@@ -94,12 +132,17 @@ pub async fn handle_federated_share(
     request: Request<FederatedDagShareRequest>,
 ) -> Result<Response<FederatedDagShareResponse>, Status> {
     let req = request.into_inner();
-    let target = if req.target_helix_id.is_empty() { None } else { Some(req.target_helix_id) };
-    let cid = service.federation.share_dag(target).await.map_err(|e| Status::internal(e.to_string()))?;
-
-    Ok(Response::new(FederatedDagShareResponse {
-        cid,
-    }))
+    let target = if req.target_helix_id.is_empty() {
+        None
+    } else {
+        Some(req.target_helix_id)
+    };
+    let cid = service
+        .federation
+        .share_dag(target)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    Ok(Response::new(FederatedDagShareResponse { cid }))
 }
 
 pub async fn handle_reincarnation(
@@ -107,11 +150,12 @@ pub async fn handle_reincarnation(
     request: Request<TriggerReincarnationRequest>,
 ) -> Result<Response<TriggerReincarnationResponse>, Status> {
     let req = request.into_inner();
-    let new_generation = service.reincarnation.trigger_reincarnation(&req.confirm_token).await.map_err(|e| Status::internal(e.to_string()))?;
-
-    Ok(Response::new(TriggerReincarnationResponse {
-        new_generation,
-    }))
+    let new_generation = service
+        .reincarnation
+        .trigger_reincarnation(&req.confirm_token)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    Ok(Response::new(TriggerReincarnationResponse { new_generation }))
 }
 
 pub async fn handle_reload_gene_lock(
@@ -119,8 +163,11 @@ pub async fn handle_reload_gene_lock(
     _request: Request<ReloadGeneLockRequest>,
 ) -> Result<Response<ReloadGeneLockResponse>, Status> {
     // Reload gene lock from file
-    let content = tokio::fs::read_to_string(&service.config.gene_lock.file_path).await.map_err(|e| Status::internal(e.to_string()))?;
-    let lock = helix_mind_core::graph::L0GeneLock::from_markdown(&content).map_err(|e| Status::internal(e.to_string()))?;
+    let content = tokio::fs::read_to_string(&service.config.gene_lock.file_path)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let lock = helix_mind_core::graph::L0GeneLock::from_markdown(&content)
+        .map_err(|e| Status::internal(e.to_string()))?;
 
     // Write audit log
     let audit = helix_mind_core::AuditEntry::new(
@@ -128,7 +175,11 @@ pub async fn handle_reload_gene_lock(
         "api",
         &format!("Gene lock reloaded, hash: {}", lock.l0_hash),
     );
-    service.storage.write_audit(&audit).await.map_err(|e| Status::internal(e.to_string()))?;
+    service
+        .storage
+        .write_audit(&audit)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
 
     Ok(Response::new(ReloadGeneLockResponse {
         l0_hash: lock.l0_hash,
@@ -142,9 +193,15 @@ pub async fn handle_sync_human_view(
     request: Request<SyncHumanViewRequest>,
 ) -> Result<Response<SyncHumanViewResponse>, Status> {
     let _req = request.into_inner();
+
     // Get all public nodes
-    let nodes = service.storage.get_nodes_by_type(helix_mind_core::graph::NodeType::L3).await.map_err(|e| Status::internal(e.to_string()))?;
-    let public_nodes: Vec<_> = nodes.into_iter()
+    let nodes = service
+        .storage
+        .get_nodes_by_type(helix_mind_core::graph::NodeType::L3)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let public_nodes: Vec<_> = nodes
+        .into_iter()
         .filter(|n| n.sensitivity == Some(helix_mind_core::graph::Sensitivity::Public))
         .collect();
 
@@ -153,7 +210,10 @@ pub async fn handle_sync_human_view(
         &service.config.storage.human_view_dir,
         service.config.storage.human_view_max_size_mb,
     );
-    let conflicts = sync.sync(&public_nodes).await.map_err(|e| Status::internal(e.to_string()))?;
+    let conflicts = sync
+        .sync(&public_nodes)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
 
     // Write audit log
     let audit = helix_mind_core::AuditEntry::new(
@@ -161,7 +221,11 @@ pub async fn handle_sync_human_view(
         "api",
         "Human view synced",
     );
-    service.storage.write_audit(&audit).await.map_err(|e| Status::internal(e.to_string()))?;
+    service
+        .storage
+        .write_audit(&audit)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
 
     Ok(Response::new(SyncHumanViewResponse {
         success: true,

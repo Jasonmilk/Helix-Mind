@@ -15,7 +15,10 @@ impl Digest {
 
     pub async fn run(&self) -> Result<(), helix_mind_core::error::MindError> {
         // 1. Find similar L3 nodes
-        let recent_l3 = self.storage.get_nodes_by_type(helix_mind_core::graph::NodeType::L3).await?;
+        let recent_l3 = self
+            .storage
+            .get_nodes_by_type(helix_mind_core::graph::NodeType::L3)
+            .await?;
         let mut merged = 0;
 
         for node in &recent_l3 {
@@ -35,22 +38,45 @@ impl Digest {
         }
 
         // 2. Resolve cognitive dissonance
-        let unresolved = self.storage.get_unresolved_dissonance(chrono::Duration::hours(24)).await?;
-        for node in unresolved {
-            self.resolve_dissonance(&node).await?;
+        let unresolved = self
+            .storage
+            .get_unresolved_dissonance(chrono::Duration::hours(24))
+            .await?;
+
+        for (node_a_id, node_b_id) in &unresolved {
+            // Fetch the actual nodes for dissonance resolution
+            let nodes = self.storage.get_nodes_by_ids(&[*node_a_id, *node_b_id]).await?;
+            if nodes.len() >= 2 {
+                self.resolve_dissonance(&nodes[0], &nodes[1]).await?;
+            }
         }
 
         // 3. Cleanup expired recessives
-        let expired = self.storage.get_expired_recessives(chrono::Utc::now() - chrono::Duration::days(self.config.resurrection_window_days)).await?;
-        for node in &expired {
-            self.storage.delete_recessive_index(&node.id).await?;
+        let expired = self
+            .storage
+            .get_expired_recessives(
+                chrono::Utc::now()
+                    - chrono::Duration::days(self.config.resurrection_window_days),
+            )
+            .await?;
+
+        for node_id in &expired {
+            self.storage.delete_recessive_index(node_id).await?;
         }
 
-        info!("Digest completed: merged {} nodes, cleaned {} expired recessives", merged, expired.len());
+        info!(
+            "Digest completed: merged {} nodes, cleaned {} expired recessives",
+            merged,
+            expired.len()
+        );
         Ok(())
     }
 
-    fn compute_similarity(&self, a: &helix_mind_core::graph::Node, b: &helix_mind_core::graph::Node) -> Result<f64, helix_mind_core::error::MindError> {
+    fn compute_similarity(
+        &self,
+        a: &helix_mind_core::graph::Node,
+        b: &helix_mind_core::graph::Node,
+    ) -> Result<f64, helix_mind_core::error::MindError> {
         // TODO: Use vector embedding similarity
         // For now, simple string comparison
         let content_a = match &a.content {
@@ -61,6 +87,7 @@ impl Digest {
             helix_mind_core::graph::NodeContent::Text(t) => t,
             _ => return Ok(0.0),
         };
+
         // Levenshtein similarity
         let distance = levenshtein::levenshtein(content_a, content_b);
         let max_len = content_a.len().max(content_b.len()) as f64;
@@ -70,9 +97,14 @@ impl Digest {
         Ok(1.0 - (distance as f64) / max_len)
     }
 
-    async fn merge_nodes(&self, node: &helix_mind_core::graph::Node, similar: &helix_mind_core::graph::Node) -> Result<(), helix_mind_core::error::MindError> {
+    async fn merge_nodes(
+        &self,
+        node: &helix_mind_core::graph::Node,
+        similar: &helix_mind_core::graph::Node,
+    ) -> Result<(), helix_mind_core::error::MindError> {
         // Mark old node as recessive
         self.storage.mark_recessive(&node.id).await?;
+
         // Add edge from new to old
         let edge = helix_mind_core::graph::Edge {
             source_id: similar.id,
@@ -85,7 +117,11 @@ impl Digest {
         Ok(())
     }
 
-    async fn resolve_dissonance(&self, node: &helix_mind_core::graph::Node) -> Result<(), helix_mind_core::error::MindError> {
+    async fn resolve_dissonance(
+        &self,
+        _node_a: &helix_mind_core::graph::Node,
+        _node_b: &helix_mind_core::graph::Node,
+    ) -> Result<(), helix_mind_core::error::MindError> {
         // TODO: Resolve cognitive dissonance by creating Corrects edges
         Ok(())
     }

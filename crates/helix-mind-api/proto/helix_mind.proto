@@ -64,6 +64,15 @@ message EnergyContext {
   double vigilance = 4;
   uint64 latency_limit_ms = 5;
   double system_load = 6;
+  double familiarity = 7;      // v3.3: task familiarity [0.0, 1.0]
+  uint32 impasse_depth = 8;    // v3.3: impasse depth (0-5)
+}
+
+// v3.3: tool action suggestion returned by Mind
+message SuggestedAction {
+  string action_type = 1;    // e.g. "python_interpreter", "web_search", "cli_command"
+  string parameters = 2;     // JSON parameters conforming to CIS intent format
+  string reason = 3;         // why this action is suggested
 }
 
 message HelixQueryRequest {
@@ -85,6 +94,17 @@ message HelixQueryResult {
   uint64 tokens_consumed = 7;
   bool is_partial = 8;
   string exhaustion_reason = 9;
+  int32 impasse_level = 10;                  // v3.3
+  int32 stages_attempted = 11;               // v3.3
+  repeated SuggestedAction suggested_actions = 12;  // v3.3
+}
+
+message HelixConsolidateRequest {
+  string type = 1; // "digest" | "crystallize" | "hibernate"
+}
+message HelixConsolidateResult {
+  bool success = 1;
+  string message = 2;
 }
 
 message ReloadGeneLockRequest {}
@@ -160,12 +180,4 @@ service HelixMind {
   rpc TriggerReincarnation(TriggerReincarnationRequest) returns (TriggerReincarnationResponse);
   rpc ReloadGeneLock(ReloadGeneLockRequest) returns (ReloadGeneLockResponse);
   rpc SyncHumanView(SyncHumanViewRequest) returns (SyncHumanViewResponse);
-}
-
-message HelixConsolidateRequest {
-  string type = 1; // "digest" | "crystallize" | "hibernate"
-}
-message HelixConsolidateResult {
-  bool success = 1;
-  string message = 2;
 }

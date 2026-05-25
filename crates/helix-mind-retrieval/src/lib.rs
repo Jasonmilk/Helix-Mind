@@ -41,6 +41,7 @@ impl RetrievalEngine {
 
         // 2. Extract start nodes from query
         let start_ids = self.extract_start_nodes(query).await?;
+
         if start_ids.is_empty() {
             // No start nodes, return empty
             return Ok(HelixQueryResult {
@@ -53,6 +54,9 @@ impl RetrievalEngine {
                 tokens_consumed: 0,
                 is_partial: false,
                 exhaustion_reason: None,
+                impasse_level: ImpasseLevel::None,
+                stages_attempted: 1,
+                suggested_actions: Vec::new(),
             });
         }
 
@@ -79,7 +83,9 @@ impl RetrievalEngine {
             }
             CognitiveMode::Imagination => {
                 if !allow_imagination {
-                    return Err(helix_mind_core::error::MindError::Validation("Imagination mode not allowed".into()));
+                    return Err(helix_mind_core::error::MindError::Validation(
+                        "Imagination mode not allowed".into(),
+                    ));
                 }
                 self.storage.imagination_retrieve(
                     &start_ids,
@@ -99,11 +105,20 @@ impl RetrievalEngine {
             let mut node_clone = node.clone();
             node_clone.last_accessed_at = Utc::now();
             node_clone.access_count += 1;
-            self.storage.write_node(node_clone, WritePriority::Critical).await?;
+            self.storage
+                .write_node(node_clone, WritePriority::Critical)
+                .await?;
         }
 
         let latency_ms = (Utc::now() - start).num_milliseconds() as u64;
         let tokens_consumed = node_ids.len() as u64;
+
+        // Determine impasse level based on whether we got results
+        let impasse_level = if node_ids.is_empty() {
+            ImpasseLevel::LocalDominantFailed
+        } else {
+            ImpasseLevel::None
+        };
 
         Ok(HelixQueryResult {
             effective_mode,
@@ -115,6 +130,9 @@ impl RetrievalEngine {
             tokens_consumed,
             is_partial,
             exhaustion_reason,
+            impasse_level,
+            stages_attempted: 1,
+            suggested_actions: Vec::new(),
         })
     }
 
@@ -128,30 +146,53 @@ impl RetrievalEngine {
     ) -> (CognitiveMode, String) {
         // If system load is high, degrade to lower mode
         if energy.system_load > 0.9 {
-            return (CognitiveMode::Skilled, "Degraded to Skilled due to high system load".into());
+            return (
+                CognitiveMode::Skilled,
+                "Degraded to Skilled due to high system load".into(),
+            );
         }
+
         // If latency limit is small, use fastest mode
         if energy.latency_limit_ms < 100 {
-            return (CognitiveMode::Skilled, "Degraded to Skilled due to latency constraint".into());
+            return (
+                CognitiveMode::Skilled,
+                "Degraded to Skilled due to latency constraint".into(),
+            );
         }
+
         // If token budget is small, use Skilled
         if energy.token_budget < 100 {
-            return (CognitiveMode::Skilled, "Degraded to Skilled due to token budget".into());
+            return (
+                CognitiveMode::Skilled,
+                "Degraded to Skilled due to token budget".into(),
+            );
         }
+
         // If survival mode, only Skilled
         if autonomy == AutonomyLevel::Survival {
-            return (CognitiveMode::Skilled, "Survival mode: only Skilled available".into());
+            return (
+                CognitiveMode::Skilled,
+                "Survival mode: only Skilled available".into(),
+            );
         }
+
         // If imagination not allowed, can't use it
         if !allow_imagination && suggested == CognitiveMode::Imagination {
-            return (CognitiveMode::Anchor, "Imagination not allowed, falling back to Anchor".into());
+            return (
+                CognitiveMode::Anchor,
+                "Imagination not allowed, falling back to Anchor".into(),
+            );
         }
+
         // Otherwise use suggested
         (suggested, "Using suggested mode".into())
     }
 
     /// Extract start nodes from query text
-    async fn extract_start_nodes(&self, _query: &str) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
+    async fn extract_start_nodes(
+        &self,
+        _query: &str,
+    ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
         // TODO: Use NER to extract entities from query, map to node IDs
         // For now, just return empty, will be implemented later
         Ok(Vec::new())
