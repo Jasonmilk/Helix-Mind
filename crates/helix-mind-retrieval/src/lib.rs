@@ -11,14 +11,23 @@ use chrono::Utc;
 pub struct RetrievalEngine {
     config: RetrievalConfig,
     storage: Arc<StorageEngine>,
+    /// Track the current impasse depth across queries.
+    impasse_depth: tokio::sync::RwLock<u8>,
+    /// Track recent query embeddings for familiarity estimation.
+    recent_embeddings: tokio::sync::RwLock<Vec<Vec<f32>>>,
 }
 
 impl RetrievalEngine {
     pub fn new(config: RetrievalConfig, storage: Arc<StorageEngine>) -> Self {
-        Self { config, storage }
+        Self {
+            config,
+            storage,
+            impasse_depth: tokio::sync::RwLock::new(0),
+            recent_embeddings: tokio::sync::RwLock::new(Vec::new()),
+        }
     }
 
-    /// Main query entry
+    /// Main query entry — implements the five-stage impasse escalation model.
     pub async fn query(
         &self,
         query: &str,
@@ -30,23 +39,18 @@ impl RetrievalEngine {
     ) -> Result<HelixQueryResult, helix_mind_core::error::MindError> {
         let start = Utc::now();
         let trace_id = Uuid::new_v4();
+        let mut stages_attempted: u8 = 0;
 
-        // 1. Negotiate mode based on energy context
-        let (effective_mode, negotiation_note) = self.negotiate_mode(
-            suggested_mode,
-            energy_context,
-            allow_imagination,
-            autonomy_level,
-        );
+        // Read current impasse depth
+        let current_impasse = *self.impasse_depth.read().await;
 
-        // 2. Extract start nodes from query
+        // 1. Extract start nodes from query
         let start_ids = self.extract_start_nodes(query).await?;
-
         if start_ids.is_empty() {
-            // No start nodes, return empty
+            // No start nodes — return empty with current impasse state
             return Ok(HelixQueryResult {
-                effective_mode,
-                mode_negotiation: Some(negotiation_note),
+                effective_mode: CognitiveMode::Anchor,
+                mode_negotiation: Some("No start nodes found".into()),
                 nodes: Vec::new(),
                 edges: Vec::new(),
                 trace_id,
@@ -55,71 +59,149 @@ impl RetrievalEngine {
                 is_partial: false,
                 exhaustion_reason: None,
                 impasse_level: ImpasseLevel::None,
-                stages_attempted: 1,
+                stages_attempted: 0,
                 suggested_actions: Vec::new(),
             });
         }
 
-        // 3. Run retrieval based on mode
-        let (node_ids, is_partial, exhaustion_reason) = match effective_mode {
-            CognitiveMode::Skilled => {
-                self.storage.skilled_retrieve(
-                    &start_ids,
-                    self.config.beam_width,
-                    self.config.weight_threshold,
-                    energy_context.token_budget,
-                    self.config.max_nodes_per_query,
-                ).await?
-            }
-            CognitiveMode::Anchor => {
-                self.storage.anchor_retrieve(
-                    &start_ids,
-                    None, // TODO: vector embedding
-                    self.config.beam_width,
-                    self.config.weight_threshold,
-                    energy_context.token_budget,
-                    self.config.max_nodes_per_query,
-                ).await?
-            }
-            CognitiveMode::Imagination => {
-                if !allow_imagination {
-                    return Err(helix_mind_core::error::MindError::Validation(
-                        "Imagination mode not allowed".into(),
-                    ));
-                }
-                self.storage.imagination_retrieve(
-                    &start_ids,
-                    energy_context.pulse,
-                    energy_context.token_budget,
-                    self.config.max_nodes_per_query,
-                ).await?
-            }
-        };
+        // 2. Stage 1: Local Dominant Retrieval
+        stages_attempted = 1;
+        let (node_ids, is_partial, exhaustion_reason) = self.stage_local_dominant(
+            &start_ids,
+            energy_context,
+        ).await?;
 
-        // 4. Load full nodes
-        let nodes = self.storage.get_nodes_by_ids(&node_ids).await?;
-        let edges = self.storage.get_edges_between(&node_ids).await?;
-
-        // 5. Update access counts
-        for node in &nodes {
-            let mut node_clone = node.clone();
-            node_clone.last_accessed_at = Utc::now();
-            node_clone.access_count += 1;
-            self.storage
-                .write_node(node_clone, WritePriority::Critical)
-                .await?;
+        // If satisfied (got enough results), return directly
+        if !node_ids.is_empty() && !self.is_impasse_triggered(&node_ids, query).await? {
+            let (effective_mode, negotiation_note) = self.negotiate_mode(
+                suggested_mode,
+                energy_context,
+                allow_imagination,
+                autonomy_level,
+                current_impasse,
+            );
+            let nodes = self.storage.get_nodes_by_ids(&node_ids).await?;
+            let edges = self.storage.get_edges_between(&node_ids).await?;
+            self.update_access_counts(&nodes).await?;
+            // Decrease impasse depth on success
+            self.adjust_impasse(-1).await;
+            let latency_ms = (Utc::now() - start).num_milliseconds() as u64;
+            return Ok(HelixQueryResult {
+                effective_mode,
+                mode_negotiation: Some(negotiation_note),
+                nodes,
+                edges,
+                trace_id,
+                latency_ms,
+                tokens_consumed: node_ids.len() as u64,
+                is_partial,
+                exhaustion_reason,
+                impasse_level: ImpasseLevel::None,
+                stages_attempted,
+                suggested_actions: Vec::new(),
+            });
         }
 
-        let latency_ms = (Utc::now() - start).num_milliseconds() as u64;
-        let tokens_consumed = node_ids.len() as u64;
+        // 3. Stage 2: Shared Knowledge Tree Query (placeholder for Phase 4)
+        stages_attempted = 2;
+        let mut all_node_ids = node_ids.clone();
+        let shared_ids = self.stage_shared_tree(query, energy_context).await?;
+        if !shared_ids.is_empty() {
+            all_node_ids.extend(shared_ids);
+            if !self.is_impasse_triggered(&all_node_ids, query).await? {
+                let (effective_mode, negotiation_note) = self.negotiate_mode(
+                    suggested_mode,
+                    energy_context,
+                    allow_imagination,
+                    autonomy_level,
+                    current_impasse,
+                );
+                let nodes = self.storage.get_nodes_by_ids(&all_node_ids).await?;
+                let edges = self.storage.get_edges_between(&all_node_ids).await?;
+                self.update_access_counts(&nodes).await?;
+                self.adjust_impasse(-1).await;
+                let latency_ms = (Utc::now() - start).num_milliseconds() as u64;
+                return Ok(HelixQueryResult {
+                    effective_mode,
+                    mode_negotiation: Some(negotiation_note),
+                    nodes,
+                    edges,
+                    trace_id,
+                    latency_ms,
+                    tokens_consumed: all_node_ids.len() as u64,
+                    is_partial: false,
+                    exhaustion_reason: None,
+                    impasse_level: ImpasseLevel::None,
+                    stages_attempted,
+                    suggested_actions: Vec::new(),
+                });
+            }
+        }
 
-        // Determine impasse level based on whether we got results
-        let impasse_level = if node_ids.is_empty() {
-            ImpasseLevel::LocalDominantFailed
+        // 4. Stage 3: Spiral Re-examination (dialectical edges)
+        stages_attempted = 3;
+        let spiral_ids = self.stage_spiral_re_examination(&all_node_ids).await?;
+        if !spiral_ids.is_empty() {
+            all_node_ids.extend(spiral_ids);
+        }
+
+        // 5. Stage 4: Recessive Breakthrough (include recessive)
+        let recessive_ids = if include_recessive || current_impasse >= 3 {
+            stages_attempted = 4;
+            self.stage_recessive_breakthrough(
+                &start_ids,
+                energy_context,
+            ).await?
         } else {
+            Vec::new()
+        };
+        if !recessive_ids.is_empty() {
+            all_node_ids.extend(recessive_ids);
+        }
+
+        // 6. Stage 5: Imagination Leap (if allowed and still stuck)
+        if allow_imagination && (current_impasse >= 4 || all_node_ids.is_empty()) {
+            stages_attempted = 5;
+            let imaginative_ids = self.stage_imagination_leap(
+                &start_ids,
+                energy_context,
+            ).await?;
+            if !imaginative_ids.is_empty() {
+                all_node_ids.extend(imaginative_ids);
+            }
+        }
+
+        // Determine final impasse level
+        let impasse_level = if all_node_ids.is_empty() {
+            // Escalate impasse
+            self.adjust_impasse(1).await;
+            if current_impasse >= 4 {
+                ImpasseLevel::RecessiveNoBreakthrough
+            } else if current_impasse >= 3 {
+                ImpasseLevel::SpiralExhausted
+            } else if current_impasse >= 2 {
+                ImpasseLevel::SharedTreeNoMatch
+            } else {
+                ImpasseLevel::LocalDominantFailed
+            }
+        } else {
+            // Success — reduce impasse
+            self.adjust_impasse(-1).await;
             ImpasseLevel::None
         };
 
+        let (effective_mode, negotiation_note) = self.negotiate_mode(
+            suggested_mode,
+            energy_context,
+            allow_imagination,
+            autonomy_level,
+            current_impasse,
+        );
+        let nodes = self.storage.get_nodes_by_ids(&all_node_ids).await?;
+        let edges = self.storage.get_edges_between(&all_node_ids).await?;
+        self.update_access_counts(&nodes).await?;
+
+        let latency_ms = (Utc::now() - start).num_milliseconds() as u64;
         Ok(HelixQueryResult {
             effective_mode,
             mode_negotiation: Some(negotiation_note),
@@ -127,74 +209,186 @@ impl RetrievalEngine {
             edges,
             trace_id,
             latency_ms,
-            tokens_consumed,
-            is_partial,
-            exhaustion_reason,
+            tokens_consumed: all_node_ids.len() as u64,
+            is_partial: false,
+            exhaustion_reason: None,
             impasse_level,
-            stages_attempted: 1,
+            stages_attempted,
             suggested_actions: Vec::new(),
         })
     }
 
-    /// Negotiate cognitive mode based on energy context
+    // ── Stage 1: Local Dominant ─────────────────────────────────────
+    async fn stage_local_dominant(
+        &self,
+        start_ids: &[Uuid],
+        energy: &EnergyContext,
+    ) -> Result<(Vec<Uuid>, bool, Option<String>), helix_mind_core::error::MindError> {
+        self.storage.skilled_retrieve(
+            start_ids,
+            self.config.beam_width,
+            self.config.weight_threshold,
+            energy.token_budget,
+            self.config.max_nodes_per_query,
+        ).await
+    }
+
+    // ── Stage 2: Shared Knowledge Tree ──────────────────────────────
+    async fn stage_shared_tree(
+        &self,
+        _query: &str,
+        _energy: &EnergyContext,
+    ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
+        // TODO: query Rhizax network for shared knowledge tree nodes
+        // Will be implemented in Phase 4 when federation is connected
+        Ok(Vec::new())
+    }
+
+    // ── Stage 3: Spiral Re-examination ───────────────────────────────
+    async fn stage_spiral_re_examination(
+        &self,
+        current_ids: &[Uuid],
+    ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
+        // Traverse dialectical edges backwards (Corrects, Refines, Doubts)
+        // to find previously overthrown knowledge that may be applicable now
+        let mut spiral_ids = Vec::new();
+        for id in current_ids {
+            // Find nodes that corrected, refined, or doubted this node
+            let edges = self.storage.get_edges_between(&[*id]).await?;
+            for edge in &edges {
+                if edge.target_id == *id {
+                    match edge.relation_type {
+                        RelationType::Corrects
+                        | RelationType::Refines
+                        | RelationType::Doubts => {
+                            spiral_ids.push(edge.source_id);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+        Ok(spiral_ids)
+    }
+
+    // ── Stage 4: Recessive Breakthrough ─────────────────────────────
+    async fn stage_recessive_breakthrough(
+        &self,
+        start_ids: &[Uuid],
+        energy: &EnergyContext,
+    ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
+        // Use anchor traversal with lower weight threshold to include recessive
+        let (ids, _, _) = self.storage.anchor_retrieve(
+            start_ids,
+            None,
+            self.config.beam_width,
+            0.3, // lower threshold to catch recessive
+            energy.token_budget / 2,
+            self.config.max_nodes_per_query / 2,
+        ).await?;
+        Ok(ids)
+    }
+
+    // ── Stage 5: Imagination Leap ───────────────────────────────────
+    async fn stage_imagination_leap(
+        &self,
+        start_ids: &[Uuid],
+        energy: &EnergyContext,
+    ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
+        // High-temperature, unfiltered exploration
+        let (ids, _, _) = self.storage.imagination_retrieve(
+            start_ids,
+            energy.pulse,
+            energy.token_budget / 2,
+            self.config.max_nodes_per_query / 2,
+        ).await?;
+        Ok(ids)
+    }
+
+    // ── Impasse Depth Management ───────────────────────────────────
+    async fn adjust_impasse(&self, delta: i8) {
+        let mut depth = self.impasse_depth.write().await;
+        if delta > 0 {
+            *depth = (*depth + delta as u8).min(5);
+        } else {
+            *depth = depth.saturating_sub((-delta) as u8);
+        }
+    }
+
+    async fn is_impasse_triggered(
+        &self,
+        node_ids: &[Uuid],
+        query: &str,
+    ) -> Result<bool, helix_mind_core::error::MindError> {
+        if node_ids.is_empty() {
+            return Ok(true); // no results = impasse
+        }
+        // If results are few and query seems complex, trigger impasse
+        if node_ids.len() < 3 {
+            // Check if results are highly relevant (simplistic for now)
+            return Ok(true);
+        }
+        // TODO: more sophisticated impasse detection based on result quality
+        Ok(false)
+    }
+
+    // ── Negotiate mode ───────────────────────────────────────────────
     fn negotiate_mode(
         &self,
         suggested: CognitiveMode,
         energy: &EnergyContext,
         allow_imagination: bool,
         autonomy: AutonomyLevel,
+        impasse_depth: u8,
     ) -> (CognitiveMode, String) {
-        // If system load is high, degrade to lower mode
-        if energy.system_load > 0.9 {
-            return (
-                CognitiveMode::Skilled,
-                "Degraded to Skilled due to high system load".into(),
-            );
+        // If in deep impasse, consider escalating to Imagination
+        if impasse_depth >= 4 && allow_imagination {
+            return (CognitiveMode::Imagination, "Deep impasse: escalating to Imagination".into());
         }
 
-        // If latency limit is small, use fastest mode
-        if energy.latency_limit_ms < 100 {
-            return (
-                CognitiveMode::Skilled,
-                "Degraded to Skilled due to latency constraint".into(),
-            );
+        // If in moderate impasse, use Anchor for broader search
+        if impasse_depth >= 2 {
+            return (CognitiveMode::Anchor, "Moderate impasse: using Anchor mode".into());
         }
 
-        // If token budget is small, use Skilled
-        if energy.token_budget < 100 {
-            return (
-                CognitiveMode::Skilled,
-                "Degraded to Skilled due to token budget".into(),
-            );
+        // Standard negotiation based on energy
+        if energy.system_load > 0.9 || energy.latency_limit_ms < 100 || energy.token_budget < 100 {
+            return (CognitiveMode::Skilled, "Degraded to Skilled due to energy constraints".into());
         }
 
-        // If survival mode, only Skilled
         if autonomy == AutonomyLevel::Survival {
-            return (
-                CognitiveMode::Skilled,
-                "Survival mode: only Skilled available".into(),
-            );
+            return (CognitiveMode::Skilled, "Survival mode: only Skilled available".into());
         }
 
-        // If imagination not allowed, can't use it
         if !allow_imagination && suggested == CognitiveMode::Imagination {
-            return (
-                CognitiveMode::Anchor,
-                "Imagination not allowed, falling back to Anchor".into(),
-            );
+            return (CognitiveMode::Anchor, "Imagination not allowed, falling back to Anchor".into());
         }
 
-        // Otherwise use suggested
         (suggested, "Using suggested mode".into())
     }
 
-    /// Extract start nodes from query text
+    // ── Extract start nodes from query ──────────────────────────────
     async fn extract_start_nodes(
         &self,
         _query: &str,
     ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
-        // TODO: Use NER to extract entities from query, map to node IDs
-        // For now, just return empty, will be implemented later
+        // TODO: Use NER to extract entities, map to node IDs
         Ok(Vec::new())
+    }
+
+    // ── Update access counts for retrieved nodes ────────────────────
+    async fn update_access_counts(
+        &self,
+        nodes: &[helix_mind_core::graph::Node],
+    ) -> Result<(), helix_mind_core::error::MindError> {
+        for node in nodes {
+            let mut node_clone = node.clone();
+            node_clone.last_accessed_at = Utc::now();
+            node_clone.access_count += 1;
+            self.storage
+                .write_node(node_clone, WritePriority::Critical)
+                .await?;
+        }
+        Ok(())
     }
 }
