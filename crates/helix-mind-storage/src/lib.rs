@@ -195,7 +195,6 @@ impl StorageEngine {
         );
         let mut stmt = conn.prepare(&sql).map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
         let id_strings: Vec<String> = node_ids.iter().map(|id| id.to_string()).collect();
-        // params: source IN + target IN
         let mut params: Vec<String> = Vec::new();
         params.extend(id_strings.clone());
         params.extend(id_strings);
@@ -274,6 +273,36 @@ impl StorageEngine {
         let mut topo = self.topology.write().await;
         topo.mark_recessive(node_id);
         self.cache.invalidate(node_id);
+        Ok(())
+    }
+
+    /// Update node utility weight (for DecayEngine).
+    pub async fn update_node_utility(
+        &self,
+        node_id: &Uuid,
+        new_utility: f64,
+    ) -> Result<(), helix_mind_core::error::MindError> {
+        let conn = self.sqlite.get()?;
+        conn.execute(
+            "UPDATE nodes SET utility = ?1 WHERE id = ?2",
+            rusqlite::params![new_utility, node_id.to_string()],
+        )
+        .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Update node dominance score.
+    pub async fn update_node_dominance(
+        &self,
+        node_id: &Uuid,
+        new_dominance: f64,
+    ) -> Result<(), helix_mind_core::error::MindError> {
+        let conn = self.sqlite.get()?;
+        conn.execute(
+            "UPDATE nodes SET dominance = ?1 WHERE id = ?2",
+            rusqlite::params![new_dominance, node_id.to_string()],
+        )
+        .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
         Ok(())
     }
 
@@ -443,7 +472,6 @@ impl StorageEngine {
         _hash: &str,
         _node_id: &Uuid,
     ) -> Result<(), helix_mind_core::error::MindError> {
-        // Stub: full-text index will be populated during Micro-Sleep
         Ok(())
     }
 
@@ -453,7 +481,6 @@ impl StorageEngine {
         &self,
         _older_than: chrono::Duration,
     ) -> Result<Vec<(Uuid, Uuid)>, helix_mind_core::error::MindError> {
-        // Stub for now; will be implemented in Phase 3 with SymbolicSolver
         Ok(Vec::new())
     }
 
@@ -507,7 +534,6 @@ impl StorageEngine {
         &self,
         _node: &Node,
     ) -> Result<Option<Node>, helix_mind_core::error::MindError> {
-        // Stub: semantic similarity search will be in Phase 2 retrieval
         Ok(None)
     }
 
@@ -517,17 +543,14 @@ impl StorageEngine {
         &self,
         _node_type: NodeType,
     ) -> Result<(), helix_mind_core::error::MindError> {
-        // Guard: L0 nodes are never bulk-deleted
         Ok(())
     }
 
     pub async fn delete_social_graph(&self) -> Result<(), helix_mind_core::error::MindError> {
-        // Stub: social graph deletion is triggered by epoch crystallization
         Ok(())
     }
 
     pub async fn delete_user_profile(&self) -> Result<(), helix_mind_core::error::MindError> {
-        // Guard: CREATOR_IMPRINT nodes are never deleted
         Err(helix_mind_core::error::MindError::Validation(
             "User profile (CREATOR_IMPRINT) cannot be deleted".into(),
         ))
