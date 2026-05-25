@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::collections::HashMap;
 use crate::MindError;
+use serde_json::Value;
 
 // ---------- Enums ----------
 
@@ -90,6 +91,13 @@ pub struct Node {
     pub initial_impact: f64,
     pub corrected_by: Option<Uuid>,
     pub notes: Option<String>,
+    pub dominance: f64,            // Dominance index [0.0, 1.0]
+    pub utility: f64,              // Utility consensus weight [0.0, 1.0]
+    pub corroborations: u64,       // Count of corroborations
+    pub attribution_ledger: Vec<HonorStamp>, // Ledger for attribution records
+    pub source: NodeSource,        // Marker for node origin/source
+    pub high_risk: bool,           // Flag for high-risk nodes
+    pub abstract_provenance: Option<String>,  // Summary after evidence fixation
     pub derived_from: Vec<Uuid>,
 }
 
@@ -111,6 +119,13 @@ impl Default for Node {
             initial_impact: 0.5,
             corrected_by: None,
             notes: None,
+            dominance: 0.5,          // Default dominance weight: 0.5
+            utility: 0.5,           // Default utility score: 0.5
+            corroborations: 0,      // Default corroboration count: 0
+            attribution_ledger: Vec::new(), // Default empty attribution ledger
+            source: NodeSource::default(), // Default local node source
+            high_risk: false,       // Default: non high-risk
+            abstract_provenance: None, // Default empty abstract provenance
             derived_from: Vec::new(),
         }
     }
@@ -183,6 +198,8 @@ pub struct EnergyContext {
     pub vigilance: f64,
     pub latency_limit_ms: u64,
     pub system_load: f64,
+    pub impasse_depth: u8,   // Current impasse depth (default 0)
+    pub familiarity: f64,    // System familiarity weight (default 0.5)
 }
 
 impl Default for EnergyContext {
@@ -194,6 +211,8 @@ impl Default for EnergyContext {
             vigilance: 0.2,
             latency_limit_ms: 500,
             system_load: 0.0,
+            impasse_depth: 0,
+            familiarity: 0.5,
         }
     }
 }
@@ -239,6 +258,9 @@ pub struct HelixQueryResult {
     pub tokens_consumed: u64,
     pub is_partial: bool,
     pub exhaustion_reason: Option<String>,
+    pub impasse_level: ImpasseLevel,
+    pub stages_attempted: u8,
+    pub suggested_actions: Vec<ActionSuggestion>,
 }
 
 // ---------- L0 Gene Lock ----------
@@ -378,4 +400,79 @@ impl L0GeneLock {
 
         Ok(gene_lock)
     }
+}
+
+// -----------------------------------------------------------------------------
+// v3.3 New Enums and Structs
+// -----------------------------------------------------------------------------
+
+/// Source of the node (local or federated)
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum NodeSource {
+    Local,
+    Federated {
+        source_helix_id: String,
+        source_generation: u64,
+        verified_at: Option<DateTime<Utc>>,
+    },
+}
+
+impl Default for NodeSource {
+    fn default() -> Self {
+        NodeSource::Local
+    }
+}
+
+/// Record of contributor honor/attribution
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HonorStamp {
+    pub contributor_name: String,
+    pub contributor_type: ContributorType,
+    pub l0_hash: Option<String>,
+    pub evidence_type: EvidenceType,
+    pub citation: Option<String>,
+    pub timestamp: DateTime<Utc>,
+    pub original_cid: String,
+    pub signature: String,
+}
+
+/// Type of contributor
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ContributorType {
+    Human,
+    Helix,
+    Unknown,
+}
+
+/// Type of evidence for the node
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EvidenceType {
+    HumanCitation,
+    EmpiricalDiscovery,
+    FederatedSync,
+    Inherited,
+}
+
+/// Level of system impasse (deadlock/failure state)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum ImpasseLevel {
+    None,
+    LocalDominantFailed,
+    SharedTreeNoMatch,
+    SpiralExhausted,
+    RecessiveNoBreakthrough,
+}
+
+impl Default for ImpasseLevel {
+    fn default() -> Self {
+        ImpasseLevel::None
+    }
+}
+
+/// Suggested action for query results
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActionSuggestion {
+    pub action_type: String,
+    pub parameters: Value,
+    pub reason: String,
 }

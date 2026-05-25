@@ -1,4 +1,5 @@
 use thiserror::Error;
+use uuid::Uuid;
 
 #[derive(Debug, Error)]
 pub enum MindError {
@@ -35,8 +36,8 @@ pub enum MindError {
     #[error("Permission denied: {0}")]
     PermissionDenied(String),
     
-    #[error("Cycle detected in graph")]
-    CycleDetected,
+    #[error("Cycle detected: {conflict_nodes:?}")]
+    CycleDetected { conflict_nodes: Vec<Uuid> },
     
     #[error("Energy budget exhausted")]
     EnergyExhausted,
@@ -49,6 +50,18 @@ pub enum MindError {
 
     #[error("Database error: {0}")]
     Database(String),
+
+    #[error("Sandbox rejected: {reason}")]
+    SandboxRejected { reason: String },
+
+    #[error("Schema mismatch: {detail}")]
+    SchemaMismatch { detail: String },
+
+    #[error("Corroboration invalid: {reason}")]
+    CorroborationInvalid { reason: String },
+
+    #[error("High risk node requires user confirmation")]
+    HighRiskNodeRequiresConfirmation,
 }
 
 // 注意：这里不再实现 From<rusqlite::Error> 和 From<r2d2::Error>

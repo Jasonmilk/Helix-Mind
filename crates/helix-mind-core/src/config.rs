@@ -16,6 +16,8 @@ pub struct Config {
     pub gene_lock: GeneLockConfig,
     #[serde(default)]
     pub api: ApiConfig,
+    #[serde(default)]
+    pub mind: MindSystemConfig,
 }
 
 // ---------- RetrievalConfig ----------
@@ -143,6 +145,26 @@ pub struct ApiConfig {
     pub layer2_enabled: bool,
 }
 
+// ---------- MindSystemConfig (v3.3 New Core Config) ----------
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct MindSystemConfig {
+    /// Dominance threshold for node priority (架构师指定默认值 0.8)
+    #[serde(default = "default_dominance_threshold")]
+    pub dominance_threshold: f64,
+    /// Utility consensus weight threshold
+    #[serde(default = "default_utility_threshold")]
+    pub utility_threshold: f64,
+    /// Minimum required corroborations for valid node
+    #[serde(default = "default_corroboration_min")]
+    pub corroboration_min_required: u64,
+    /// Enable validation for high-risk nodes
+    #[serde(default = "default_high_risk_validation")]
+    pub high_risk_validation_enabled: bool,
+    /// Max retry attempts when impasse occurs
+    #[serde(default = "default_impasse_retry_limit")]
+    pub impasse_retry_limit: u8,
+}
+
 // ---------- Default Functions ----------
 fn default_max_hops() -> usize { 3 }
 fn default_beam_width() -> usize { 3 }
@@ -193,6 +215,13 @@ fn default_gene_lock_path() -> String { "./gene_lock.md".into() }
 fn default_listen_addr() -> String { "127.0.0.1:50051".into() }
 fn default_layer1_enabled() -> bool { true }
 fn default_layer2_enabled() -> bool { true }
+
+// ---------- v3.3 MindSystem Default Functions ----------
+fn default_dominance_threshold() -> f64 { 0.8 }
+fn default_utility_threshold() -> f64 { 0.7 }
+fn default_corroboration_min() -> u64 { 1 }
+fn default_high_risk_validation() -> bool { true }
+fn default_impasse_retry_limit() -> u8 { 3 }
 
 impl Config {
     pub fn load() -> Result<Self, config::ConfigError> {
