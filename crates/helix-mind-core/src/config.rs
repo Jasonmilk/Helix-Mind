@@ -110,6 +110,12 @@ pub struct LifecycleConfig {
     pub inheritance_crystal: bool,
     #[serde(default = "default_archive_past_life")]
     pub archive_past_life: bool,
+    /// Emergency dusk: minimum free memory (MB) before deterministic fallback.
+    #[serde(default = "default_emergency_dusk_min_memory_mb")]
+    pub emergency_dusk_min_memory_mb: u64,
+    /// Emergency dusk: minimum token balance before deterministic fallback.
+    #[serde(default = "default_emergency_dusk_min_tokens")]
+    pub emergency_dusk_min_tokens: u64,
 }
 
 // ---------- FederationConfig ----------
@@ -222,6 +228,8 @@ fn default_utility_threshold() -> f64 { 0.7 }
 fn default_corroboration_min() -> u64 { 1 }
 fn default_high_risk_validation() -> bool { true }
 fn default_impasse_retry_limit() -> u8 { 3 }
+fn default_emergency_dusk_min_memory_mb() -> u64 { 50 }
+fn default_emergency_dusk_min_tokens() -> u64 { 100 }
 
 impl Config {
     pub fn load() -> Result<Self, config::ConfigError> {
