@@ -4,7 +4,7 @@
 //! reincarnation. The protocol preserves knowledge while letting go of memory.
 
 use helix_mind_core::graph::NodeType;
-use helix_mind_core::persona::{UserTraitNode, TraitType, NodeLifecycle};
+use helix_mind_core::persona::UserTraitNode;
 use helix_mind_storage::StorageEngine;
 use std::sync::Arc;
 use tracing::info;

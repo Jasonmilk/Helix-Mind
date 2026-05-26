@@ -106,15 +106,14 @@ impl DecayEngine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_decay_formula() {
         // Simulate: 𝒰=1.0, α=0.95, γ=0.15, δ=0.5
-        let alpha = 0.95;
-        let gamma = 0.15;
-        let utility = 1.0;
-        let delta = 0.5;
+        // 🔥 架构师要求：显式标注 f64 类型
+        let alpha: f64 = 0.95;
+        let gamma: f64 = 0.15;
+        let utility: f64 = 1.0;
+        let delta: f64 = 0.5;
 
         let new_utility = alpha * utility - (1.0 - alpha) * delta * gamma;
         // = 0.95 - 0.05 * 0.5 * 0.15 = 0.95 - 0.00375 = 0.94625
@@ -124,10 +123,11 @@ mod tests {
 
     #[test]
     fn test_repeated_failures_break_through() {
-        let alpha = 0.95;
-        let gamma = 0.15;
-        let mut utility = 1.0;
-        let delta = 0.8; // severe failure each time
+        // 🔥 架构师要求：显式标注 f64 类型
+        let alpha: f64 = 0.95;
+        let gamma: f64 = 0.15;
+        let mut utility: f64 = 1.0;
+        let delta: f64 = 0.8; // severe failure each time
 
         // After 10 consecutive failures
         for _ in 0..10 {
@@ -140,9 +140,10 @@ mod tests {
 
     #[test]
     fn test_reward_formula() {
-        let utility = 0.3;
-        let eta = 0.5 * 0.2; // success_magnitude=0.5, max 0.2
-        let new_utility = utility + eta * (1.0 - utility);
+        // 🔥 架构师要求：显式标注 f64 类型
+        let utility: f64 = 0.3;
+        let eta: f64 = 0.5 * 0.2; // success_magnitude=0.5, max 0.2
+        let new_utility: f64 = utility + eta * (1.0 - utility);
         // = 0.3 + 0.1 * 0.7 = 0.37
         assert!((new_utility - 0.37).abs() < 0.0001);
     }

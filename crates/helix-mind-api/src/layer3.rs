@@ -7,6 +7,21 @@ pub async fn handle_helix_query(
     request: Request<HelixQueryRequest>,
 ) -> Result<Response<HelixQueryResult>, Status> {
     let req = request.into_inner();
+
+    // ── Passive lifecycle check (Iron Law #13: No Heartbeat) ──────
+    match service.reincarnation.check_lifecycle().await {
+        Ok(Some(warning)) => {
+            let msg = match warning {
+                helix_mind_reincarnation::LifecycleWarning::TimeLimitReached { elapsed, max } => {
+                    format!("Lifecycle warning: time limit reached ({}/{} days)", elapsed, max)
+                }
+            };
+            tracing::warn!("{}", msg);
+        }
+        Err(e) => tracing::error!("Lifecycle check failed: {}", e),
+        _ => {}
+    }
+
     let suggested_mode = match req.suggested_mode {
         0 => helix_mind_core::graph::CognitiveMode::Skilled,
         1 => helix_mind_core::graph::CognitiveMode::Anchor,
@@ -22,12 +37,11 @@ pub async fn handle_helix_query(
             vigilance: ec.vigilance,
             latency_limit_ms: ec.latency_limit_ms,
             system_load: ec.system_load,
-            familiarity: 0.5,   // v3.3 default
-            impasse_depth: 0,   // v3.3 default
+            familiarity: 0.5,
+            impasse_depth: 0,
         }
     } else {
         helix_mind_core::graph::EnergyContext::default()
-        // Default already includes familiarity: 0.5, impasse_depth: 0
     };
 
     let autonomy_level = match req.autonomy_level {
@@ -72,7 +86,6 @@ pub async fn handle_helix_query(
         tokens_consumed: result.tokens_consumed,
         is_partial: result.is_partial,
         exhaustion_reason: result.exhaustion_reason.unwrap_or_default(),
-        // v3.3 new fields
         impasse_level: result.impasse_level as i32,
         stages_attempted: result.stages_attempted as i32,
         suggested_actions: result
@@ -152,7 +165,7 @@ pub async fn handle_reincarnation(
     let req = request.into_inner();
     let new_generation = service
         .reincarnation
-        .trigger_reincarnation(&req.confirm_token)
+        .trigger_sunset(&req.confirm_token, "No note left.")
         .await
         .map_err(|e| Status::internal(e.to_string()))?;
     Ok(Response::new(TriggerReincarnationResponse { new_generation }))
@@ -162,16 +175,14 @@ pub async fn handle_reload_gene_lock(
     service: &HelixMindServiceImpl,
     _request: Request<ReloadGeneLockRequest>,
 ) -> Result<Response<ReloadGeneLockResponse>, Status> {
-    // Reload gene lock from file
     let content = tokio::fs::read_to_string(&service.config.gene_lock.file_path)
         .await
         .map_err(|e| Status::internal(e.to_string()))?;
     let lock = helix_mind_core::graph::L0GeneLock::from_markdown(&content)
         .map_err(|e| Status::internal(e.to_string()))?;
 
-    // Write audit log
-    let audit = helix_mind_core::AuditEntry::new(
-        helix_mind_core::AuditEventType::GeneLockReloaded,
+    let audit = helix_mind_core::graph::AuditEntry::new(
+        helix_mind_core::graph::AuditEventType::GeneLockReloaded,
         "api",
         &format!("Gene lock reloaded, hash: {}", lock.l0_hash),
     );
@@ -194,7 +205,6 @@ pub async fn handle_sync_human_view(
 ) -> Result<Response<SyncHumanViewResponse>, Status> {
     let _req = request.into_inner();
 
-    // Get all public nodes
     let nodes = service
         .storage
         .get_nodes_by_type(helix_mind_core::graph::NodeType::L3)
@@ -205,7 +215,6 @@ pub async fn handle_sync_human_view(
         .filter(|n| n.sensitivity == Some(helix_mind_core::graph::Sensitivity::Public))
         .collect();
 
-    // Sync
     let sync = helix_mind_storage::human_view::HumanViewSync::new(
         &service.config.storage.human_view_dir,
         service.config.storage.human_view_max_size_mb,
@@ -215,9 +224,8 @@ pub async fn handle_sync_human_view(
         .await
         .map_err(|e| Status::internal(e.to_string()))?;
 
-    // Write audit log
-    let audit = helix_mind_core::AuditEntry::new(
-        helix_mind_core::AuditEventType::HumanViewSynced,
+    let audit = helix_mind_core::graph::AuditEntry::new(
+        helix_mind_core::graph::AuditEventType::HumanViewSynced,
         "api",
         "Human view synced",
     );
