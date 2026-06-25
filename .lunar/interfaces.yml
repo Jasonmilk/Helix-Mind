@@ -1,0 +1,24 @@
+project: helix-mind
+type: library
+exposed:
+- path: /helix.HelixMind/query
+  method: POST
+- path: /helix.HelixMind/remember
+  method: POST
+- path: /helix.HelixMind/forget
+  method: POST
+- path: /helix.HelixMind/advanced_query
+  method: POST
+- path: /helix.HelixMind/helix_query
+  method: POST
+- path: /helix.HelixMind/helix_consolidate
+  method: POST
+- path: /helix.HelixMind/federated_dag_share
+  method: POST
+- path: /helix.HelixMind/trigger_reincarnation
+  method: POST
+- path: /helix.HelixMind/reload_gene_lock
+  method: POST
+- path: /helix.HelixMind/sync_human_view
+  method: POST
+consumed: []
