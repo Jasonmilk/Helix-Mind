@@ -8,6 +8,35 @@ use uuid::Uuid;
 use chrono::Utc;
 
 impl StorageEngine {
+    // ── Advanced SA-Core Retrieval API (v3.4) ────────────────────────
+
+    /// Executes the advanced Spreading Activation and K-Core (SA-Core) search.
+    /// Returns both the retrieved NodeIDs and their associated final mental energy levels.
+    pub async fn sa_core_retrieve(
+        &self,
+        start_ids: &[Uuid],
+        alpha: f64,
+        decay_factor: f64,
+        weight_threshold: f64,
+        max_hops: usize,
+        max_nodes: usize,
+        target_domain: Option<String>,
+        min_k_core: usize,
+    ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>), MindError> {
+        let topo = self.topology.read().await;
+        let result = topo.sa_core_traverse(
+            start_ids,
+            alpha,
+            decay_factor,
+            weight_threshold,
+            max_hops,
+            max_nodes,
+            target_domain,
+            min_k_core,
+        );
+        Ok(result)
+    }
+
     // ── Core CRUD ────────────────────────────────────────────────────
 
     pub async fn write_node(
@@ -378,8 +407,7 @@ impl StorageEngine {
 
     pub async fn get_top_l3_for_crystallization(
         &self,
-        limit: usize,
-    ) -> Result<Vec<Node>, MindError> {
+        limit: usize) -> Result<Vec<Node>, MindError> {
         let conn = self.sqlite.get()?;
         let mut stmt = conn.prepare(
             "SELECT id, node_type, content, heat, is_hypothetical, is_recessive,
