@@ -6,9 +6,7 @@
 //! Rust memory. This eliminates the "verifying hallucinations with hallucinations"
 //! pitfall warned about in the whitepaper.
 
-use helix_mind_core::graph::Node;
 use std::collections::HashSet;
-use tracing::info;
 
 /// A structured logic assertion extracted from a knowledge node.
 ///

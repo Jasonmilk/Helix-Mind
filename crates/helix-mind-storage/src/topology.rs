@@ -1,7 +1,7 @@
 use helix_mind_core::graph::{Node, NodeType, Edge, RelationType};
 use petgraph::graph::{DiGraph, NodeIndex};
 use petgraph::visit::EdgeRef;
-use std::collections::{HashMap, HashSet, BinaryHeap};
+use std::collections::{HashMap, HashSet};
 use std::cmp::Ordering;
 use uuid::Uuid;
 use super::sqlite_pool::SqlitePool;
@@ -18,26 +18,6 @@ pub struct TopoEdge {
     pub weight: f64,
     pub relation_type: RelationType,
     pub is_soft: bool,
-}
-
-#[derive(PartialEq)]
-pub struct ScoredNode {
-    pub id: Uuid,
-    pub score: f64,
-}
-
-impl Eq for ScoredNode {}
-
-impl PartialOrd for ScoredNode {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.score.partial_cmp(&other.score)
-    }
-}
-
-impl Ord for ScoredNode {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap_or(Ordering::Equal)
-    }
 }
 
 pub struct MemoryTopology {
@@ -110,18 +90,17 @@ impl MemoryTopology {
     }
 
     /// Cycle detection: would adding edge A' → A create a cycle?
-    /// Correct algorithm (v3.3): BFS from `target` (A), check if `source` (A') is reachable.
+    /// BFS from `target` (A), check if `source` (A') is reachable.
     pub fn would_create_cycle(&self, source: Uuid, target: Uuid) -> bool {
         let target_idx = match self.id_to_index.get(&target) {
             Some(idx) => *idx,
-            None => return false, // target not in graph, no cycle
+            None => return false,
         };
         let source_idx = match self.id_to_index.get(&source) {
             Some(idx) => *idx,
-            None => return false, // source not in graph, no cycle
+            None => return false,
         };
 
-        // BFS from target → check if source is reachable
         let mut visited = HashSet::new();
         let mut queue = Vec::new();
         queue.push(target_idx);
@@ -129,7 +108,7 @@ impl MemoryTopology {
 
         while let Some(current) = queue.pop() {
             if current == source_idx {
-                return true; // cycle detected: target → ... → source already exists
+                return true;
             }
             for edge in self.graph.edges(current) {
                 let neighbor = edge.target();
@@ -142,7 +121,6 @@ impl MemoryTopology {
         false
     }
 
-    /// BFS reachable nodes within max_depth hops (only non-recessive, non-soft edges)
     pub fn bfs_reachable(&self, start: Uuid, max_depth: u8) -> Vec<Uuid> {
         let start_idx = match self.id_to_index.get(&start) {
             Some(idx) => *idx,
@@ -166,7 +144,6 @@ impl MemoryTopology {
                 if visited.contains(&neighbor) {
                     continue;
                 }
-                // Skip recessive nodes for dominant traversal
                 if let Some(node) = self.graph.node_weight(neighbor) {
                     if node.is_recessive {
                         continue;
@@ -179,219 +156,196 @@ impl MemoryTopology {
         result
     }
 
-    // ── Traversal methods ────────────────────────────────────────────
+    // ── SA-Core Spreading Activation Diffusion Engine ──────────────────
 
-    /// Skilled mode: Beam Search along high-weight edges only (non-soft, weight >= threshold)
+    fn sa_core_diffusion(
+        &self,
+        start_ids: &[Uuid],
+        alpha: f64,
+        decay_factor: f64,
+        weight_threshold: f64,
+        max_hops: usize,
+        max_nodes: usize,
+    ) -> (Vec<Uuid>, Vec<(Uuid, f64)>) {
+        // 1. Filter and extract active in-memory topology nodes
+        let active_nodes: Vec<NodeIndex> = self.graph.node_indices()
+            .filter(|&idx| {
+                if let Some(node) = self.graph.node_weight(idx) {
+                    !node.is_recessive
+                } else {
+                    false
+                }
+            })
+            .collect();
+
+        let n = active_nodes.len();
+        if n == 0 {
+            return (Vec::new(), Vec::new());
+        }
+
+        let mut idx_to_flat = HashMap::with_capacity(n);
+        for (flat_idx, &node_idx) in active_nodes.iter().enumerate() {
+            idx_to_flat.insert(node_idx, flat_idx);
+        }
+
+        // 2. Explicitly initialize as f64 to eliminate type inference ambiguity
+        let mut a_0: Vec<f64> = vec![0.0; n];
+        for id in start_ids {
+            if let Some(&node_idx) = self.id_to_index.get(id) {
+                if let Some(&flat_idx) = idx_to_flat.get(&node_idx) {
+                    a_0[flat_idx] = 1.0;
+                }
+            }
+        }
+
+        let mut a_current = a_0.clone();
+
+        // Standardize physical edge weights and relation semantics
+        let get_raw_weight = |edge: &TopoEdge| -> f64 {
+            let base_weight = match edge.relation_type {
+                RelationType::Corrects => -1.0, // Inhibitory postsynaptic IPSP signal
+                RelationType::Doubts => 0.3,
+                _ => edge.weight,
+            };
+            if edge.is_soft {
+                base_weight * decay_factor
+            } else {
+                base_weight
+            }
+        };
+
+        // 3. Spreading activation loop
+        for _ in 0..max_hops {
+            let mut a_next: Vec<f64> = vec![0.0; n];
+
+            for (i, &src_idx) in active_nodes.iter().enumerate() {
+                let energy_i = a_current[i];
+                if energy_i.abs() < 1e-9 {
+                    continue;
+                }
+
+                // Sum absolute weights of outgoing active neighbors for row-normalization
+                let mut sum_abs = 0.0;
+                let mut active_edges = Vec::new();
+
+                for edge_ref in self.graph.edges(src_idx) {
+                    let target_idx = edge_ref.target();
+                    if let Some(&j) = idx_to_flat.get(&target_idx) {
+                        let w = get_raw_weight(edge_ref.weight());
+                        sum_abs += w.abs();
+                        active_edges.push((j, w));
+                    }
+                }
+
+                // Row-Normalization to preserve mathematical convergence bounds
+                if sum_abs > 0.0 {
+                    for (j, w) in active_edges {
+                        let normalized_w = w / sum_abs;
+                        a_next[j] += energy_i * normalized_w;
+                    }
+                }
+            }
+
+            // Attenuation and initial focus injection: a_next = alpha * a_next + (1 - alpha) * a_0
+            for j in 0..n {
+                let val = alpha * a_next[j] + (1.0 - alpha) * a_0[j];
+                a_current[j] = if val < weight_threshold { 0.0 } else { val };
+            }
+        }
+
+        // 4. Map back flat indices to Uuids and sort by final energy descending
+        let mut energy_nodes: Vec<(Uuid, f64)> = a_current.iter().enumerate()
+            .filter(|&(_, &energy)| energy > 0.0)
+            .filter_map(|(idx, &energy)| {
+                let node_idx = active_nodes[idx];
+                self.index_to_id.get(&node_idx).map(|&uuid| (uuid, energy))
+            })
+            .collect();
+
+        energy_nodes.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
+
+        let result_ids: Vec<Uuid> = energy_nodes.iter()
+            .take(max_nodes)
+            .map(|x| x.0)
+            .collect();
+
+        (result_ids, energy_nodes)
+    }
+
+    // ── Semantic Retrieval Interface Adapters ────────────────────────
+
+    /// Skilled mode: only diffuse along non-soft edges
     pub fn skilled_traverse(
         &self,
         start_ids: &[Uuid],
         beam_width: usize,
         weight_threshold: f64,
-        energy_budget: u64,
+        _energy_budget: u64,
         max_nodes: usize,
     ) -> (Vec<Uuid>, bool, Option<String>) {
-        let mut visited = HashSet::new();
-        let mut result_ids = Vec::new();
-        let mut energy_remaining = energy_budget;
-        let mut heap = BinaryHeap::new();
+        let max_hops = beam_width.max(3);
+        let alpha = 0.5; // Neutral energy focus
 
-        // Seed with start nodes
-        for id in start_ids {
-            if let Some(idx) = self.id_to_index.get(id) {
-                visited.insert(*idx);
-                result_ids.push(*id);
-                heap.push(ScoredNode { id: *id, score: 1.0 });
-            }
-        }
+        let (result_ids, _) = self.sa_core_diffusion(
+            start_ids,
+            alpha,
+            0.0, // Soft edge decay set to 0.0 to completely block soft relations
+            weight_threshold,
+            max_hops,
+            max_nodes,
+        );
 
-        while let Some(current) = heap.pop() {
-            if result_ids.len() >= max_nodes || energy_remaining == 0 {
-                break;
-            }
-            let current_idx = match self.id_to_index.get(&current.id) {
-                Some(idx) => *idx,
-                None => continue,
-            };
-
-            let mut candidates: Vec<(Uuid, f64)> = Vec::new();
-            for edge in self.graph.edges(current_idx) {
-                if edge.weight().is_soft {
-                    continue;
-                }
-                if edge.weight().weight < weight_threshold {
-                    continue;
-                }
-                let neighbor_idx = edge.target();
-                if visited.contains(&neighbor_idx) {
-                    continue;
-                }
-                if let Some(node) = self.graph.node_weight(neighbor_idx) {
-                    if node.is_recessive {
-                        continue;
-                    }
-                }
-                if let Some(neighbor_id) = self.index_to_id.get(&neighbor_idx) {
-                    candidates.push((*neighbor_id, edge.weight().weight));
-                }
-            }
-
-            // Sort by weight descending, keep top beam_width
-            candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
-            for (neighbor_id, _weight) in candidates.iter().take(beam_width) {
-                if let Some(idx) = self.id_to_index.get(neighbor_id) {
-                    visited.insert(*idx);
-                }
-                result_ids.push(*neighbor_id);
-                heap.push(ScoredNode { id: *neighbor_id, score: *_weight });
-                if energy_remaining > 0 {
-                    energy_remaining -= 1;
-                }
-            }
-        }
-
-        let is_partial = energy_remaining == 0;
-        let reason = if is_partial {
-            Some("energy budget exhausted".to_string())
-        } else {
-            None
-        };
-        (result_ids, is_partial, reason)
+        (result_ids, false, None)
     }
 
-    /// Anchor mode: graph diffusion + all edges (including soft, lower threshold)
+    /// Anchor mode: introduce soft edge decay for wide-range hybrid diffusion
     pub fn anchor_traverse(
         &self,
         start_ids: &[Uuid],
         beam_width: usize,
         weight_threshold: f64,
-        energy_budget: u64,
+        _energy_budget: u64,
         max_nodes: usize,
     ) -> (Vec<Uuid>, bool, Option<String>) {
-        let mut visited = HashSet::new();
-        let mut result_ids = Vec::new();
-        let mut energy_remaining = energy_budget;
-        let mut heap = BinaryHeap::new();
+        let max_hops = beam_width.max(3);
+        let alpha = 0.7; // Optimistic energy retention
+        let decay_factor = 0.8; // Soft edge decay penalty
 
-        for id in start_ids {
-            if let Some(idx) = self.id_to_index.get(id) {
-                visited.insert(*idx);
-                result_ids.push(*id);
-                heap.push(ScoredNode { id: *id, score: 1.0 });
-            }
-        }
+        let (result_ids, _) = self.sa_core_diffusion(
+            start_ids,
+            alpha,
+            decay_factor,
+            weight_threshold,
+            max_hops,
+            max_nodes,
+        );
 
-        let decay_factor: f64 = 0.8; // soft edge decay
-
-        while let Some(current) = heap.pop() {
-            if result_ids.len() >= max_nodes || energy_remaining == 0 {
-                break;
-            }
-            let current_idx = match self.id_to_index.get(&current.id) {
-                Some(idx) => *idx,
-                None => continue,
-            };
-
-            let mut candidates: Vec<(Uuid, f64)> = Vec::new();
-            for edge in self.graph.edges(current_idx) {
-                let effective_weight = if edge.weight().is_soft {
-                    edge.weight().weight * decay_factor
-                } else {
-                    edge.weight().weight
-                };
-                if effective_weight < weight_threshold {
-                    continue;
-                }
-                let neighbor_idx = edge.target();
-                if visited.contains(&neighbor_idx) {
-                    continue;
-                }
-                if let Some(node) = self.graph.node_weight(neighbor_idx) {
-                    if node.is_recessive {
-                        continue;
-                    }
-                }
-                if let Some(neighbor_id) = self.index_to_id.get(&neighbor_idx) {
-                    candidates.push((*neighbor_id, effective_weight));
-                }
-            }
-
-            candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
-            for (neighbor_id, _weight) in candidates.iter().take(beam_width) {
-                if let Some(idx) = self.id_to_index.get(neighbor_id) {
-                    visited.insert(*idx);
-                }
-                result_ids.push(*neighbor_id);
-                heap.push(ScoredNode { id: *neighbor_id, score: *_weight });
-                if energy_remaining > 0 {
-                    energy_remaining -= 1;
-                }
-            }
-        }
-
-        let is_partial = energy_remaining == 0;
-        let reason = if is_partial {
-            Some("energy budget exhausted".to_string())
-        } else {
-            None
-        };
-        (result_ids, is_partial, reason)
+        (result_ids, false, None)
     }
 
-    /// Imagination mode: chaotic walk, no edge filtering, high temperature
+    /// Imagination mode: unfiltered chaotic diffusion
     pub fn imagination_traverse(
         &self,
         start_ids: &[Uuid],
-        _temperature: f64,
-        energy_budget: u64,
+        temperature: f64,
+        _energy_budget: u64,
         max_nodes: usize,
     ) -> (Vec<Uuid>, bool, Option<String>) {
-        let mut visited = HashSet::new();
-        let mut result_ids = Vec::new();
-        let mut energy_remaining = energy_budget;
+        let max_hops = 5;
+        let alpha = 0.9; // Extreme far diffusion
+        let decay_factor = 0.95; // Virtually no soft edge penalty
+        let threshold = (0.01 * (1.0 - temperature)).max(0.001); // Lower threshold according to temperature to allow creative sparks
 
-        for id in start_ids {
-            if let Some(idx) = self.id_to_index.get(id) {
-                visited.insert(*idx);
-                result_ids.push(*id);
-            }
-        }
+        let (result_ids, _) = self.sa_core_diffusion(
+            start_ids,
+            alpha,
+            decay_factor,
+            threshold,
+            max_hops,
+            max_nodes,
+        );
 
-        // For now, simple BFS with no weight filtering (full exploration)
-        let mut queue: Vec<NodeIndex> = start_ids
-            .iter()
-            .filter_map(|id| self.id_to_index.get(id).copied())
-            .collect();
-
-        while let Some(current) = queue.pop() {
-            if result_ids.len() >= max_nodes || energy_remaining == 0 {
-                break;
-            }
-            for edge in self.graph.edges(current) {
-                let neighbor = edge.target();
-                if visited.contains(&neighbor) {
-                    continue;
-                }
-                visited.insert(neighbor);
-                if let Some(id) = self.index_to_id.get(&neighbor) {
-                    result_ids.push(*id);
-                }
-                queue.push(neighbor);
-                if energy_remaining > 0 {
-                    energy_remaining -= 1;
-                }
-                if result_ids.len() >= max_nodes || energy_remaining == 0 {
-                    break;
-                }
-            }
-        }
-
-        let is_partial = energy_remaining == 0;
-        let reason = if is_partial {
-            Some("energy budget exhausted".to_string())
-        } else {
-            None
-        };
-        (result_ids, is_partial, reason)
+        (result_ids, false, None)
     }
 
     // ── Rebuild from SQLite ──────────────────────────────────────────

@@ -6,6 +6,7 @@ use zstd::stream::*;
 use tracing::info;
 
 pub struct Inheritance {
+    #[allow(dead_code)]
     config: LifecycleConfig,
     storage: Arc<StorageEngine>,
 }
@@ -18,7 +19,7 @@ impl Inheritance {
     /// Create inheritance crystal
     pub async fn create_crystal(&self) -> Result<String, helix_mind_core::error::MindError> {
         let l2_nodes = self.storage.get_l2_nodes_by_generation(1).await?;
-        let count = l2_nodes.len(); // 先保存长度
+        let count = l2_nodes.len(); // Save length first
         info!("Creating inheritance crystal with {} L2 nodes", count);
 
         let content = serde_json::to_vec(&l2_nodes)?;
@@ -45,7 +46,7 @@ impl Inheritance {
         std::io::copy(&mut decoder, &mut content)?;
 
         let l2_nodes: Vec<helix_mind_core::graph::Node> = serde_json::from_slice(&content)?;
-        let count = l2_nodes.len(); // 先保存长度
+        let count = l2_nodes.len(); // Save length first
 
         for mut node in l2_nodes {
             node.generation = 2;

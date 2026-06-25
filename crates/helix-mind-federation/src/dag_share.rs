@@ -7,9 +7,8 @@
 use helix_mind_core::config::FederationConfig;
 use helix_mind_core::{graph::NodeType, graph::Sensitivity, MindError};
 use helix_mind_storage::StorageEngine;
-use serde_json::{json, Value as JsonValue};
+use serde_json::json;
 use sha2::Digest;
-use std::collections::HashMap;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -55,17 +54,17 @@ impl DagShare {
             "edges": dag_edges
         });
 
-        // 4. Serialize to JSON 🔥 架构师指定代码
+        // 4. Serialize to JSON (architect-specified serialization)
         let json = serde_json::to_vec(&dag).map_err(|e| {
             MindError::Federation(format!("DAG JSON encode error: {}", e))
         })?;
 
-        // 5. Compress with Zstandard 🔥 架构师指定代码
+        // 5. Compress with Zstandard (architect-specified compression)
         let compressed = zstd::encode_all(json.as_slice(), 19).map_err(|e| {
             MindError::Federation(format!("Zstd compress error: {}", e))
         })?;
 
-        // 6. Compute CID-like hash (SHA256 hex) 🔥 架构师指定代码
+        // 6. Compute CID-like hash (SHA256 hex) (architect-specified hashing)
         let hash = sha2::Sha256::digest(&compressed);
         let cid = hex::encode(hash);
 

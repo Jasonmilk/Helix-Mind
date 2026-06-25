@@ -31,6 +31,7 @@ pub struct StorageEngine {
     pub sqlite: SqlitePool,
     pub topology: Arc<RwLock<MemoryTopology>>,
     pub cache: NodeCache,
+    #[allow(dead_code)]
     deferred_writer: DeferredWriter,
 }
 
@@ -607,10 +608,10 @@ impl StorageEngine {
             .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
         let total_interactions: u64 = conn.query_row(
             "SELECT COALESCE(SUM(access_count),0) FROM nodes", [], |row| row.get(0),
-        ).map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        ).map_or(0, |v| v);
         let elapsed_days: u64 = conn.query_row(
             "SELECT (julianday('now') - julianday(MIN(created_at))) FROM nodes", [], |row| row.get(0),
-        ).unwrap_or(0) as u64;
+        ).unwrap_or(0.0) as u64;
         Ok(StorageStats { total_nodes, total_edges, total_interactions, elapsed_days })
     }
 }

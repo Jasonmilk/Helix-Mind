@@ -14,6 +14,7 @@ pub struct RetrievalEngine {
     /// Track the current impasse depth across queries.
     impasse_depth: tokio::sync::RwLock<u8>,
     /// Track recent query embeddings for familiarity estimation.
+    #[allow(dead_code)]
     recent_embeddings: tokio::sync::RwLock<Vec<Vec<f32>>>,
 }
 
@@ -39,7 +40,7 @@ impl RetrievalEngine {
     ) -> Result<HelixQueryResult, helix_mind_core::error::MindError> {
         let start = Utc::now();
         let trace_id = Uuid::new_v4();
-        let mut stages_attempted: u8 = 0;
+        let mut stages_attempted = 1_u8;
 
         // Read current impasse depth
         let current_impasse = *self.impasse_depth.read().await;
@@ -65,7 +66,6 @@ impl RetrievalEngine {
         }
 
         // 2. Stage 1: Local Dominant Retrieval
-        stages_attempted = 1;
         let (node_ids, is_partial, exhaustion_reason) = self.stage_local_dominant(
             &start_ids,
             energy_context,
@@ -119,6 +119,7 @@ impl RetrievalEngine {
                 let nodes = self.storage.get_nodes_by_ids(&all_node_ids).await?;
                 let edges = self.storage.get_edges_between(&all_node_ids).await?;
                 self.update_access_counts(&nodes).await?;
+                // Decrease impasse depth on success
                 self.adjust_impasse(-1).await;
                 let latency_ms = (Utc::now() - start).num_milliseconds() as u64;
                 return Ok(HelixQueryResult {
@@ -250,10 +251,9 @@ impl RetrievalEngine {
         current_ids: &[Uuid],
     ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
         // Traverse dialectical edges backwards (Corrects, Refines, Doubts)
-        // to find previously overthrown knowledge that may be applicable now
+        // to find previously overthrown knowledge_base nodes
         let mut spiral_ids = Vec::new();
         for id in current_ids {
-            // Find nodes that corrected, refined, or doubted this node
             let edges = self.storage.get_edges_between(&[*id]).await?;
             for edge in &edges {
                 if edge.target_id == *id {
@@ -318,7 +318,7 @@ impl RetrievalEngine {
     async fn is_impasse_triggered(
         &self,
         node_ids: &[Uuid],
-        query: &str,
+        _query: &str,
     ) -> Result<bool, helix_mind_core::error::MindError> {
         if node_ids.is_empty() {
             return Ok(true); // no results = impasse
@@ -379,7 +379,7 @@ impl RetrievalEngine {
     // ── Update access counts for retrieved nodes ────────────────────
     async fn update_access_counts(
         &self,
-        nodes: &[helix_mind_core::graph::Node],
+        nodes: &[Node],
     ) -> Result<(), helix_mind_core::error::MindError> {
         for node in nodes {
             let mut node_clone = node.clone();
