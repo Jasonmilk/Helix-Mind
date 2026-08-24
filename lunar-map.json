@@ -29,28 +29,7 @@
       "hashes": {}
     },
     {
-      "name": "cellrix",
-      "type": "library",
-      "sha": "unknown",
-      "scanStatus": "success",
-      "interfaces": {
-        "consumed": [],
-        "exposed": [
-          {
-            "method": "POST",
-            "path": "/cib19/snapshot"
-          },
-          {
-            "method": "POST",
-            "path": "/cib19/action"
-          }
-        ]
-      },
-      "path": "/opt/cellrix",
-      "hashes": {}
-    },
-    {
-      "name": "Helix-Callosum",
+      "name": "lasinfon",
       "type": "mixed",
       "sha": "unknown",
       "scanStatus": "success",
@@ -58,19 +37,7 @@
         "consumed": [],
         "exposed": []
       },
-      "path": "/opt/Helix-Callosum",
-      "hashes": {}
-    },
-    {
-      "name": "helix-mind",
-      "type": "library",
-      "sha": "unknown",
-      "scanStatus": "success",
-      "interfaces": {
-        "consumed": [],
-        "exposed": []
-      },
-      "path": "/opt/helix-mind",
+      "path": "/opt/lasinfon",
       "hashes": {}
     },
     {
@@ -94,12 +61,36 @@
             "path": "/api/v2/orders"
           },
           {
+            "method": "OPTIONS",
+            "path": "/t/{token}/{owner}/{repo}/blob/{branch}/*filepath"
+          },
+          {
             "method": "GET",
-            "path": "/t/{token}/{owner}/{repo}/tree/{branch}/*rest"
+            "path": "/t/{token}/{owner}/{repo}/blob/{branch}/*filepath"
+          },
+          {
+            "method": "OPTIONS",
+            "path": "/t/{token}/{owner}/{repo}/raw/{branch}/*filepath"
+          },
+          {
+            "method": "GET",
+            "path": "/t/{token}/{owner}/{repo}/raw/{branch}/*filepath"
+          },
+          {
+            "method": "OPTIONS",
+            "path": "/t/{token}/{owner}/{repo}/tree/{branch}"
           },
           {
             "method": "GET",
             "path": "/t/{token}/{owner}/{repo}/tree/{branch}"
+          },
+          {
+            "method": "OPTIONS",
+            "path": "/t/{token}/{owner}/{repo}/tree/{branch}/*rest"
+          },
+          {
+            "method": "GET",
+            "path": "/t/{token}/{owner}/{repo}/tree/{branch}/*rest"
           },
           {
             "method": "POST",
@@ -154,6 +145,10 @@
             "path": "/api/v1/projects/{name}/todo/diff"
           },
           {
+            "method": "OPTIONS",
+            "path": "/api/v1/projects/{name}/todo"
+          },
+          {
             "method": "POST",
             "path": "/api/v1/projects/{name}/todo"
           },
@@ -162,8 +157,16 @@
             "path": "/api/v1/projects/{name}/todo"
           },
           {
+            "method": "OPTIONS",
+            "path": "/api/v1/projects/{name}/raw/*filepath"
+          },
+          {
             "method": "GET",
             "path": "/api/v1/projects/{name}/raw/*filepath"
+          },
+          {
+            "method": "OPTIONS",
+            "path": "/api/v1/projects/{name}/map"
           },
           {
             "method": "GET",
@@ -174,13 +177,30 @@
             "path": "/lunar-map.md"
           },
           {
+            "method": "OPTIONS",
+            "path": "/lunar-map.json"
+          },
+          {
             "method": "GET",
             "path": "/lunar-map.json"
           },
           {
             "method": "GET",
             "path": ""
-          },
+          }
+        ]
+      },
+      "path": "/opt/LunarAST",
+      "hashes": {}
+    },
+    {
+      "name": "helix-mind",
+      "type": "library",
+      "sha": "unknown",
+      "scanStatus": "success",
+      "interfaces": {
+        "consumed": [],
+        "exposed": [
           {
             "method": "POST",
             "path": "/helix.HelixMind/query"
@@ -223,7 +243,40 @@
           }
         ]
       },
-      "path": "/opt/LunarAST",
+      "path": "/opt/helix-mind",
+      "hashes": {}
+    },
+    {
+      "name": "cellrix",
+      "type": "library",
+      "sha": "unknown",
+      "scanStatus": "success",
+      "interfaces": {
+        "consumed": [],
+        "exposed": [
+          {
+            "method": "POST",
+            "path": "/cib19/snapshot"
+          },
+          {
+            "method": "POST",
+            "path": "/cib19/action"
+          }
+        ]
+      },
+      "path": "/opt/cellrix",
+      "hashes": {}
+    },
+    {
+      "name": "Helix-Callosum",
+      "type": "mixed",
+      "sha": "unknown",
+      "scanStatus": "success",
+      "interfaces": {
+        "consumed": [],
+        "exposed": []
+      },
+      "path": "/opt/Helix-Callosum",
       "hashes": {}
     }
   ],
@@ -277,12 +330,42 @@
       },
       {
         "project": "LunarAST",
-        "path": "/t/{token}/{owner}/{repo}/tree/{branch}/*rest",
+        "path": "/t/{token}/{owner}/{repo}/blob/{branch}/*filepath",
+        "method": "OPTIONS"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/t/{token}/{owner}/{repo}/blob/{branch}/*filepath",
+        "method": "GET"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/t/{token}/{owner}/{repo}/raw/{branch}/*filepath",
+        "method": "OPTIONS"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/t/{token}/{owner}/{repo}/raw/{branch}/*filepath",
         "method": "GET"
       },
       {
         "project": "LunarAST",
         "path": "/t/{token}/{owner}/{repo}/tree/{branch}",
+        "method": "OPTIONS"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/t/{token}/{owner}/{repo}/tree/{branch}",
+        "method": "GET"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/t/{token}/{owner}/{repo}/tree/{branch}/*rest",
+        "method": "OPTIONS"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/t/{token}/{owner}/{repo}/tree/{branch}/*rest",
         "method": "GET"
       },
       {
@@ -353,6 +436,11 @@
       {
         "project": "LunarAST",
         "path": "/api/v1/projects/{name}/todo",
+        "method": "OPTIONS"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/api/v1/projects/{name}/todo",
         "method": "POST"
       },
       {
@@ -363,7 +451,17 @@
       {
         "project": "LunarAST",
         "path": "/api/v1/projects/{name}/raw/*filepath",
+        "method": "OPTIONS"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/api/v1/projects/{name}/raw/*filepath",
         "method": "GET"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/api/v1/projects/{name}/map",
+        "method": "OPTIONS"
       },
       {
         "project": "LunarAST",
@@ -378,62 +476,17 @@
       {
         "project": "LunarAST",
         "path": "/lunar-map.json",
+        "method": "OPTIONS"
+      },
+      {
+        "project": "LunarAST",
+        "path": "/lunar-map.json",
         "method": "GET"
       },
       {
         "project": "LunarAST",
         "path": "",
         "method": "GET"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/query",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/remember",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/forget",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/advanced_query",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/helix_query",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/helix_consolidate",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/federated_dag_share",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/trigger_reincarnation",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/reload_gene_lock",
-        "method": "POST"
-      },
-      {
-        "project": "LunarAST",
-        "path": "/helix.HelixMind/sync_human_view",
-        "method": "POST"
       }
     ],
     "orphanedConsumers": [
