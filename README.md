@@ -12,6 +12,22 @@
 
 ---
 
+## Governance
+
+This project is managed by the **DNA Self-Growing Methodology**.
+
+| Document | Purpose |
+|:---|:---|
+| [docs/DNA.md](docs/DNA.md) | Constitution — 7 axioms that cannot be violated |
+| [docs/RNA.md](docs/RNA.md) | Loading protocol — how AI should read this repo |
+| [docs/SPEC.md](docs/SPEC.md) | Knowledge ontology — what Helix-Mind is |
+| [docs/GROWTH.md](docs/GROWTH.md) | Mutation log — last 3 health snapshots |
+| [docs/DEPRECATE.md](docs/DEPRECATE.md) | Retirement list — features being phased out |
+
+> **For AI Agents**: Start with `docs/DNA.md`, then `docs/RNA.md`. Load spec volumes on demand.
+
+---
+
 ## 🤖 1. Agentic Architecture & Decoupling (For AI/Agents)
 
 If you are an AI Agent reading this repository to build, run, or modify the system, understand these core constraints:
