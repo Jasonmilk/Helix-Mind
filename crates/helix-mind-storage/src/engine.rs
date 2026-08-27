@@ -262,16 +262,17 @@ impl StorageEngine {
 
         self.sqlite.transactional_write(|tx| {
             tx.execute(
-                "INSERT INTO edges (source_id, target_id, weight, relation_type, is_soft)
-                 VALUES (?1,?2,?3,?4,?5)
+                "INSERT INTO edges (source_id, target_id, weight, relation_type, is_soft, created_at)
+                 VALUES (?1,?2,?3,?4,?5,?6)
                  ON CONFLICT(source_id, target_id, relation_type) DO UPDATE SET
-                 weight=excluded.weight, is_soft=excluded.is_soft",
+                 weight=excluded.weight, is_soft=excluded.is_soft, created_at=excluded.created_at",
                 rusqlite::params![
                     edge.source_id.to_string(),
                     edge.target_id.to_string(),
                     edge.weight,
                     relation_type_str(&edge.relation_type),
                     edge.is_soft,
+                    chrono::Utc::now().to_rfc3339(),
                 ],
             ).map_err(|e| MindError::Storage(e.to_string()))?;
             Ok(())
@@ -302,6 +303,24 @@ impl StorageEngine {
         ).map_err(|e| MindError::Storage(e.to_string()))?;
         let mut topo = self.topology.write().await;
         topo.mark_recessive(node_id);
+        self.cache.invalidate(node_id);
+        Ok(())
+    }
+
+    /// P2a (ADR-0014): record that `node_id` has been corrected by
+    /// `corrector_id` — the resolution trace for a dissonance pair. A corrected
+    /// node is excluded from future `get_unresolved_dissonance` results.
+    pub async fn update_corrected_by(
+        &self,
+        node_id: &Uuid,
+        corrector_id: &Uuid,
+    ) -> Result<(), MindError> {
+        let conn = self.sqlite.get()?;
+        conn.execute(
+            "UPDATE nodes SET corrected_by = ?1 WHERE id = ?2",
+            rusqlite::params![corrector_id.to_string(), node_id.to_string()],
+        )
+        .map_err(|e| MindError::Storage(e.to_string()))?;
         self.cache.invalidate(node_id);
         Ok(())
     }
@@ -536,9 +555,41 @@ impl StorageEngine {
 
     pub async fn get_unresolved_dissonance(
         &self,
-        _older_than: chrono::Duration,
+        older_than: chrono::Duration,
     ) -> Result<Vec<(Uuid, Uuid)>, MindError> {
-        Ok(Vec::new())
+        let conn = self.sqlite.get()?;
+        let cutoff = (chrono::Utc::now() - older_than).to_rfc3339();
+        let mut pairs = Vec::new();
+        {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT e.source_id, e.target_id
+                     FROM edges e
+                     WHERE e.relation_type = 'Conflicts'
+                       AND e.created_at < ?1
+                       AND NOT EXISTS (SELECT 1 FROM nodes n
+                                       WHERE n.id = e.source_id AND n.corrected_by IS NOT NULL)
+                       AND NOT EXISTS (SELECT 1 FROM nodes n
+                                       WHERE n.id = e.target_id AND n.corrected_by IS NOT NULL)",
+                )
+                .map_err(|e| MindError::Storage(e.to_string()))?;
+            let rows = stmt
+                .query_map(rusqlite::params![cutoff], |row| {
+                    Ok((
+                        Uuid::parse_str(&row.get::<_, String>(0)?).unwrap_or_default(),
+                        Uuid::parse_str(&row.get::<_, String>(1)?).unwrap_or_default(),
+                    ))
+                })
+                .map_err(|e| MindError::Storage(e.to_string()))?;
+            for row in rows {
+                pairs.push(row.map_err(|e| MindError::Storage(e.to_string()))?);
+            }
+        }
+        // Release the pooled connection before any await: r2d2's
+        // PooledConnection is not Send (it owns a rusqlite Connection), so it
+        // must not live across an await inside this async fn.
+        drop(conn);
+        Ok(pairs)
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────
@@ -589,8 +640,30 @@ impl StorageEngine {
 
     pub async fn find_similar_node(
         &self,
-        _node: &Node,
+        node: &Node,
     ) -> Result<Option<Node>, MindError> {
+        let content = match &node.content {
+            NodeContent::Text(t) => t.clone(),
+            _ => return Ok(None),
+        };
+        let content = content.trim();
+        if content.is_empty() || content.chars().count() < 3 {
+            return Ok(None);
+        }
+        // FTS5 candidate recall (SQLite layer, ADR-0014); the caller (digest)
+        // applies the Levenshtein merge threshold afterwards. Recessive nodes
+        // are already folded into their survivor — never return them as a
+        // merge candidate (prevents twin-reversal merge cycles).
+        let candidates = crate::fts::fts_find_similar(&self.sqlite, content, &node.id, 5)?;
+        for hit in candidates {
+            let nodes = self.get_nodes_by_ids(&[hit.node_id]).await?;
+            if let Some(cand) = nodes.into_iter().next() {
+                if cand.is_recessive {
+                    continue;
+                }
+                return Ok(Some(cand));
+            }
+        }
         Ok(None)
     }
 

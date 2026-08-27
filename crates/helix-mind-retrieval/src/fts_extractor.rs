@@ -86,12 +86,9 @@ pub fn sanitize_query(query: &str) -> (String, String) {
     (cleaned, removed)
 }
 
-/// FTS5 literal-phrase escaping: wrap in double quotes, double any inner quote.
-/// The result is a FTS5 *phrase* query — user input never reaches MATCH as raw
-/// syntax (prevents FTS5 boolean / prefix / NEAR injection).
-pub fn escape_fts(query: &str) -> String {
-    format!("\"{}\"", query.replace('"', "\"\""))
-}
+/// FTS5 literal-phrase escaping lives with the index (storage layer, ADR-0013);
+/// re-exported here so the retrieval crate exposes a single escaping authority.
+pub use helix_mind_storage::fts::escape_fts;
 
 #[cfg(test)]
 mod tests {
@@ -102,12 +99,6 @@ mod tests {
         let (cleaned, removed) = sanitize_query("认知相态 & 河流; DROP TABLE; \"q\"");
         assert_eq!(cleaned, "认知相态  河流 DROP TABLE q");
         assert_eq!(removed, "&;;\"\"");
-    }
-
-    #[test]
-    fn escape_wraps_in_quotes_and_doubles_inner() {
-        assert_eq!(escape_fts("认知相态"), "\"认知相态\"");
-        assert_eq!(escape_fts("say \"hi\""), "\"say \"\"hi\"\"\"");
     }
 
     #[test]

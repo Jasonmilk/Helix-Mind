@@ -1,17 +1,18 @@
-use helix_mind_core::config::MetabolismConfig;
 use helix_mind_storage::StorageEngine;
 use helix_mind_storage::WritePriority;
 use std::sync::Arc;
 use tracing::info;
+use crate::cognitive::CognitiveService;
 
 pub struct Crystallize {
-    config: MetabolismConfig,
     storage: Arc<StorageEngine>,
+    /// Single LLM-access port (ADR-0017) — no direct reqwest here.
+    cognitive: Arc<dyn CognitiveService>,
 }
 
 impl Crystallize {
-    pub fn new(config: MetabolismConfig, storage: Arc<StorageEngine>) -> Self {
-        Self { config, storage }
+    pub fn new(storage: Arc<StorageEngine>, cognitive: Arc<dyn CognitiveService>) -> Self {
+        Self { storage, cognitive }
     }
 
     pub async fn run(&self) -> Result<(), helix_mind_core::error::MindError> {
@@ -20,7 +21,7 @@ impl Crystallize {
             return Ok(());
         }
 
-        let summary = self.summarize_with_llm(&idle_l3).await?;
+        let summary = self.cognitive.summarize(&idle_l3).await?;
 
         let mut l2_node = helix_mind_core::graph::Node::default();
         l2_node.node_type = helix_mind_core::graph::NodeType::L2;
@@ -73,51 +74,5 @@ impl Crystallize {
 
         info!("Crystallized {} L3 nodes into L2 principle", idle_l3.len());
         Ok(())
-    }
-
-    async fn summarize_with_llm(
-        &self,
-        nodes: &[helix_mind_core::graph::Node],
-    ) -> Result<String, helix_mind_core::error::MindError> {
-        let mut prompt =
-            "Summarize the following observations into a single empirical principle:\n".to_string();
-        for node in nodes {
-            if let helix_mind_core::graph::NodeContent::Text(t) = &node.content {
-                prompt.push_str("- ");
-                prompt.push_str(t);
-                prompt.push_str("\n");
-            }
-        }
-        prompt.push_str("\nPrinciple:");
-
-        let client = reqwest::Client::new();
-        let resp: serde_json::Value = client
-            .post(&self.config.llm_gateway_url)
-            .json(&serde_json::json!({
-                "model": "llama3",
-                "prompt": prompt,
-                "stream": false,
-            }))
-            .send()
-            .await
-            .map_err(|e| {
-                helix_mind_core::error::MindError::Metabolism(format!(
-                    "LLM request failed: {}",
-                    e
-                ))
-            })?
-            .json()
-            .await
-            .map_err(|e| {
-                helix_mind_core::error::MindError::Metabolism(format!(
-                    "LLM response parse failed: {}",
-                    e
-                ))
-            })?;
-
-        Ok(resp["response"]
-            .as_str()
-            .unwrap_or("No summary generated")
-            .to_string())
     }
 }

@@ -7,6 +7,32 @@
 
 ---
 
+## [2026-08-28] 完成：P2 代谢闭环（a/b/c）
+
+### 触发条件
+审查③ O10（`find_similar_node` 度量）/ S7（LLM 越界）→ P2 计划（ADR-0014/0017）审查通过，用户授权编码。
+
+### 变更性质
+- **ADR 冻结**：ADR-0014（P2a 确定性代谢）、ADR-0017（P2b CognitiveService 端口）
+- **数据契约（Append-Only）**：`RelationType::Conflicts` 追加（失调声明）；edges 表加 `created_at`（`migrate_edges_created_at` 幂等迁移）；`MetabolismConfig.dissonance_window_hours`（冷却窗口可配置，消魔法数 24）
+- **P2a 确定性代谢**：`find_similar_node` 真实实现（FTS5 候选 top-1 + 跳过 recessive 防环）；`get_unresolved_dissonance`（Conflicts 边查询 + 排除已 `corrected_by`）；`update_corrected_by` 原语；`Digest::resolve_dissonance` 用 SymbolicSolver 仲裁（Corrects edge -1.0 + corrected_by trace）；Text-only 失调诚实保留（P2b 边界）；`Digest::run` 返回真实 merged 数（修 report 硬编码 0 的虚假数据）
+- **P2b CognitiveService 端口**（`cognitive.rs`）：trait（summarize/extract_entities/translate_assertions）+ 三适配器（Deterministic 生产默认零 LLM / Remote debug_direct 门控 / Fake 测试）+ 工厂 fail-closed（未知 llm_mode 视为 disabled）
+- **P2c 越界清零**：crystallize/ner 删除直接 reqwest，改走 cognitive 端口；metabolism 唯一 HTTP 出网点收敛到 `cognitive.rs`
+- **M-04/M-05 集成测试**（3 个）：merge 闭环（双胞胎合并 → 1 recessive + SimilarTo edge）/ 结构化失调闭环（Corrects + corrected_by + 不再出现在 unresolved）/ Text-only 失调不臆造 Corrects
+
+### 兼容性
+- 硬冻结契约无变更；`RelationType::Conflicts` 为 Append-Only 枚举追加（ADR-0012）
+- edges created_at 对旧库幂等迁移（默认 1970 回填，仅影响新边写入）
+- `Digest::run` 返回类型 `Result<u64>`（内部语义，api 消费者零改动）
+
+### 验收
+`cargo test --workspace` 全绿（新增 metabolism 单测 15 + 集成 3）｜ 0 warning ｜ `grep reqwest` 仅 cognitive.rs ｜ Z2（llm_mode 门控）物理生效
+
+### 状态
+🧬 待提交（用户确认后 push）
+
+---
+
 ## [2026-08-28] 完成：P1 检索闭环
 
 ### 触发条件
@@ -32,29 +58,6 @@
 
 ### 未决→已裁决（2026-08-28）
 PLAN §1.5 验收项「无查询写放大」（F3）：裁决为选项 (a) 单事务批量更新，作为 **P2a 前置修复**已落地——`StorageEngine::bump_access_counts`（单事务、SQL 级原子自增，去读-改-写竞争、去逐节点 fsync）+ `update_access_counts` 批量调用 + 测试。选项 (b) 内存计数 + 代谢期回刷归 **P4+**（等 Micro-Sleep 就绪）。
-
----
-
-## [2026-08-27] 完成：P0 认知基线 + 可编译数据契约变更
-
-### 触发条件
-审查③ F1/F9 断层修正：P0 从"纯文档"升级为"文档 + 可编译数据契约变更"，否则 P1 无 schema 可用。
-
-### 变更性质
-- **ADR 冻结**：ADR-0010（认知预算前置路由）、ADR-0011（相态模型与主体依赖轴）、ADR-0012（Append-Only Schema Evolution）
-- **数据契约（全链路）**：Node+SQLite+proto 追加 `phase_state`/`subject_dependency`/`concentration`/`tension`；`EnergyContext.budget_tier`；`HelixQueryResult` reserved 13（activation_vector）
-- **债务修复**：`Config::ensure_dirs()`（启动自动建目录）；所有 Config 手动 `impl Default`（修 serde 默认失效）
-- **测试**：迁移测试（22 列旧库→补列+物化回填）；cli 往返测试补新字段断言
-
-### 兼容性
-- 硬冻结契约无变更（Append-Only 追加字段 16-19，reserved 保护）
-- SQLite 幂等迁移 + 一次性物化回填（L2→Low / L3→High / Liquid / Dissolved / 0.0）
-
-### 验收
-`cargo check` ✅ ｜ `cargo test` 全绿（cli 4+1 ignored、core 8、storage 1）｜ 冒烟双债务修复 ✅
-
-### 状态
-🧬 已合并（提交 b710ce6）
 
 ---
 

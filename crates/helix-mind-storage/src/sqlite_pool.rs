@@ -69,6 +69,7 @@ impl SqlitePool {
                 weight REAL NOT NULL DEFAULT 0.5,
                 relation_type TEXT NOT NULL DEFAULT 'Semantic',
                 is_soft INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00Z',
                 PRIMARY KEY (source_id, target_id, relation_type)
             );
 
@@ -97,8 +98,35 @@ impl SqlitePool {
         // P0 (ADR-0011/0012): append-only schema migration for existing DBs.
         self.migrate_nodes_phase_columns(&conn)?;
 
+        // P2a (ADR-0014): edges gain created_at for dissonance age semantics.
+        self.migrate_edges_created_at(&conn)?;
+
         // P1 (M-01/ADR-0013): FTS5 trigram projection table.
         crate::fts::create_fts_table(&conn)?;
+        Ok(())
+    }
+
+    /// Append-only migration (ADR-0012): add `created_at` to pre-P2a `edges`
+    /// tables. `older_than` dissonance filtering needs a stable edge timestamp.
+    fn migrate_edges_created_at(
+        &self,
+        conn: &rusqlite::Connection,
+    ) -> Result<(), helix_mind_core::error::MindError> {
+        let mut stmt = conn
+            .prepare("PRAGMA table_info(edges)")
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        let existing: Vec<String> = stmt
+            .query_map([], |row| row.get::<_, String>(1))
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?
+            .collect::<Result<_, _>>()
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        if !existing.iter().any(|c| c == "created_at") {
+            conn.execute(
+                "ALTER TABLE edges ADD COLUMN created_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00Z'",
+                [],
+            )
+            .map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+        }
         Ok(())
     }
 

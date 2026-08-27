@@ -96,6 +96,7 @@ pub fn relation_type_str(rt: &RelationType) -> &'static str {
         RelationType::Refines => "Refines",
         RelationType::Doubts => "Doubts",
         RelationType::SimilarTo => "SimilarTo",
+        RelationType::Conflicts => "Conflicts",
     }
 }
 
@@ -109,6 +110,7 @@ pub fn str_to_relation_type(s: &str) -> RelationType {
         "Refines" => RelationType::Refines,
         "Doubts" => RelationType::Doubts,
         "SimilarTo" => RelationType::SimilarTo,
+        "Conflicts" => RelationType::Conflicts,
         _ => RelationType::Semantic,
     }
 }

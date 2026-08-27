@@ -15,4 +15,5 @@ chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 thiserror = "1"
 levenshtein = "1.0.5"
+async-trait = "0.1"
 

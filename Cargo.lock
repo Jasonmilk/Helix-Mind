@@ -816,6 +816,7 @@ dependencies = [
 name = "helix-mind-metabolism"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "chrono",
  "helix-mind-core",
  "helix-mind-storage",

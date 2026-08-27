@@ -128,6 +128,11 @@ pub struct MetabolismConfig {
     pub crystallize_idle_timeout_sec: u64,
     #[serde(default = "default_resurrection_window")]
     pub resurrection_window_days: i64,
+    /// How old a Conflicts edge must be before it becomes eligible for
+    /// deterministic arbitration (cooling window). Digest calls
+    /// `get_unresolved_dissonance` with this window.
+    #[serde(default = "default_dissonance_window")]
+    pub dissonance_window_hours: u64,
     #[serde(default = "default_llm_gateway_url")]
     pub llm_gateway_url: String,
     /// LLM access mode: "disabled" (production, locked) | "debug_direct" (test/debug only).
@@ -153,6 +158,7 @@ impl Default for MetabolismConfig {
             merge_similarity_threshold: default_merge_similarity(),
             crystallize_idle_timeout_sec: default_crystallize_idle_timeout(),
             resurrection_window_days: default_resurrection_window(),
+            dissonance_window_hours: default_dissonance_window(),
             llm_gateway_url: default_llm_gateway_url(),
             llm_mode: default_llm_mode(),
             ner_mode: default_ner_mode(),
@@ -320,6 +326,7 @@ fn default_micro_sleep_interval() -> u64 { 300 }
 fn default_merge_similarity() -> f64 { 0.95 }
 fn default_crystallize_idle_timeout() -> u64 { 600 }
 fn default_resurrection_window() -> i64 { 30 }
+fn default_dissonance_window() -> u64 { 24 }
 fn default_llm_gateway_url() -> String { "http://localhost:11434/api/generate".into() }
 fn default_llm_mode() -> String { "disabled".into() }
 fn default_ner_mode() -> String { "local".into() }

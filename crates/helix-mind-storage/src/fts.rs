@@ -292,3 +292,67 @@ pub fn fts_like_search(
     }
     Ok(hits)
 }
+
+/// FTS5 literal-phrase escaping: wrap in double quotes, double any inner quote.
+///
+/// User/derived input is treated as a literal phrase, never as FTS5 syntax
+/// (prevents boolean / prefix / NEAR injection). Owned here (storage layer)
+/// because every MATCH statement lives with the index; the retrieval crate
+/// re-exports it so consumers keep one escaping authority.
+pub fn escape_fts(query: &str) -> String {
+    format!("\"{}\"", query.replace('"', "\"\""))
+}
+
+/// P2a (ADR-0014): similarity candidates for `find_similar_node`.
+///
+/// FTS5 MATCH over the query content, excluding the node itself, ranked by
+/// -bm25 only (relevance — no phase weighting here: the goal is finding the
+/// most similar candidate, not a query-ranking signal).
+pub fn fts_find_similar(
+    pool: &SqlitePool,
+    content: &str,
+    exclude_id: &Uuid,
+    limit: usize,
+) -> Result<Vec<FtsHit>, MindError> {
+    let conn = pool.get()?;
+    let mut stmt = conn
+        .prepare(
+            "SELECT node_id, bm25(nodes_fts)
+             FROM nodes_fts
+             WHERE nodes_fts MATCH ?1 AND node_id != ?2
+             ORDER BY -bm25(nodes_fts) DESC
+             LIMIT ?3",
+        )
+        .map_err(|e| MindError::Storage(e.to_string()))?;
+    let rows = stmt
+        .query_map(
+            rusqlite::params![
+                escape_fts(content),
+                exclude_id.to_string(),
+                limit as i64
+            ],
+            |row| {
+                Ok(FtsHit {
+                    node_id: Uuid::parse_str(&row.get::<_, String>(0)?).unwrap_or_default(),
+                    score: row.get(1)?,
+                })
+            },
+        )
+        .map_err(|e| MindError::Storage(e.to_string()))?;
+    let mut hits = Vec::new();
+    for r in rows {
+        hits.push(r.map_err(|e| MindError::Storage(e.to_string()))?);
+    }
+    Ok(hits)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn escape_wraps_in_quotes_and_doubles_inner() {
+        assert_eq!(escape_fts("认知相态"), "\"认知相态\"");
+        assert_eq!(escape_fts("say \"hi\""), "\"say \"\"hi\"\"\"");
+    }
+}

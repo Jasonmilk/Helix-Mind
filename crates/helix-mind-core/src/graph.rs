@@ -46,6 +46,9 @@ pub enum RelationType {
     Refines,
     Doubts,
     SimilarTo,
+    /// ADR-0014: declared cognitive dissonance between two nodes. Deterministic
+    /// arbitration resolves a Conflicts pair into a Corrects edge.
+    Conflicts,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

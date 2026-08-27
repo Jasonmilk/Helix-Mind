@@ -2,6 +2,7 @@ use helix_mind_core::config::MetabolismConfig;
 use helix_mind_storage::StorageEngine;
 use std::sync::Arc;
 use tracing::info;
+use crate::symbolic;
 
 pub struct Digest {
     config: MetabolismConfig,
@@ -13,7 +14,8 @@ impl Digest {
         Self { config, storage }
     }
 
-    pub async fn run(&self) -> Result<(), helix_mind_core::error::MindError> {
+    /// Returns the number of nodes merged in this digest pass.
+    pub async fn run(&self) -> Result<u64, helix_mind_core::error::MindError> {
         // 1. Find similar L3 nodes
         let recent_l3 = self
             .storage
@@ -34,13 +36,16 @@ impl Digest {
                     self.merge_nodes(node, &similar).await?;
                     merged += 1;
                 }
+            } else {
             }
         }
 
-        // 2. Resolve cognitive dissonance
+        // 2. Resolve cognitive dissonance (cooling window from config)
         let unresolved = self
             .storage
-            .get_unresolved_dissonance(chrono::Duration::hours(24))
+            .get_unresolved_dissonance(chrono::Duration::hours(
+                self.config.dissonance_window_hours as i64,
+            ))
             .await?;
 
         for (node_a_id, node_b_id) in &unresolved {
@@ -69,7 +74,7 @@ impl Digest {
             merged,
             expired.len()
         );
-        Ok(())
+        Ok(merged)
     }
 
     fn compute_similarity(
@@ -119,10 +124,42 @@ impl Digest {
 
     async fn resolve_dissonance(
         &self,
-        _node_a: &helix_mind_core::graph::Node,
-        _node_b: &helix_mind_core::graph::Node,
+        node_a: &helix_mind_core::graph::Node,
+        node_b: &helix_mind_core::graph::Node,
     ) -> Result<(), helix_mind_core::error::MindError> {
-        // TODO: Resolve cognitive dissonance by creating Corrects edges
+        // P2a (ADR-0014): deterministic arbitration via SymbolicSolver.
+        // get_unresolved_dissonance already filtered to pairs whose nodes both
+        // carry structured assertions.
+        let a_assertions = symbolic::assertions_from_node(&node_a.content);
+        let b_assertions = symbolic::assertions_from_node(&node_b.content);
+        let solver = symbolic::SymbolicSolver::new();
+
+        // Confirm a genuine logical contradiction before creating a Corrects
+        // edge. If no direct contradiction, the Conflicts edge is a stale/false
+        // signal — record nothing (do not fabricate a correction).
+        if solver.check_clash(&a_assertions, &[], &b_assertions).is_ok() {
+            return Ok(());
+        }
+
+        // Deterministic arbitration: the higher-heat node is the retained
+        // truth; it corrects the lower-heat node (Corrects edge weight -1.0,
+        // contract-validated in core).
+        let (corrector, corrected) = if node_a.heat >= node_b.heat {
+            (node_a, node_b)
+        } else {
+            (node_b, node_a)
+        };
+        let edge = helix_mind_core::graph::Edge {
+            source_id: corrector.id,
+            target_id: corrected.id,
+            weight: -1.0,
+            relation_type: helix_mind_core::graph::RelationType::Corrects,
+            is_soft: false,
+        };
+        self.storage.add_edge(&edge).await?;
+        self.storage
+            .update_corrected_by(&corrected.id, &corrector.id)
+            .await?;
         Ok(())
     }
 }
