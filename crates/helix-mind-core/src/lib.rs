@@ -12,6 +12,7 @@ pub mod tasks;
 pub mod persona;
 pub mod lifecycle;
 pub mod storage_types;
+pub mod symbolic;
 
 // Re-export core types for external crates
 pub use config::Config;

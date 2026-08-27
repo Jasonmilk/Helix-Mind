@@ -10,7 +10,7 @@
 //! `RemoteAdapter::new` refuses construction outside `debug_direct`, so an
 //! accidental outbound path is physically impossible (Z2 ruling).
 
-use crate::symbolic::{self, LogicAssertion};
+use helix_mind_core::symbolic::{self, LogicAssertion};
 use async_trait::async_trait;
 use helix_mind_core::config::MetabolismConfig;
 use helix_mind_core::error::MindError;

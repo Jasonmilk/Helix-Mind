@@ -4,9 +4,9 @@ use helix_mind_storage::StorageEngine;
 use helix_mind_storage::WritePriority;
 use helix_mind_retrieval::{RetrievalEngine, FakeAdapter};
 use helix_mind_metabolism::decay::DecayEngine;
-use helix_mind_metabolism::symbolic::SymbolicSolver;
-use helix_mind_metabolism::symbolic::LogicAssertion;
-use helix_mind_metabolism::symbolic::Predicate;
+use helix_mind_core::symbolic::SymbolicSolver;
+use helix_mind_core::symbolic::LogicAssertion;
+use helix_mind_core::symbolic::Predicate;
 use uuid::Uuid;
 use std::sync::Arc;
 

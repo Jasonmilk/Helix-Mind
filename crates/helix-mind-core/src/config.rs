@@ -214,6 +214,10 @@ impl Default for LifecycleConfig {
 // ---------- FederationConfig ----------
 #[derive(Debug, Clone, Deserialize)]
 pub struct FederationConfig {
+    /// 出站门控（ADR-0018 P3a）：能力未就绪 = 功能不存在。
+    /// 默认 false，联邦出站/入站处理在未显式启用时一律拒绝。
+    #[serde(default = "default_federation_enabled")]
+    pub enabled: bool,
     #[serde(default = "default_outgoing_dir")]
     pub outgoing_dir: String,
     #[serde(default = "default_sandbox_dir")]
@@ -227,6 +231,7 @@ pub struct FederationConfig {
 impl Default for FederationConfig {
     fn default() -> Self {
         Self {
+            enabled: default_federation_enabled(),
             outgoing_dir: default_outgoing_dir(),
             sandbox_dir: default_sandbox_dir(),
             cremation_years: default_cremation_years(),
@@ -363,6 +368,7 @@ fn default_outgoing_dir() -> String { "./federation/outgoing".into() }
 fn default_sandbox_dir() -> String { "./federation/sandbox".into() }
 fn default_cremation_years() -> u64 { 100 }
 fn default_scan_interval_sec() -> u64 { 60 }
+fn default_federation_enabled() -> bool { false }
 
 fn default_gene_lock_path() -> String { "./gene_lock.md".into() }
 fn default_listen_addr() -> String { "127.0.0.1:50051".into() }

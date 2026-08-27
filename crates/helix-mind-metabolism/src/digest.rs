@@ -2,7 +2,7 @@ use helix_mind_core::config::MetabolismConfig;
 use helix_mind_storage::StorageEngine;
 use std::sync::Arc;
 use tracing::info;
-use crate::symbolic;
+use helix_mind_core::symbolic;
 
 pub struct Digest {
     config: MetabolismConfig,

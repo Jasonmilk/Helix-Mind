@@ -7,7 +7,7 @@
 //! pitfall warned about in the whitepaper.
 
 use std::collections::HashSet;
-use helix_mind_core::graph::NodeContent;
+use crate::graph::NodeContent;
 
 /// A structured logic assertion extracted from a knowledge node.
 ///
@@ -85,12 +85,12 @@ impl SymbolicSolver {
         new_assertions: &[LogicAssertion],
         l0_assertions: &[LogicAssertion],
         existing_l2_assertions: &[LogicAssertion],
-    ) -> Result<(), helix_mind_core::error::MindError> {
+    ) -> Result<(), crate::error::MindError> {
         // 1. Check against L0 constitution — hard one-vote veto
         for new_assertion in new_assertions {
             for l0_assertion in l0_assertions {
                 if self.is_direct_contradiction(new_assertion, l0_assertion) {
-                    return Err(helix_mind_core::error::MindError::SandboxRejected {
+                    return Err(crate::error::MindError::SandboxRejected {
                         reason: format!(
                             "Node assertion '{} {} {}' contradicts L0 constitution '{} {} {}'",
                             new_assertion.subject,
@@ -109,7 +109,7 @@ impl SymbolicSolver {
         for new_assertion in new_assertions {
             for l2_assertion in existing_l2_assertions {
                 if self.is_direct_contradiction(new_assertion, l2_assertion) {
-                    return Err(helix_mind_core::error::MindError::SandboxRejected {
+                    return Err(crate::error::MindError::SandboxRejected {
                         reason: format!(
                             "Node assertion '{} {} {}' contradicts existing L2 knowledge '{} {} {}'",
                             new_assertion.subject,
@@ -148,6 +148,26 @@ impl SymbolicSolver {
                 | (Predicate::Implies, Predicate::Conflicts)
                 | (Predicate::Conflicts, Predicate::Implies)
         )
+    }
+
+    /// Find the first internally contradictory assertion pair (if any).
+    ///
+    /// Two assertions contradict when they share subject+object and carry
+    /// opposing predicates. Returns `Some((i, j))` with `i < j` on the first
+    /// contradiction found, `None` when the set is internally consistent.
+    /// Used by the deterministic federation review (ADR-0018 P3a).
+    pub fn find_internal_contradiction(
+        &self,
+        assertions: &[LogicAssertion],
+    ) -> Option<(usize, usize)> {
+        for i in 0..assertions.len() {
+            for j in (i + 1)..assertions.len() {
+                if self.is_direct_contradiction(&assertions[i], &assertions[j]) {
+                    return Some((i, j));
+                }
+            }
+        }
+        None
     }
 
     /// Extract unique concept IDs from a set of assertions.
@@ -260,7 +280,7 @@ mod tests {
 
     #[test]
     fn assertions_from_node_parses_structured_assertions() {
-        use helix_mind_core::graph::NodeContent;
+        use crate::graph::NodeContent;
         use std::collections::HashMap;
         let mut map = HashMap::new();
         map.insert(
@@ -283,7 +303,7 @@ mod tests {
 
     #[test]
     fn assertions_from_node_ignores_unknown_predicates() {
-        use helix_mind_core::graph::NodeContent;
+        use crate::graph::NodeContent;
         use std::collections::HashMap;
         let mut map = HashMap::new();
         map.insert(

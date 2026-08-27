@@ -3,7 +3,6 @@ pub mod crystallize;
 pub mod hibernate;
 pub mod ner;
 pub mod decay;
-pub mod symbolic;
 pub mod cognitive;
 
 pub use cognitive::{
