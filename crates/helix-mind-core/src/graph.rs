@@ -73,6 +73,83 @@ pub enum NodeContent {
     },
 }
 
+// ---------- Phase-State & Subject-Dependency (P0 / ADR-0010, ADR-0011) ----------
+
+/// Maturity state of a knowledge node (ADR-0011).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PhaseState {
+    Gas,
+    Liquid,
+    Crystal,
+}
+
+impl Default for PhaseState {
+    fn default() -> Self {
+        PhaseState::Liquid
+    }
+}
+
+/// Privacy axis: whether the node may enter the shared knowledge tree (ADR-0011).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SubjectDependency {
+    High,
+    Low,
+}
+
+impl Default for SubjectDependency {
+    fn default() -> Self {
+        SubjectDependency::High
+    }
+}
+
+/// Liquid concentration marker (colloid = high-concentration liquid, not a separate layer).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Concentration {
+    Dissolved,
+    Colloidal,
+}
+
+impl Default for Concentration {
+    fn default() -> Self {
+        Concentration::Dissolved
+    }
+}
+
+/// Liquid meta — concentration + internal tension (ADR-0011).
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct PhaseMeta {
+    pub concentration: Concentration,
+    pub tension: f64,
+}
+
+impl Default for PhaseMeta {
+    fn default() -> Self {
+        Self {
+            concentration: Concentration::Dissolved,
+            tension: 0.0,
+        }
+    }
+}
+
+/// Cognitive budget routing class — decided by the body before calling Mind (ADR-0010).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BudgetTier {
+    /// Default: normal deep query (liquid + colloid). Backward compatible for generic bodies.
+    Augmentable,
+    /// 0-token emergency — crystals + high-relevance colloids only.
+    Endogenous,
+    /// Exploration — may touch gas traces.
+    ExogenousRequired,
+    /// No cognition — metadata only.
+    Void,
+}
+
+impl Default for BudgetTier {
+    fn default() -> Self {
+        BudgetTier::Augmentable
+    }
+}
+
 // ---------- Node ----------
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -99,6 +176,12 @@ pub struct Node {
     pub high_risk: bool,           // Flag for high-risk nodes
     pub abstract_provenance: Option<String>,  // Summary after evidence fixation
     pub derived_from: Vec<Uuid>,
+    #[serde(default)]
+    pub phase_state: PhaseState,                // ADR-0011: maturity state
+    #[serde(default)]
+    pub subject_dependency: SubjectDependency, // ADR-0011: privacy axis (materialized)
+    #[serde(default)]
+    pub meta: PhaseMeta,                        // ADR-0011: liquid meta (concentration/tension)
 }
 
 impl Default for Node {
@@ -127,6 +210,9 @@ impl Default for Node {
             high_risk: false,       // Default: non high-risk
             abstract_provenance: None, // Default empty abstract provenance
             derived_from: Vec::new(),
+            phase_state: PhaseState::default(),          // Liquid
+            subject_dependency: SubjectDependency::default(), // High (default node is L3)
+            meta: PhaseMeta::default(),                  // Dissolved, tension 0.0
         }
     }
 }
@@ -200,6 +286,7 @@ pub struct EnergyContext {
     pub system_load: f64,
     pub impasse_depth: u8,   // Current impasse depth (default 0)
     pub familiarity: f64,    // System familiarity weight (default 0.5)
+    pub budget_tier: BudgetTier, // ADR-0010: cognitive budget routing class
 }
 
 impl Default for EnergyContext {
@@ -213,6 +300,7 @@ impl Default for EnergyContext {
             system_load: 0.0,
             impasse_depth: 0,
             familiarity: 0.5,
+            budget_tier: BudgetTier::default(),
         }
     }
 }

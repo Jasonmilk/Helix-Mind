@@ -17,6 +17,14 @@ enum AutonomyLevel {
   SURVIVAL = 2;
 }
 
+// P0 (ADR-0010): cognitive budget routing class, decided by the body before calling Mind.
+enum BudgetTier {
+  AUGMENTABLE = 0;         // default: normal deep query (liquid + colloid)
+  ENDOGENOUS = 1;          // 0-token emergency — crystals + high-relevance colloids
+  EXOGENOUS_REQUIRED = 2;  // exploration — may touch gas traces
+  VOID = 3;                // no cognition — metadata only
+}
+
 // ---------- Layer 1 Messages ----------
 message QueryRequest {
   string query = 1;
@@ -66,6 +74,7 @@ message EnergyContext {
   double system_load = 6;
   double familiarity = 7;      // v3.3: task familiarity [0.0, 1.0]
   uint32 impasse_depth = 8;    // v3.3: impasse depth (0-5)
+  BudgetTier budget_tier = 9;  // P0 (ADR-0010): cognitive budget routing class
 }
 
 // v3.3: tool action suggestion returned by Mind
@@ -97,6 +106,7 @@ message HelixQueryResult {
   int32 impasse_level = 10;                  // v3.3
   int32 stages_attempted = 11;               // v3.3
   repeated SuggestedAction suggested_actions = 12;  // v3.3
+  reserved 13;                               // P0 (ADR-0012): reserved for activation_vector (P4 M-10)
 }
 
 message HelixConsolidateRequest {
@@ -153,6 +163,11 @@ message Node {
   string corrected_by = 13;
   string notes = 14;
   repeated string derived_from = 15;
+  // P0 (ADR-0011): phase-state & subject-dependency (Append-Only, fields 16-19)
+  string phase_state = 16;          // "gas" | "liquid" | "crystal"
+  string subject_dependency = 17;   // "high" | "low"
+  string concentration = 18;        // "dissolved" | "colloidal" (liquid meta)
+  double tension = 19;              // liquid meta tension
 }
 
 message Edge {

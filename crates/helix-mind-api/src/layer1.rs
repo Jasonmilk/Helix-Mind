@@ -82,6 +82,11 @@ pub(crate) fn convert_node(node: helix_mind_core::graph::Node) -> Node {
         corrected_by: node.corrected_by.map(|u| u.to_string()).unwrap_or_default(),
         notes: node.notes.unwrap_or_default(),
         derived_from: node.derived_from.into_iter().map(|u| u.to_string()).collect(),
+        // P0 (ADR-0011): phase-state & subject-dependency
+        phase_state: format!("{:?}", node.phase_state).to_lowercase(),
+        subject_dependency: format!("{:?}", node.subject_dependency).to_lowercase(),
+        concentration: format!("{:?}", node.meta.concentration).to_lowercase(),
+        tension: node.meta.tension,
     }
 }
 

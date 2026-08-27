@@ -1,4 +1,4 @@
-use helix_mind_core::graph::{Node, NodeType, NodeContent, NodeSource, Sensitivity, RelationType};
+use helix_mind_core::graph::{Node, NodeType, NodeContent, NodeSource, Sensitivity, RelationType, PhaseState, SubjectDependency, Concentration, PhaseMeta};
 use uuid::Uuid;
 use chrono::Utc;
 
@@ -36,6 +36,13 @@ pub fn row_to_node(row: &rusqlite::Row) -> Node {
         abstract_provenance: row.get::<_, Option<String>>(20).unwrap_or(None)
             .filter(|s| !s.is_empty()),
         derived_from: serde_json::from_str(&derived_json).unwrap_or_default(),
+        // P0 (ADR-0011): phase-state & subject-dependency (columns 22-25)
+        phase_state: str_to_phase_state(&row.get::<_, String>(22).unwrap_or_default()),
+        subject_dependency: str_to_subject_dependency(&row.get::<_, String>(23).unwrap_or_default()),
+        meta: PhaseMeta {
+            concentration: str_to_concentration(&row.get::<_, String>(24).unwrap_or_default()),
+            tension: row.get(25).unwrap_or(0.0),
+        },
     }
 }
 
@@ -103,5 +110,51 @@ pub fn str_to_relation_type(s: &str) -> RelationType {
         "Doubts" => RelationType::Doubts,
         "SimilarTo" => RelationType::SimilarTo,
         _ => RelationType::Semantic,
+    }
+}
+
+// ---------- P0 (ADR-0011): phase-state & subject-dependency codecs ----------
+
+pub fn phase_state_str(ps: &PhaseState) -> &'static str {
+    match ps {
+        PhaseState::Gas => "Gas",
+        PhaseState::Liquid => "Liquid",
+        PhaseState::Crystal => "Crystal",
+    }
+}
+
+pub fn str_to_phase_state(s: &str) -> PhaseState {
+    match s {
+        "Gas" => PhaseState::Gas,
+        "Crystal" => PhaseState::Crystal,
+        _ => PhaseState::Liquid,
+    }
+}
+
+pub fn subject_dependency_str(sd: &SubjectDependency) -> &'static str {
+    match sd {
+        SubjectDependency::High => "High",
+        SubjectDependency::Low => "Low",
+    }
+}
+
+pub fn str_to_subject_dependency(s: &str) -> SubjectDependency {
+    match s {
+        "Low" => SubjectDependency::Low,
+        _ => SubjectDependency::High,
+    }
+}
+
+pub fn concentration_str(c: &Concentration) -> &'static str {
+    match c {
+        Concentration::Dissolved => "Dissolved",
+        Concentration::Colloidal => "Colloidal",
+    }
+}
+
+pub fn str_to_concentration(s: &str) -> Concentration {
+    match s {
+        "Colloidal" => Concentration::Colloidal,
+        _ => Concentration::Dissolved,
     }
 }

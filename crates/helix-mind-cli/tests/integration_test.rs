@@ -50,6 +50,10 @@ fn create_l2_node(content: &str, utility: f64) -> Node {
         high_risk: false,
         abstract_provenance: None,
         derived_from: vec![],
+        // P0 (ADR-0011): L2 nodes are Low subject-dependency, Liquid phase.
+        phase_state: PhaseState::Liquid,
+        subject_dependency: SubjectDependency::Low,
+        meta: PhaseMeta::default(),
     }
 }
 
@@ -64,6 +68,11 @@ async fn test_write_and_retrieve_node() {
     let retrieved = storage.get_nodes_by_ids(&[node_id]).await.unwrap();
     assert_eq!(retrieved.len(), 1);
     assert_eq!(retrieved[0].utility, 0.8);
+    // P0 (ADR-0011): phase-state & subject-dependency survive the SQLite round-trip.
+    assert_eq!(retrieved[0].phase_state, PhaseState::Liquid);
+    assert_eq!(retrieved[0].subject_dependency, SubjectDependency::Low);
+    assert_eq!(retrieved[0].meta.concentration, Concentration::Dissolved);
+    assert_eq!(retrieved[0].meta.tension, 0.0);
 }
 
 #[tokio::test]
@@ -109,6 +118,7 @@ async fn test_retrieval_engine_basic() {
         system_load: 0.0,
         familiarity: 0.5,
         impasse_depth: 0,
+        budget_tier: BudgetTier::Augmentable,
     };
 
     let result = retrieval.query(

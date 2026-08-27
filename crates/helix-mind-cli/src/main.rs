@@ -39,6 +39,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load configuration
     std::env::set_var("HELIX_MIND_CONFIG", cli.config.to_string_lossy().as_ref());
     let config = Config::load()?;
+    // P0 debt fix: create all declared parent directories so first run
+    // (with an absent `./data`) does not fail with ENOENT.
+    config.ensure_dirs()?;
     tracing::info!("Configuration loaded. Core hash: {}", config.compute_core_hash());
 
     // Initialize storage (returns Arc)

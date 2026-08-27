@@ -60,8 +60,9 @@ impl StorageEngine {
                 "INSERT INTO nodes (id, node_type, content, heat, is_hypothetical, is_recessive,
                  sensitivity, generation, created_at, last_accessed_at, access_count,
                  initial_impact, corrected_by, notes, dominance, utility, corroborations,
-                 attribution_ledger, source, high_risk, abstract_provenance, derived_from)
-                 VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22)
+                 attribution_ledger, source, high_risk, abstract_provenance, derived_from,
+                 phase_state, subject_dependency, concentration, tension)
+                 VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26)
                  ON CONFLICT(id) DO UPDATE SET
                  content=excluded.content, heat=excluded.heat,
                  is_hypothetical=excluded.is_hypothetical, is_recessive=excluded.is_recessive,
@@ -70,7 +71,9 @@ impl StorageEngine {
                  dominance=excluded.dominance, utility=excluded.utility,
                  corroborations=excluded.corroborations, attribution_ledger=excluded.attribution_ledger,
                  source=excluded.source, high_risk=excluded.high_risk,
-                 abstract_provenance=excluded.abstract_provenance, derived_from=excluded.derived_from",
+                 abstract_provenance=excluded.abstract_provenance, derived_from=excluded.derived_from,
+                 phase_state=excluded.phase_state, subject_dependency=excluded.subject_dependency,
+                 concentration=excluded.concentration, tension=excluded.tension",
                 rusqlite::params![
                     node.id.to_string(),
                     node_type_str(&node.node_type),
@@ -94,6 +97,10 @@ impl StorageEngine {
                     node.high_risk,
                     provenance,
                     derived_json,
+                    phase_state_str(&node.phase_state),
+                    subject_dependency_str(&node.subject_dependency),
+                    concentration_str(&node.meta.concentration),
+                    node.meta.tension,
                 ],
             ).map_err(|e| MindError::Storage(e.to_string()))?;
             Ok(())
@@ -138,7 +145,8 @@ impl StorageEngine {
             "SELECT id, node_type, content, heat, is_hypothetical, is_recessive,
              sensitivity, generation, created_at, last_accessed_at, access_count,
              initial_impact, corrected_by, notes, dominance, utility, corroborations,
-             attribution_ledger, source, high_risk, abstract_provenance, derived_from
+             attribution_ledger, source, high_risk, abstract_provenance, derived_from,
+             phase_state, subject_dependency, concentration, tension
              FROM nodes WHERE id IN ({})",
             placeholders.join(",")
         );
@@ -393,7 +401,8 @@ impl StorageEngine {
             "SELECT id, node_type, content, heat, is_hypothetical, is_recessive,
              sensitivity, generation, created_at, last_accessed_at, access_count,
              initial_impact, corrected_by, notes, dominance, utility, corroborations,
-             attribution_ledger, source, high_risk, abstract_provenance, derived_from
+             attribution_ledger, source, high_risk, abstract_provenance, derived_from,
+             phase_state, subject_dependency, concentration, tension
              FROM nodes WHERE node_type = ?1 LIMIT 10000"
         ).map_err(|e| MindError::Storage(e.to_string()))?;
         let rows = stmt.query_map(rusqlite::params![type_str], |row| Ok(row_to_node(row)))
@@ -413,7 +422,8 @@ impl StorageEngine {
             "SELECT id, node_type, content, heat, is_hypothetical, is_recessive,
              sensitivity, generation, created_at, last_accessed_at, access_count,
              initial_impact, corrected_by, notes, dominance, utility, corroborations,
-             attribution_ledger, source, high_risk, abstract_provenance, derived_from
+             attribution_ledger, source, high_risk, abstract_provenance, derived_from,
+             phase_state, subject_dependency, concentration, tension
              FROM nodes WHERE node_type = 'L3' AND is_recessive = 0
              ORDER BY heat DESC LIMIT ?1"
         ).map_err(|e| MindError::Storage(e.to_string()))?;
@@ -435,7 +445,8 @@ impl StorageEngine {
             "SELECT id, node_type, content, heat, is_hypothetical, is_recessive,
              sensitivity, generation, created_at, last_accessed_at, access_count,
              initial_impact, corrected_by, notes, dominance, utility, corroborations,
-             attribution_ledger, source, high_risk, abstract_provenance, derived_from
+             attribution_ledger, source, high_risk, abstract_provenance, derived_from,
+             phase_state, subject_dependency, concentration, tension
              FROM nodes WHERE id = ?1 AND node_type = 'L2'"
         ).map_err(|e| MindError::Storage(e.to_string()))?;
         let rows = stmt.query_map(rusqlite::params![hash], |row| Ok(row_to_node(row)))

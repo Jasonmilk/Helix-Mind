@@ -39,6 +39,13 @@ pub async fn handle_helix_query(
             system_load: ec.system_load,
             familiarity: ec.familiarity,
             impasse_depth: ec.impasse_depth as u8,
+            // P0 (ADR-0010): budget tier from the body (front routing)
+            budget_tier: match ec.budget_tier {
+                0 => helix_mind_core::graph::BudgetTier::Augmentable,
+                1 => helix_mind_core::graph::BudgetTier::Endogenous,
+                2 => helix_mind_core::graph::BudgetTier::ExogenousRequired,
+                _ => helix_mind_core::graph::BudgetTier::Void,
+            },
         }
     } else {
         helix_mind_core::graph::EnergyContext::default()
