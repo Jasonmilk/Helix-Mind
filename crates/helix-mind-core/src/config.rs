@@ -81,6 +81,9 @@ pub struct MetabolismConfig {
     pub resurrection_window_days: i64,
     #[serde(default = "default_llm_gateway_url")]
     pub llm_gateway_url: String,
+    /// LLM access mode: "disabled" (production, locked) | "debug_direct" (test/debug only).
+    #[serde(default = "default_llm_mode")]
+    pub llm_mode: String,
     #[serde(default = "default_ner_mode")]
     pub ner_mode: String,
     #[serde(default = "default_ner_gateway_url")]
@@ -125,8 +128,6 @@ pub struct FederationConfig {
     pub outgoing_dir: String,
     #[serde(default = "default_sandbox_dir")]
     pub sandbox_dir: String,
-    #[serde(default = "default_flowmodus_socket")]
-    pub flowmodus_ipc_socket: String,
     #[serde(default = "default_cremation_years")]
     pub cremation_years: u64,
     #[serde(default = "default_scan_interval_sec")]
@@ -197,6 +198,7 @@ fn default_merge_similarity() -> f64 { 0.95 }
 fn default_crystallize_idle_timeout() -> u64 { 600 }
 fn default_resurrection_window() -> i64 { 30 }
 fn default_llm_gateway_url() -> String { "http://localhost:11434/api/generate".into() }
+fn default_llm_mode() -> String { "disabled".into() }
 fn default_ner_mode() -> String { "local".into() }
 fn default_ner_gateway_url() -> String { String::new() }
 fn default_ner_model_path() -> String { "./models/ner.onnx".into() }
@@ -213,7 +215,6 @@ fn default_archive_past_life() -> bool { true }
 
 fn default_outgoing_dir() -> String { "./federation/outgoing".into() }
 fn default_sandbox_dir() -> String { "./federation/sandbox".into() }
-fn default_flowmodus_socket() -> String { "/tmp/flowmodus.sock".into() }
 fn default_cremation_years() -> u64 { 100 }
 fn default_scan_interval_sec() -> u64 { 60 }
 

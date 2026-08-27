@@ -41,8 +41,12 @@ impl HelixMindServiceImpl {
 
 pub async fn serve(addr: SocketAddr, service: HelixMindServiceImpl) -> Result<(), Box<dyn std::error::Error>> {
     let server = HelixMindServer::new(service);
+    // Z3 (P0-Pre): health probe is core gRPC infrastructure (the "serving lamp"),
+    // standard gRPC/tonic probe — belongs here, not deferred to P3.
+    let health = crate::health::HealthServer::new(crate::health::HealthServiceImpl);
     tonic::transport::Server::builder()
         .add_service(server)
+        .add_service(health)
         .serve(addr)
         .await?;
     Ok(())

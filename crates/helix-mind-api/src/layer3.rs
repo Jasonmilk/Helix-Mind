@@ -37,8 +37,8 @@ pub async fn handle_helix_query(
             vigilance: ec.vigilance,
             latency_limit_ms: ec.latency_limit_ms,
             system_load: ec.system_load,
-            familiarity: 0.5,
-            impasse_depth: 0,
+            familiarity: ec.familiarity,
+            impasse_depth: ec.impasse_depth as u8,
         }
     } else {
         helix_mind_core::graph::EnergyContext::default()
