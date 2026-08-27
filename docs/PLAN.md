@@ -8,23 +8,52 @@
 
 ---
 
-## 1. 当前阶段：P3 安全与契约（计划待起草）
+## 1. 当前阶段：P3 安全与契约
 
-> **状态**：P2 已完成（见 GROWTH 2026-08-28）。P3 计划待起草，经审查后再开工（DNA 方法论：计划先于代码）。
+> **状态**：🚧 计划已起草（2026-08-28），待用户审查后开工（DNA 方法论：计划先于代码）。
 
-### 1.1 P3 目标（既定范围，详情待起草）
-| 任务 | 内容 | 依赖 |
-|---|---|---|
-| M-07 | 联邦确定性审查（feature flag `federation` 在此阶段打开，能力未就绪=功能不存在） | P2 |
-| M-08 | API/Health 补全；UDS SO_PEERCRED 鉴权（本地部署）/ 远程 mTLS（预留） | P2 |
-| CI-144 | 语义对齐（INTENT-7 / BIND-19 / CAPABILITY-13） | P3 内 |
+### 1.1 目标（基于代码真相源调研）
+| 任务 | 内容 | 代码现状 | 状态 |
+|---|---|---|---|
+| P3a-M-07 | 联邦确定性审查：出站门控（审查未过不出站）+ 入站沙盒审查接入 + 双盲语义定案 | `share_dag` 无门控直接可用；`review_node` 放行 stub；`dual_blind_review` 假双盲 | ⏳ ADR-0018 |
+| P3b-M-08 | 传输层安全：UDS 支持 + SO_PEERCRED 鉴权（本地）/ mTLS 预留（远程）；middleware 真实化 | `server.rs` 仅 TCP；`ValidationLayer` 空壳；HealthServer 已注册(Z3) | ⏳ ADR-0019 |
+| P3c-CI144 | INTENT-7 语义对齐：动词(FETCH/WRITE_NODE/TENTACLE/FINISH/CANCEL)→Mind gRPC 契约映射；traceparent 透传 | 无映射表；proto 无 traceparent 透传 | ⏳ ADR-0020 |
+| 旁支 | `docs/dna-template/` 方法论参考种子（顺手，不额外精力） | 无 | ⏳ |
 
-### 1.2 P2 完成摘要（详细记录 → `docs/GROWTH.md` [2026-08-28]）
-- **ADR-0014/0017 Active**：P2a 确定性代谢（`find_similar_node` + 失调消解闭环）+ P2b `CognitiveService` 端口（三适配器 + llm_mode 门控）+ P2c 越界清零（reqwest 收敛到 `cognitive.rs` 唯一出网点）
-- **数据契约 Append-Only**：`RelationType::Conflicts`、edges.created_at、`dissonance_window_hours`（消魔法数 24）
-- **验收**：全量测试全绿（metabolism 15 单测 + 3 集成）、0 warning、Z2 门控物理生效
+### 1.2 代码真相源（P3 调研结论）
+- **federation**：`share_dag` 收集 public L2 → 打包 DAG-JSON → 写 outgoing，**全程无审查门控**（R1 违反，需先收口再放行）；`is_high_risk_node` 关键字检测可用
+- **review.rs**：`review_node` 放行 stub（TODO LLM）；`dual_blind_review` 两次相同调用（假双盲）
+- **api**：`serve(SocketAddr)` TCP only；HealthServer 已注册（Z3 ✅）；`ValidationLayer` 空壳
+- **config**：`ApiConfig`（listen_addr + layer 开关，无 transport/鉴权）；`FederationConfig`（目录 + cremation + scan，无审查/门控）
+- **依赖**：tokio "full"（UDS 可用）；federation 不依赖 metabolism（复用 SymbolicSolver 需决策）
 
-### 1.3 下一阶段预览：P4 硬冻结兑现 + 生态接口
+### 1.3 技术前提
+- ✅ `SymbolicSolver` 就绪（P2a，5 单测）；`is_high_risk_node` 可用
+- ✅ HealthServer 已注册；tokio "full" 含 UDS
+- ⚠️ tonic `serve_with_incoming` + `UnixListener` peer_cred 注入需原型验证（连接级身份 → 鉴权）
+
+### 1.4 入口 ADR（Draft，待审查）
+- **ADR-0018**：P3a 联邦确定性审查（出站门控 / 审查标准 / 双盲语义）
+- **ADR-0019**：P3b 传输层安全（UDS + SO_PEERCRED + mTLS 预留）
+- **ADR-0020**：P3c CI-144 INTENT-7 语义对齐（动词→gRPC 映射 + traceparent）
+
+### 1.5 待用户审查的决策点
+| # | 决策点 | 建议 | 状态 |
+|---|---|---|---|
+| D1 | 联邦出站门控形态 | 保留已确认的"能力未就绪=功能不存在"语义；实现选：Cargo feature（编译期最彻底）/ 配置门控（`federation.enabled` 运行期，轻量可逆）。建议：P3 内审查引擎就绪后，`share_dag` 强制先过审查，审查未过即拒绝写盘——无论门控形态，核心是"审查未过不出站" | 待确认 |
+| D2 | SymbolicSolver 复用路径 | 下沉 core（共享基础件，metabolism+federation 共用，复用优先）vs federation 依赖 metabolism（重）。建议：下沉 core | 待确认 |
+| D3 | 双盲的确定性语义 | LLM 未就绪：双盲 = 两个独立确定性判定（结构断言 solver + 高风险规则）交叉；LLM 就绪后升级真双盲。ADR-0018 定语义 | 待确认 |
+| D4 | UDS/TCP 默认形态 | 本地默认 UDS（SO_PEERCRED 0ms）+ 远程 TCP（mTLS 预留）；`ApiConfig.transport` 枚举 | 待确认 |
+| D5 | SO_PEERCRED 白名单 | 白名单 UID 来自配置（`api.trusted_uids`），默认拒绝（fail-closed） | 待确认 |
+| D6 | CI-144 对齐产物 | 契约映射表文档（INTENT-7 动词→gRPC）+ proto 透传 traceparent（Append-Only）；对齐 ECOSYSTEM §4.1 | 待确认 |
+
+### 1.6 验收标准
+- **P3a**：`share_dag` 默认拒绝出站（未启用审查）；启用后仅通过确定性审查的 public L2 出站；入站沙盒接入确定性审查；测试：高风险节点被拒 / 断言矛盾节点被拒
+- **P3b**：UDS 启动 + SO_PEERCRED 白名单拒绝/允许测试；Health 可用；middleware 有实际校验
+- **P3c**：INTENT-7 映射表交付；traceparent 透传字段（Append-Only）
+- `cargo test --workspace` 全绿 + 0 warning
+
+### 1.7 下一阶段预览：P4 硬冻结兑现 + 生态接口
 - M-10 `activation_vector`（Append-Only 扩展，reserved 13 落地）
 - Mind→Callosum 调用契约文档（消费方，非实现）
 - M-12 Rhizax 预留接口
