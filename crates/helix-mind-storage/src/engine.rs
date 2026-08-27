@@ -111,8 +111,50 @@ impl StorageEngine {
             let mut topo = self.topology.write().await;
             topo.add_node(&node);
         }
-        self.cache.put(node);
+        self.cache.put(node.clone());
+
+        // P1 (M-01/ADR-0013): enqueue FTS index maintenance — never blocks the
+        // node-write transaction (async queue + batch coalescing).
+        let _ = self.fts_tx.send(crate::fts::FtsCommand::Upsert {
+            node_id: node.id,
+            phase_state: node.phase_state,
+            content: crate::fts::node_search_text(&node.content),
+        });
         Ok(())
+    }
+
+    /// F3 (P2a 前置修复): atomic single-transaction access-count bump for a
+    /// batch of nodes.
+    ///
+    /// Replaces the per-node `WritePriority::Critical` write_node (which opened
+    /// an fsync transaction per node on every query) with one deferred UPDATE.
+    /// The SQL-level atomic increment (`access_count = access_count + 1`) also
+    /// removes the read-modify-write race of the old read-then-write-back path.
+    /// `access_count`/`last_accessed_at` are soft signals, not the truth source,
+    /// so durability is deliberately relaxed (single transaction, no per-node
+    /// fsync).
+    pub async fn bump_access_counts(&self, node_ids: &[Uuid]) -> Result<(), MindError> {
+        if node_ids.is_empty() {
+            return Ok(());
+        }
+        let ids_json = serde_json::to_string(
+            &node_ids
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>(),
+        )
+        .map_err(|e| MindError::Storage(e.to_string()))?;
+        let now = chrono::Utc::now().to_rfc3339();
+        self.sqlite.transactional_write(|tx| {
+            tx.execute(
+                "UPDATE nodes
+                 SET access_count = access_count + 1, last_accessed_at = ?1
+                 WHERE id IN (SELECT value FROM json_each(?2))",
+                rusqlite::params![now, ids_json],
+            )
+            .map_err(|e| MindError::Storage(e.to_string()))?;
+            Ok(())
+        })
     }
 
     pub async fn get_nodes_by_ids(

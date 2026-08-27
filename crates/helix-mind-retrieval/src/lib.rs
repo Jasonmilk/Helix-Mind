@@ -1,9 +1,10 @@
 pub mod mode;
 pub mod adapter;
+pub mod fts_extractor;
 
 pub use adapter::{StartNodeExtractor, FakeAdapter, EmptyExtractor};
+pub use fts_extractor::{FtsExtractor, sanitize_query, escape_fts};
 
-use helix_mind_storage::WritePriority;
 use helix_mind_core::graph::*;
 use helix_mind_core::config::RetrievalConfig;
 use helix_mind_storage::StorageEngine;
@@ -25,8 +26,10 @@ pub struct RetrievalEngine {
 
 impl RetrievalEngine {
     pub fn new(config: RetrievalConfig, storage: Arc<StorageEngine>) -> Self {
-        // Honest default: empty extraction until P1 (M-01) lands FTS5.
-        Self::with_extractor(config, storage, Arc::new(EmptyExtractor))
+        // P1 (M-01): the real FTS5-trigram extractor is the production default.
+        // Tests override via `with_extractor` (FakeAdapter / EmptyExtractor).
+        let extractor = Arc::new(FtsExtractor::new(&storage, config.max_nodes_per_query));
+        Self::with_extractor(config, storage, extractor)
     }
 
     /// Construct with an explicit start-node extractor.
@@ -396,18 +399,14 @@ impl RetrievalEngine {
     }
 
     // ── Update access counts for retrieved nodes ────────────────────
+    /// F3 (P2a 前置修复): batch the access-count bump into a single transaction
+    /// (atomic SQL increment) instead of a per-node Critical write. Soft signal,
+    /// not the truth source — durability deliberately relaxed.
     async fn update_access_counts(
         &self,
         nodes: &[Node],
     ) -> Result<(), helix_mind_core::error::MindError> {
-        for node in nodes {
-            let mut node_clone = node.clone();
-            node_clone.last_accessed_at = Utc::now();
-            node_clone.access_count += 1;
-            self.storage
-                .write_node(node_clone, WritePriority::Critical)
-                .await?;
-        }
-        Ok(())
+        let ids: Vec<Uuid> = nodes.iter().map(|n| n.id).collect();
+        self.storage.bump_access_counts(&ids).await
     }
 }

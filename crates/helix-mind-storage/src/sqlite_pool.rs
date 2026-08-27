@@ -96,6 +96,9 @@ impl SqlitePool {
 
         // P0 (ADR-0011/0012): append-only schema migration for existing DBs.
         self.migrate_nodes_phase_columns(&conn)?;
+
+        // P1 (M-01/ADR-0013): FTS5 trigram projection table.
+        crate::fts::create_fts_table(&conn)?;
         Ok(())
     }
 
@@ -175,6 +178,32 @@ impl SqlitePool {
 mod tests {
     use helix_mind_core::config::StorageConfig;
     use crate::StorageEngine;
+
+    /// Z6 / P1-M01 startup contract: the bundled SQLite must be compiled with
+    /// ENABLE_FTS5 and support the trigram tokenizer. Verified through the same
+    /// rusqlite dependency the storage engine uses (not the system sqlite3).
+    #[test]
+    fn fts5_trigram_is_available_in_bundled_sqlite() {
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
+        let enabled: i64 = conn
+            .query_row(
+                "SELECT sqlite_compileoption_used('ENABLE_FTS5')",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(
+            enabled, 1,
+            "bundled SQLite must be compiled with ENABLE_FTS5 (FTS5 trigram is the P1 start-node extraction path)"
+        );
+        // Prove FTS5 + trigram actually work end-to-end, not just the flag.
+        conn.execute_batch(
+            "CREATE VIRTUAL TABLE probe_fts USING fts5(content, tokenize='trigram'); \
+             INSERT INTO probe_fts(content) VALUES ('认知相态的河流与催化器'); \
+             SELECT count(*) FROM probe_fts WHERE probe_fts MATCH '认知';",
+        )
+        .unwrap();
+    }
 
     #[tokio::test]
     async fn migrate_legacy_db_backfills_phase_columns() {
@@ -283,5 +312,76 @@ mod tests {
         assert_eq!(crystals.len(), 1, "only the Crystal node matches");
         assert_eq!(crystals[0].id, crystal.id);
         assert_eq!(crystals[0].phase_state, PhaseState::Crystal);
+    }
+
+    /// F3 (P2a 前置修复): access-count bumps are a single atomic transaction —
+    /// SQL-level increment (no read-modify-write race), batched across ids, and
+    /// an empty batch is a no-op. Replaces the per-node Critical write_node path.
+    /// Uses a temp-file DB (not `:memory:`): r2d2 may hand out multiple pooled
+    /// connections, and each `:memory:` connection is a private empty DB.
+    #[tokio::test]
+    async fn bump_access_counts_is_atomic_batch() {
+        use helix_mind_core::graph::{Node, PhaseState, Sensitivity};
+
+        let dir = std::env::temp_dir().join(format!("helix_f3_{}.db", uuid::Uuid::new_v4()));
+        let config = StorageConfig {
+            sqlite_path: dir.to_string_lossy().to_string(),
+            ..Default::default()
+        };
+        let engine = crate::StorageEngine::new(&config).await.unwrap();
+
+        let n1 = Node {
+            phase_state: PhaseState::Liquid,
+            sensitivity: Some(Sensitivity::Public),
+            ..Node::default()
+        };
+        let n2 = Node {
+            phase_state: PhaseState::Liquid,
+            sensitivity: Some(Sensitivity::Public),
+            ..Node::default()
+        };
+        engine
+            .write_node(n1.clone(), crate::WritePriority::Critical)
+            .await
+            .unwrap();
+        engine
+            .write_node(n2.clone(), crate::WritePriority::Critical)
+            .await
+            .unwrap();
+        assert_eq!(n1.access_count, 0);
+        assert_eq!(n2.access_count, 0);
+
+        // Batch bump both in a single transaction.
+        engine.bump_access_counts(&[n1.id, n2.id]).await.unwrap();
+
+        let conn = engine.sqlite_get().await.unwrap();
+        let (c1, c2): (i64, i64) = conn
+            .query_row(
+                "SELECT (SELECT access_count FROM nodes WHERE id = ?1),
+                        (SELECT access_count FROM nodes WHERE id = ?2)",
+                rusqlite::params![n1.id.to_string(), n2.id.to_string()],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!((c1, c2), (1, 1), "both ids bumped atomically");
+
+        // Re-bump n1 → atomic increment 1 → 2 (no read-modify-write race).
+        engine.bump_access_counts(&[n1.id]).await.unwrap();
+        let c1b: i64 = conn
+            .query_row(
+                "SELECT access_count FROM nodes WHERE id = ?1",
+                [n1.id.to_string()],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(c1b, 2);
+
+        // Empty batch is a no-op.
+        engine.bump_access_counts(&[]).await.unwrap();
+
+        drop(conn);
+        let _ = std::fs::remove_file(&dir);
+        let _ = std::fs::remove_file(format!("{}-wal", dir.display()));
+        let _ = std::fs::remove_file(format!("{}-shm", dir.display()));
     }
 }
