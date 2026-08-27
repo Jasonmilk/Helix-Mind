@@ -58,7 +58,10 @@ pub async fn serve(
         Transport::Tcp => {
             let addr: SocketAddr = config.listen_addr.parse()?;
             tracing::info!("Starting gRPC server (TCP) on {}", addr);
+            let validation =
+                crate::middleware::ValidationLayer::new(config.max_system_load);
             tonic::transport::Server::builder()
+                .layer(tonic::service::interceptor(validation))
                 .add_service(server)
                 .add_service(health)
                 .serve(addr)
@@ -70,9 +73,13 @@ pub async fn serve(
             let listener = tokio::net::UnixListener::bind(path)?;
             tracing::info!("Starting gRPC server (UDS) on {}", path);
             let incoming = tokio_stream::wrappers::UnixListenerStream::new(listener);
+            // 身份层（fail-closed）→ 内容层（metadata 校验 / 日志 / 负载）
             let auth = crate::middleware::PeerCredAuth::new(config.trusted_uids.clone());
+            let validation =
+                crate::middleware::ValidationLayer::new(config.max_system_load);
             tonic::transport::Server::builder()
                 .layer(tonic::service::interceptor(auth))
+                .layer(tonic::service::interceptor(validation))
                 .add_service(server)
                 .add_service(health)
                 .serve_with_incoming(incoming)

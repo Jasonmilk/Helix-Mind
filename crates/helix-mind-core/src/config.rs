@@ -272,6 +272,10 @@ pub struct ApiConfig {
     pub transport: Transport,
     #[serde(default = "default_trusted_uids")]
     pub trusted_uids: Vec<u32>,
+    /// 负载检查阈值（ValidationLayer，ADR-0019 P3b 收尾）。
+    /// 超过该值返回 Unavailable；默认 1.0 表示无负载源时不拒绝。
+    #[serde(default = "default_max_system_load")]
+    pub max_system_load: f64,
     #[serde(default = "default_layer1_enabled")]
     pub layer1_enabled: bool,
     #[serde(default = "default_layer2_enabled")]
@@ -284,6 +288,7 @@ impl Default for ApiConfig {
             listen_addr: default_listen_addr(),
             transport: default_transport(),
             trusted_uids: default_trusted_uids(),
+            max_system_load: default_max_system_load(),
             layer1_enabled: default_layer1_enabled(),
             layer2_enabled: default_layer2_enabled(),
         }
@@ -374,6 +379,7 @@ fn default_gene_lock_path() -> String { "./gene_lock.md".into() }
 fn default_listen_addr() -> String { "127.0.0.1:50051".into() }
 fn default_transport() -> Transport { Transport::Tcp }
 fn default_trusted_uids() -> Vec<u32> { Vec::new() }
+fn default_max_system_load() -> f64 { 1.0 }
 fn default_layer1_enabled() -> bool { true }
 fn default_layer2_enabled() -> bool { true }
 
