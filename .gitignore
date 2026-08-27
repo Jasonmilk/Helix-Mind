@@ -58,7 +58,7 @@ models/*.bin
 # .lunar/ai-todo.json
 
 # === DNA Self-Growing Methodology ===
-docs/archive/growth/*.md
+# GROWTH.md 归档已版本化（方案 B：历史痕迹进仓库，永不删除），不再忽略：
 docs/archive/deprecated/*.md
 !docs/archive/growth/.gitkeep
 !docs/archive/deprecated/.gitkeep

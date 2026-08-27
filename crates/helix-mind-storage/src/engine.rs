@@ -414,10 +414,35 @@ impl StorageEngine {
         Ok(nodes)
     }
 
+    /// P0.5 (ADR-0011): return nodes whose materialized `phase_state` matches.
+    /// Data-access primitive for phase-gated queries; budget-tier routing that
+    /// USES this primitive is P1 (ADR-0010).
+    pub async fn get_nodes_by_phase(
+        &self,
+        phase: PhaseState,
+    ) -> Result<Vec<Node>, MindError> {
+        let conn = self.sqlite.get()?;
+        let phase_str = phase_state_str(&phase);
+        let mut stmt = conn.prepare(
+            "SELECT id, node_type, content, heat, is_hypothetical, is_recessive,
+             sensitivity, generation, created_at, last_accessed_at, access_count,
+             initial_impact, corrected_by, notes, dominance, utility, corroborations,
+             attribution_ledger, source, high_risk, abstract_provenance, derived_from,
+             phase_state, subject_dependency, concentration, tension
+             FROM nodes WHERE phase_state = ?1 LIMIT 10000"
+        ).map_err(|e| MindError::Storage(e.to_string()))?;
+        let rows = stmt.query_map(rusqlite::params![phase_str], |row| Ok(row_to_node(row)))
+            .map_err(|e| MindError::Storage(e.to_string()))?;
+        let mut nodes = Vec::new();
+        for row in rows {
+            nodes.push(row.map_err(|e| MindError::Storage(e.to_string()))?);
+        }
+        Ok(nodes)
+    }
+
     pub async fn get_top_l3_for_crystallization(
         &self,
-        limit: usize) -> Result<Vec<Node>, MindError> {
-        let conn = self.sqlite.get()?;
+        limit: usize) -> Result<Vec<Node>, MindError> {        let conn = self.sqlite.get()?;
         let mut stmt = conn.prepare(
             "SELECT id, node_type, content, heat, is_hypothetical, is_recessive,
              sensitivity, generation, created_at, last_accessed_at, access_count,

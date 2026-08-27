@@ -243,4 +243,45 @@ mod tests {
         drop(conn);
         let _ = std::fs::remove_file(&path_str);
     }
+
+    #[tokio::test]
+    async fn get_nodes_by_phase_filters_by_phase_state() {
+        use helix_mind_core::graph::{Node, PhaseState, Sensitivity};
+
+        let config = StorageConfig {
+            sqlite_path: ":memory:".to_string(),
+            ..Default::default()
+        };
+        let engine = crate::StorageEngine::new(&config).await.unwrap();
+
+        // Node::default() is L3 → must carry a sensitivity to pass validation.
+        let liquid = Node {
+            phase_state: PhaseState::Liquid,
+            sensitivity: Some(Sensitivity::Public),
+            ..Node::default()
+        };
+        let crystal = Node {
+            phase_state: PhaseState::Crystal,
+            sensitivity: Some(Sensitivity::Public),
+            ..Node::default()
+        };
+        engine
+            .write_node(liquid.clone(), crate::WritePriority::Critical)
+            .await
+            .unwrap();
+        engine
+            .write_node(crystal.clone(), crate::WritePriority::Critical)
+            .await
+            .unwrap();
+
+        let liquids = engine.get_nodes_by_phase(PhaseState::Liquid).await.unwrap();
+        let crystals = engine.get_nodes_by_phase(PhaseState::Crystal).await.unwrap();
+
+        assert_eq!(liquids.len(), 1, "only the Liquid node matches");
+        assert_eq!(liquids[0].id, liquid.id);
+        assert_eq!(liquids[0].phase_state, PhaseState::Liquid);
+        assert_eq!(crystals.len(), 1, "only the Crystal node matches");
+        assert_eq!(crystals[0].id, crystal.id);
+        assert_eq!(crystals[0].phase_state, PhaseState::Crystal);
+    }
 }

@@ -2,7 +2,7 @@ use helix_mind_core::graph::*;
 use helix_mind_core::config::*;
 use helix_mind_storage::StorageEngine;
 use helix_mind_storage::WritePriority;
-use helix_mind_retrieval::RetrievalEngine;
+use helix_mind_retrieval::{RetrievalEngine, FakeAdapter};
 use helix_mind_metabolism::decay::DecayEngine;
 use helix_mind_metabolism::symbolic::SymbolicSolver;
 use helix_mind_metabolism::symbolic::LogicAssertion;
@@ -76,7 +76,6 @@ async fn test_write_and_retrieve_node() {
 }
 
 #[tokio::test]
-#[ignore = "P1: extract_start_nodes unimplemented — SA-Core unreachable; known-empty baseline (Z5)"]
 async fn test_retrieval_engine_basic() {
     let storage = create_test_storage().await;
 
@@ -99,7 +98,9 @@ async fn test_retrieval_engine_basic() {
 
     let retrieval_config = RetrievalConfig {
         beam_width: 3,
-        weight_threshold: 0.5,
+        // Low threshold (see retrieval_test.rs): SA-Core zeroes a 1-hop leaf
+        // at threshold 0.5; 0.2 keeps it so traversal is observable.
+        weight_threshold: 0.2,
         max_nodes_per_query: 100,
         dead_end_penalty_factor: 0.8,
         max_hops: 5,
@@ -107,7 +108,14 @@ async fn test_retrieval_engine_basic() {
         soft_edge_min_weight: 0.1,
         tentative_edge_weight: 0.3,
     };
-    let retrieval = RetrievalEngine::new(retrieval_config, storage.clone());
+    // P0.5: inject the deterministic FakeAdapter as the start-node extractor.
+    let mut fake = FakeAdapter::new();
+    fake.add("test", vec![id_a]);
+    let retrieval = RetrievalEngine::with_extractor(
+        retrieval_config,
+        storage.clone(),
+        Arc::new(fake),
+    );
 
     let energy = EnergyContext {
         token_budget: 1000,
@@ -130,11 +138,13 @@ async fn test_retrieval_engine_basic() {
         AutonomyLevel::Open,
     ).await.unwrap();
 
-    // Z5 (P0-Pre): honest baseline — extraction is unimplemented, so an empty
-    // result is the truthful expected outcome (no false-positive success).
+    // P0.5: extraction is now wired (FakeAdapter), so the pipeline must return
+    // real nodes — start node A and its causal neighbor B.
+    let returned: Vec<uuid::Uuid> = result.nodes.iter().map(|n| n.id).collect();
+    assert!(!result.nodes.is_empty(), "retrieval must return nodes via FakeAdapter");
     assert!(
-        result.nodes.is_empty(),
-        "known-empty baseline until P1 (SA-Core unreachable)"
+        returned.contains(&id_a) && returned.contains(&id_b),
+        "skilled traversal should reach B from A via the causal edge"
     );
     println!("Impasse: {:?}, stages: {}", result.impasse_level, result.stages_attempted);
 }

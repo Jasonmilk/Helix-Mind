@@ -143,6 +143,39 @@ Helix-Mind 是 Helix 生态的**记忆/意识中枢**（0.1.0 骨架）。核心
 
 ---
 
+## 3.6 P0.5 完成记录（测试基建，2026-08-27）
+
+**状态**：✅ 已落地并全量验证（`cargo test --workspace` 全绿，0 warning）。
+
+### 决策/记录（决策先于代码）
+| 产物 | 内容 |
+|---|---|
+| **ADR-0016** | L2 自动共享语义宪法级锁定："自动"两层含义（免逐节点决策 + 洗脱前提），气态不入树，宪法措辞不变、ADR 为执行澄清 |
+| **GROWTH.md** | 追加 v4.1 相态范式入根记录；头部对齐 v4.1；按"仅留 3 条"规则将 v3.4 记录归档至 `docs/archive/growth/` |
+
+### 检索管线测试基建（新 seam）
+- **`adapter.rs`**：`StartNodeExtractor` trait（检索 Stage-1 起始节点提取的接缝）+ `EmptyExtractor`（诚实空基线，P1 前默认）+ `FakeAdapter`（确定性 LLM/NER 模拟，query→节点 ID 映射，零随机零网络）。
+- **`RetrievalEngine`**：新增 `extractor` 字段；`new()` 保持默认空提取器（诚实），`with_extractor()` 注入 FakeAdapter；`extract_start_nodes` 从空 stub 改为走 seam。
+
+### 新增测试（检索测试不再 #[ignore]）
+| 位置 | 测试 | 断言 |
+|---|---|---|
+| retrieval/tests | `retrieval_returns_start_node_with_fake_adapter` | FakeAdapter 映射 query→节点，管线返回非空且命中起始节点 |
+| retrieval/tests | `retrieval_traverses_causal_edge_to_neighbor` | 起始节点 A 经因果边到达 B（SA-Core 1-hop 传播） |
+| storage lib | `get_nodes_by_phase_filters_by_phase_state` | 按 `phase_state` 过滤：Liquid/Crystal 各自只返回匹配节点 |
+| cli tests | `test_retrieval_engine_basic`（原 #[ignore]，已解锁） | 外部 crate 视角：FakeAdapter 注入后返回 A+B |
+
+### 支撑原语
+- **`StorageEngine::get_nodes_by_phase`**：数据访问层原语（`WHERE phase_state = ?`），预算路由在 P1 使用它（ADR-0010）。
+
+### 验收
+`cargo test --workspace` 全绿（cli 5 / core 8 / retrieval 2 / storage 2，无 ignore、无失败）｜`cargo check --workspace` 0 warning ｜FakeAdapter 为公共模块可被 P1 复用。
+
+### 过程中发现并记录的既有引擎语义（非本轮改动）
+SA-Core 扩散对**叶节点**衰减：A→B 中 B（无出边）在 `weight_threshold=0.5` 下能量跌至 0.25 被清零。测试配置用 0.2 阈值诚实观测 1-hop 传播；阈值语义本身属 P1 SA-Core 调优范畴，不在 P0.5 改动。
+
+---
+
 ## 4. 知识哲学（D3，收敛版）
 
 ### 4.1 核心原则

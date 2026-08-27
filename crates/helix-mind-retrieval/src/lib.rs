@@ -1,4 +1,7 @@
 pub mod mode;
+pub mod adapter;
+
+pub use adapter::{StartNodeExtractor, FakeAdapter, EmptyExtractor};
 
 use helix_mind_storage::WritePriority;
 use helix_mind_core::graph::*;
@@ -11,6 +14,8 @@ use chrono::Utc;
 pub struct RetrievalEngine {
     config: RetrievalConfig,
     storage: Arc<StorageEngine>,
+    /// Start-node extraction seam (P0.5: FakeAdapter in tests; P1: FTS5).
+    extractor: Arc<dyn StartNodeExtractor>,
     /// Track the current impasse depth across queries.
     impasse_depth: tokio::sync::RwLock<u8>,
     /// Track recent query embeddings for familiarity estimation.
@@ -20,9 +25,21 @@ pub struct RetrievalEngine {
 
 impl RetrievalEngine {
     pub fn new(config: RetrievalConfig, storage: Arc<StorageEngine>) -> Self {
+        // Honest default: empty extraction until P1 (M-01) lands FTS5.
+        Self::with_extractor(config, storage, Arc::new(EmptyExtractor))
+    }
+
+    /// Construct with an explicit start-node extractor.
+    /// P0.5: inject `FakeAdapter` in tests; P1: inject the real FTS5 extractor.
+    pub fn with_extractor(
+        config: RetrievalConfig,
+        storage: Arc<StorageEngine>,
+        extractor: Arc<dyn StartNodeExtractor>,
+    ) -> Self {
         Self {
             config,
             storage,
+            extractor,
             impasse_depth: tokio::sync::RwLock::new(0),
             recent_embeddings: tokio::sync::RwLock::new(Vec::new()),
         }
@@ -370,10 +387,12 @@ impl RetrievalEngine {
     // ── Extract start nodes from query ──────────────────────────────
     async fn extract_start_nodes(
         &self,
-        _query: &str,
+        query: &str,
     ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
-        // TODO: Use NER to extract entities, map to node IDs
-        Ok(Vec::new())
+        // P0.5: the extractor seam replaces the former empty stub. Default
+        // `EmptyExtractor` keeps the honest empty baseline; tests inject the
+        // deterministic `FakeAdapter`. P1 (M-01) lands FTS5-trigram here.
+        Ok(self.extractor.extract_start_nodes(query))
     }
 
     // ── Update access counts for retrieved nodes ────────────────────
