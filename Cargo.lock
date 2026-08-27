@@ -745,6 +745,7 @@ dependencies = [
  "helix-mind-reincarnation",
  "helix-mind-retrieval",
  "helix-mind-storage",
+ "libc",
  "prost",
  "prost-types",
  "serde",
@@ -754,6 +755,7 @@ dependencies = [
  "tokio-stream",
  "tonic",
  "tonic-build",
+ "tower-service",
  "tracing",
  "uuid",
 ]

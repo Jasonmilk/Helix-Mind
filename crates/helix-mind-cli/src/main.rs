@@ -95,9 +95,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 reincarnation,
             );
 
-            let addr = config.api.listen_addr.parse()?;
-            tracing::info!("Starting gRPC server on {}", addr);
-            helix_mind_api::serve(addr, service).await?;
+            // 传输模式由 ApiConfig.transport 决定（TCP / UDS，ADR-0019 P3b）
+            helix_mind_api::serve(&config.api, service).await?;
         }
         Commands::View { format: _, phase: _ } => {
             let stats = storage.get_stats().await?;

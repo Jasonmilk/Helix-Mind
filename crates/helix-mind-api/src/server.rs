@@ -1,3 +1,4 @@
+use helix_mind_core::config::{ApiConfig, Transport};
 use helix_mind_core::config::Config;
 use helix_mind_storage::StorageEngine;
 use helix_mind_retrieval::RetrievalEngine;
@@ -39,16 +40,45 @@ impl HelixMindServiceImpl {
     }
 }
 
-pub async fn serve(addr: SocketAddr, service: HelixMindServiceImpl) -> Result<(), Box<dyn std::error::Error>> {
+/// 启动 gRPC 服务（ADR-0019 P3b：支持 Tcp / Unix 双传输模式）。
+///
+/// - `Transport::Tcp`：远程部署；`listen_addr` 解析为 SocketAddr，mTLS 预留。
+/// - `Transport::Unix`：本地 UDS；`listen_addr` 视为 socket 路径，
+///   SO_PEERCRED 白名单鉴权（`trusted_uids`，fail-closed）。
+pub async fn serve(
+    config: &ApiConfig,
+    service: HelixMindServiceImpl,
+) -> Result<(), Box<dyn std::error::Error>> {
     let server = HelixMindServer::new(service);
     // Z3 (P0-Pre): health probe is core gRPC infrastructure (the "serving lamp"),
     // standard gRPC/tonic probe — belongs here, not deferred to P3.
     let health = crate::health::HealthServer::new(crate::health::HealthServiceImpl);
-    tonic::transport::Server::builder()
-        .add_service(server)
-        .add_service(health)
-        .serve(addr)
-        .await?;
+
+    match config.transport {
+        Transport::Tcp => {
+            let addr: SocketAddr = config.listen_addr.parse()?;
+            tracing::info!("Starting gRPC server (TCP) on {}", addr);
+            tonic::transport::Server::builder()
+                .add_service(server)
+                .add_service(health)
+                .serve(addr)
+                .await?;
+        }
+        Transport::Unix => {
+            let path = &config.listen_addr;
+            let _ = std::fs::remove_file(path);
+            let listener = tokio::net::UnixListener::bind(path)?;
+            tracing::info!("Starting gRPC server (UDS) on {}", path);
+            let incoming = tokio_stream::wrappers::UnixListenerStream::new(listener);
+            let auth = crate::middleware::PeerCredAuth::new(config.trusted_uids.clone());
+            tonic::transport::Server::builder()
+                .layer(tonic::service::interceptor(auth))
+                .add_service(server)
+                .add_service(health)
+                .serve_with_incoming(incoming)
+                .await?;
+        }
+    }
     Ok(())
 }
 

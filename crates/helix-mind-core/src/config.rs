@@ -249,10 +249,24 @@ impl Default for GeneLockConfig {
 }
 
 // ---------- ApiConfig ----------
+/// gRPC 传输模式（ADR-0019 P3b）
+/// - `Tcp`：远程部署，mTLS 预留（P3 后实现）
+/// - `Unix`：本地 UDS，SO_PEERCRED 白名单鉴权（fail-closed）
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Transport {
+    Tcp,
+    Unix,
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct ApiConfig {
     #[serde(default = "default_listen_addr")]
     pub listen_addr: String,
+    #[serde(default = "default_transport")]
+    pub transport: Transport,
+    #[serde(default = "default_trusted_uids")]
+    pub trusted_uids: Vec<u32>,
     #[serde(default = "default_layer1_enabled")]
     pub layer1_enabled: bool,
     #[serde(default = "default_layer2_enabled")]
@@ -263,6 +277,8 @@ impl Default for ApiConfig {
     fn default() -> Self {
         Self {
             listen_addr: default_listen_addr(),
+            transport: default_transport(),
+            trusted_uids: default_trusted_uids(),
             layer1_enabled: default_layer1_enabled(),
             layer2_enabled: default_layer2_enabled(),
         }
@@ -350,6 +366,8 @@ fn default_scan_interval_sec() -> u64 { 60 }
 
 fn default_gene_lock_path() -> String { "./gene_lock.md".into() }
 fn default_listen_addr() -> String { "127.0.0.1:50051".into() }
+fn default_transport() -> Transport { Transport::Tcp }
+fn default_trusted_uids() -> Vec<u32> { Vec::new() }
 fn default_layer1_enabled() -> bool { true }
 fn default_layer2_enabled() -> bool { true }
 
