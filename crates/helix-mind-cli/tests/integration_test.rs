@@ -22,6 +22,8 @@ async fn create_test_storage() -> Arc<StorageEngine> {
         parquet_dir: "/tmp/test_parquet".to_string(),
         topology_max_nodes: 100000,
         vector_similarity_threshold: 0.7,
+        wal_enabled: false, // :memory: 不启用 WAL 事实来源
+        wal_dir: "/tmp/test_wal".to_string(),
     };
     StorageEngine::new(&config).await.unwrap()
 }

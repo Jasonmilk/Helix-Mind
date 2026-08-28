@@ -2,6 +2,7 @@ use super::{StorageEngine, StorageStats, WritePriority};
 use crate::codec::*;
 use helix_mind_core::graph::*;
 use helix_mind_core::error::MindError;
+use helix_mind_wal::WalEvent;
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
 use uuid::Uuid;
@@ -45,6 +46,11 @@ impl StorageEngine {
         _priority: WritePriority,
     ) -> Result<(), MindError> {
         // P5 (ADR-0015): SQL 单一源收敛到 `sqlite.upsert_node`（主路径与 WalProjector 共用）。
+        // P6: 事实来源 WAL 先于投影（WAL append+fsync → SQLite 同步投影）。
+        if let Some(w) = self.wal.lock().await.as_mut() {
+            w.append_synced(&WalEvent::NodeWritten(node.clone()))
+                .map_err(|e| MindError::Storage(e.to_string()))?;
+        }
         self.sqlite.upsert_node(&node)?;
 
         // Update in-memory topology and cache
@@ -202,6 +208,11 @@ impl StorageEngine {
         }
 
         // P5 (ADR-0015): 边 SQL 单一源收敛到 `sqlite.upsert_edge`。
+        // P6: 事实来源 WAL 先于投影。
+        if let Some(w) = self.wal.lock().await.as_mut() {
+            w.append_synced(&WalEvent::EdgeAdded(edge.clone()))
+                .map_err(|e| MindError::Storage(e.to_string()))?;
+        }
         self.sqlite.upsert_edge(edge)?;
 
         let mut topo = self.topology.write().await;
@@ -223,6 +234,11 @@ impl StorageEngine {
 
     pub async fn mark_recessive(&self, node_id: &Uuid) -> Result<(), MindError> {
         // P5 (ADR-0015): SQL 单一源收敛到 `sqlite.mark_node_recessive`。
+        // P6: 事实来源 WAL 先于投影。
+        if let Some(w) = self.wal.lock().await.as_mut() {
+            w.append_synced(&WalEvent::NodeMarkedRecessive(*node_id))
+                .map_err(|e| MindError::Storage(e.to_string()))?;
+        }
         self.sqlite.mark_node_recessive(node_id)?;
         let mut topo = self.topology.write().await;
         topo.mark_recessive(node_id);
@@ -625,6 +641,11 @@ impl StorageEngine {
         entry: &helix_mind_core::AuditEntry,
     ) -> Result<(), MindError> {
         // P5 (ADR-0015): SQL 单一源收敛到 `sqlite.insert_audit`。
+        // P6: 事实来源 WAL 先于投影。
+        if let Some(w) = self.wal.lock().await.as_mut() {
+            w.append_synced(&WalEvent::AuditWritten(entry.clone()))
+                .map_err(|e| MindError::Storage(e.to_string()))?;
+        }
         self.sqlite.insert_audit(entry)?;
         Ok(())
     }

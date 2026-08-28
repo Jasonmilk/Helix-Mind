@@ -96,6 +96,13 @@ pub struct StorageConfig {
     pub node_cache_capacity: u64,
     #[serde(default = "default_deferred_write_interval_sec")]
     pub deferred_write_interval_sec: u64,
+    /// P6 (ADR-0015): 是否启用 WAL 事实来源（默认 true）。
+    /// `:memory:` 数据库自动禁用（内存库无持久伙伴）。
+    #[serde(default = "default_wal_enabled")]
+    pub wal_enabled: bool,
+    /// P6 (ADR-0015): WAL 段文件目录（默认 ./data/wal）。
+    #[serde(default = "default_wal_dir")]
+    pub wal_dir: String,
 }
 
 impl Default for StorageConfig {
@@ -111,6 +118,8 @@ impl Default for StorageConfig {
             vector_similarity_threshold: default_vector_similarity(),
             node_cache_capacity: default_node_cache_capacity(),
             deferred_write_interval_sec: default_deferred_write_interval_sec(),
+            wal_enabled: default_wal_enabled(),
+            wal_dir: default_wal_dir(),
         }
     }
 }
@@ -338,6 +347,8 @@ fn default_dead_end_penalty() -> f64 { 0.8 }
 fn default_tentative_edge_weight() -> f64 { 0.3 }
 
 fn default_sqlite_path() -> String { "./data/helix_mind.db".into() }
+fn default_wal_enabled() -> bool { true }
+fn default_wal_dir() -> String { "./data/wal".into() }
 fn default_parquet_dir() -> String { "./data/parquet".into() }
 fn default_deep_cold_dir() -> String { "./data/deep_cold".into() }
 fn default_human_view_dir() -> String { "./data/human_views".into() }

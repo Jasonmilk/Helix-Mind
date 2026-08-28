@@ -30,9 +30,10 @@ impl WalProjector {
 mod tests {
     use super::*;
     use crate::StorageEngine;
+    use crate::WritePriority;
     use helix_mind_core::config::StorageConfig;
     use helix_mind_core::graph::{Edge, Node, NodeContent, NodeType, RelationType};
-    use helix_mind_wal::WalWriter;
+    use helix_mind_wal::{WalConfig, WalEvent, WalReader, WalWriter};
 
     fn temp_dir(name: &str) -> std::path::PathBuf {
         std::env::temp_dir().join(format!("helix_proj_{}_{}", name, std::process::id()))
@@ -44,6 +45,7 @@ mod tests {
         std::fs::create_dir_all(&dir).unwrap();
         StorageConfig {
             sqlite_path: dir.join("test.db").to_string_lossy().into_owned(),
+            wal_dir: dir.join("wal").to_string_lossy().into_owned(), // 独立 WAL，避免共享
             node_cache_capacity: 100,
             ..Default::default()
         }
@@ -122,5 +124,41 @@ mod tests {
             .query_row("SELECT COUNT(*) FROM audit_log", [], |r| r.get(0))
             .unwrap();
         assert_eq!(cnt, 1, "audit projected");
+    }
+
+    /// P6-2: 主写路径接入 WAL 事实来源——write_node 必须同时写入 WAL，
+    /// replay 可完整溯源，且与 SQLite 投影一致。
+    #[tokio::test]
+    async fn main_write_path_records_to_wal_fact_source() {
+        let cfg = temp_cfg("wal_main_path");
+        let engine = StorageEngine::new(&cfg).await.unwrap();
+        assert!(
+            engine.wal.lock().await.is_some(),
+            "file engine with wal_enabled must hold a WalWriter"
+        );
+
+        let node = Node {
+            content: NodeContent::Text("主路径 WAL 溯源测试".into()),
+            node_type: NodeType::L2,
+            ..Default::default()
+        };
+        engine
+            .write_node(node.clone(), WritePriority::Critical)
+            .await
+            .unwrap();
+
+        // 事实来源：WAL replay 必须含该节点事件（哈希链校验）。
+        let reader = WalReader::new(&WalConfig::new(&cfg.wal_dir));
+        let outcome = reader.replay_all().unwrap();
+        assert_eq!(outcome.records.len(), 1, "write_node appends to WAL");
+        match &outcome.records[0].event {
+            WalEvent::NodeWritten(n) => assert_eq!(n.id, node.id),
+            other => panic!("expected NodeWritten, got {:?}", std::mem::discriminant(other)),
+        }
+
+        // SQLite 投影一致。
+        let stored = engine.get_nodes_by_ids(&[node.id]).await.unwrap();
+        assert_eq!(stored.len(), 1);
+        assert_eq!(stored[0].id, node.id);
     }
 }

@@ -24,6 +24,7 @@ async fn temp_engine() -> (Arc<StorageEngine>, std::path::PathBuf) {
     let dir = std::env::temp_dir().join(format!("hm_meta_{}.db", Uuid::new_v4()));
     let config = StorageConfig {
         sqlite_path: dir.to_string_lossy().to_string(),
+        wal_dir: dir.with_extension("wal").to_string_lossy().to_string(), // 独立 WAL，避免共享
         ..Default::default()
     };
     let engine = StorageEngine::new(&config).await.unwrap();
