@@ -338,6 +338,17 @@ pub struct HelixQueryRequest {
     pub autonomy_level: AutonomyLevel,
 }
 
+/// SA-Core 能量扩散后的节点激活值条目（P4 M-10，Append-Only 契约兑现）。
+///
+/// `activation` 表示节点在本次认知循环中的能量激活程度（0.0-1.0）。
+/// 完整的 SA-Core 扩散算法不在 P4 范围内；字段已落地，当前返回默认空，
+/// 不造假数据（诚实默认）。
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActivationEntry {
+    pub node_id: Uuid,
+    pub activation: f64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HelixQueryResult {
     pub effective_mode: CognitiveMode,
@@ -352,6 +363,9 @@ pub struct HelixQueryResult {
     pub impasse_level: ImpasseLevel,
     pub stages_attempted: u8,
     pub suggested_actions: Vec<ActionSuggestion>,
+    /// SA-Core 能量扩散后的节点激活值向量（P4 M-10，硬冻结契约兑现）。
+    /// 扩散算法实现前保持空 Vec（诚实默认，不伪造激活值）。
+    pub activation_vector: Vec<ActivationEntry>,
 }
 
 // ---------- L0 Gene Lock ----------

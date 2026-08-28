@@ -9,6 +9,7 @@
 pub mod sandbox;
 pub mod dag_share;
 pub mod review;
+pub mod rhizax;
 
 use helix_mind_core::config::FederationConfig;
 use helix_mind_storage::StorageEngine;

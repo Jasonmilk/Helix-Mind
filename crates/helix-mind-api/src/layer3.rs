@@ -107,6 +107,15 @@ pub async fn handle_helix_query(
                 reason: a.reason,
             })
             .collect(),
+        // P4 M-10: activation_vector mapping (frozen-contract payoff).
+        activation_vector: result
+            .activation_vector
+            .into_iter()
+            .map(|a| ActivationEntry {
+                node_id: a.node_id.to_string(),
+                activation: a.activation,
+            })
+            .collect(),
     };
 
     Ok(Response::new(response))

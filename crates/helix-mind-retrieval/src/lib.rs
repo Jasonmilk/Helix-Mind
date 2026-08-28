@@ -82,6 +82,8 @@ impl RetrievalEngine {
                 impasse_level: ImpasseLevel::None,
                 stages_attempted: 0,
                 suggested_actions: Vec::new(),
+                // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
+                activation_vector: Vec::new(),
             });
         }
 
@@ -119,6 +121,8 @@ impl RetrievalEngine {
                 impasse_level: ImpasseLevel::None,
                 stages_attempted,
                 suggested_actions: Vec::new(),
+                // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
+                activation_vector: Vec::new(),
             });
         }
 
@@ -155,6 +159,8 @@ impl RetrievalEngine {
                     impasse_level: ImpasseLevel::None,
                     stages_attempted,
                     suggested_actions: Vec::new(),
+                    // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
+                    activation_vector: Vec::new(),
                 });
             }
         }
@@ -236,6 +242,8 @@ impl RetrievalEngine {
             impasse_level,
             stages_attempted,
             suggested_actions: Vec::new(),
+            // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
+            activation_vector: Vec::new(),
         })
     }
 

@@ -97,6 +97,12 @@ message HelixQueryRequest {
   reserved 8 to max;  // Append-Only Schema Evolution (ADR-0012)
 }
 
+// P4 (M-10): SA-Core energy-diffusion activation entry (frozen-contract payoff).
+message ActivationEntry {
+  string node_id = 1;
+  double activation = 2;  // 0.0-1.0 activation in this cognitive cycle
+}
+
 message HelixQueryResult {
   CognitiveMode effective_mode = 1;
   string mode_negotiation = 2;
@@ -110,7 +116,9 @@ message HelixQueryResult {
   int32 impasse_level = 10;                  // v3.3
   int32 stages_attempted = 11;               // v3.3
   repeated SuggestedAction suggested_actions = 12;  // v3.3
-  reserved 13;                               // P0 (ADR-0012): reserved for activation_vector (P4 M-10)
+  // P4 (M-10): activation_vector — reserved 13 now payed off (Append-Only,
+  // ADR-0012). Diffusion algorithm fills it later; empty by default (honest).
+  repeated ActivationEntry activation_vector = 13;
   // P3c (ADR-0020): W3C traceparent, pass-through (echo of the request).
   string traceparent = 14;
   reserved 15 to max;  // Append-Only Schema Evolution (ADR-0012)
