@@ -10,7 +10,13 @@
 pub mod converge;
 pub mod craft;
 pub mod gate;
+pub mod mutation;
+pub mod review;
+pub mod value;
 
 pub use converge::converge_hegelian;
 pub use craft::{CognitiveCraft, CraftConfig, CraftInput, CraftResult, Mode, Process, ProcessStep};
-pub use gate::{system0_gate, GateDecision, GateSignals};
+pub use gate::{system0_gate, system0_gate_enhanced, GateDecision, GateSignals};
+pub use mutation::AdaptiveMutation;
+pub use review::{ReviewVerdict, SleepReview};
+pub use value::{ValueAssessor, ValueGrade};

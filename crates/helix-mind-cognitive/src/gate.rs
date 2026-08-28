@@ -1,10 +1,14 @@
 //! System 0 启发式门控（ADR-0021 §B2）。
 //!
 //! 认知工艺启动前的轻量门控判断，避免"为了判断是否简单，先花 500 Token 编排"的递归悖论。
-//! 全部 0 Token：规则匹配（长度 + 关键词）+ 用户意图标签。
+//! 全部 0 Token：规则匹配（长度 + 关键词）+ 用户意图标签 + **确定性问题价值评估** +
+//! **FTS5 bm25 相似度信号**（Phase 3）。
 //!
-//! FTS5 bm25 相关度信号（Phase 3 增强）：通过 `GateSignal` trait 预留，当前实现为纯规则
-//! （零向量依赖、零新依赖，符合极致节能）。
+//! bm25 相似度信号来源：上层用 `storage::fts::fts_search` 对 query 匹配已知简单问题池，
+//! 取最高 bm25 命中归一化为 `simple_similarity ∈ [0,1]` 注入（cognitive 保持纯逻辑，
+//! 零向量依赖、零新依赖，符合极致节能）。
+
+use crate::value::ValueGrade;
 
 /// 门控决策。
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -23,6 +27,9 @@ pub struct GateSignals {
     /// 用户显式意图标签（"帮我深入分析"等 → 跳过门控直接触发）。
     pub explicit_deep: bool,
 }
+
+/// bm25 简单相似度阈值（≥ 视为与已知简单问题高度相似 → 直接熟练模式）。
+const SIMPLE_SIMILARITY_THRESHOLD: f64 = 0.7;
 
 /// 触发关键词（规则匹配）。命中任一即视为复杂。
 const TRIGGER_KEYWORDS: &[&str] = &[
@@ -61,6 +68,32 @@ pub fn system0_gate(signals: &GateSignals) -> GateDecision {
         return GateDecision::TriggerCraft;
     }
     GateDecision::DirectSkilled
+}
+
+/// 增强门控（Phase 3）：价值评估 + bm25 相似度信号 + 规则/标签。
+///
+/// 顺序：
+/// 1. 用户显式"深入分析"标签 → TriggerCraft（跳过门控）。
+/// 2. bm25 简单相似度 ≥ 阈值 → DirectSkilled（与已知简单问题高度相似）。
+/// 3. 确定性问题价值评估 → Low = DirectSkilled；Medium/High = TriggerCraft。
+/// 4. 规则兜底（关键词/长度）。
+pub fn system0_gate_enhanced(
+    signals: &GateSignals,
+    value: ValueGrade,
+    simple_similarity: Option<f64>,
+) -> GateDecision {
+    if signals.explicit_deep {
+        return GateDecision::TriggerCraft;
+    }
+    if let Some(sim) = simple_similarity {
+        if sim >= SIMPLE_SIMILARITY_THRESHOLD {
+            return GateDecision::DirectSkilled;
+        }
+    }
+    match value {
+        ValueGrade::Low => GateDecision::DirectSkilled,
+        ValueGrade::Medium | ValueGrade::High => GateDecision::TriggerCraft,
+    }
 }
 
 #[cfg(test)]
@@ -108,4 +141,44 @@ mod tests {
             GateDecision::DirectSkilled
         );
     }
+
+    // ── 增强门控（Phase 3）──
+
+    #[test]
+    fn enhanced_bm25_similarity_routes_simple() {
+        // 短问题 + 高简单相似度（0.9）→ 直接熟练，即使长度触发基础规则。
+        let sig = GateSignals::new("现在几点", false);
+        assert_eq!(
+            system0_gate_enhanced(&sig, ValueGrade::Medium, Some(0.9)),
+            GateDecision::DirectSkilled,
+            "bm25 高相似优先于价值评估"
+        );
+    }
+
+    #[test]
+    fn enhanced_low_value_direct_low_similarity_craft_by_rule() {
+        // 低价值 + 低相似度 → DirectSkilled（价值主导）。
+        let sig = GateSignals::new("简单问题", false);
+        assert_eq!(
+            system0_gate_enhanced(&sig, ValueGrade::Low, Some(0.1)),
+            GateDecision::DirectSkilled
+        );
+        // 高价值 + 低相似度 → TriggerCraft。
+        let sig2 = GateSignals::new("简单问题", false);
+        assert_eq!(
+            system0_gate_enhanced(&sig2, ValueGrade::High, Some(0.1)),
+            GateDecision::TriggerCraft
+        );
+    }
+
+    #[test]
+    fn enhanced_explicit_label_always_triggers() {
+        let sig = GateSignals::new("你好", true);
+        assert_eq!(
+            system0_gate_enhanced(&sig, ValueGrade::Low, Some(0.99)),
+            GateDecision::TriggerCraft,
+            "用户显式意图优先于一切门控信号"
+        );
+    }
 }
+

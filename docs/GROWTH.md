@@ -6,35 +6,6 @@
 规则：只保留最近 3 条。第 4 条写入时，最旧的归档到 `docs/archive/growth/`（已版本化，永不删除）。
 
 ---
-## [2026-08-28] 完成：P1 检索闭环
-
-### 触发条件
-审查③ S1（主干断路）与 R2（中文 FTS5 召回为零）后，P1 三裁决（2026-08-28 用户定案）授权落地 M-01/02/03。
-
-### 变更性质
-- **ADR-0013**：FTS5 trigram 起始节点检索（索引载体 / 异步队列 / 注入防御 / 相态加权 / 生产默认接线）
-- **storage 索引层**（`fts.rs`，新建）：`nodes_fts` trigram 外部内容表 + `rebuild_fts` 启动全量投影 + `run_fts_worker` 异步批量冲刷（`FTS_BATCH_SIZE=100` / 防抖 100ms / Flush 屏障）+ `fts_search`（`-bm25`×相态权重）+ `fts_like_search`（1-2 字符 LIKE 兜底）+ `audit_sanitized`
-- **StorageEngine 集成**：`fts_tx` 发送端 + `write_node` 入队 Upsert + `flush_fts_index` 屏障 + `ensure_schema` 建 FTS 表
-- **retrieval**（`fts_extractor.rs`，新建）：`FtsExtractor` 只读消费者 + `sanitize_query` 白名单清洗 + `escape_fts` 双引号转义；`RetrievalEngine::new` 默认注入 FtsExtractor
-- **M-03 测试**（5 个）：中文召回 / 1-2 字符 LIKE fallback / 相态加权（Crystal 优先）/ 注入清洗+审计+索引存活 / 端到端 FTS 默认
-- **关键修正**：FTS5 `bm25()` 为**负数**，先 `-bm25` 转正再乘相态权重，否则 Crystal 高权重被 DESC 反向拉低
-
-### 兼容性
-- 契约零变更（复用 ADR-0011 `phase_state` 列 + ADR-0012 Append-Only）；`get_nodes_by_phase` 预留供 P2 预算路由
-- 测试基建复用 FakeAdapter（`with_extractor` 注入不变）；生产默认行为变化：`RetrievalEngine::new` 从 EmptyExtractor → FtsExtractor
-
-### 验收
-`cargo test --workspace` 全绿（cli 5 / core 8 / retrieval lib 3 + retrieval_test 2 + fts_extractor_test 5 / storage 4 = 27，0 warning）｜ FTS5 中文 trigram 端到端召回 ✅ ｜ 注入攻击面收敛（清洗+转义+审计）✅ ｜ 查询写放大消除（F3，见下）
-
-### 状态
-🧬 已合并（P1 代码 + F3 前置修复，提交待用户确认后推送）
-
-### 未决→已裁决（2026-08-28）
-PLAN §1.5 验收项「无查询写放大」（F3）：裁决为选项 (a) 单事务批量更新，作为 **P2a 前置修复**已落地——`StorageEngine::bump_access_counts`（单事务、SQL 级原子自增，去读-改-写竞争、去逐节点 fsync）+ `update_access_counts` 批量调用 + 测试。选项 (b) 内存计数 + 代谢期回刷归 **P4+**（等 Micro-Sleep 就绪）。
-
----
----
-
 ## [2026-08-28] 完成：P7 生态文档同步 + 认知工艺 Phase 1
 
 ### 触发条件
@@ -75,6 +46,27 @@ P7 认知工艺 Phase 1 定稿（ADR-0021 Active）后，用户授权 Phase 2 �
 
 ### 验收
 `cargo test --workspace` 全绿（新增 cognitive 单元 12 + 集成 4，workspace 总 86，0 warning）｜ 门控：简单跳过/复杂触发/显式标签优先 ✅ ｜ 编排闭环：结构+批判+创造三工序收敛出条件化命题 ✅ ｜ 熔断：步骤超限 / 超时(慢执行器) / 预算耗尽 三路全断 ✅ ｜ 会话隔离：批判会话不引用结构草稿 ✅
+
+### 状态
+🧬 待提交（用户确认后 push）
+---
+
+## [2026-08-28] 完成：P9 认知工艺 Phase 3 — 完整引擎（价值/突变/复盘/bm25）
+
+### 触发条件
+P8 编排器闭环验证通过（DeterministicAdapter 0 Token），用户授权 Phase 3 编码（价值评估、自适应突变、睡眠复盘、bm25 门控增强）。
+
+### 变更性质
+- **价值评估**（`value.rs`）：`ValueAssessor` 确定性评估（长度档 + 复杂关键词提升）→ `ValueGrade{Low,Medium,High}` + 建议思考深度（Skilled/Anchored/Imaginative）。0 Token，禁用 LLM 自我评分（R3，信用由他证）
+- **自适应突变**（`mutation.rs`）：`AdaptiveMutation`——Bounded ε-Greedy（突变率钳制 3%-20%）+ EMA 成功率平滑（α=0.3）；`record_outcome` 确定性信号更新：成功→降探索（利用熟练路径），失败→升探索（探索新工序/模式）
+- **睡眠复盘**（`review.rs`）：`SleepReview`——非熟练模式检视（强制锚定/想象力，防假复盘 R4）：检视输出实体覆盖度相对旧路径增量 ≥2 → Stale（旧路径僵化，建议降权）；否则 Viable。接入点：Deep Dream 代谢窗口（不阻塞主循环）
+- **bm25 门控增强**（`gate.rs`）：`system0_gate_enhanced`——用户显式标签 > bm25 简单相似度（≥0.7 → DirectSkilled）> 价值评估（Low→Direct）> 规则兜底。相似度信号由上层经 `storage::fts::fts_search` 计算注入（cognitive 保持纯逻辑，零向量依赖）
+
+### 兼容性
+- 全为 cognitive crate 内新模块，零既有代码改动；硬冻结契约零变更；无新依赖
+
+### 验收
+`cargo test --workspace` 全绿（cognitive 单元 12→24 + 集成 4，workspace 总 98，0 warning）｜ 价值：短简 Low/带关键词 Medium/长+关键词 High ✅ ｜ 突变：界内钳制、成功降探索失败升探索、EMA 平滑 ✅ ｜ 复盘：增量≥2 Stale / 否则 Viable ✅ ｜ 门控：bm25 高相似优先、显式标签最高优先 ✅
 
 ### 状态
 🧬 待提交（用户确认后 push）
