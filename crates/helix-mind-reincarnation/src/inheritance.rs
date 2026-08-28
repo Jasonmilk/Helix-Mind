@@ -29,7 +29,10 @@ impl Inheritance {
         encoder.finish()?;
 
         let hash = helix_mind_core::sha256_digest(&compressed);
-        let filename = format!("./inheritance_crystal_{}.zst", hash);
+        // P6-3: 写配置目录（deep_cold_dir），不污染当前工作目录。
+        let dir = &self.storage.config.deep_cold_dir;
+        std::fs::create_dir_all(dir).map_err(|e| helix_mind_core::error::MindError::Io(e))?;
+        let filename = format!("{}/inheritance_crystal_{}.zst", dir, hash);
         tokio::fs::write(&filename, &compressed).await?;
 
         info!("Inheritance crystal created: {}", hash);
@@ -38,7 +41,8 @@ impl Inheritance {
 
     /// Load inheritance crystal
     pub async fn load_crystal(&self, hash: &str) -> Result<(), helix_mind_core::error::MindError> {
-        let filename = format!("./inheritance_crystal_{}.zst", hash);
+        let dir = &self.storage.config.deep_cold_dir;
+        let filename = format!("{}/inheritance_crystal_{}.zst", dir, hash);
         
         let file = std::fs::File::open(&filename)?; 
         let mut decoder = Decoder::new(file)?;

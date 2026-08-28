@@ -53,7 +53,11 @@ impl EpochCrystallizer {
 
         // 5. Compute CID
         let hash = helix_mind_core::sha256_digest(&compressed);
-        let filename = format!("./epoch_crystal_{}.zst", hash);
+        // P6-3: 写配置目录（deep_cold_dir），不污染当前工作目录。
+        let dir = &self.storage.config.deep_cold_dir;
+        std::fs::create_dir_all(dir)
+            .map_err(|e| helix_mind_core::error::MindError::Io(e))?;
+        let filename = format!("{}/epoch_crystal_{}.zst", dir, hash);
         tokio::fs::write(&filename, &compressed).await.map_err(|e| {
             helix_mind_core::error::MindError::Storage(format!("Cannot write epoch crystal: {}", e))
         })?;

@@ -144,12 +144,27 @@ impl ReincarnationEngine {
         emergency_dusk::execute(self.config.clone(), self.storage.clone(), available_memory_mb, available_tokens).await
     }
 
-    /// Trigger reincarnation (backward-compatible API).
+    /// Trigger reincarnation — the full lifecycle cycle (P6-3 补全).
+    ///
+    /// 完整轮回 = **sunset（归档旧生）→ rebirth（新生）**：
+    /// 1. `trigger_sunset`：临终归档（life review / epoch / inheritance / archive L3 / reset portrait）
+    /// 2. `rebirth::execute_rebirth`：新生（审计 "Generation N born"，user portrait 保留只读）
+    ///
+    /// 返回新世代号。
     pub async fn trigger_reincarnation(
         &self,
         confirm_token: &str,
     ) -> Result<u64, helix_mind_core::error::MindError> {
-        self.trigger_sunset(confirm_token, "No note left.").await
+        if confirm_token != "I understand this will reset my memory" {
+            return Err(helix_mind_core::error::MindError::Validation(
+                "Invalid confirmation token".into(),
+            ));
+        }
+        // 1. 归档旧生（临终协议）。
+        let new_generation = self.trigger_sunset(confirm_token, "No note left.").await?;
+        // 2. 新生（重启 L1，保留 user portrait，审计新世代诞生）。
+        rebirth::execute_rebirth(&self.storage, new_generation, "No note left.").await?;
+        Ok(new_generation)
     }
 
     /// Get current generation from storage.
