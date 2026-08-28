@@ -1,0 +1,9 @@
+[package]
+name = "helix-mind-wal"
+version = "0.1.0"
+edition = "2021"
+description = "Domain WAL minimal prototype (P4.5 ADR-0015) — append + fsync + single-segment read"
+license = "Apache-2.0"
+
+[dependencies]
+thiserror = "1"

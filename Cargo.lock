@@ -885,6 +885,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "helix-mind-wal"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
