@@ -89,6 +89,9 @@ pub async fn handle_helix_query(
             .map(super::layer1::convert_edge)
             .collect(),
         trace_id: result.trace_id.to_string(),
+        // P3c (ADR-0020): traceparent pass-through — echo the request value,
+        // never generate. Empty in → empty out (Mind is not the trace root).
+        traceparent: req.traceparent.clone(),
         latency_ms: result.latency_ms,
         tokens_consumed: result.tokens_consumed,
         is_partial: result.is_partial,

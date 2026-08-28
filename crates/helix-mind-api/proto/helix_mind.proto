@@ -91,6 +91,10 @@ message HelixQueryRequest {
   bool include_recessive = 4;
   bool allow_imagination = 5;
   AutonomyLevel autonomy_level = 6;
+  // P3c (ADR-0020): W3C traceparent, pass-through — Mind never generates it,
+  // Anaphase creates the root trace_id at the entry (ECOSYSTEM §3.1).
+  string traceparent = 7;
+  reserved 8 to max;  // Append-Only Schema Evolution (ADR-0012)
 }
 
 message HelixQueryResult {
@@ -107,6 +111,9 @@ message HelixQueryResult {
   int32 stages_attempted = 11;               // v3.3
   repeated SuggestedAction suggested_actions = 12;  // v3.3
   reserved 13;                               // P0 (ADR-0012): reserved for activation_vector (P4 M-10)
+  // P3c (ADR-0020): W3C traceparent, pass-through (echo of the request).
+  string traceparent = 14;
+  reserved 15 to max;  // Append-Only Schema Evolution (ADR-0012)
 }
 
 message HelixConsolidateRequest {

@@ -1,6 +1,6 @@
-> **所属知识本体**：v4.0
-> **最后更新**：2026-08-25
-> **变更**：从白皮书 v3.4 拆分，无内容变更
+> **所属知识本体**：v4.1
+> **最后更新**：2026-08-28
+> **变更**：P3c（ADR-0020）追加 INTENT-7 动词映射 + traceparent 透传说明
 
 # API 分层与通用性
 
@@ -31,6 +31,27 @@
 ```
 activation_vector: [ActivationEntry]  // SA-Core 能量扩散后的节点激活值向量
 ```
+
+## CI-144 INTENT-7 动词映射（P3c，ADR-0020）
+
+Mind 的 gRPC 契约与 CI-144 INTENT-7 动词的显式映射（单一真相源）：
+
+| INTENT-7 动词 | Mind gRPC 契约 | 说明 |
+|:---|:---|:---|
+| `FETCH` | `HelixQuery` | 语义检索（summary-first） |
+| `WRITE_NODE` | `HelixConsolidate` / L1 `Remember` | 记忆写入 |
+| `TENTACLE` | （Anaphase 编排，Mind 不执行） | Mind 只建议，不执行工具 |
+| `FINISH` | 认知循环结束（Anaphase 生命周期） | Mind 记录 L3 收尾 |
+| `CANCEL` | 中止执行树（Anaphase 生命周期） | Mind 记录中止原因 |
+
+**边界**：Mind 只认 Anaphase gRPC 接口，不直接对接 TENTACLE / Executor（body-agnostic 铁律）。
+
+## traceparent 透传（P3c，ADR-0020）
+
+- `HelixQueryRequest.traceparent` / `HelixQueryResult.traceparent`：W3C trace-context 格式。
+- **透传不生成**：根 `trace_id` 由 Anaphase 在入口生成（ECOSYSTEM §3.1），Mind 原样回传，支持全链路审计（Tuck CAS）。
+- 请求无 traceparent → 响应为空（Mind 不是 trace 根）。
+- 字段号为 Append-Only 追加（ADR-0012）：`HelixQueryRequest` 用 7，`HelixQueryResult` 用 14（13 已预留 activation_vector），后续 `reserved` 保护。
 
 ## 共享知识树同步策略
 
