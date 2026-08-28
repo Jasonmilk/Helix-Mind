@@ -6,9 +6,10 @@
 
 ## 一、现状诚实声明
 
-`storage/parquet_store.rs` 当前**名实不符**：模块名为 parquet，实际写 JSON（为规避 polars 兼容问题）。
-- 影响：依赖方（深冷归档等）误以为获得列式存储；JSON 读取效率差数量级。
-- P6 目标：parquet 名实相符（引入列式写入/读取，或明确改名并保留 JSON 语义）。
+`storage/parquet_store.rs` 自 **P6-1（F7 关闭）** 起**名实相符**：真 Parquet 列式写入/读取
+（Apache Arrow 官方 Rust 生态：`parquet` + `arrow-array`/`arrow-schema`）。
+- 历史（P6-1 前）：模块名为 parquet，实际写 JSON（为规避 polars 兼容问题）。已由 P6-1 修复。
+- 列约束见下文第三节；可延迟列暂不投影（诚实声明，加载回落默认值）。
 
 ## 二、投影原则
 
@@ -48,8 +49,9 @@
 - **分片**：按 `created_at`（月）分片，与深冷归档周期对齐。
 - **压缩**：`content` 等大列启用压缩（snappy/zstd），其余列原始列式。
 
-## 五、验收标准（P6）
+## 五、验收标准（P6-1 已达标）
 
-- `parquet_store` 实际写出 Parquet 列式文件（不再是 JSON）。
-- 必须投影字段全部在列中；可延迟字段不在列中（按需加载）。
-- 与 Node struct / SQLite schema 三者对齐（proto ↔ core ↔ 存储，契约一致性检查）。
+- ✅ `parquet_store` 实际写出 Parquet 列式文件（PAR1 magic 验证，不再是 JSON）。
+- ✅ 必须投影字段全部在列中；可延迟字段不在列中（按需加载/回落默认）。
+- ✅ 与 Node struct 对齐（列 ↔ Node 字段映射一致，roundtrip 测试锁定）。
+- ⏳ 与 SQLite schema 全量对齐核对：proto ↔ core ↔ storage 契约一致性检查（P7 文档同步阶段）。

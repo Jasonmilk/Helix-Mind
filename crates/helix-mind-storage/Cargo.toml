@@ -20,3 +20,9 @@ uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 thiserror = "1"
+# P6-1 (F7): Parquet 名实相符——真列式（Apache Arrow 官方 Rust 生态）。
+# 注意：不直接依赖 `arrow`（其 compute feature 引入 arrow-arith，与 chrono 0.4.45 存在
+# `quarter()` trait 冲突，arrow-arith 53.4.0 已知 E0034）。改用 arrow-array/schema 基础库。
+parquet = "53"
+arrow-array = "53"
+arrow-schema = "53"
