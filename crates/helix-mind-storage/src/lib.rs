@@ -8,6 +8,7 @@ pub mod deferred_writer;
 pub mod codec;
 pub mod engine;
 pub mod fts;
+pub mod wal_projector;
 
 use helix_mind_core::config::StorageConfig;
 use fts::FtsCommand;

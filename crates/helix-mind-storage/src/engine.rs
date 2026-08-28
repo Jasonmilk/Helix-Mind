@@ -44,67 +44,8 @@ impl StorageEngine {
         node: Node,
         _priority: WritePriority,
     ) -> Result<(), MindError> {
-        node.validate()?;
-        let content_json =
-            serde_json::to_string(&node.content).map_err(|e| MindError::Storage(e.to_string()))?;
-        let ledger_json =
-            serde_json::to_string(&node.attribution_ledger).map_err(|e| MindError::Storage(e.to_string()))?;
-        let source_json =
-            serde_json::to_string(&node.source).map_err(|e| MindError::Storage(e.to_string()))?;
-        let provenance = node.abstract_provenance.as_deref().unwrap_or("");
-        let derived_json =
-            serde_json::to_string(&node.derived_from).map_err(|e| MindError::Storage(e.to_string()))?;
-
-        self.sqlite.transactional_write(|tx| {
-            tx.execute(
-                "INSERT INTO nodes (id, node_type, content, heat, is_hypothetical, is_recessive,
-                 sensitivity, generation, created_at, last_accessed_at, access_count,
-                 initial_impact, corrected_by, notes, dominance, utility, corroborations,
-                 attribution_ledger, source, high_risk, abstract_provenance, derived_from,
-                 phase_state, subject_dependency, concentration, tension)
-                 VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26)
-                 ON CONFLICT(id) DO UPDATE SET
-                 content=excluded.content, heat=excluded.heat,
-                 is_hypothetical=excluded.is_hypothetical, is_recessive=excluded.is_recessive,
-                 last_accessed_at=excluded.last_accessed_at, access_count=excluded.access_count,
-                 corrected_by=excluded.corrected_by, notes=excluded.notes,
-                 dominance=excluded.dominance, utility=excluded.utility,
-                 corroborations=excluded.corroborations, attribution_ledger=excluded.attribution_ledger,
-                 source=excluded.source, high_risk=excluded.high_risk,
-                 abstract_provenance=excluded.abstract_provenance, derived_from=excluded.derived_from,
-                 phase_state=excluded.phase_state, subject_dependency=excluded.subject_dependency,
-                 concentration=excluded.concentration, tension=excluded.tension",
-                rusqlite::params![
-                    node.id.to_string(),
-                    node_type_str(&node.node_type),
-                    content_json,
-                    node.heat,
-                    node.is_hypothetical,
-                    node.is_recessive,
-                    node.sensitivity.as_ref().map(|s| sensitivity_str(s)),
-                    node.generation,
-                    node.created_at.to_rfc3339(),
-                    node.last_accessed_at.to_rfc3339(),
-                    node.access_count,
-                    node.initial_impact,
-                    node.corrected_by.map(|id| id.to_string()),
-                    node.notes.as_deref().unwrap_or(""),
-                    node.dominance,
-                    node.utility,
-                    node.corroborations,
-                    ledger_json,
-                    source_json,
-                    node.high_risk,
-                    provenance,
-                    derived_json,
-                    phase_state_str(&node.phase_state),
-                    subject_dependency_str(&node.subject_dependency),
-                    concentration_str(&node.meta.concentration),
-                    node.meta.tension,
-                ],
-            ).map_err(|e| MindError::Storage(e.to_string()))?;
-            Ok(())
-        })?;
+        // P5 (ADR-0015): SQL 单一源收敛到 `sqlite.upsert_node`（主路径与 WalProjector 共用）。
+        self.sqlite.upsert_node(&node)?;
 
         // Update in-memory topology and cache
         {
@@ -260,23 +201,8 @@ impl StorageEngine {
             }
         }
 
-        self.sqlite.transactional_write(|tx| {
-            tx.execute(
-                "INSERT INTO edges (source_id, target_id, weight, relation_type, is_soft, created_at)
-                 VALUES (?1,?2,?3,?4,?5,?6)
-                 ON CONFLICT(source_id, target_id, relation_type) DO UPDATE SET
-                 weight=excluded.weight, is_soft=excluded.is_soft, created_at=excluded.created_at",
-                rusqlite::params![
-                    edge.source_id.to_string(),
-                    edge.target_id.to_string(),
-                    edge.weight,
-                    relation_type_str(&edge.relation_type),
-                    edge.is_soft,
-                    chrono::Utc::now().to_rfc3339(),
-                ],
-            ).map_err(|e| MindError::Storage(e.to_string()))?;
-            Ok(())
-        })?;
+        // P5 (ADR-0015): 边 SQL 单一源收敛到 `sqlite.upsert_edge`。
+        self.sqlite.upsert_edge(edge)?;
 
         let mut topo = self.topology.write().await;
         topo.add_edge(edge.source_id, edge.target_id, edge)?;
@@ -296,11 +222,8 @@ impl StorageEngine {
     }
 
     pub async fn mark_recessive(&self, node_id: &Uuid) -> Result<(), MindError> {
-        let conn = self.sqlite.get()?;
-        conn.execute(
-            "UPDATE nodes SET is_recessive = 1 WHERE id = ?1",
-            rusqlite::params![node_id.to_string()],
-        ).map_err(|e| MindError::Storage(e.to_string()))?;
+        // P5 (ADR-0015): SQL 单一源收敛到 `sqlite.mark_node_recessive`。
+        self.sqlite.mark_node_recessive(node_id)?;
         let mut topo = self.topology.write().await;
         topo.mark_recessive(node_id);
         self.cache.invalidate(node_id);
@@ -701,19 +624,8 @@ impl StorageEngine {
         &self,
         entry: &helix_mind_core::AuditEntry,
     ) -> Result<(), MindError> {
-        let conn = self.sqlite.pool.get()
-            .map_err(|e| MindError::Storage(e.to_string()))?;
-        conn.execute(
-            "INSERT INTO audit_log (event_id, timestamp, event_type, actor, details)
-             VALUES (?1, ?2, ?3, ?4, ?5)",
-            rusqlite::params![
-                entry.event_id.to_string(),
-                entry.timestamp.to_rfc3339(),
-                format!("{:?}", entry.event_type),
-                entry.actor,
-                entry.details,
-            ],
-        ).map_err(|e| MindError::Storage(e.to_string()))?;
+        // P5 (ADR-0015): SQL 单一源收敛到 `sqlite.insert_audit`。
+        self.sqlite.insert_audit(entry)?;
         Ok(())
     }
 

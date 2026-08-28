@@ -2,6 +2,14 @@ use r2d2::{Pool, PooledConnection};
 use r2d2_sqlite::SqliteConnectionManager;
 use std::path::Path;
 
+use crate::codec::{
+    concentration_str, node_type_str, phase_state_str, relation_type_str, sensitivity_str,
+    subject_dependency_str,
+};
+use helix_mind_core::graph::{Edge, Node, Validate};
+use helix_mind_core::error::MindError;
+use helix_mind_core::AuditEntry;
+
 #[derive(Clone)]
 pub struct SqlitePool {
     pub pool: Pool<SqliteConnectionManager>,
@@ -199,6 +207,127 @@ impl SqlitePool {
                 Err(e)
             }
         }
+    }
+
+    // ── 投影写方法（P5, ADR-0015）──────────────────────────────────
+    // 单一 SQL 源：`StorageEngine::write_node` 等主路径 与 `WalProjector`
+    // （WAL → SQLite 投影）共用以下方法，避免 SQL 漂移。
+
+    /// 投影节点（upsert）。engine.write_node 与 WalProjector 共用。
+    pub fn upsert_node(&self, node: &Node) -> Result<(), MindError> {
+        node.validate()?;
+        let content_json =
+            serde_json::to_string(&node.content).map_err(|e| MindError::Storage(e.to_string()))?;
+        let ledger_json = serde_json::to_string(&node.attribution_ledger)
+            .map_err(|e| MindError::Storage(e.to_string()))?;
+        let source_json =
+            serde_json::to_string(&node.source).map_err(|e| MindError::Storage(e.to_string()))?;
+        let provenance = node.abstract_provenance.as_deref().unwrap_or("");
+        let derived_json =
+            serde_json::to_string(&node.derived_from).map_err(|e| MindError::Storage(e.to_string()))?;
+
+        self.transactional_write(|tx| {
+            tx.execute(
+                "INSERT INTO nodes (id, node_type, content, heat, is_hypothetical, is_recessive,
+                 sensitivity, generation, created_at, last_accessed_at, access_count,
+                 initial_impact, corrected_by, notes, dominance, utility, corroborations,
+                 attribution_ledger, source, high_risk, abstract_provenance, derived_from,
+                 phase_state, subject_dependency, concentration, tension)
+                 VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26)
+                 ON CONFLICT(id) DO UPDATE SET
+                 content=excluded.content, heat=excluded.heat,
+                 is_hypothetical=excluded.is_hypothetical, is_recessive=excluded.is_recessive,
+                 last_accessed_at=excluded.last_accessed_at, access_count=excluded.access_count,
+                 corrected_by=excluded.corrected_by, notes=excluded.notes,
+                 dominance=excluded.dominance, utility=excluded.utility,
+                 corroborations=excluded.corroborations, attribution_ledger=excluded.attribution_ledger,
+                 source=excluded.source, high_risk=excluded.high_risk,
+                 abstract_provenance=excluded.abstract_provenance, derived_from=excluded.derived_from,
+                 phase_state=excluded.phase_state, subject_dependency=excluded.subject_dependency,
+                 concentration=excluded.concentration, tension=excluded.tension",
+                rusqlite::params![
+                    node.id.to_string(),
+                    node_type_str(&node.node_type),
+                    content_json,
+                    node.heat,
+                    node.is_hypothetical,
+                    node.is_recessive,
+                    node.sensitivity.as_ref().map(|s| sensitivity_str(s)),
+                    node.generation,
+                    node.created_at.to_rfc3339(),
+                    node.last_accessed_at.to_rfc3339(),
+                    node.access_count,
+                    node.initial_impact,
+                    node.corrected_by.map(|id| id.to_string()),
+                    node.notes.as_deref().unwrap_or(""),
+                    node.dominance,
+                    node.utility,
+                    node.corroborations,
+                    ledger_json,
+                    source_json,
+                    node.high_risk,
+                    provenance,
+                    derived_json,
+                    phase_state_str(&node.phase_state),
+                    subject_dependency_str(&node.subject_dependency),
+                    concentration_str(&node.meta.concentration),
+                    node.meta.tension,
+                ],
+            ).map_err(|e| MindError::Storage(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    /// 投影边（upsert）。engine.add_edge 与 WalProjector 共用。
+    /// 注意：不含环检测（投影是事实重放，环检测由主路径 `add_edge` 基于内存拓扑执行）。
+    pub fn upsert_edge(&self, edge: &Edge) -> Result<(), MindError> {
+        edge.validate()?;
+        self.transactional_write(|tx| {
+            tx.execute(
+                "INSERT INTO edges (source_id, target_id, weight, relation_type, is_soft, created_at)
+                 VALUES (?1,?2,?3,?4,?5,?6)
+                 ON CONFLICT(source_id, target_id, relation_type) DO UPDATE SET
+                 weight=excluded.weight, is_soft=excluded.is_soft, created_at=excluded.created_at",
+                rusqlite::params![
+                    edge.source_id.to_string(),
+                    edge.target_id.to_string(),
+                    edge.weight,
+                    relation_type_str(&edge.relation_type),
+                    edge.is_soft,
+                    chrono::Utc::now().to_rfc3339(),
+                ],
+            ).map_err(|e| MindError::Storage(e.to_string()))?;
+            Ok(())
+        })
+    }
+
+    /// 投影：标记节点隐性（突触切断）。
+    pub fn mark_node_recessive(&self, node_id: &uuid::Uuid) -> Result<(), MindError> {
+        let conn = self.get()?;
+        conn.execute(
+            "UPDATE nodes SET is_recessive = 1 WHERE id = ?1",
+            rusqlite::params![node_id.to_string()],
+        )
+        .map_err(|e| MindError::Storage(e.to_string()))?;
+        Ok(())
+    }
+
+    /// 投影：追加审计日志。
+    pub fn insert_audit(&self, entry: &AuditEntry) -> Result<(), MindError> {
+        let conn = self.get()?;
+        conn.execute(
+            "INSERT INTO audit_log (event_id, timestamp, event_type, actor, details)
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+            rusqlite::params![
+                entry.event_id.to_string(),
+                entry.timestamp.to_rfc3339(),
+                format!("{:?}", entry.event_type),
+                entry.actor,
+                entry.details,
+            ],
+        )
+        .map_err(|e| MindError::Storage(e.to_string()))?;
+        Ok(())
     }
 }
 

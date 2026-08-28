@@ -2,8 +2,13 @@
 name = "helix-mind-wal"
 version = "0.1.0"
 edition = "2021"
-description = "Domain WAL minimal prototype (P4.5 ADR-0015) — append + fsync + single-segment read"
+description = "Domain WAL (ADR-0015) — append-only fact source with BLAKE3 hash chain, segment rotation, replay"
 license = "Apache-2.0"
 
 [dependencies]
 thiserror = "1"
+blake3 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4"] }
+helix-mind-core = { path = "../helix-mind-core" }
