@@ -60,23 +60,24 @@
 PLAN §1.5 验收项「无查询写放大」（F3）：裁决为选项 (a) 单事务批量更新，作为 **P2a 前置修复**已落地——`StorageEngine::bump_access_counts`（单事务、SQL 级原子自增，去读-改-写竞争、去逐节点 fsync）+ `update_access_counts` 批量调用 + 测试。选项 (b) 内存计数 + 代谢期回刷归 **P4+**（等 Micro-Sleep 就绪）。
 
 ---
+---
 
-## [2026-08-27] 变异：知识本体 v4.1 — 相态范式入根 + VISION.md 建立
+## [2026-08-28] 完成：P7 生态文档同步 + 认知工艺 Phase 1
 
 ### 触发条件
-2026-07-29 新共识（认知相态的河流与催化器）产生后未文档化；VISION.md 初版方案被指出版本漂移（沿用 v3.4 海马体范式）与相态概念缺位；L2 共享语义出现"主动/自动"歧义。
+P0-P6 全部完成（PLAN 阶段表修正滞后）；用户批准认知工艺 v1.1（吸收 Gemini 审查补丁 7 项 + 豆包审查 B1/B2/B3 三项修正）。
 
 ### 变更性质
-- **知识本体**：v4.0 → v4.1（硬冻结契约无变更，核心定位深化：记忆中枢 → 认知相态的河流与催化器）
-- **新增概念**：四层相态（气/液/胶/晶）、认知预算前置路由、Append-Only Schema Evolution
-- **决策冻结**：ADR-0010（认知预算前置路由）、ADR-0011（相态模型与主体依赖轴）、ADR-0012（Append-Only Schema Evolution）、ADR-0016（L2 自动共享语义，宪法级锁定）
-- **根索引建立**：VISION.md v1.1（10 条原子原则 + 叙事/决策映射 + 宪法澄清）
-- **宪法不变**：`ECOSYSTEM.md §7` / `docs/spec/federation.md` / `docs/spec/data-contract.md` 的"公开 DAG 自动共享"措辞保留；ADR-0016 作为执行澄清而非修正
+- **ADR-0021（Active）**：认知工艺决策——①执行边界：Mind=编排（0 Token 纯逻辑），执行经 ADR-0017 CognitiveService 注入（B1）；②System 0 门控：规则 + FTS5 bm25 相关度阈值，非 embedding（B2，零向量依赖）；③与 ADR-0010 划界：预算路由=外部前置定扫描范围，System 0=Mind 内定思考深度（B3）
+- **`docs/spec/cognitive-craft.md` v1.1**：认知工艺完整规范（工序×模式、MSC 最小充分上下文、黑格尔辩证确定性合题、Bounded ε-Greedy+EMA 抗僵化、Token 熔断+30s 超时）
+- **`docs/ecosystem-alignment.md`**：ECOSYSTEM v1.6 对齐核对——Mind↔Anaphase/Callosum 契约逐项核对无断链；CI-144 动词映射 5/5 一致（FETCH/WRITE_NODE/TENTACLE/FINISH/CANCEL vs INTENT-7 spec §3）；新增 budget_tier/traceparent 契约字段建议
+- **文档生态同步**：PLAN 阶段表 P3-P7 全部 ✅ + P8 预览（认知工艺 Phase 2）；GROWTH 超 3 条归档最旧记录（v4.1 变异 → docs/archive/growth/，已版本化）
 
 ### 兼容性
-- 所有硬冻结契约无变更（外部组件 Anaphase rs / CI-144 无需修改）
-- 数据契约追加 `phase_state`/`subject_dependency`/`concentration`/`tension`（Append-Only 字段 16-19，SQLite 幂等迁移 + 一次性物化回填）
-- `HelixQueryResult` 预留 `reserved 13`（activation_vector，P4 M-10 落地）
+纯文档阶段，零代码变更；硬冻结契约零变更；cargo test 全绿（回归确认 70 通过）
+
+### 验收
+ADR-0021 Active 且含 B1/B2/B3；cognitive-craft.md 落位；对齐核对 5/5 动词一致、零断链；PLAN ≤150 行
 
 ### 状态
-🧬 已合并（提交 1289507）
+🧬 待提交（用户确认后 push）

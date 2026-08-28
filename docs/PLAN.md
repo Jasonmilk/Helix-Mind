@@ -69,12 +69,13 @@
 | P0.5 | 检索测试基线（ADR-0016） | ✅ |
 | P1 | 检索闭环（FTS5 trigram + 异步索引 + 注入防御 + 相态加权，ADR-0013） | ✅ 2026-08-28 |
 | P2 | 代谢闭环（a/b/c 拆分，无 LLM 起步，ADR-0014/0017） | ✅ 2026-08-28 |
-| P3 | 安全与契约（联邦审查、UDS SO_PEERCRED / 远程 mTLS、API/Health） | 🚧 当前 |
-| P4 | 硬冻结兑现 + 生态接口（activation_vector、Mind→Callosum 契约、Rhizax 预留） | ⏳ |
-| P4.5 | 架构审查点（ADR-0015 WAL 设计 + 原型，4 项产出） | ⏳ |
-| P5 | 领域 WAL（独立日志 + 完整性校验 + 投影器 + replay） | ⏳ |
-| P6 | 数据诚实 + 轮回 + 商业化（parquet 名实相符、多租户 WAL 分区） | ⏳ |
-| P7 | 生态文档同步（ECOSYSTEM v1.6 + CI-144 对齐） | ⏳ |
+| P3 | 安全与契约（联邦审查、UDS SO_PEERCRED / 远程 mTLS、API/Health） | ✅ 2026-08-28 |
+| P4 | 硬冻结兑现 + 生态接口（activation_vector、Mind→Callosum 契约、Rhizax 预留） | ✅ 2026-08-28 |
+| P4.5 | 架构审查点（ADR-0015 WAL 设计 + 原型，4 项产出） | ✅ 2026-08-28 |
+| P5 | 领域 WAL（独立日志 + 完整性校验 + 投影器 + replay） | ✅ 2026-08-28 |
+| P6 | 数据诚实 + 轮回 + 商业化（parquet 名实相符、多租户 WAL 分区） | ✅ 2026-08-28 |
+| P7 | 生态文档同步（ECOSYSTEM v1.6 对齐 + CI-144 核对 + 认知工艺 Phase 1） | ✅ 2026-08-28 |
+| P8 | 认知工艺 Phase 2（编排器最小原型，DeterministicAdapter 闭环，ADR-0021） | ⏳ 预览 |
 
 ---
 
@@ -92,6 +93,7 @@
 | 领域 WAL | ADR-0015（P4.5 产出）+ 独立日志文件设计 |
 | 商业化 | D5（滞后开源；实现闭源 / 协议公开 / 哲学自由传播） |
 | CI-144 对齐 | VISION 生态位置 + INTENT-7 / BIND-19 / CAPABILITY-13（P3/P7） |
+| 认知工艺 | ADR-0021 + `spec/cognitive-craft.md`（Mind=编排 / CognitiveService=执行，Phase 1 定稿） |
 | 参考资源 | Event Sourcing / The Log / CI-144 / Lumtract（见 VISION 组件仓库索引） |
 
 ---
