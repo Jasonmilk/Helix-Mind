@@ -58,6 +58,10 @@ pub struct WalConfig {
     pub dir: PathBuf,
     /// 段大小上限（字节）。默认 64MB。
     pub segment_size: u64,
+    /// 多租户分区（P6-4 预留，ADR-0015 §P6+）：
+    /// `Some(tenant)` → 段写入 `dir/<tenant>/<seq>.wal`；
+    /// `None` → 单租户，段写入 `dir/<seq>.wal`（与既有行为完全一致）。
+    pub tenant: Option<String>,
 }
 
 impl WalConfig {
@@ -65,6 +69,21 @@ impl WalConfig {
         Self {
             dir: dir.into(),
             segment_size: 64 * 1024 * 1024,
+            tenant: None,
+        }
+    }
+
+    /// 指定租户分区（P6-4 预留接口）。租户段彼此隔离，互不串链。
+    pub fn with_tenant(mut self, tenant: impl Into<String>) -> Self {
+        self.tenant = Some(tenant.into());
+        self
+    }
+
+    /// WAL 实际根目录：租户模式 → `dir/<tenant>/`；单租户 → `dir/`。
+    pub fn root(&self) -> PathBuf {
+        match &self.tenant {
+            Some(t) => self.dir.join(t),
+            None => self.dir.clone(),
         }
     }
 }
@@ -151,8 +170,9 @@ impl WalWriter {
     /// 打开（或续接）WAL。若已有段：执行**全链校验**（replay）后恢复到末尾，
     /// 并 truncate 掉截断尾（崩溃残留），保证后续 append 从有效边界续写。
     pub fn open(config: &WalConfig) -> Result<Self, WalError> {
-        std::fs::create_dir_all(&config.dir)?;
-        let segments = discover_segments(&config.dir);
+        let root = config.root();
+        std::fs::create_dir_all(&root)?;
+        let segments = discover_segments(&root);
 
         // 全链校验 + 续接点。
         let reader = WalReader::new(config);
@@ -168,7 +188,7 @@ impl WalWriter {
                 (0, GENESIS_HASH, 0, 0)
             };
 
-        let path = segment_path(&config.dir, segment_seq);
+        let path = segment_path(&root, segment_seq);
         let file = if path.exists() {
             let f = OpenOptions::new().append(true).read(true).open(&path)?;
             f.set_len(valid_len)?; // 清除截断尾
@@ -189,7 +209,7 @@ impl WalWriter {
         all.sort_unstable();
 
         Ok(Self {
-            dir: config.dir.clone(),
+            dir: root,
             segment_size: config.segment_size,
             file,
             segment_seq,
@@ -289,7 +309,7 @@ impl WalReader {
         segment: u64,
         start_hash: [u8; 32],
     ) -> Result<(Vec<RawRecord>, [u8; 32], u64), WalError> {
-        let path = segment_path(&self.config.dir, segment);
+        let path = segment_path(&self.config.root(), segment);
         let mut file = File::open(&path)?;
         let mut buf = Vec::new();
         file.read_to_end(&mut buf)?;
@@ -336,7 +356,7 @@ impl WalReader {
 
     /// 遍历全部段，跨段串联哈希链，返回校验结果。
     pub fn replay_all(&self) -> Result<ReplayOutcome, WalError> {
-        let segments = discover_segments(&self.config.dir);
+        let segments = discover_segments(&self.config.root());
         let mut records = Vec::new();
         let mut prev_hash = GENESIS_HASH;
         let mut last_segment: Option<u64> = None;
@@ -416,6 +436,60 @@ mod tests {
             _ => panic!("expected node"),
         }
         assert_eq!(outcome.records[1].hash.len(), 64); // 32 bytes hex upper
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn tenant_partitions_are_isolated() {
+        // P6-4 预留：多租户 WAL 分区。租户段彼此隔离、互不串链。
+        let dir = temp_dir("tenants");
+        let _ = std::fs::remove_dir_all(&dir);
+
+        let cfg_a = WalConfig::new(&dir).with_tenant("tenant-a");
+        let cfg_b = WalConfig::new(&dir).with_tenant("tenant-b");
+
+        // 两个租户各写 2 条（段序号都从 0 开始，互不影响）。
+        let mut wa = WalWriter::open(&cfg_a).unwrap();
+        let mut wb = WalWriter::open(&cfg_b).unwrap();
+        wa.append_synced(&event_node("a1")).unwrap();
+        wa.append_synced(&event_node("a2")).unwrap();
+        wb.append_synced(&event_node("b1")).unwrap();
+        wb.append_synced(&event_node("b2")).unwrap();
+        drop(wa);
+        drop(wb);
+
+        // 各自 replay 只读各自分区的记录。
+        let ra = WalReader::new(&cfg_a).replay_all().unwrap();
+        let rb = WalReader::new(&cfg_b).replay_all().unwrap();
+        assert_eq!(ra.records.len(), 2);
+        assert_eq!(rb.records.len(), 2);
+        match &ra.records[0].event {
+            WalEvent::NodeWritten(n) => match &n.content {
+                NodeContent::Text(t) => assert_eq!(t, "a1"),
+                _ => panic!("expected text"),
+            },
+            _ => panic!("expected node"),
+        }
+        match &rb.records[0].event {
+            WalEvent::NodeWritten(n) => match &n.content {
+                NodeContent::Text(t) => assert_eq!(t, "b1"),
+                _ => panic!("expected text"),
+            },
+            _ => panic!("expected node"),
+        }
+
+        // 物理落盘于各自子目录。
+        assert!(segment_path(&dir.join("tenant-a"), 0).exists());
+        assert!(segment_path(&dir.join("tenant-b"), 0).exists());
+        assert!(!segment_path(&dir, 0).exists(), "tenant mode must not write to root");
+
+        // 单租户（tenant=None）仍写根目录——行为完全不变。
+        let cfg_default = WalConfig::new(&dir);
+        let mut wd = WalWriter::open(&cfg_default).unwrap();
+        wd.append_synced(&event_node("default")).unwrap();
+        drop(wd);
+        assert!(segment_path(&dir, 0).exists(), "single-tenant writes to root");
+
         let _ = std::fs::remove_dir_all(&dir);
     }
 
