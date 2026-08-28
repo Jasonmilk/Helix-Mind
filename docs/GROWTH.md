@@ -6,33 +6,6 @@
 规则：只保留最近 3 条。第 4 条写入时，最旧的归档到 `docs/archive/growth/`（已版本化，永不删除）。
 
 ---
-
-## [2026-08-28] 完成：P2 代谢闭环（a/b/c）
-
-### 触发条件
-审查③ O10（`find_similar_node` 度量）/ S7（LLM 越界）→ P2 计划（ADR-0014/0017）审查通过，用户授权编码。
-
-### 变更性质
-- **ADR 冻结**：ADR-0014（P2a 确定性代谢）、ADR-0017（P2b CognitiveService 端口）
-- **数据契约（Append-Only）**：`RelationType::Conflicts` 追加（失调声明）；edges 表加 `created_at`（`migrate_edges_created_at` 幂等迁移）；`MetabolismConfig.dissonance_window_hours`（冷却窗口可配置，消魔法数 24）
-- **P2a 确定性代谢**：`find_similar_node` 真实实现（FTS5 候选 top-1 + 跳过 recessive 防环）；`get_unresolved_dissonance`（Conflicts 边查询 + 排除已 `corrected_by`）；`update_corrected_by` 原语；`Digest::resolve_dissonance` 用 SymbolicSolver 仲裁（Corrects edge -1.0 + corrected_by trace）；Text-only 失调诚实保留（P2b 边界）；`Digest::run` 返回真实 merged 数（修 report 硬编码 0 的虚假数据）
-- **P2b CognitiveService 端口**（`cognitive.rs`）：trait（summarize/extract_entities/translate_assertions）+ 三适配器（Deterministic 生产默认零 LLM / Remote debug_direct 门控 / Fake 测试）+ 工厂 fail-closed（未知 llm_mode 视为 disabled）
-- **P2c 越界清零**：crystallize/ner 删除直接 reqwest，改走 cognitive 端口；metabolism 唯一 HTTP 出网点收敛到 `cognitive.rs`
-- **M-04/M-05 集成测试**（3 个）：merge 闭环（双胞胎合并 → 1 recessive + SimilarTo edge）/ 结构化失调闭环（Corrects + corrected_by + 不再出现在 unresolved）/ Text-only 失调不臆造 Corrects
-
-### 兼容性
-- 硬冻结契约无变更；`RelationType::Conflicts` 为 Append-Only 枚举追加（ADR-0012）
-- edges created_at 对旧库幂等迁移（默认 1970 回填，仅影响新边写入）
-- `Digest::run` 返回类型 `Result<u64>`（内部语义，api 消费者零改动）
-
-### 验收
-`cargo test --workspace` 全绿（新增 metabolism 单测 15 + 集成 3）｜ 0 warning ｜ `grep reqwest` 仅 cognitive.rs ｜ Z2（llm_mode 门控）物理生效
-
-### 状态
-🧬 待提交（用户确认后 push）
-
----
-
 ## [2026-08-28] 完成：P1 检索闭环
 
 ### 触发条件
@@ -78,6 +51,30 @@ P0-P6 全部完成（PLAN 阶段表修正滞后）；用户批准认知工艺 v1
 
 ### 验收
 ADR-0021 Active 且含 B1/B2/B3；cognitive-craft.md 落位；对齐核对 5/5 动词一致、零断链；PLAN ≤150 行
+
+### 状态
+🧬 待提交（用户确认后 push）
+---
+
+## [2026-08-28] 完成：P8 认知工艺 Phase 2 — 编排器最小原型
+
+### 触发条件
+P7 认知工艺 Phase 1 定稿（ADR-0021 Active）后，用户授权 Phase 2 编码（编排器最小原型，DeterministicAdapter 闭环验证编排逻辑）。
+
+### 变更性质
+- **新 crate `helix-mind-cognitive`**（认知工艺编排器，Mind 核心域）
+- **System 0 门控**（`gate.rs`，B2）：规则匹配（触发关键词 + 长度阈值）+ 用户意图标签（显式深入跳过门控），0 Token；FTS5 bm25 相关度留 Phase 3（GateSignal 接口预留）
+- **编排器**（`craft.rs`，B1）：`CognitiveCraft`——熔断（步骤数 1..=5 / 单步超时 30s / Token 预算 EnergyExhausted）→ 独立会话执行（每步仅注入 MSC=原始输入+工序Prompt+全局约束，不横向引用草稿 → 会话隔离）→ 根 trace_id 生成（全息留痕，子工序共享）→ 黑格尔确定性收敛
+- **工序 × 模式**：5 工序（结构性/批判性/创造性/情境/元批判）× 3 模式（熟练/锚定/想象力）；工序执行经 ADR-0017 CognitiveService 注入（生产默认 DeterministicAdapter，0 Token；Remote 仅 debug_direct）
+- **收敛**（`converge.rs`，R1）：确定性合题——正题（非批判输出）+ 反题（批判输出）→ 条件化命题"当且仅当风险被排除"
+- **执行边界锁死**：编排器零 LLM 直连，全部经 CognitiveService trait（Z2 延续）
+
+### 兼容性
+- 新 crate，零既有代码改动；硬冻结契约零变更
+- 依赖 helix-mind-metabolism（CognitiveService trait 消费方，无循环依赖）
+
+### 验收
+`cargo test --workspace` 全绿（新增 cognitive 单元 12 + 集成 4，workspace 总 86，0 warning）｜ 门控：简单跳过/复杂触发/显式标签优先 ✅ ｜ 编排闭环：结构+批判+创造三工序收敛出条件化命题 ✅ ｜ 熔断：步骤超限 / 超时(慢执行器) / 预算耗尽 三路全断 ✅ ｜ 会话隔离：批判会话不引用结构草稿 ✅
 
 ### 状态
 🧬 待提交（用户确认后 push）

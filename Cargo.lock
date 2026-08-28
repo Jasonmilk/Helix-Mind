@@ -1006,6 +1006,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "helix-mind-cognitive"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "helix-mind-core",
+ "helix-mind-metabolism",
+ "serde",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "helix-mind-core"
 version = "0.1.0"
 dependencies = [

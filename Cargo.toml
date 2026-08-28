@@ -10,6 +10,7 @@ members = [
     "crates/helix-mind-reincarnation",
     "crates/helix-mind-cli",
     "crates/helix-mind-wal",
+    "crates/helix-mind-cognitive",
 ]
 
 [workspace.package]

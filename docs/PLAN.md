@@ -75,7 +75,8 @@
 | P5 | 领域 WAL（独立日志 + 完整性校验 + 投影器 + replay） | ✅ 2026-08-28 |
 | P6 | 数据诚实 + 轮回 + 商业化（parquet 名实相符、多租户 WAL 分区） | ✅ 2026-08-28 |
 | P7 | 生态文档同步（ECOSYSTEM v1.6 对齐 + CI-144 核对 + 认知工艺 Phase 1） | ✅ 2026-08-28 |
-| P8 | 认知工艺 Phase 2（编排器最小原型，DeterministicAdapter 闭环，ADR-0021） | ⏳ 预览 |
+| P8 | 认知工艺 Phase 2（编排器最小原型，DeterministicAdapter 闭环，ADR-0021） | ✅ 2026-08-28 |
+| P9 | 认知工艺 Phase 3（价值评估、自适应突变、睡眠复盘、FTS5 bm25 门控增强） | ⏳ 预览 |
 
 ---
 
