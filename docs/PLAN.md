@@ -1,7 +1,7 @@
 # Helix-Mind 开发导航牌（PLAN）
 
-> **版本**：v5.1（导航牌化，2026-08-28）
-> **状态**：🚧 P3 安全与契约（计划待起草）
+> **版本**：v5.2（CI-144 v2.0 前置锁定，2026-08-29）
+> **状态**：🚧 P3 安全与契约（计划待起草）+ CI-144 v2.0 前置锁定完成
 > **分支**：rs-dev
 > **所属方法论**：DNA 自生长方法论 v2.0（PLAN 动态流转闭环）
 > **规则**：本文件只含当前阶段 + 下一阶段预览 + 阶段总览地图。完成阶段 → GROWTH.md。总行数 ≤150，超出触发历史迁移。
@@ -18,6 +18,7 @@
 | P3a-M-07 | 联邦确定性审查：出站门控（审查未过不出站）+ 入站沙盒审查接入 + 双盲语义定案 | `share_dag` 无门控直接可用；`review_node` 放行 stub；`dual_blind_review` 假双盲 | ⏳ ADR-0018 |
 | P3b-M-08 | 传输层安全：UDS 支持 + SO_PEERCRED 鉴权（本地）/ mTLS 预留（远程）；middleware 真实化 | `server.rs` 仅 TCP；`ValidationLayer` 空壳；HealthServer 已注册(Z3) | ⏳ ADR-0019 |
 | P3c-CI144 | INTENT-7 语义对齐：动词(FETCH/WRITE_NODE/TENTACLE/FINISH/CANCEL)→Mind gRPC 契约映射；traceparent 透传 | 无映射表；proto 无 traceparent 透传 | ⏳ ADR-0020 |
+| **CI-144 v2.0** | **协议规范升级：PAL 24字节物理锚定层 + Seq-Counter防重放 + PAH双层签名 + Replay-Enable=0强化约束** | **v1.0 无物理锚定层；前置11项设计已锁定（ADR-0022~0027占位）** | **✅ Phase 0 前置锁定完成，待切 v2.0-alpha 分支** |
 | 旁支 | `docs/dna-template/` 方法论参考种子（顺手，不额外精力） | 无 | ⏳ |
 
 ### 1.2 代码真相源（P3 调研结论）
