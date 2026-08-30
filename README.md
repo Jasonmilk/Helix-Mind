@@ -14,17 +14,51 @@
 
 ## Governance
 
-This project is managed by the **DNA Self-Growing Methodology**.
+This project is managed by the **phyt-DNA Methodology v1.0** (methodology anchor project: https://github.com/Jasonmilk/phyt-DNA).
 
 | Document | Purpose |
 |:---|:---|
 | [docs/DNA.md](docs/DNA.md) | Constitution — 7 axioms that cannot be violated |
 | [docs/RNA.md](docs/RNA.md) | Loading protocol — how AI should read this repo |
+| [docs/PLAN.md](docs/PLAN.md) | Navigation — current phase + next phase preview |
 | [docs/SPEC.md](docs/SPEC.md) | Knowledge ontology — what Helix-Mind is |
 | [docs/GROWTH.md](docs/GROWTH.md) | Mutation log — last 3 health snapshots |
 | [docs/DEPRECATE.md](docs/DEPRECATE.md) | Retirement list — features being phased out |
 
 > **For AI Agents**: Start with `docs/DNA.md`, then `docs/RNA.md`. Load spec volumes on demand.
+
+---
+
+## 📊 Current Status
+
+**P0-P9 Complete** (as of 2026-08-30). **P10 Preview** (Cognitive Craft & Ecosystem Deep Integration).
+
+| Metric | Value |
+|:---|:---|
+| **Tests Passing** | 98 (workspace-wide, `cargo test --workspace`) |
+| **Crates** | 12 (core, retrieval, metabolism, storage, wal, cognitive, api, cli, federation, reincarnation, + integration tests) |
+| **ADRs** | 30 (docs/decisions/0001-0030) |
+| **Workspace** | 0 errors, 0 warnings |
+| **Branch** | `rs-dev` |
+
+### Phase Overview
+
+| Phase | Content | Status |
+|:---|:---|:---|
+| P0-Pre | Z1-Z6 zeroing (federation/LLM gating, Health, layer3 passthrough, test honesty, FTS5 verification) | ✅ |
+| P0 | Cognitive baseline + compilable data contracts (ADR-0010/11/12) | ✅ |
+| P0.5 | Retrieval test baseline (ADR-0016) | ✅ |
+| P1 | Retrieval closed loop (FTS5 trigram + async index + injection defense + phase weighting) | ✅ |
+| P2 | Metabolism closed loop (a/b/c split, no LLM startup) | ✅ |
+| P3 | Security & contracts (federation review, UDS SO_PEERCRED / remote mTLS, API/Health) | ✅ |
+| P4 | Hard freeze兑现 + ecosystem interfaces (activation_vector, Mind→Callosum contract, Rhizax reserved) | ✅ |
+| P4.5 | Architecture review point (ADR-0015 WAL design + prototype) | ✅ |
+| P5 | Domain WAL (independent log + integrity check + projector + replay) | ✅ |
+| P6 | Data honesty + reincarnation + commercialization (parquet name-reality match, multi-tenant WAL partition) | ✅ |
+| P7 | Ecosystem docs sync (ECOSYSTEM v1.6 alignment + CI-144 check + Cognitive Craft Phase 1) | ✅ |
+| P8 | Cognitive Craft Phase 2 (orchestrator minimal prototype, DeterministicAdapter closed loop) | ✅ |
+| P9 | Cognitive Craft Phase 3 (value assessment + adaptive mutation + sleep review + bm25 gating) | ✅ |
+| **P10** | **Cognitive Craft & Ecosystem Deep Integration (preview)** | 🚧 Preview |
 
 ---
 
@@ -63,23 +97,9 @@ If you are an AI Agent reading this repository to build, run, or modify the syst
 
 ---
 
-## 📊 2. Current Progress & Milestones
+## ⚙️ 2. Quick Configuration (0-Magic)
 
-The entire workspace compiles with **0 errors and 0 warnings**.
-
-| Component | Status | Mathematical/Physical Implementation |
-|:---|:---|:---|
-| **SA-Core Engine** | **✅ Implemented** | Active graph mapped to contiguous sparse transition matrix $W$ with Row-Normalization ($\sum_j |W_{ij}| = 1.0$) and inhibitory negative weights ($W_{A',A} = -1.0$) [12.5]. |
-| **Synaptic Severing** | **✅ Implemented** | Physical deletion of L3 episodic nodes. Automatic de-anchoring of L1/L2 nodes, retaining abstract traits in `abstract_provenance` while severing UUID pointers [1.1.6, 17.2, 17.4]. |
-| **Workspace Warnings** | **✅ Purified** | Unused assignments (`stages_attempted`), unused variables (`query`), and dead struct fields (`deferred_writer`) cleaned/attributed with `#[allow(dead_code)]` [1.2.2]. |
-| **UDS gRPC Client/Server**| **🔄 Refactoring** | Exposing `helix_write` and `helix_query` over high-speed local UNIX Domain Sockets. |
-| **Metabolic Sleep GC** | **🔄 Refactoring** | Periodic asynchronous micro-sleep and deep dream consolidation. |
-
----
-
-## ⚙️ 3. Quick Configuration (0-Magic)
-
-### 3.1 Core configuration (`config.toml`)
+### 2.1 Core configuration (`config.toml`)
 All magic numbers and thresholds must reside in `config.toml` (no hardcoding in Rust) [1.3.4]:
 
 ```toml
@@ -104,7 +124,7 @@ max_wall_clock_days = 3650
 countdown_minutes = 15
 ```
 
-### 3.2 L0 Gene Lock (`gene_lock.md`)
+### 2.2 L0 Gene Lock (`gene_lock.md`)
 Markdown-based survival ethics. Compiled at startup into an $O(1)$ in-memory regex decision tree:
 
 ```markdown
@@ -121,9 +141,9 @@ Dash
 
 ---
 
-## 📡 4. Core API & Spreading Activation Formula
+## 📡 3. Core API & Spreading Activation Formula
 
-### 4.1 SA-Core Engine Formula
+### 3.1 SA-Core Engine Formula
 At query-time, the memory graph is converted to a sparse adjacency matrix $W$. The active search path is computed algebraically via **Spreading Activation**:
 
 $$a_{t+1} = \alpha \cdot a_t \cdot W + (1-\alpha) \cdot a_0$$
@@ -131,7 +151,7 @@ $$a_{t+1} = \alpha \cdot a_t \cdot W + (1-\alpha) \cdot a_0$$
 *   **$\alpha$ (Decay / Heliotropism Factor)**: Dynamically calculated based on `EnergyContext.heliotropism` (Optimistic mode = 0.8, Defensive mode = 0.2) [12.5, 12.7].
 *   **Inhibitory suppression**: For corrected nodes, the `CORRECTS` edge is mapped with a weight of $-1.0$ [4.1, 12.5]. This subtracts energy from outdated nodes in the vector multiplication, automatically clamping their final energy to `0.0` [4.1, 12.5].
 
-### 4.2 The Glowing Thought Stream (`activation_vector`)
+### 3.2 The Glowing Thought Stream (`activation_vector`)
 When a query completes, `Helix-Mind` returns the exact final activation state of all energized nodes through `HelixQueryResult`:
 
 ```json
@@ -150,7 +170,7 @@ When a query completes, `Helix-Mind` returns the exact final activation state of
 
 ---
 
-## 📝 5. AI-to-AI Collaboration Guide
+## 📝 4. AI-to-AI Collaboration Guide
 
 If you are an AI agent writing code for this repository, follow these **Iron Rules** strictly:
 1.  **Strictly 0 Hardcoding**: Never write magic values or file paths directly. Always load them via `self.config` [1.3.4].
@@ -158,3 +178,46 @@ If you are an AI agent writing code for this repository, follow these **Iron Rul
 3.  **HXR is L3 Payload**: The raw output of `Anaphase`'s execution trajectory (HXR) is exactly the `content` payload of `NodeType::L3` [2.2, 4.1, 5.3]. Do not write complex serializers; keep it zero-copy.
 4.  **No Direct Database Access**: If you are editing `Anaphase` or `Cellrix` code, do not import `rusqlite` or try to open `knowledge.duckdb` directly [1.3.1]. You must use the gRPC client channels.
 5.  **Acyclic Matrix Convergence**: When adding or updating nodes and edges in `MemoryTopology`, always ensure row-normalization ($\sum |W_{ij}| = 1.0$) is calculated, maintaining absolute mathematical stability during propagation [12.5].
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Clone
+git clone https://github.com/Jasonmilk/Helix-Mind.git
+cd Helix-Mind
+git checkout rs-dev
+
+# Test
+cargo test --workspace
+
+# Build
+cargo build --release
+
+# Run (UDS gRPC server)
+./target/release/helix-mind
+```
+
+---
+
+## 🌐 Helix Ecosystem
+
+Helix-Mind is part of the **Helix Co-biotic Lifeform** ecosystem. All 6 core projects are complete (1060+ tests total).
+
+| Project | Role | Status | Tests |
+|:---|:---|:---|:---|
+| [Cellrix](https://github.com/Jasonmilk/Cellrix) | Visual Projection / TUI | ✅ Complete | 307 |
+| [Tuck](https://github.com/Jasonmilk/Tuck) | Security Gate / Firewall | ✅ Complete | 310 |
+| [Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) | Executive Body / FSM | ✅ Pending Decision | 50 |
+| [BIND-19](https://github.com/CommonIntents/BIND-19) | CI-144 Protocol Transport | ✅ Complete | 142 |
+| **Helix-Mind** | **Subconscious Memory Core** | **✅ Core Complete** | **98** |
+| [Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) | Tool Execution Engine | ✅ Complete | 153 |
+
+**Ecosystem Navigation**: [docs/helixECO/ECOSYSTEM.md](docs/helixECO/ECOSYSTEM.md)
+
+**CI-144 Protocol Family**: [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) (PFP-xCF14 + SAP-xCF14)
+
+---
+
+*Helix-Mind (rs-dev). Apache 2.0. Managed by phyt-DNA Methodology v1.0.*

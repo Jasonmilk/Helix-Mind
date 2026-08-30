@@ -1,11 +1,33 @@
 # 生长日志（变异 + 阶段完成记录）
 
-> **所属方法论**：DNA 自生长方法论 v2.0
+> **所属方法论**：phyt-DNA 方法论 v1.0（方法论锚点项目 https://github.com/Jasonmilk/phyt-DNA）
 > **对齐知识本体**：v4.1
 
 规则：只保留最近 3 条。第 4 条写入时，最旧的归档到 `docs/archive/growth/`（已版本化，永不删除）。
 
 ---
+## [2026-08-30] 完成：P0-P9 全部完成 + 全生态进度对齐 + 方法论升级 phyt-DNA
+
+### 触发条件
+Helix-Mind P0-P9 全部完成（PLAN.md v6.0 确认），全生态 6 个项目核心功能全部完成，方法论从 "DNA 自生长方法论 v2.0" 升级为 "phyt-DNA 方法论 v1.0"（独立锚点项目），ECOSYSTEM.md 全生态导航文档建立。
+
+### 变更性质
+- **P0-P9 全部完成**：认知基线 → 检索闭环 → 代谢闭环 → 安全契约 → 硬冻结 → 领域 WAL → 数据诚实 → 生态文档 → 认知工艺 Phase 2 → 认知工艺 Phase 3
+- **方法论升级**：从 "DNA 自生长方法论 v2.0" 升级为 "phyt-DNA 方法论 v1.0"，独立锚点项目 https://github.com/Jasonmilk/phyt-DNA，全生态项目统一引用
+- **全生态导航**：建立 `docs/helixECO/ECOSYSTEM.md`，6 个项目（Cellrix/Tuck/Anaphase/BIND-19/Helix-Mind/Helix-Tentacle）进度对齐，测试总数 1060
+- **测试数修正**：Helix-Mind 实际通过 98 个测试（之前记录的 27 是过时数据），各 crate 测试数重新统计确认
+- **工作区迁移**：从按日期分目录迁移到统一的 `Jasonmilk/` 目录，避免项目重复和知识腐化
+
+### 兼容性
+纯文档阶段，零代码变更；P0-P9 代码零变更；方法论升级为引用更新，不影响现有代码结构。
+
+### 验收
+PLAN.md v6.1（方法论引用更新）｜ GROWTH.md v1.4（方法论引用更新 + 新记录追加）｜ RNA.md 方法论引用更新 ｜ README.md 方法论引用更新 + P0-P9 完成状态 ｜ ECOSYSTEM.md 全生态 6/6 核心完成 ｜ 全生态测试总数 1060
+
+### 状态
+🧬 已完成
+---
+
 ## [2026-08-29] 完成：CI-144 v2.0 前置必填项锁定（11 项设计定案）
 
 ### 触发条件
@@ -52,23 +74,3 @@ P7 认知工艺 Phase 1 定稿（ADR-0021 Active）后，用户授权 Phase 2 �
 ### 状态
 🧬 待提交（用户确认后 push）
 ---
-
-## [2026-08-28] 完成：P9 认知工艺 Phase 3 — 完整引擎（价值/突变/复盘/bm25）
-
-### 触发条件
-P8 编排器闭环验证通过（DeterministicAdapter 0 Token），用户授权 Phase 3 编码（价值评估、自适应突变、睡眠复盘、bm25 门控增强）。
-
-### 变更性质
-- **价值评估**（`value.rs`）：`ValueAssessor` 确定性评估（长度档 + 复杂关键词提升）→ `ValueGrade{Low,Medium,High}` + 建议思考深度（Skilled/Anchored/Imaginative）。0 Token，禁用 LLM 自我评分（R3，信用由他证）
-- **自适应突变**（`mutation.rs`）：`AdaptiveMutation`——Bounded ε-Greedy（突变率钳制 3%-20%）+ EMA 成功率平滑（α=0.3）；`record_outcome` 确定性信号更新：成功→降探索（利用熟练路径），失败→升探索（探索新工序/模式）
-- **睡眠复盘**（`review.rs`）：`SleepReview`——非熟练模式检视（强制锚定/想象力，防假复盘 R4）：检视输出实体覆盖度相对旧路径增量 ≥2 → Stale（旧路径僵化，建议降权）；否则 Viable。接入点：Deep Dream 代谢窗口（不阻塞主循环）
-- **bm25 门控增强**（`gate.rs`）：`system0_gate_enhanced`——用户显式标签 > bm25 简单相似度（≥0.7 → DirectSkilled）> 价值评估（Low→Direct）> 规则兜底。相似度信号由上层经 `storage::fts::fts_search` 计算注入（cognitive 保持纯逻辑，零向量依赖）
-
-### 兼容性
-- 全为 cognitive crate 内新模块，零既有代码改动；硬冻结契约零变更；无新依赖
-
-### 验收
-`cargo test --workspace` 全绿（cognitive 单元 12→24 + 集成 4，workspace 总 98，0 warning）｜ 价值：短简 Low/带关键词 Medium/长+关键词 High ✅ ｜ 突变：界内钳制、成功降探索失败升探索、EMA 平滑 ✅ ｜ 复盘：增量≥2 Stale / 否则 Viable ✅ ｜ 门控：bm25 高相似优先、显式标签最高优先 ✅
-
-### 状态
-🧬 待提交（用户确认后 push）
