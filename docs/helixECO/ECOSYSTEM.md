@@ -37,14 +37,14 @@
 | # | 项目 | 分支 | 测试数 | 当前阶段 | 最后提交 | 状态 | 仓库 |
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 307 | P0-P6 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
-| 2 | **Tuck** | rs | 310 | P1-P7 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 50 | P11b 验证闭环完成 | 2026-08-29 | ✅ 待裁决下一阶段 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
-| 4 | **BIND-19** | v2.0-alpha | 140 | 核心实现完成 | 2026-08-29 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
+| 2 | **Tuck** | rs | 310 | P0-P7 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
+| 3 | **Anaphase** | rs | 50 | P10a-P11b 完成，待裁决下一阶段 | 2026-08-29 | ✅ 待裁决 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
+| 4 | **BIND-19** | v2.0-alpha | 142 | 核心实现完成（PFP+SAP 解析器） | 2026-08-29 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 27（通过）/ 59（定义） | P10 认知工艺与生态深度集成（预览） | 2026-08-30 | 🚧 进行中 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
-| 6 | **Helix-Tentacle** | rs | 76+ | P5 性能优化（T1 待启动） | 2026-08-29 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
-| 7 | **phyt-DNA** | main | - | 方法论 v1.0 立项完成 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
+| 6 | **Helix-Tentacle** | rs | 127 | P5 性能优化（T1 待启动） | 2026-08-29 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
+| 7 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：910+（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 140 + Helix-Mind 27 + Tentacle 76+）
+**全生态测试总数**：963（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 27 + Helix-Tentacle 127）
 
 > **注**：Helix-Mind 定义了 59 个测试，实际通过 27 个（部分测试被 feature gate 或条件编译控制，需在对应 feature 下运行）
 
@@ -64,8 +64,8 @@
 
 | 项目 | 当前阶段 | 待办内容 | 阻塞项 |
 |---|---|---|---|
-| **Helix-Mind** | P10 认知工艺与生态深度集成（预览） | P10a: Anaphase 触发链路 + P10b: L1 策略持久化 + P10c: Deep Dream 复盘挂载 | ⚠️ PLAN.md 顶部状态未更新（停留在 P3），阶段总览已显示 P0-P9 完成 |
-| **Helix-Tentacle** | P5 性能优化 | T1 性能基准测试 + T2 资源限制 + T3 可观测性 + T4 部署文档 + T5 STDIO 传输层 | CI-144 v2.0 已冻结，可启动 T1 |
+| **Helix-Mind** | P10 认知工艺与生态深度集成（预览） | P10a: Anaphase 触发链路 + P10b: L1 策略持久化 + P10c: Deep Dream 复盘挂载 | P0-P9 已完成，PLAN.md v6.0 已修正状态，P10 待详细规划后开工 |
+| **Helix-Tentacle** | P5 性能优化（T1 待启动） | T1 性能基准测试 + T2 资源限制 + T3 可观测性 + T4 部署文档 + T5 STDIO 传输层 | CI-144 v2.0 已冻结，Tuck 重构已完成，可启动 T1 |
 
 ---
 
@@ -215,6 +215,7 @@
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| v1.3 | 2026-08-30 | 全项目进度对齐 — 逐个检查7个项目commit历史和实际测试数，修正Helix-Tentacle测试数(76+→127)、BIND-19测试数(140→142)、全生态测试总数(910+→963)，修正Anaphase阶段描述(P11b→P10a-P11b)，Helix-Mind PLAN.md v6.0状态修正完成 |
 | v1.2 | 2026-08-30 | Helix-Mind 进度对齐 — 修正 helix-mind 实际进度（P0-P9 已完成，当前 P10），测试数修正为 27 通过/59 定义，当前优先级更新，发现 PLAN.md 顶部状态与阶段总览不一致问题 |
 | v1.1 | 2026-08-30 | 进度对齐 — 项目状态总览添加最后提交日期列 + 已完成/进行中项目详情拆分 + 当前优先级更新（CI-144已冻结，Tentacle P5可并行启动）+ Helix-Mind P3状态细化（计划已起草，待审查） |
 | v1.0 | 2026-08-30 | 初始版本 — 工作区迁移完成，生态导航文档创建 |
