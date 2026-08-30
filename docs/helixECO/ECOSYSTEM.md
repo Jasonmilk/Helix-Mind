@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.1
+> **版本**：v1.4
 > **创建日期**：2026-08-30
-> **最后更新**：2026-08-30（进度对齐）
+> **最后更新**：2026-08-31（生态联调成功 + P10 准备完成 + 项目状态对齐）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -20,6 +20,8 @@
 ├── helix-mind/                       ← 记忆中枢（潜意识核心）
 │   └── docs/helixECO/                ← 本导航文档所在地
 ├── helix-tentacle/                   ← 工具执行（手）
+├── HelixECO-Glove/                   ← 生态手套（原生系统适配层）
+├── Helix-MCP-Learner/                ← MCP 消化器（MCP Server → Tentacle 插件）
 ├── phyt-DNA/                         ← 方法论体系（自生长方法论）
 └── commonintents/                    ← CommonIntents 组织仓库集合
     ├── BIND-19/                      ← 协议规范（权威来源）
@@ -40,17 +42,19 @@
 | 2 | **Tuck** | rs | 310 | P0-P7 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
 | 3 | **Anaphase** | rs | 50 | P10a-P11b 完成，待裁决下一阶段 | 2026-08-29 | ✅ 待裁决 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha | 142 | 核心实现完成（PFP+SAP 解析器） | 2026-08-29 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
-| 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 预览中（认知工艺与生态深度集成） | 2026-08-30 | ✅ 核心完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
-| 6 | **Helix-Tentacle** | rs | 153 | P5 完成（性能基准+资源限制+可观测性+STDIO传输层），P6 预览中 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
-| 7 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
+| 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 准备完成（认知工艺与生态深度集成） | 2026-08-31 | 🚧 P10 待启动 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
+| 6 | **Helix-Tentacle** | rs | 153 | P5 完成 + 生态联调成功（MCP-Learner → Tentacle 全链路畅通） | 2026-08-31 | ✅ 核心完成 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
+| 7 | **HelixECO-Glove** | main | 23 | P4-T1 完成（L1 静态审查 9 条规则），P4-T2 预览 | 2026-08-31 | 🚧 进行中 | [Jasonmilk/HelixECO-Glove](https://github.com/Jasonmilk/HelixECO-Glove) |
+| 8 | **Helix-MCP-Learner** | main | 42 | 核心完成 + 生态联调成功（MCP Server → CI-144 插件 → stable/） | 2026-08-31 | ✅ 核心完成 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
+| 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：1060（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153）
+**全生态测试总数**：1125（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 23 + Helix-MCP-Learner 42）
 
-> **注**：Helix-Mind P0-P9 全部完成，实际通过 98 个测试（2026-08-30 重新统计，含 cognitive 24 + core 8 + storage 8 + wal 7 + federation 7 + metabolism 7 + api 5 + integration 5 + fts_extractor 5 + craft_integration 4 + outbound_gate 4 + retrieval 2 + traceparent 2 + uds_peercred 2 + digestion 3 + reincarnation 3）。P10 为预览阶段（认知工艺与生态深度集成），待正式启动。Helix-Tentacle 实际运行 153 个测试通过。
+> **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则，10 测试全绿），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner 有 1 个测试失败（非阻塞，待修复）。
 
 ### 项目状态详情
 
-#### ✅ 已完成项目（5个）
+#### ✅ 已完成项目（6个）
 
 | 项目 | 完成内容 | 关键成果 |
 |---|---|---|
@@ -58,14 +62,16 @@
 | **Tuck** | P1-P7 全部完成 | 310 测试，PFP 第一个消费者，亚微秒级决策，fail-closed，全息审计 |
 | **Anaphase** | P11b 验证闭环完成 | 50 测试，认知工艺双向复用轨道裁决完成，编排链路已通 |
 | **BIND-19** | v2.0-alpha 核心实现 | 140 测试，33 组测试向量，14 个基准测试，PFP+SAP 解析器 |
+| **Helix-Tentacle** | P5 完成 + 生态联调成功 | 153 测试，性能基准+资源限制+可观测性+STDIO传输层，MCP-Learner 全链路联调畅通 |
 | **phyt-DNA** | 方法论 v1.0 立项 | DNA/RNA/PLAN/GROWTH/ADR 闭环，项目自生长方法论锚点 |
 
-#### 🚧 进行中项目（2个）
+#### 🚧 进行中项目（3个）
 
 | 项目 | 当前阶段 | 待办内容 | 阻塞项 |
 |---|---|---|---|
-| **Helix-Mind** | P10 认知工艺与生态深度集成（预览） | P10a: Anaphase 触发链路 + P10b: L1 策略持久化 + P10c: Deep Dream 复盘挂载 | P0-P9 已完成，PLAN.md v6.0 已修正状态，P10 待详细规划后开工 |
-| **Helix-Tentacle** | P5 性能优化（T1-T3 完成，T4 待启动） | T4 部署文档 + T5 STDIO 传输层 | T1性能基准框架 + T2统一资源限制 + T3可观测性(MetricsCollector + /metrics端点) |
+| **Helix-Mind** | P10 准备完成，待启动 | P10a: Anaphase 触发链路 + P10b: L1 策略持久化 + P10c: Deep Dream 复盘挂载 | P0-P9 已完成，P10 现状探查+执行计划已制定，待正式开工 |
+| **HelixECO-Glove** | P4-T1 完成，P4-T2 预览 | P4-T2: L2 dry_run 沙箱预执行 + 审查规则自进化 | L1 静态审查 9 条规则已完成（10 测试全绿），macOS Glove 核心已实现 |
+| **Helix-MCP-Learner** | 核心完成 + 生态联调成功 | 升级 mcp_proxy.js 为真实 MCP 代理执行体 + 修复 1 个失败测试 | 全链路联调畅通（学习→审查→stable/→Tentacle加载→执行），真实 MCP 执行待升级 |
 
 ---
 
@@ -85,36 +91,68 @@
 
 ---
 
-## 3. 当前优先级（2026-08-30）
+## 3. 当前优先级（2026-08-31）
 
-> **前置条件已满足**：CI-144 v2.0 协议家族已冻结（PFP-xCF14 + SAP-xCF14 + BIND-19 v2.0-alpha），Tuck 重构已完成，所有进行中项目的前置依赖均已清除。
+> **前置条件已满足**：CI-144 v2.0 协议家族已冻结，Tuck 重构已完成，生态联调成功（MCP-Learner → Tentacle 全链路畅通），Helix-Mind P10 准备工作完成。
 
 ### 第一优先级（立即启动）
-1. **Helix-Mind P10 开工** — 认知工艺与生态深度集成（P0-P9 已完成）
-   - P10a: Anaphase 触发链路（认知工艺→Anaphase 编排）
+1. **Helix-Mind P10 开工** — 认知工艺与生态深度集成（P0-P9 已完成，准备工作已完成）
+   - P10a: Anaphase 触发链路（认知工艺→Anaphase 编排闭环）
    - P10b: L1 策略持久化（认知工艺决策固化为可复用策略）
-   - P10c: Deep Dream 复盘挂载（睡眠复盘机制深度集成）
-   - **⚠️ 注意**：PLAN.md 顶部状态未更新（停留在 P3），需先修正 PLAN.md 状态不一致问题
-
-2. **MCP-Learner Glove PoC** — 证明 Helix 可以高效接入现有互联网
-   - 选 mcp-server-filesystem 做验证
-   - 学习 MCP 工具清单，提炼为 CI-144 语义事件
-   - 效率对比：MCP 直接调用 vs CI-144 重封装
+   - P10c: Deep Dream 复盘挂载（睡眠复盘机制深度集成到认知工艺循环）
+   - **执行顺序**：P10a → P10b → P10c（前者是后者的基础）
 
 ### 第二优先级（可并行启动）
-3. **Tentacle P5 性能优化** — 工具执行性能基准 + 资源限制
-   - T1: 性能基准测试（ARM 端侧 100 并发，HTTP/gRPC/MCP 三传输层对比）
-   - T2: 资源限制（内存/CPU/文件描述符配额）
-   - T3: 可观测性（Prometheus metrics + OpenTelemetry tracing）
-   - **前置依赖已满足**：CI-144 v2.0 已冻结，Tuck 重构已完成
+2. **真实 MCP 执行升级** — 将 mcp_proxy.js 从占位脚本升级为真实 MCP 代理执行体
+   - 接收 Tentacle 传入的参数，启动 MCP Server 子进程，发送 JSON-RPC 请求
+   - 用 mcp-server-filesystem 验证真实执行链路
+   - 验证通过后，将 ProcessTool 升级为正式实现（资源限制、超时控制、错误恢复）
 
-4. **Anaphase 下一阶段裁决** — 候选 A（Tentacle 深度集成）或候选 B（生态手套协议渐进）
-   - 候选 A: Tentacle Rust 重构深度集成（凭证标签流转 + 布隆过滤器 + 异步协程沙箱）
-   - 候选 B: 生态手套协议渐进（Cellrix 原生手套协议接入）
+3. **HelixECO-Glove P4-T2** — 审查体系 L2（dry_run 沙箱预执行）
+   - L1 静态审查已完成（9 条规则，10 测试全绿）
+   - L2: 在 Tentacle 沙箱内模拟执行工具，验证实际行为
+   - 审查规则自进化（L1 拒绝但 L2 通过 → 自动放宽规则）
 
 ### 第三优先级（核心闭环后）
-5. **HelixECO-Glove-macOS** — 本地系统适配（macOS 生态手套）
+4. **Anaphase 下一阶段裁决** — 候选 A（Tentacle 深度集成）或候选 B（生态手套协议渐进）
+5. **HelixECO-Glove-macOS 完善** — 本地系统适配（macOS 生态手套，更多原生工具）
 6. **Cellrix 物理沙盒 PoC** — 验证 CPPC v1.1.0 愿景可行性（类 Unity 物理引擎）
+
+---
+
+## 3.5 生态联调成果（2026-08-31 里程碑）
+
+### 全链路验证通过
+
+```
+MCP-Learner 学习 mock MCP Server → 4 个工具
+    ↓
+L1 静态审查（9 条规则）→ 0 warning, 0 error
+    ↓
+stable/ 目录（4 个 .manifest.json + mcp_proxy.js）
+    ↓
+Tentacle 扫描 + SHA-256 完整性校验 → 4 个工具注册
+    ↓
+ProcessTool 实例化 → 4 个工具可用
+    ↓
+tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
+```
+
+### 联调中修复的 6 个问题
+
+| # | 问题 | 修复 | 仓库 |
+|---|---|---|---|
+| 1 | MCP 工具名不符合点分命名空间规范 | 新增 `extract_tools_with_namespace`，格式 `<server>.<name>` | MCP-Learner |
+| 2 | Manifest 文件后缀不匹配（.json vs .manifest.json） | post_learn 输出改为 `.manifest.json` 后缀 | MCP-Learner |
+| 3 | MCP 代理执行体 mcp_proxy.js 不存在 | post_learn 自动在所有状态目录创建占位执行体 | MCP-Learner |
+| 4 | 完整性哈希不匹配（全零占位 vs 真实 SHA-256） | 计算 mcp_proxy.js 真实哈希并更新所有 manifest | MCP-Learner |
+| 5 | tentacle-benchmarks 编译错误（缺少 platform_support） | 添加 `platform_support: Default::default()` | Tentacle |
+| 6 | 插件懒加载未实现（只注册 Manifest，没实例化 Tool） | 添加 ProcessTool 临时实现，扫描后自动实例化 | Tentacle |
+
+### 提交记录
+
+- **MCP-Learner**: `d21b897`（代码修复）+ `500a461`（文档记录）
+- **Tentacle**: `79270c5`（插件加载与执行链路修复）
 
 ---
 
@@ -145,6 +183,21 @@
                     │      BIND-19 / CI-144 协议家族         │
                     │  PFP-xCF14 + SAP-xCF14 + INTENT-7     │
                     └────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                     生态适配层（外部世界接入）                      │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────────────────┐        ┌──────────────────────────┐   │
+│  │  HelixECO-Glove       │        │  Helix-MCP-Learner       │   │
+│  │  原生生态手套          │        │  MCP 消化器               │   │
+│  │  (macOS/Linux/鸿蒙)   │        │  (MCP Server → CI-144)   │   │
+│  │  手写原生适配          │        │  自动学习+提炼+重封装      │   │
+│  └──────────┬───────────┘        └───────────┬──────────────┘   │
+│             │ 静态链接（极致节能）              │ 动态加载（热插拔）  │
+│             └──────────────┬───────────────────┘                  │
+│                            ▼                                        │
+│                   Tentacle 插件体系（统一执行层）                    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -174,6 +227,18 @@
 ### Helix-Tentacle
 - [PLAN.md](../../helix-tentacle/docs/PLAN.md) — 开发导航牌
 - [GROWTH.md](../../helix-tentacle/docs/GROWTH.md) — 生长记录
+
+### HelixECO-Glove
+- [README.md](../../HelixECO-Glove/README.md) — 项目说明
+- [PLAN.md](../../HelixECO-Glove/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../HelixECO-Glove/docs/GROWTH.md) — 生长记录
+- [ADR 目录](../../HelixECO-Glove/docs/decisions/) — 架构决策记录
+
+### Helix-MCP-Learner
+- [README.md](../../Helix-MCP-Learner/README.md) — 项目说明
+- [PLAN.md](../../Helix-MCP-Learner/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../Helix-MCP-Learner/docs/GROWTH.md) — 生长记录
+- [ADR 目录](../../Helix-MCP-Learner/docs/decisions/) — 架构决策记录
 
 ### BIND-19
 - [README.md](../../BIND-19/README.md) — 项目说明
@@ -215,6 +280,7 @@
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| v1.4 | 2026-08-31 | 生态联调成功 + P10 准备完成 — 新增 HelixECO-Glove（23测试）和 Helix-MCP-Learner（42测试）两个项目，全生态测试总数 1060→1125；生态联调全链路畅通（MCP-Learner→L1审查→stable/→Tentacle加载→执行），修复6个联调问题；Helix-Mind P10准备工作完成（现状探查+执行计划）；更新生态架构图（新增生态适配层）；更新当前优先级（P10为第一优先级） |
 | v1.3 | 2026-08-30 | 全项目进度对齐 — 逐个检查7个项目commit历史和实际测试数，修正Helix-Tentacle测试数(76+→127)、BIND-19测试数(140→142)、全生态测试总数(910+→963)，修正Anaphase阶段描述(P11b→P10a-P11b)，Helix-Mind PLAN.md v6.0状态修正完成 |
 | v1.2 | 2026-08-30 | Helix-Mind 进度对齐 — 修正 helix-mind 实际进度（P0-P9 已完成，当前 P10），测试数修正为 27 通过/59 定义，当前优先级更新，发现 PLAN.md 顶部状态与阶段总览不一致问题 |
 | v1.1 | 2026-08-30 | 进度对齐 — 项目状态总览添加最后提交日期列 + 已完成/进行中项目详情拆分 + 当前优先级更新（CI-144已冻结，Tentacle P5可并行启动）+ Helix-Mind P3状态细化（计划已起草，待审查） |
