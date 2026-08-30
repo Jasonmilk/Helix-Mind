@@ -46,7 +46,7 @@
 
 **全生态测试总数**：989（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 27 + Helix-Tentacle 153）
 
-> **注**：Helix-Mind 定义了 59 个测试，实际通过 27 个（部分测试被 feature gate 或条件编译控制，需在对应 feature 下运行）。Helix-Tentacle 实际运行 70 个测试通过（部分 crate 测试被 feature gate 控制）。
+> **注**：Helix-Mind 定义了 59 个测试，实际通过 27 个（部分测试被 feature gate 或条件编译控制，需在对应 feature 下运行）。Helix-Tentacle 实际运行 153 个测试通过（2026-08-30 重新准确统计，含 core 52 + tools 21 + mcp 17 + js 14 + integration 11 + wasm 9 + grpc 8 + http 6 + transport_http 6 + integration_tests 7 + 其他 2）。
 
 ### 项目状态详情
 
