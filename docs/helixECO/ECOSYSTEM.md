@@ -40,13 +40,13 @@
 | 2 | **Tuck** | rs | 310 | P0-P7 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
 | 3 | **Anaphase** | rs | 50 | P10a-P11b 完成，待裁决下一阶段 | 2026-08-29 | ✅ 待裁决 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha | 142 | 核心实现完成（PFP+SAP 解析器） | 2026-08-29 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
-| 5 | **Helix-Mind** | rs-dev | 27（通过）/ 59（定义） | P10 认知工艺与生态深度集成（预览） | 2026-08-30 | 🚧 进行中 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
+| 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 预览中（认知工艺与生态深度集成） | 2026-08-30 | ✅ 核心完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P5 完成（性能基准+资源限制+可观测性+STDIO传输层），P6 预览中 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
 | 7 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：989（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 27 + Helix-Tentacle 153）
+**全生态测试总数**：1060（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153）
 
-> **注**：Helix-Mind 定义了 59 个测试，实际通过 27 个（部分测试被 feature gate 或条件编译控制，需在对应 feature 下运行）。Helix-Tentacle 实际运行 153 个测试通过（2026-08-30 重新准确统计，含 core 52 + tools 21 + mcp 17 + js 14 + integration 11 + wasm 9 + grpc 8 + http 6 + transport_http 6 + integration_tests 7 + 其他 2）。
+> **注**：Helix-Mind P0-P9 全部完成，实际通过 98 个测试（2026-08-30 重新统计，含 cognitive 24 + core 8 + storage 8 + wal 7 + federation 7 + metabolism 7 + api 5 + integration 5 + fts_extractor 5 + craft_integration 4 + outbound_gate 4 + retrieval 2 + traceparent 2 + uds_peercred 2 + digestion 3 + reincarnation 3）。P10 为预览阶段（认知工艺与生态深度集成），待正式启动。Helix-Tentacle 实际运行 153 个测试通过。
 
 ### 项目状态详情
 
