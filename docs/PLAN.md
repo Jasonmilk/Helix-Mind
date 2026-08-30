@@ -1,32 +1,37 @@
 # Helix-Mind 开发导航牌（PLAN）
 
-> **版本**：v5.2（CI-144 v2.0 前置锁定，2026-08-29）
-> **状态**：🚧 P3 安全与契约（计划待起草）+ CI-144 v2.0 前置锁定完成
+> **版本**：v6.0（P0-P9 完成，P10 预览，2026-08-30）
+> **状态**：🚧 P10 认知工艺与生态深度集成（预览）+ P0-P9 全部完成
 > **分支**：rs-dev
 > **所属方法论**：DNA 自生长方法论 v2.0（PLAN 动态流转闭环）
 > **规则**：本文件只含当前阶段 + 下一阶段预览 + 阶段总览地图。完成阶段 → GROWTH.md。总行数 ≤150，超出触发历史迁移。
+> **⚠️ 状态修正记录**：v5.2 顶部状态停留在 P3（计划待起草），但阶段总览已显示 P0-P9 全部完成（2026-08-28）。v6.0 修正顶部状态与阶段总览一致。
 
 ---
 
-## 1. 当前阶段：P3 安全与契约
+## 1. 当前阶段：P10 认知工艺与生态深度集成（预览）
 
-> **状态**：🚧 计划已起草（2026-08-28），待用户审查后开工（DNA 方法论：计划先于代码）。
+> **状态**：🚧 预览阶段（P0-P9 已完成，P10 待启动）。
+> **前置依赖**：P9 认知工艺 Phase 3 已完成（价值评估 + 自适应突变 + 睡眠复盘 + bm25 门控增强）。
 
-### 1.1 目标（基于代码真相源调研）
+### 1.1 P10 目标（预览，待详细规划）
+
 | 任务 | 内容 | 代码现状 | 状态 |
 |---|---|---|---|
-| P3a-M-07 | 联邦确定性审查：出站门控（审查未过不出站）+ 入站沙盒审查接入 + 双盲语义定案 | `share_dag` 无门控直接可用；`review_node` 放行 stub；`dual_blind_review` 假双盲 | ⏳ ADR-0018 |
-| P3b-M-08 | 传输层安全：UDS 支持 + SO_PEERCRED 鉴权（本地）/ mTLS 预留（远程）；middleware 真实化 | `server.rs` 仅 TCP；`ValidationLayer` 空壳；HealthServer 已注册(Z3) | ⏳ ADR-0019 |
-| P3c-CI144 | INTENT-7 语义对齐：动词(FETCH/WRITE_NODE/TENTACLE/FINISH/CANCEL)→Mind gRPC 契约映射；traceparent 透传 | 无映射表；proto 无 traceparent 透传 | ⏳ ADR-0020 |
-| **CI-144 v2.0** | **协议规范升级：PAL 24字节物理锚定层 + Seq-Counter防重放 + PAH双层签名 + Replay-Enable=0强化约束** | **v1.0 无物理锚定层；前置11项设计已锁定（ADR-0022~0027占位）** | **✅ Phase 0 前置锁定完成，待切 v2.0-alpha 分支** |
-| 旁支 | `docs/dna-template/` 方法论参考种子（顺手，不额外精力） | 无 | ⏳ |
+| P10a | Anaphase 触发链路：认知工艺→Anaphase 编排闭环 | 认知工艺已独立运行，未与 Anaphase 触发链路集成 | ⏳ 待规划 |
+| P10b | L1 策略持久化：认知工艺决策固化为可复用策略 | 认知工艺决策为一次性，未持久化为可复用策略 | ⏳ 待规划 |
+| P10c | Deep Dream 复盘挂载：睡眠复盘机制深度集成 | P9 已实现睡眠复盘基础，需深度挂载到认知工艺循环 | ⏳ 待规划 |
 
-### 1.2 代码真相源（P3 调研结论）
-- **federation**：`share_dag` 收集 public L2 → 打包 DAG-JSON → 写 outgoing，**全程无审查门控**（R1 违反，需先收口再放行）；`is_high_risk_node` 关键字检测可用
-- **review.rs**：`review_node` 放行 stub（TODO LLM）；`dual_blind_review` 两次相同调用（假双盲）
-- **api**：`serve(SocketAddr)` TCP only；HealthServer 已注册（Z3 ✅）；`ValidationLayer` 空壳
-- **config**：`ApiConfig`（listen_addr + layer 开关，无 transport/鉴权）；`FederationConfig`（目录 + cremation + scan，无审查/门控）
-- **依赖**：tokio "full"（UDS 可用）；federation 不依赖 metabolism（复用 SymbolicSolver 需决策）
+### 1.2 P0-P9 已完成内容（历史记录）
+
+P0-Pre → P9 全部于 2026-08-28 完成，详见阶段总览（第 2 节）。
+关键里程碑：
+- **P1 检索闭环**：FTS5 trigram + 异步索引 + 注入防御 + 相态加权
+- **P2 代谢闭环**：a/b/c 拆分，无 LLM 起步
+- **P3 安全与契约**：联邦审查 + UDS SO_PEERCRED + API/Health
+- **P5 领域 WAL**：独立日志 + 完整性校验 + 投影器 + replay
+- **P8 认知工艺 Phase 2**：编排器最小原型，DeterministicAdapter 闭环（0 Token）
+- **P9 认知工艺 Phase 3**：价值评估 + 自适应突变 + 睡眠复盘 + bm25 门控增强
 
 ### 1.3 技术前提
 - ✅ `SymbolicSolver` 就绪（P2a，5 单测）；`is_high_risk_node` 可用
