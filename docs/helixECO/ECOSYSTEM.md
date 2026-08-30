@@ -41,10 +41,10 @@
 | 3 | **Anaphase** | rs | 50 | P10a-P11b 完成，待裁决下一阶段 | 2026-08-29 | ✅ 待裁决 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha | 142 | 核心实现完成（PFP+SAP 解析器） | 2026-08-29 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 27（通过）/ 59（定义） | P10 认知工艺与生态深度集成（预览） | 2026-08-30 | 🚧 进行中 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
-| 6 | **Helix-Tentacle** | rs | 70 | P5 性能优化（T1 完成，T2 待启动） | 2026-08-30 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
+| 6 | **Helix-Tentacle** | rs | 84 | P5 性能优化（T1-T2 完成，T3 待启动） | 2026-08-30 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
 | 7 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：906（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 27 + Helix-Tentacle 70）
+**全生态测试总数**：920（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 142 + Helix-Mind 27 + Helix-Tentacle 84）
 
 > **注**：Helix-Mind 定义了 59 个测试，实际通过 27 个（部分测试被 feature gate 或条件编译控制，需在对应 feature 下运行）。Helix-Tentacle 实际运行 70 个测试通过（部分 crate 测试被 feature gate 控制）。
 
@@ -65,7 +65,7 @@
 | 项目 | 当前阶段 | 待办内容 | 阻塞项 |
 |---|---|---|---|
 | **Helix-Mind** | P10 认知工艺与生态深度集成（预览） | P10a: Anaphase 触发链路 + P10b: L1 策略持久化 + P10c: Deep Dream 复盘挂载 | P0-P9 已完成，PLAN.md v6.0 已修正状态，P10 待详细规划后开工 |
-| **Helix-Tentacle** | P5 性能优化（T1 完成，T2 待启动） | T2 资源限制 + T3 可观测性 + T4 部署文档 + T5 STDIO 传输层 | T1 性能基准测试框架已完成（criterion + HTTP/gRPC/MCP 三传输层基准） |
+| **Helix-Tentacle** | P5 性能优化（T1-T2 完成，T3 待启动） | T3 可观测性 + T4 部署文档 + T5 STDIO 传输层 | T1 性能基准框架完成 + T2 统一资源限制完成(ResourceLimiter trait + WASM/JS集成) |
 
 ---
 
