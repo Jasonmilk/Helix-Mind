@@ -40,11 +40,13 @@
 | 2 | **Tuck** | rs | 310 | P1-P7 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
 | 3 | **Anaphase** | rs | 50 | P11b 验证闭环完成 | 2026-08-29 | ✅ 待裁决下一阶段 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha | 140 | 核心实现完成 | 2026-08-29 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
-| 5 | **Helix-Mind** | rs-dev | 59（定义） | P3 安全与契约（计划已起草，待审查后开工） | 2026-08-30 | 🚧 进行中 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
+| 5 | **Helix-Mind** | rs-dev | 27（通过）/ 59（定义） | P10 认知工艺与生态深度集成（预览） | 2026-08-30 | 🚧 进行中 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 76+ | P5 性能优化（T1 待启动） | 2026-08-29 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
 | 7 | **phyt-DNA** | main | - | 方法论 v1.0 立项完成 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：942+
+**全生态测试总数**：910+（Cellrix 307 + Tuck 310 + Anaphase 50 + BIND-19 140 + Helix-Mind 27 + Tentacle 76+）
+
+> **注**：Helix-Mind 定义了 59 个测试，实际通过 27 个（部分测试被 feature gate 或条件编译控制，需在对应 feature 下运行）
 
 ### 项目状态详情
 
@@ -62,7 +64,7 @@
 
 | 项目 | 当前阶段 | 待办内容 | 阻塞项 |
 |---|---|---|---|
-| **Helix-Mind** | P3 安全与契约 | P3a 联邦确定性审查 + P3b 传输层安全 + P3c CI-144 语义对齐 | 计划待用户审查后开工 |
+| **Helix-Mind** | P10 认知工艺与生态深度集成（预览） | P10a: Anaphase 触发链路 + P10b: L1 策略持久化 + P10c: Deep Dream 复盘挂载 | ⚠️ PLAN.md 顶部状态未更新（停留在 P3），阶段总览已显示 P0-P9 完成 |
 | **Helix-Tentacle** | P5 性能优化 | T1 性能基准测试 + T2 资源限制 + T3 可观测性 + T4 部署文档 + T5 STDIO 传输层 | CI-144 v2.0 已冻结，可启动 T1 |
 
 ---
@@ -88,11 +90,11 @@
 > **前置条件已满足**：CI-144 v2.0 协议家族已冻结（PFP-xCF14 + SAP-xCF14 + BIND-19 v2.0-alpha），Tuck 重构已完成，所有进行中项目的前置依赖均已清除。
 
 ### 第一优先级（立即启动）
-1. **Helix-Mind P3 开工** — 记忆中枢是生态大脑，P3 安全与契约是关键瓶颈
-   - P3a: 联邦确定性审查（出站门控 + 入站沙盒 + 双盲语义）
-   - P3b: 传输层安全（UDS + SO_PEERCRED + mTLS 预留）
-   - P3c: CI-144 INTENT-7 语义对齐（动词→gRPC 映射 + traceparent）
-   - **当前状态**：计划已起草（ADR-0018/0019/0020 占位），待用户审查后开工
+1. **Helix-Mind P10 开工** — 认知工艺与生态深度集成（P0-P9 已完成）
+   - P10a: Anaphase 触发链路（认知工艺→Anaphase 编排）
+   - P10b: L1 策略持久化（认知工艺决策固化为可复用策略）
+   - P10c: Deep Dream 复盘挂载（睡眠复盘机制深度集成）
+   - **⚠️ 注意**：PLAN.md 顶部状态未更新（停留在 P3），需先修正 PLAN.md 状态不一致问题
 
 2. **MCP-Learner Glove PoC** — 证明 Helix 可以高效接入现有互联网
    - 选 mcp-server-filesystem 做验证
@@ -213,6 +215,7 @@
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| v1.2 | 2026-08-30 | Helix-Mind 进度对齐 — 修正 helix-mind 实际进度（P0-P9 已完成，当前 P10），测试数修正为 27 通过/59 定义，当前优先级更新，发现 PLAN.md 顶部状态与阶段总览不一致问题 |
 | v1.1 | 2026-08-30 | 进度对齐 — 项目状态总览添加最后提交日期列 + 已完成/进行中项目详情拆分 + 当前优先级更新（CI-144已冻结，Tentacle P5可并行启动）+ Helix-Mind P3状态细化（计划已起草，待审查） |
 | v1.0 | 2026-08-30 | 初始版本 — 工作区迁移完成，生态导航文档创建 |
 
