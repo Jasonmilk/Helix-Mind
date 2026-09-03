@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.5
+> **版本**：v1.6
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-03（Anaphase M1 确定性流水线 + M1.5 生态合流核心完成）
+> **最后更新**：2026-09-03（Anaphase 候选 E 完成：Reasoning 结构化 + run_cycle ↔ pipeline 完整 merge）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -40,7 +40,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 307 | P0-P6 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 310 | P0-P7 全部完成 | 2026-08-30 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 78 | M1 确定性流水线 + M1.5 生态合流核心完成（真实 Tentacle 连通） | 2026-09-03 | ✅ 核心完成 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
+| 3 | **Anaphase** | rs | 94 | 候选 E 完成（Reasoning 结构化 + run_cycle ↔ pipeline 完整 merge） | 2026-09-03 | ✅ 核心完成 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha | 142 | 核心实现完成（PFP+SAP 解析器） | 2026-08-29 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 准备完成（认知工艺与生态深度集成） | 2026-08-31 | 🚧 P10 待启动 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P5 完成 + 生态联调成功（MCP-Learner → Tentacle 全链路畅通） | 2026-08-31 | ✅ 核心完成 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
@@ -48,7 +48,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | 核心完成 + 生态联调成功（MCP Server → CI-144 插件 → stable/） | 2026-08-31 | ✅ 核心完成 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：1153（Cellrix 307 + Tuck 310 + Anaphase 78 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 23 + Helix-MCP-Learner 42）
+**全生态测试总数**：1168（Cellrix 307 + Tuck 310 + Anaphase 94 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 23 + Helix-MCP-Learner 42）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则，10 测试全绿），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner 有 1 个测试失败（非阻塞，待修复）。
 
@@ -60,7 +60,7 @@
 |---|---|---|
 | **Cellrix** | P0-P6 全部完成 | 307 测试，Helix 四大组件全部接入，生产就绪（配置/日志/监控/健康检查） |
 | **Tuck** | P1-P7 全部完成 | 310 测试，PFP 第一个消费者，亚微秒级决策，fail-closed，全息审计 |
-| **Anaphase** | M1 确定性流水线 + M1.5 生态合流核心完成 | 78 测试，六 stage 确定性流水线（MET/UNMET/replay 字节级一致），真实 Tentacle gRPC 连通（fixture 插件全链路），identity_labels 语义，run_cycle Execution 渐进接线 |
+| **Anaphase** | M1 + M1.5 + 候选 E 完成 | 94 测试，六 stage 确定性流水线（MET/UNMET/replay 字节级一致），真实 Tentacle gRPC 连通（fixture 插件全链路），Reasoning 结构化输出协议（替换 contains 字符串匹配），run_cycle ↔ pipeline 六 stage 完整 merge（认知状态机与确定性流水线合一），零硬编码收口（RunCycleConfig） |
 | **BIND-19** | v2.0-alpha 核心实现 | 140 测试，33 组测试向量，14 个基准测试，PFP+SAP 解析器 |
 | **Helix-Tentacle** | P5 完成 + 生态联调成功 | 153 测试，性能基准+资源限制+可观测性+STDIO传输层，MCP-Learner 全链路联调畅通 |
 | **phyt-DNA** | 方法论 v1.0 立项 | DNA/RNA/PLAN/GROWTH/ADR 闭环，项目自生长方法论锚点 |
@@ -114,7 +114,7 @@
    - 审查规则自进化（L1 拒绝但 L2 通过 → 自动放宽规则）
 
 ### 第三优先级（核心闭环后）
-4. **Anaphase 下一阶段裁决** — 候选 E（Reasoning 结构化 + pipeline 完整 merge）或候选 D'（seen_entropy_bloom 重放守卫 / Tuck 深度集成）
+4. **Anaphase 下一阶段裁决** — 候选 D'（seen_entropy_bloom 重放守卫 / Tuck 深度集成 / main.rs pipeline 接线）或候选 A（Tentacle Rust 重构）
 5. **HelixECO-Glove-macOS 完善** — 本地系统适配（macOS 生态手套，更多原生工具）
 6. **Cellrix 物理沙盒 PoC** — 验证 CPPC v1.1.0 愿景可行性（类 Unity 物理引擎）
 
@@ -280,7 +280,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
-| v1.5 | 2026-09-03 | Anaphase M1 + M1.5 完成 — Anaphase 测试数 50→78（M1 确定性流水线六 stage + M1.5 生态合流核心完成：Tentacle --transport grpc 接线、fixture 插件、真实连通 e2e、identity_labels 语义、run_cycle Execution 渐进接线），全生态测试总数 1125→1153，更新 Anaphase 下一阶段候选（候选 E Reasoning 结构化 + pipeline 完整 merge） |
+| v1.6 | 2026-09-03 | Anaphase 候选 E 完成 — Anaphase 测试数 78→94（Reasoning 结构化输出协议替换 contains 匹配 + run_cycle ↔ pipeline 六 stage 完整 merge + 零硬编码收口 RunCycleConfig；run_cycle_pipeline 集成测试 8 例 + live 3 条），全生态测试总数 1153→1168，更新 Anaphase 下一阶段候选（候选 D' / 候选 A） |
 | v1.4 | 2026-08-31 | 生态联调成功 + P10 准备完成 — 新增 HelixECO-Glove（23测试）和 Helix-MCP-Learner（42测试）两个项目，全生态测试总数 1060→1125；生态联调全链路畅通（MCP-Learner→L1审查→stable/→Tentacle加载→执行），修复6个联调问题；Helix-Mind P10准备工作完成（现状探查+执行计划）；更新生态架构图（新增生态适配层）；更新当前优先级（P10为第一优先级） |
 | v1.3 | 2026-08-30 | 全项目进度对齐 — 逐个检查7个项目commit历史和实际测试数，修正Helix-Tentacle测试数(76+→127)、BIND-19测试数(140→142)、全生态测试总数(910+→963)，修正Anaphase阶段描述(P11b→P10a-P11b)，Helix-Mind PLAN.md v6.0状态修正完成 |
 | v1.2 | 2026-08-30 | Helix-Mind 进度对齐 — 修正 helix-mind 实际进度（P0-P9 已完成，当前 P10），测试数修正为 27 通过/59 定义，当前优先级更新，发现 PLAN.md 顶部状态与阶段总览不一致问题 |
