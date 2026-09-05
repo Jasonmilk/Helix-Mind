@@ -2,7 +2,7 @@
 
 > **版本**：v1.14
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（候选 G 完成 + G-4..G-7 + **G2 Web 面板首拉**——一条命令选择题闭环 + 浏览器白盒窗口，全生态 1255）
+> **最后更新**：2026-09-06（**Anaphase O-1 落地**——结构化分诊零 LLM + 生态点亮感知，全生态 1267）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -42,7 +42,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 319 | P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 316 | P0-P7 全部完成；P6-T5 Cellrix 状态流（StatusProvider，ADR-0003）已落地 | 2026-09-05 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 140 | 候选 E + D' + **候选 G 完成**（驾驶舱 + bootstrap + 易用引导 + 交互菜单 + **配置向导**，ADR-0010..0015）；**编排哲学显式化 ADR-0016**（确定性优先分诊 + 认知工艺四拍挂点 + 按需感知 + 依赖边界）；下一步候选 O 系列（O-1..O-4） | 2026-09-06 | ✅ 完成 + 🔄 O 系列待启 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
+| 3 | **Anaphase** | rs | 152 | 候选 E + D' + G + **O-1 落地**（`!tool` 结构化分诊零 LLM + 生态点亮探测 + 感知点，ADR-0016 D1/D3）；下一步 O-2 stage 事件总线 | 2026-09-06 | ✅ 完成 + 🔄 O-2 待启 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 准备完成（认知工艺与生态深度集成） | 2026-08-31 | 🚧 P10 待启动 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
@@ -50,7 +50,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：**1255**（Cellrix 319 + Tuck 316 + Anaphase 140 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 132 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 129 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 126 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）
+**全生态测试总数**：**1267**（Cellrix 319 + Tuck 316 + Anaphase 152 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 132 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 129 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 126 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -62,7 +62,7 @@
 |---|---|---|
 | **Cellrix** | P0-P6 全部完成 + 候选 G 驾驶舱 | 316 测试，Helix 四大组件全部接入，生产就绪；候选 G：AnaphaseClient get_snapshot（一次拉全）+ CockpitWidget（模式栏/经历时间线/Ledger 审查视图）+ renderer strip + attach_cockpit 轮询 + cli --anaphase-endpoint（ADR-0009），双端协议（TUI 先行，Web=G2） |
 | **Tuck** | P1-P7 全部完成 | 316 测试，PFP 第一个消费者，亚微秒级决策，fail-closed，全息审计，四层管控接口（Mind/Anaphase/Tentacle bridge + Cellrix StatusProvider，ADR-0003） |
-| **Anaphase** | M1 + M1.5 + 候选 E + F + D' 4/4 + G + 编排哲学 ADR-0016 | 140 测试，六 stage 确定性流水线（MET/UNMET/replay 字节级一致），真实 Tentacle gRPC 连通（fixture 插件全链路），Reasoning 结构化输出协议，run_cycle ↔ pipeline 完整 merge，零硬编码收口（RunCycleConfig），会话即经历（ADR-0006），重放守卫指纹（ADR-0007），SecurityGate 接线点 + ledger blocked（ADR-0008），真实场景插件 D'-4（ADR-0009），AgentSnapshot 共享快照投影端点（ADR-0010） |
+| **Anaphase** | M1 + M1.5 + 候选 E + F + D' 4/4 + G + 编排哲学 ADR-0016 + O-1 | 152 测试，六 stage 确定性流水线（MET/UNMET/replay 字节级一致），真实 Tentacle gRPC 连通（fixture 插件全链路），Reasoning 结构化输出协议，run_cycle ↔ pipeline 完整 merge，零硬编码收口（RunCycleConfig），会话即经历（ADR-0006），重放守卫指纹（ADR-0007），SecurityGate 接线点 + ledger blocked（ADR-0008），真实场景插件 D'-4（ADR-0009），AgentSnapshot 共享快照投影端点（ADR-0010）；**O-1（ADR-0016）**：结构化命令 `!tool` 分诊零 LLM（计数 adapter 证明）+ probe_ecosystem 生态点亮（TCP/UDS 物理探测，Cellrix=Native 手套）+ 感知点（Reasoning 前） |
 | **BIND-19** | v2.0-alpha 核心实现（默认分支） | 142 测试（实测），33 组测试向量，14 个基准测试，PFP+SAP 解析器；main=规范正文（v1.0.0-RFC-4，tag 锚定） |
 | **Helix-Tentacle** | P5 完成 + P6 进行中（M1.5） | 153 测试，性能基准+资源限制+可观测性+STDIO/gRPC 传输层，fixture 插件（numbers/rate，SHA-256），MCP-Learner 全链路联调畅通 |
 | **phyt-DNA** | 方法论 v1.0 立项 | DNA/RNA/PLAN/GROWTH/ADR 闭环，项目自生长方法论锚点 |
@@ -275,6 +275,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.28** | **2026-09-06** | **Anaphase O-1 落地（ADR-0016 D1/D3 首个物理落点）**。①结构化输入分诊：`!tool {"json"}` 在 Perception 解析、Reasoning 跳过 LLM 直接组装 tt_job（计数 reasoning adapter 断言零调用）；②probe_ecosystem：任务开始前一次物理探测（TCP connect / UDS 文件存在性，fail-open），Cellrix=Native 手套，AgentContext/AgentSnapshot 携带生态点亮；③感知点：Reasoning 前看一眼口袋 + Execution 对 tentacle 未点亮记录降级事实；④测试数 140→152（+12），O-1 ✅，下一步 O-2 stage 事件总线 |
 | **v1.27** | **2026-09-06** | **Anaphase 编排哲学显式化（ADR-0016）+ lodestone lode 术语定稿 + lodestone-md CI 修复**。①Anaphase ADR-0016（Proposed）：确定性优先分诊（六 stage 仅"理解自由文本/生成表达"两处必须 LLM，其余 0 tokens 通道）+ 认知工艺触发点（四拍/五工序含批判性全归 Mind，Anaphase 只触发 helixQuery，Anaphase 零工序实现）+ 按需感知 = 设置 budget_tier（ADR-0010，任务前/升级 LLM 前各一次，看口袋过日子）+ 依赖边界（并行池/窗口感知→FlowModus，前缀稳定→Callosum）+ 轨迹三层（ledger+evidence+会话 DAG+stage 事件）；VISION 补编排哲学指针（不冻结），PLAN 增候选 O 系列（O-1..O-4 + 两条等待项）；②lodestone-md/spec 内部术语 ball→node→**lode**（lodestone 词根/矿脉意象，零歧义，mddag 38 tests 全绿）；③lodestone-md CI 修复（clippy -D warnings 12 项全清，CI 全绿）；④全生态测试总数 1255 不变（纯文档轮）|
 | **v1.26** | **2026-09-06** | **Lodestone v2 术语改名（ball→node）** — crate 即 mddag（markdown DAG），内部实现名回归 DAG 标准语：磁石 = node、CLI `nodes`/`node`、操作符 `add-node`；"磁石/磁力线"保留为中文概念名（ADR-0002 术语修订）；38 测试全绿（mddag 3a05088 / spec 75f58f1） |
 | **v1.25** | **2026-09-06** | **Lodestone v2 跨文档库层（ADR-0003）** — 同一协议两层作用域：单文档 = 库大小 1 特例，`#slug` = `path#slug` 的 path 空特例；文档层形状检查（W-CROSS-DOC）+ 库层目标解析（E-CROSS-MISSING / E-CROSS-SLUG / E-CYCLE-CROSS）；`.lodestone` 确定性快照（mddag 语料自举、无时间戳、git 可提交）+ `--check` 过期检测；入边派生不落盘（双射，极致节能）；源码关系标注分层投影（cargo metadata / rustdoc JSON / Aider repo-map 同构）；mddag 38 测试（f609f27），spec ADR-0003 + §3.7/§5.2c + fixture 08（098cfed） |
