@@ -2,7 +2,7 @@
 
 > **版本**：v1.14
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（候选 G 完成 + G-4/G-5/G-6 + **G2 Web 面板首拉**——浏览器白盒窗口，全生态 1251）
+> **最后更新**：2026-09-06（候选 G 完成 + G-4..G-7 + **G2 Web 面板首拉**——一条命令选择题闭环 + 浏览器白盒窗口，全生态 1255）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -40,7 +40,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 319 | P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 316 | P0-P7 全部完成；P6-T5 Cellrix 状态流（StatusProvider，ADR-0003）已落地 | 2026-09-05 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 135 | 候选 E + D' + **候选 G 完成**（驾驶舱 + bootstrap + 易用引导 + **交互菜单**，ADR-0010..0013——一条命令起全栈，之后只有选择题）；下一步 G2 Web 面板 | 2026-09-06 | ✅ 完成 + 🔄 G2 待启 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
+| 3 | **Anaphase** | rs | 140 | 候选 E + D' + **候选 G 完成**（驾驶舱 + bootstrap + 易用引导 + 交互菜单 + **配置向导**，ADR-0010..0015——一条命令起全栈，之后只有选择题，LLM 配置引导输入 api_key 不回显）；下一步 G2 Web 优化 | 2026-09-06 | ✅ 完成 + 🔄 G2 待启 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 准备完成（认知工艺与生态深度集成） | 2026-08-31 | 🚧 P10 待启动 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
@@ -48,7 +48,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：**1251**（Cellrix 319 + Tuck 316 + Anaphase 135 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 132 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 129 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 126 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）
+**全生态测试总数**：**1255**（Cellrix 319 + Tuck 316 + Anaphase 140 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 132 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 129 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 126 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -273,6 +273,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.21** | **2026-09-06** | **G-7 配置向导（LLM 引导输入）** — Anaphase up 菜单选项 4（ADR-0015）：base_url/model/api_key 一问一答（Enter 保持现值）；api_key 不回显（stty -echo，pty 实测无泄漏）；写盘前备份 config.toml.bak，行级替换其余字节保留；Anaphase 135→140，全生态 1251→1255 |
 | **v1.20** | **2026-09-06** | **G2 Web 面板首拉（浏览器白盒窗口）** — Cellrix 新 crate `cellrix-web`（ADR-0014）：零依赖 std-only HTTP + 单文件内嵌 HTML + 原生 JS 轮询（2s）；同源代理 /api/snapshot → Anaphase /v1/agent/snapshot（规避 CORS，共享 ADR-0010 契约）；路由白名单 + 真实状态码；实测全链路 mock reasoning → 真实 Tentacle numbers → 真实 MET ledger（run-8bba24c5ee368a4a#0）经代理可见；Cellrix 316→319，全生态 1248→1251；下一步 Web 优化（React 组件接入 / up 菜单第 5 项 / SaaS 种子） |
 | **v1.19** | **2026-09-06** | **G-6 交互菜单（一条命令之后只有选择题）** — Anaphase `up`（ADR-0013）启动后端后进入交互菜单（tty）：1 打开驾驶舱（Enter 默认）/ 2 查看状态（物理探测 + 真实 snapshot 摘要，手写 HTTP GET 无新依赖）/ 3 配置说明 / 4 停止退出（q）；非 tty 自动降级挂起（is_terminal 物理判断）；parse_choice 纯函数 3 单测（未知输入重提示）；Anaphase 132→135，全生态 1245→1248；下一步 G2 Web 面板（SaaS 种子） |
 | **v1.18** | **2026-09-06** | **G-5 易用引导 UX（首跑零困惑）** — Anaphase `up` 升级为引导四段式（ADR-0012）：欢迎 banner / 前置检查（缺失项带 `cargo build` 提示，Anaphase 缺失=致命，Tentacle/Cellrix=fail-open）/ 启动（中文模式标签）/ 下一步（驾驶舱命令 + 一键重来）；Noop 引导（reasoning 未配置 → 明确提示 + 配置方式）；输出中文（用户母语）代码注释英文；Anaphase 129→132，全生态 1242→1245；下一步 G2 Web 面板（SaaS 种子）或候选裁决 |
