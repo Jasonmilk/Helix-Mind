@@ -275,6 +275,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.25** | **2026-09-06** | **Lodestone v2 跨文档库层（ADR-0003）** — 同一协议两层作用域：单文档 = 库大小 1 特例，`#slug` = `path#slug` 的 path 空特例；文档层形状检查（W-CROSS-DOC）+ 库层目标解析（E-CROSS-MISSING / E-CROSS-SLUG / E-CYCLE-CROSS）；`.lodestone` 确定性快照（mddag 语料自举、无时间戳、git 可提交）+ `--check` 过期检测；入边派生不落盘（双射，极致节能）；源码关系标注分层投影（cargo metadata / rustdoc JSON / Aider repo-map 同构）；mddag 38 测试（f609f27），spec ADR-0003 + §3.7/§5.2c + fixture 08（098cfed） |
 | **v1.24** | **2026-09-06** | **Lodestone v2 窗口机制（显性/隐性分支）** — 第七追加操作 strip（剔边）+ library 投影（按 created 排序，最近 keep 完整 L0、更旧折叠）；会话元数据 §3.6（session/created 由消费方写入）；keep 注入参数示例 12 零硬编码；断链防护 keep 列表；mddag 33 测试（d6490c5），spec §3.6/§5.1/§5.2b + fixture 07（c7f8bff）；前沿锚定：ACT-R 幂律遗忘 / MemGPT 窗口分层 / 检索重巩固（reconsolidation）——Helix 显性有迹可循、隐性按需回忆 |
 | **v1.23** | **2026-09-06** | **Lodestone v2 decay（遗忘半环）** — 第六追加操作 decay + DecayPolicy（root_ttl/near_ttl/other_ttl 注入式配置，21/14/7 天为示例值零硬编码）；mddag 30 测试（af89719→fa33506），spec §5.1/§5.2a + fixture 06 前后对照（035e0ab→b6fde3a）；收敛=compress 已有，遗忘=decay 补齐——"忘了对话，记得教训"落盘 |
 | **v1.22** | **2026-09-06** | **Lodestone v2.0-draft 实现完成** — lodestone-md 换血 v2（markdown 原生 DAG：磁石/磁力线/状态列表/沉淀区，零依赖 25 测试，CLI balls/ball/body/sediment/check）；lodestone-spec 术语裁定 磁石（lodestone）+ fixtures/v2 纯 markdown 语料 + ADR-0002 Accepted；v1.3.0 冻结于 git tag 不回写；lodestone 为 M2 消费点（会话即经历的协议载体） |
