@@ -22,6 +22,8 @@
 ├── helix-tentacle/                   ← 工具执行（手）
 ├── HelixECO-Glove/                   ← 生态手套（原生系统适配层）
 ├── Helix-MCP-Learner/                ← MCP 消化器（MCP Server → Tentacle 插件）
+├── lodestone-spec/                   ← 知识表示协议（v2.0-draft 磁石 DAG；v1.3 冻结）
+├── lodestone-md/                     ← 协议参考实现（crate mddag，v2 线，零依赖）
 ├── phyt-DNA/                         ← 方法论体系（自生长方法论）
 └── commonintents/                    ← CommonIntents 组织仓库集合
     ├── BIND-19/                      ← 协议规范（权威来源）
@@ -273,6 +275,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.22** | **2026-09-06** | **Lodestone v2.0-draft 实现完成** — lodestone-md 换血 v2（markdown 原生 DAG：磁石/磁力线/状态列表/沉淀区，零依赖 25 测试，CLI balls/ball/body/sediment/check）；lodestone-spec 术语裁定 磁石（lodestone）+ fixtures/v2 纯 markdown 语料 + ADR-0002 Accepted；v1.3.0 冻结于 git tag 不回写；lodestone 为 M2 消费点（会话即经历的协议载体） |
 | **v1.21** | **2026-09-06** | **G-7 配置向导（LLM 引导输入）** — Anaphase up 菜单选项 4（ADR-0015）：base_url/model/api_key 一问一答（Enter 保持现值）；api_key 不回显（stty -echo，pty 实测无泄漏）；写盘前备份 config.toml.bak，行级替换其余字节保留；Anaphase 135→140，全生态 1251→1255 |
 | **v1.20** | **2026-09-06** | **G2 Web 面板首拉（浏览器白盒窗口）** — Cellrix 新 crate `cellrix-web`（ADR-0014）：零依赖 std-only HTTP + 单文件内嵌 HTML + 原生 JS 轮询（2s）；同源代理 /api/snapshot → Anaphase /v1/agent/snapshot（规避 CORS，共享 ADR-0010 契约）；路由白名单 + 真实状态码；实测全链路 mock reasoning → 真实 Tentacle numbers → 真实 MET ledger（run-8bba24c5ee368a4a#0）经代理可见；Cellrix 316→319，全生态 1248→1251；下一步 Web 优化（React 组件接入 / up 菜单第 5 项 / SaaS 种子） |
 | **v1.19** | **2026-09-06** | **G-6 交互菜单（一条命令之后只有选择题）** — Anaphase `up`（ADR-0013）启动后端后进入交互菜单（tty）：1 打开驾驶舱（Enter 默认）/ 2 查看状态（物理探测 + 真实 snapshot 摘要，手写 HTTP GET 无新依赖）/ 3 配置说明 / 4 停止退出（q）；非 tty 自动降级挂起（is_terminal 物理判断）；parse_choice 纯函数 3 单测（未知输入重提示）；Anaphase 132→135，全生态 1245→1248；下一步 G2 Web 面板（SaaS 种子） |
