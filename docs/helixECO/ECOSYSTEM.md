@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.13
+> **版本**：v1.14
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（BIND-19 默认分支切换 v2.0-alpha + 规范 tag 锚定）
+> **最后更新**：2026-09-06（Anaphase 候选 D' 4/4 完成 + MCP-Learner 43 全绿）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -48,7 +48,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：1224（Cellrix 307 + Tuck 316 + Anaphase 121 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 42）
+**全生态测试总数**：**1228**（Cellrix 307 + Tuck 316 + Anaphase 124 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -273,6 +273,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.14** | **2026-09-06** | **Anaphase 候选 D' 4/4 完成 + MCP-Learner 全绿** — ①MCP-Learner 失败测试修复（过时断言，产物后缀应为 `.manifest.json` 生态契约），42+1f → 43；②D'-4 真实场景插件：`Expect::Ok` 结构判据（零阈值，字段来源=执行体契约）+ tests/m1_5_d4_live.rs 3 例实测全绿（真实 Tentacle + MCP-Learner 学习产物，插件 MET / 未知工具 transport Err / run_cycle 全链路 MET），ADR-0009；③Anaphase 121→124，候选 D' 四项全部落地；④全生态测试总数 1224→**1228** |
 | **v1.13** | **2026-09-06** | **BIND-19 默认分支切换** — 默认分支 main → v2.0-alpha（Rust 参考实现，142 tests）；main 保持协议规范正文身份并打 tag `v1.0.0-RFC-4` 锚定（spec-only，不覆盖不合并）；v2.0-alpha README 标注仓库双身份（4321c09） |
 | **v1.12** | **2026-09-06** | **全生态测试数物理核验 + Tuck test-utils 复用** — ①实测校准 HelixECO-Glove 测试数 23→45（README 44 亦滞后，已修，8901a4c），全生态测试总数 1201→1224；②Tuck 暴露 `test-utils` feature（InMemoryCredentialStore 从 `#[cfg(test)]` 改 `#[cfg(any(test, feature="test-utils"))]`，0001dde），Anaphase tuck_gate 测试改复用 Tuck store（删本地自持实现，极致复用） |
 | **v1.11** | **2026-09-06** | **Anaphase 候选 D'-2 完成** — Anaphase 测试数 110→121（SecurityGate 接线点：`src/security.rs` 本地契约零 Tuck 依赖 + pipeline `with_security_gate` + ledger `Blocked` 独立记录类型 + 真实 TuckSecurityGate 连通测试 3 例，ADR-0008），管控闭环咽喉（三闸门之三）落地，D'-2 阻塞解除（Tuck 侧接口早已就绪）；全生态测试总数 1190→1201；D'-4 仍待 MCP-Learner 升级 |
