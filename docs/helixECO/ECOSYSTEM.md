@@ -2,7 +2,7 @@
 
 > **版本**：v1.14
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（候选 G 完成 + G-3 transport 契约修复——驾驶舱 TUI 双通道真实渲染）
+> **最后更新**：2026-09-06（候选 G 完成 + G-4 bootstrap——一条命令起全栈，全生态 1242）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -40,7 +40,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 316 | P0-P6 完成 + **候选 G 驾驶舱完成**（G-T3..T6，ADR-0009）+ **G-3 transport 契约修复**（mock-agent 双通道字节序对齐，ADR-0010，TUI 双通道实测渲染）；Web 面板（G2）后续 | 2026-09-06 | ✅ 完成 + 🔄 G2 待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 316 | P0-P7 全部完成；P6-T5 Cellrix 状态流（StatusProvider，ADR-0003）已落地 | 2026-09-05 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 126 | 候选 D' 4/4 完成 + **候选 G-T2 完成**（AgentSnapshot 共享快照投影端点，ADR-0010，消除 token_consumed 硬编码）；候选 G 剩余在 Cellrix 侧已齐 | 2026-09-06 | ✅ 核心完成 + 🔄 下一候选待裁决 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
+| 3 | **Anaphase** | rs | 129 | 候选 E + D' + **候选 G 完成**（驾驶舱快照投影 G-T2 / G-3 transport 修复 / **G-4 bootstrap `up` 一条命令起全栈**，ADR-0010/0011）；G-5 易用引导 UX 待启 | 2026-09-06 | ✅ 完成 + 🔄 G-5 待启 | [Jasonmilk/Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 准备完成（认知工艺与生态深度集成） | 2026-08-31 | 🚧 P10 待启动 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
@@ -48,7 +48,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：**1239**（Cellrix 316 + Tuck 316 + Anaphase 126 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）
+**全生态测试总数**：**1242**（Cellrix 316 + Tuck 316 + Anaphase 129 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（Cellrix 316 + Tuck 316 + Anaphase 126 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -273,6 +273,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.17** | **2026-09-06** | **G-4 bootstrap（一条命令起全栈）** — Anaphase 新增 `up` bin（ADR-0011）：tentacle（grpc + fixtures）→ anaphase（`ANAPHASE_TENTACLE_ENDPOINT` env 注入，config.toml 零改动）→ 物理探测（TCP 就绪）→ 可选 `--cockpit` 拉驾驶舱 TUI；config.rs `apply_env_overrides`（12-factor env 优先 + fail-open）+ 3 单测；实测双就绪 + 退出端口全清；Anaphase 126→129，全生态 1239→1242；下一步 G-5 易用引导 UX（首跑向导，降低"一大堆 CLI"门槛） |
 | **v1.16** | **2026-09-06** | **G-3 transport 契约修复（驾驶舱可坐进去）** — ①物理验证发现：Cellrix stdio/UDS transport 从未与 mock-agent 真实联调（stdio 读 Manifest 超时 = mock-agent BE vs transport stdio LE；UDS decode 失败 = 首帧 AgentEvent 包装 vs 裸 CapabilityManifest）；②修复（ADR-0010）：mock-agent 参数化 Endian（stdio=LE / uds=BE）+ map-form rmp（decode 对称）+ UDS 裸 Manifest；③**驾驶舱 TUI 双通道实测渲染**：`[PARTNER] state=Perception` + `MET run-8bba24c5ee368a4a (trace=...)` 真实 ledger 白盒投影；④Cellrix 316 全绿无回归；⑤下一步候选：**引导（bootstrap launcher，一键起全栈）** 解决"一大堆 CLI"易用性问题 + G2 Web 面板 |
 | **v1.15** | **2026-09-06** | **候选 G Anaphase 驾驶舱完成** — ①Cellrix 307→316：AnaphaseClient get_snapshot（一次拉全，极致节能）+ HttpAnaphaseClient（consumes /v1/agent/snapshot）+ CockpitWidget（模式栏/经历时间线/Ledger 审查视图，白盒投影）+ AppState.cockpit + renderer strip + attach_cockpit 轮询 + cli --anaphase-endpoint，ADR-0009；双端策略：snapshot 协议 TUI/Web 共享，TUI 先行，Web 面板=G2；②Anaphase 124→126：AgentSnapshot 共享快照投影端点（AgentLoop::capture + Arc<Mutex> 共享槽，HTTP 层不触碰 agent 内部，消除 token_consumed:1234 硬编码），ADR-0010；③live 联调：真实 Anaphase cap_http 50061 ↔ HttpAnaphaseClient roundtrip 解析成功（anaphase_live.rs #[ignore]），serde 契约修正（mode snake_case）；④全生态测试总数 1228→**1239**；⑤修复 §1 Anaphase 行滞后（D' 实际 4/4） |
 | **v1.14** | **2026-09-06** | **Anaphase 候选 D' 4/4 完成 + MCP-Learner 全绿** — ①MCP-Learner 失败测试修复（过时断言，产物后缀应为 `.manifest.json` 生态契约），42+1f → 43；②D'-4 真实场景插件：`Expect::Ok` 结构判据（零阈值，字段来源=执行体契约）+ tests/m1_5_d4_live.rs 3 例实测全绿（真实 Tentacle + MCP-Learner 学习产物，插件 MET / 未知工具 transport Err / run_cycle 全链路 MET），ADR-0009；③Anaphase 121→124，候选 D' 四项全部落地；④全生态测试总数 1224→**1228** |
