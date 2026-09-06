@@ -10,7 +10,6 @@ helix-mind-metabolism = { path = "../helix-mind-metabolism" }
 tokio = { version = "1", features = ["time", "macros"] }
 serde = { version = "1", features = ["derive"] }
 tracing = "0.1"
-uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]

@@ -3,6 +3,7 @@
 //! 主会话编排 → 独立会话执行（MSC 隔离）→ 黑格尔辩证收敛。
 //! - 执行经 ADR-0017 `CognitiveService` 注入（B1：Mind=编排，执行不直连 LLM）。
 //! - 熔断：步骤数 ≤ max_steps；每步超时 30s；总 Token 预算（EnergyExhausted）。
+//! - trace_id 确定性派生（`craft#{job_id}`），非 UUID（DNA 原则 11）。
 //! - 会话隔离：每步只接收 MSC（原始输入 + 工序专有 Prompt + 全局约束），不横向引用草稿。
 
 use std::sync::Arc;
@@ -97,6 +98,8 @@ pub struct CraftInput {
     pub steps: Vec<ProcessStep>,
     /// 全局约束 Schema（MSC 组成之一）。
     pub global_constraints: String,
+    /// 调用方作业标识（Anaphase run_cycle job_id；trace_id 确定性派生源，非 UUID）。
+    pub job_id: String,
 }
 
 /// 单工序输出。
@@ -152,8 +155,9 @@ impl CognitiveCraft {
         }
 
         // 2. 独立会话执行每道工序（每步只注入 MSC，不横向引用草稿 → 会话隔离）。
-        // 根 trace_id 生成（全息留痕-交互追溯）；所有子工序共享同一 trace_id。
-        let trace_id = uuid::Uuid::new_v4().to_string();
+        // 根 trace_id 确定性派生（全息留痕-交互追溯；DNA 原则 11：非 UUID，
+        // 同 job_id 同输入 → 字节级一致 trace）；所有子工序共享同一 trace_id。
+        let trace_id = format!("craft#{}", input.job_id);
         let mut outputs = Vec::with_capacity(input.steps.len());
         for step in &input.steps {
             let msc = Msc {
@@ -276,7 +280,8 @@ mod tests {
                 query: "分析这个方案的架构风险".into(),
                 steps: plan(),
                 global_constraints: "只做确定性分析，不臆造".into(),
-            })
+            job_id: "test-job".to_string(),
+})
             .await
             .unwrap();
 
@@ -305,7 +310,8 @@ mod tests {
                 query: "q".into(),
                 steps: too_many,
                 global_constraints: String::new(),
-            })
+            job_id: "test-job".to_string(),
+})
             .await
             .unwrap_err();
         assert!(err.to_string().contains("steps must be 1..=5"), "max_steps=5 熔断");
@@ -321,7 +327,8 @@ mod tests {
                 query: "评估数据管道的可靠性".into(),
                 steps: plan(),
                 global_constraints: String::new(),
-            })
+            job_id: "test-job".to_string(),
+})
             .await
             .unwrap();
         // 批判工序内容是"批判面：风险候选..."（来自 query 中的"可靠性"→无命中 or "风险"）
@@ -347,7 +354,8 @@ mod tests {
                 query: "帮我分析架构风险".into(),
                 steps: plan(),
                 global_constraints: String::new(),
-            })
+            job_id: "test-job".to_string(),
+})
             .await
             .unwrap();
     }

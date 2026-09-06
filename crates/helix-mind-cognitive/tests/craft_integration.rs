@@ -56,7 +56,8 @@ async fn full_closed_loop_with_deterministic_three_steps() {
             query: "帮我分析分布式系统的架构可靠性风险".into(),
             steps: plan3(),
             global_constraints: "确定性分析，不引入外部调用".into(),
-        })
+        job_id: "test-job".to_string(),
+})
         .await
         .unwrap();
 
@@ -83,7 +84,8 @@ async fn timeout_breaker_aborts_slow_step() {
             query: "分析架构风险".into(),
             steps: plan3(),
             global_constraints: String::new(),
-        })
+        job_id: "test-job".to_string(),
+})
         .await
         .unwrap_err();
     assert!(err.to_string().contains("timed out"), "超时熔断生效: {}", err);
@@ -103,7 +105,8 @@ async fn token_budget_breaker_exhausts_energy() {
             query: "分析".into(),
             steps: plan3(),
             global_constraints: String::new(),
-        })
+        job_id: "test-job".to_string(),
+})
         .await
         .unwrap_err();
     assert!(
@@ -121,7 +124,8 @@ async fn empty_steps_rejected() {
             query: "q".into(),
             steps: vec![],
             global_constraints: String::new(),
-        })
+        job_id: "test-job".to_string(),
+})
         .await
         .unwrap_err();
     assert!(err.to_string().contains("steps must be 1..=5"), "空工序拒绝");

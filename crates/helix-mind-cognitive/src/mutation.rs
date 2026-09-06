@@ -8,33 +8,50 @@
 //! 语义：长期成功（ema_success → 1）→ 降低探索（利用熟练路径，突变率趋 3%）；
 //! 长期失败（ema_success → 0）→ 提高探索（探索新工序/模式，突变率趋 20%）。
 
+/// 突变参数（DNA 原则 11：阈值有来源，默认值 = ADR-0021 协议默认锚点）。
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MutationConfig {
+    /// 突变率下限（默认 0.03）。
+    pub min_rate: f64,
+    /// 突变率上限（默认 0.20）。
+    pub max_rate: f64,
+    /// EMA 平滑系数（默认 0.3；越大越敏感）。
+    pub alpha: f64,
+}
+
+impl Default for MutationConfig {
+    fn default() -> Self {
+        Self {
+            min_rate: 0.03,
+            max_rate: 0.20,
+            alpha: 0.3,
+        }
+    }
+}
+
 /// 自适应突变状态机。
 #[derive(Debug, Clone)]
 pub struct AdaptiveMutation {
-    /// 当前突变率（钳制在 3%-20%）。
+    /// 当前突变率（钳制在 min_rate..=max_rate）。
     mutation_rate: f64,
     /// EMA 平滑的成功率（0-1）。
     ema_success: f64,
-    /// EMA 平滑系数（0-1；越大越敏感）。
-    alpha: f64,
+    /// 参数（来源：MutationConfig，调用方按需配置）。
+    config: MutationConfig,
 }
-
-const MIN_RATE: f64 = 0.03;
-const MAX_RATE: f64 = 0.20;
-const DEFAULT_ALPHA: f64 = 0.3;
 
 impl Default for AdaptiveMutation {
     fn default() -> Self {
-        Self::new()
+        Self::new(MutationConfig::default())
     }
 }
 
 impl AdaptiveMutation {
-    pub fn new() -> Self {
+    pub fn new(config: MutationConfig) -> Self {
         Self {
-            mutation_rate: 0.05,
+            mutation_rate: config.min_rate + 0.02,
             ema_success: 0.5,
-            alpha: DEFAULT_ALPHA,
+            config,
         }
     }
 
@@ -51,9 +68,10 @@ impl AdaptiveMutation {
     /// - 突变率线性映射：`rate = MAX - (MAX - MIN) * ema`，钳制。
     pub fn record_outcome(&mut self, success: bool) {
         let target = if success { 1.0 } else { 0.0 };
-        self.ema_success = self.alpha * target + (1.0 - self.alpha) * self.ema_success;
-        self.mutation_rate = MAX_RATE - (MAX_RATE - MIN_RATE) * self.ema_success;
-        self.mutation_rate = self.mutation_rate.clamp(MIN_RATE, MAX_RATE);
+        let c = &self.config;
+        self.ema_success = c.alpha * target + (1.0 - c.alpha) * self.ema_success;
+        self.mutation_rate = c.max_rate - (c.max_rate - c.min_rate) * self.ema_success;
+        self.mutation_rate = self.mutation_rate.clamp(c.min_rate, c.max_rate);
     }
 
     /// 连续记录一组确定性结果（如一个阶段的多次任务）。
@@ -78,24 +96,25 @@ mod tests {
 
     #[test]
     fn bounds_are_respected() {
-        let mut m = AdaptiveMutation::new();
-        // 连续成功 → 突变率趋近下限 3%，仍钳制在界内。
+        let cfg = MutationConfig::default();
+        let mut m = AdaptiveMutation::new(cfg);
+        // 连续成功 → 突变率趋近下限，仍钳制在界内。
         for _ in 0..50 {
             m.record_outcome(true);
         }
-        assert!(m.mutation_rate() >= MIN_RATE);
+        assert!(m.mutation_rate() >= cfg.min_rate);
         assert!(m.ema_success() > 0.99, "连续成功 EMA 趋 1");
-        // 连续失败 → 突变率趋近上限 20%，仍钳制在界内。
+        // 连续失败 → 突变率趋近上限，仍钳制在界内。
         for _ in 0..50 {
             m.record_outcome(false);
         }
-        assert!(m.mutation_rate() <= MAX_RATE);
+        assert!(m.mutation_rate() <= cfg.max_rate);
         assert!(m.ema_success() < 0.01, "连续失败 EMA 趋 0");
     }
 
     #[test]
     fn epsilon_greedy_follows_rate() {
-        let mut m = AdaptiveMutation::new();
+        let mut m = AdaptiveMutation::new(MutationConfig::default());
         m.record_outcome(true); // 成功率升高 → 突变率下降 → 更少探索
         // rng 0.0 恒 < rate → 探索；rng 0.5 通常不探索（rate < 0.2）。
         assert!(m.should_explore(0.0));
@@ -104,7 +123,7 @@ mod tests {
 
     #[test]
     fn success_reduces_exploration_failure_increases() {
-        let mut m = AdaptiveMutation::new();
+        let mut m = AdaptiveMutation::new(MutationConfig::default());
         for _ in 0..30 {
             m.record_outcome(true);
         }
