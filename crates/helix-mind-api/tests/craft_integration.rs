@@ -112,8 +112,8 @@ async fn craft_returns_deterministic_trace_and_synthesis() {
     assert!(!resp.synthesis.is_empty(), "convergence synthesis produced");
     // P3c: traceparent echoes verbatim (pass-through, never generated).
     assert_eq!(resp.traceparent, TRACEPARENT, "traceparent must echo verbatim");
-    // P10b populates value_grade later; honest empty for now.
-    assert!(resp.value_grade.is_empty(), "value_grade empty until P10b");
+    // P10b: value grade from the deterministic assessor (never empty).
+    assert!(!resp.value_grade.is_empty(), "value_grade populated since P10b");
 }
 
 #[tokio::test]
@@ -135,6 +135,75 @@ async fn craft_is_deterministic_across_calls() {
 
     assert_eq!(a.trace_id, b.trace_id, "same job → same trace_id");
     assert_eq!(a.synthesis, b.synthesis, "same input → byte-identical synthesis");
+}
+
+#[tokio::test]
+async fn craft_persists_synthesis_as_l1_strategy_node() {
+    let service = build_service().await;
+    let storage = service.storage.clone();
+    let addr = spawn_server(service).await;
+
+    let mut client = HelixMindClient::connect(addr).await.unwrap();
+    client
+        .helix_craft(craft_request("job-l1", ""))
+        .await
+        .unwrap()
+        .into_inner();
+
+    // P10b (ADR-0031 D2): synthesis landed as an L1 node with the
+    // deterministic provenance and the value grade as metadata.
+    let l1 = storage
+        .get_nodes_by_type(helix_mind_core::graph::NodeType::L1)
+        .await
+        .unwrap();
+    assert_eq!(l1.len(), 1, "one L1 strategy node written");
+    assert_eq!(
+        l1[0].abstract_provenance.as_deref(),
+        Some("craft#job-l1"),
+        "provenance must be craft#{{job_id}}"
+    );
+    let content = match &l1[0].content {
+        helix_mind_core::graph::NodeContent::Text(t) => t.clone(),
+        _ => panic!("L1 node content must be text"),
+    };
+    assert!(!content.is_empty(), "synthesis persisted");
+    let notes = l1[0].notes.as_deref().unwrap_or_default();
+    assert!(
+        notes.contains("value_grade="),
+        "value grade metadata written, got: {}",
+        notes
+    );
+}
+
+#[tokio::test]
+async fn craft_is_idempotent_by_provenance() {
+    let service = build_service().await;
+    let storage = service.storage.clone();
+    let addr = spawn_server(service).await;
+
+    let mut client = HelixMindClient::connect(addr).await.unwrap();
+    client
+        .helix_craft(craft_request("job-dup", ""))
+        .await
+        .unwrap()
+        .into_inner();
+    client
+        .helix_craft(craft_request("job-dup", ""))
+        .await
+        .unwrap()
+        .into_inner();
+
+    // Same job_id → same craft#{job_id} provenance → exactly ONE node
+    // (deterministic replay writes the same node, never a twin).
+    let l1 = storage
+        .get_nodes_by_type(helix_mind_core::graph::NodeType::L1)
+        .await
+        .unwrap();
+    assert_eq!(l1.len(), 1, "idempotent by provenance");
+    assert_eq!(
+        l1[0].abstract_provenance.as_deref(),
+        Some("craft#job-dup")
+    );
 }
 
 #[tokio::test]

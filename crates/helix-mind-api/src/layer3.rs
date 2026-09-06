@@ -294,11 +294,14 @@ pub async fn handle_helix_craft(
         steps.push(ProcessStep::new(process, mode));
     }
 
+    // P10b provenance derived BEFORE the input move (deterministic,
+    // same job_id → same craft#{job_id} → idempotent replay).
+    let provenance = format!("craft#{}", req.job_id);
     let input = CraftInput {
         query: req.query,
         steps,
         global_constraints: req.global_constraints,
-        job_id: req.job_id,
+        job_id: req.job_id.clone(),
     };
 
     let result = service
@@ -306,6 +309,39 @@ pub async fn handle_helix_craft(
         .orchestrate(input)
         .await
         .map_err(|e| Status::internal(e.to_string()))?;
+
+    // P10b (ADR-0031 D2): synthesis → L1 strategy node. Append-only via the
+    // existing storage pipeline (WAL + SQLite + FTS — no new store), idempotent
+    // by provenance (see above). Retrieval reuse (T3) is automatic: L1 nodes
+    // enter the same FTS index as any other node — retrieval filters no type.
+    let grade = helix_mind_cognitive::ValueAssessor.assess(&result.synthesis);
+    let existing = service
+        .storage
+        .get_nodes_by_type(helix_mind_core::graph::NodeType::L1)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let already = existing
+        .iter()
+        .any(|n| n.abstract_provenance.as_deref() == Some(provenance.as_str()));
+    if !already {
+        // Deterministic node id (name-based, DNA principle 11): same provenance
+        // derives the same id — replay writes the SAME node, never a twin.
+        let node_id = uuid::Uuid::new_v5(&uuid::Uuid::NAMESPACE_OID, provenance.as_bytes());
+        let node = helix_mind_core::graph::Node {
+            id: node_id,
+            node_type: helix_mind_core::graph::NodeType::L1,
+            content: helix_mind_core::graph::NodeContent::Text(result.synthesis.clone()),
+            abstract_provenance: Some(provenance.clone()),
+            notes: Some(format!("value_grade={grade:?}")),
+            high_risk: false,
+            ..Default::default()
+        };
+        service
+            .storage
+            .write_node(node, helix_mind_storage::WritePriority::Deferred)
+            .await
+            .map_err(|e| Status::internal(e.to_string()))?;
+    }
 
     let response = HelixCraftResult {
         trace_id: result.trace_id,
@@ -318,8 +354,9 @@ pub async fn handle_helix_craft(
             })
             .collect(),
         synthesis: result.synthesis,
-        // P10b populates value_grade (ValueAssessor); empty until then (honest).
-        value_grade: String::new(),
+        // P10b (ADR-0031 D3): value grade from the deterministic assessor,
+        // echoed back and persisted as node metadata.
+        value_grade: format!("{grade:?}"),
         tokens_consumed: 0,
         // P3c (ADR-0020): traceparent pass-through — echo the request value,
         // never generate. Empty in → empty out (Mind is not the trace root).
