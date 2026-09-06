@@ -34,20 +34,31 @@ P9 已完成认知工艺 Phase 3（编排器 + 价值评估 + 自适应突变 + 
 - 请求：`HelixCraftRequest { query, steps, mode, energy_context, autonomy_level, traceparent }`
 - 响应：`HelixCraftResult { trace_id, steps, synthesis, value_grade, tokens_consumed, traceparent }`
 
-### D2: P10b L1 策略持久化——复用现有 storage，不新建
+### D2: P10b L1 策略持久化——复用现有 storage，不新建 ✅ 已落地（2026-09-06，5e7dd32）
 
 - 认知工艺产物落 **DAG L1（策略层）**：`CraftResult.synthesis` → L1 策略节点
-- provenance = `craft#{trace_id}`（确定性派生，非 UUID）
-- `ValueAssessor` 分级写入策略节点元数据（`value_grade` 字段）
-- 检索时：helix_query 命中策略节点 → 策略复用（零重算）
-- **极致复用**：走现有 storage crate（领域 WAL 投影器复用），不新建存储
+- provenance = `craft#{job_id}`（确定性派生；trace_id 同源 = `craft#{job_id}`，非 UUID）
+- `ValueAssessor` 分级写入策略节点元数据（`value_grade` 回写响应 + 节点 notes）
+- 节点 id = `Uuid::new_v5(NAMESPACE_OID, provenance)`——name-based 确定性 id：
+  同 job_id 重放写**同一节点**（幂等），符合 DNA 原则 11（确定性派生，非随机 UUID）
+- 检索时：L1 进共享 FTS 索引，helix_query 天然命中策略节点 → 策略复用（零重算）
+- **极致复用**：走现有 storage crate（WAL + SQLite + FTS 管道），不新建存储
 
-### D3: P10c Deep Dream 挂载——代谢事件驱动，复用现有 review/mutation
+### D3: P10c Deep Dream 挂载——代谢事件驱动，复用现有 review/mutation ✅ 已落地（2026-09-06，476b485）
 
-- 代谢 `trigger_hibernate` 事件 → `SleepReview.review_path`（非熟练模式检视）→ 裁决 Viable/Stale
-- Stale → `AdaptiveMutation` 应用（Bounded ε-Greedy + EMA）→ 更新策略节点权重
+- 代谢 `trigger_hibernate` 事件（consolidate:hibernate）→ 先遗忘冷 L3，
+  再 `SleepReview.review_path` 检视 L1 策略覆盖（legacy vs fresh 实体覆盖，
+  whitespace 分词，与 DeterministicAdapter 同语义）→ 裁决 Viable/Stale
+- Stale（差 ≥ stale_entity_delta）→ `AdaptiveMutation.record_outcome(false)`（探索升）；
+  Viable → record_outcome(true)（收敛）——Bounded ε-Greedy + EMA
+- 突变状态持久化：L2 节点 provenance `mutation-state`（复用 storage 管道，
+  name-based id 幂等 upsert）；`AdaptiveMutation::restore` 跨重启确定性重建
 - 全链路确定性 0 Token（复用 P9 已实现，不引入 LLM 自我评分——R3）
-- 挂载点：代谢 crate 事件处理内调用 cognitive crate（依赖方向：代谢 → 认知，单向）
+- **挂载点修正（实现期物理约束）**：原设计"代谢 → 认知"依赖方向不可行——
+  CognitiveService trait 定义在 metabolism，cognitive crate 已依赖 metabolism，
+  反向依赖成环。修正为挂载在 **api 编排层**（`sleep_review` 模块组合
+  metabolism + cognitive + storage，api 本就是编排方）——依赖方向单向无环，
+  极致解耦不受损
 
 ### D4: 零硬编码收口（P10 前置，DNA 原则 11 / ADR-0002）
 

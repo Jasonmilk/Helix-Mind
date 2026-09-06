@@ -1,32 +1,3 @@
-# 生长日志（变异 + 阶段完成记录）
-
-> **所属方法论**：phyt-DNA 方法论 v1.0（方法论锚点项目 https://github.com/Jasonmilk/phyt-DNA）
-> **对齐知识本体**：v4.1
-
-规则：只保留最近 3 条。第 4 条写入时，最旧的归档到 `docs/archive/growth/`（已版本化，永不删除）。
-
----
-## [2026-08-30] 完成：P0-P9 全部完成 + 全生态进度对齐 + 方法论升级 phyt-DNA
-
-### 触发条件
-Helix-Mind P0-P9 全部完成（PLAN.md v6.0 确认），全生态 6 个项目核心功能全部完成，方法论从 "DNA 自生长方法论 v2.0" 升级为 "phyt-DNA 方法论 v1.0"（独立锚点项目），ECOSYSTEM.md 全生态导航文档建立。
-
-### 变更性质
-- **P0-P9 全部完成**：认知基线 → 检索闭环 → 代谢闭环 → 安全契约 → 硬冻结 → 领域 WAL → 数据诚实 → 生态文档 → 认知工艺 Phase 2 → 认知工艺 Phase 3
-- **方法论升级**：从 "DNA 自生长方法论 v2.0" 升级为 "phyt-DNA 方法论 v1.0"，独立锚点项目 https://github.com/Jasonmilk/phyt-DNA，全生态项目统一引用
-- **全生态导航**：建立 `docs/helixECO/ECOSYSTEM.md`，6 个项目（Cellrix/Tuck/Anaphase/BIND-19/Helix-Mind/Helix-Tentacle）进度对齐，测试总数 1060
-- **测试数修正**：Helix-Mind 实际通过 98 个测试（之前记录的 27 是过时数据），各 crate 测试数重新统计确认
-- **工作区迁移**：从按日期分目录迁移到统一的 `Jasonmilk/` 目录，避免项目重复和知识腐化
-
-### 兼容性
-纯文档阶段，零代码变更；P0-P9 代码零变更；方法论升级为引用更新，不影响现有代码结构。
-
-### 验收
-PLAN.md v6.1（方法论引用更新）｜ GROWTH.md v1.4（方法论引用更新 + 新记录追加）｜ RNA.md 方法论引用更新 ｜ README.md 方法论引用更新 + P0-P9 完成状态 ｜ ECOSYSTEM.md 全生态 6/6 核心完成 ｜ 全生态测试总数 1060
-
-### 状态
-🧬 已完成
----
 
 ## [2026-08-29] 完成：CI-144 v2.0 前置必填项锁定（11 项设计定案）
 
@@ -69,3 +40,22 @@ Mind workspace 101 全绿 0 warning（`8c15a4f`）；Anaphase 198 全绿 0 warni
 ### 状态
 ✅ 已推送（Mind rs-dev / Anaphase rs）
 ---
+## [2026-09-06] 完成：P10 认知工艺与生态深度集成（P10a 触发 + P10b L1 落盘 + P10c Deep Dream）
+
+### 触发条件
+P10 任务书（ADR-0031）三阶段全部完成：P10a 触发链路、P10b 策略持久化、P10c Deep Dream 挂载。
+
+### 变更性质
+- **P10a 触发链路**：新增 `helix_craft` RPC（Mind 侧 server + Anaphase 侧 adapter），Anaphase run_cycle 按需触发认知工艺（`[think-first]` 折入 synthesis）；P10-0 零硬编码收口（trace_id 确定性化去 uuid、阈值进配置）
+- **P10b L1 策略持久化**：synthesis 落 DAG L1 策略层（provenance `craft#{job_id}`，name-based 确定性 id 幂等；ValueAssessor 分级写元数据 + 响应回显；L1 进共享 FTS 索引，helix_query 天然命中）
+- **P10c Deep Dream**：consolidate:hibernate → 遗忘冷 L3 → 睡眠复盘（L1 新旧覆盖差 ≥ 阈值 → Stale/Viable）→ AdaptiveMutation 适应（EMA + Bounded ε-Greedy）→ mutation-state 幂等落盘 + 跨重启 restore；全链路确定性 0 Token
+- **挂载点修正**：代谢 → 认知依赖成环（CognitiveService trait 在 metabolism），改为 api 编排层 `sleep_review` 模块组合两者（无循环依赖，ADR D3 已诚实记录）
+
+### 兼容性
+零破坏：helix_query/helix_craft 语义向后兼容；不新建 crate/存储；认知测试 + 新增集成测试全绿。
+
+### 验收
+PLAN.md v6.4（P10 全 ✅）｜ ADR-0031（D2/D3 落地标注 + 挂载点修正）｜ README（107 tests）｜ ECOSYSTEM v1.49（Mind 107，全生态 1404）
+
+### 状态
+🧬 已完成

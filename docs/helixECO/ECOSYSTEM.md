@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.41
+> **版本**：v1.49
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（**O-2 stage 事件总线 ADR-0019 落地**——过程白盒第四层，全生态 1292）
+> **最后更新**：2026-09-06（P10 认知工艺生态深度集成完成——P10a 触发 + P10b L1 落盘 + P10c Deep Dream，全生态 1404）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -45,14 +45,14 @@
 | 2 | **Tuck** | rs | 316 | P0-P7 全部完成；P6-T5 Cellrix 状态流（StatusProvider，ADR-0003）已落地 | 2026-09-05 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
 | 3 | **Anaphase** | rs | 198 | P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（ADR-0023：记忆折叠注入 Reasoning——修复检索断裂 + 25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
-| 5 | **Helix-Mind** | rs-dev | 101 | P0-P9 全部完成，P10 准备完成（认知工艺与生态深度集成） | 2026-08-31 | 🚧 P10 待启动 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
+| 5 | **Helix-Mind** | rs-dev | 107 | P0-P10 全部完成：P10a helix_craft 触发链路 + P10b synthesis→L1 策略落盘（幂等+价值分级）+ P10c Deep Dream 睡眠复盘（突变适应） | 2026-09-06 | ✅ P10 完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
 | 7 | **HelixECO-Glove** | main | 45 | P4-T1 完成（L1 静态审查 9 条规则），P4-T2 预览 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/HelixECO-Glove](https://github.com/Jasonmilk/HelixECO-Glove) |
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 | 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告）；Python v1.7 保留 main 分支 | 2026-09-06 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1400**（Cellrix 319 + Tuck 316 + Anaphase 198 + BIND-19 142 + Helix-Mind 101 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
+**全生态测试总数**：**1404**（Cellrix 319 + Tuck 316 + Anaphase 198 + BIND-19 142 + Helix-Mind **107** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -73,7 +73,7 @@
 
 | 项目 | 当前阶段 | 待办内容 | 阻塞项 |
 |---|---|---|---|
-| **Helix-Mind** | P10 准备完成，待启动 | P10a: Anaphase 触发链路 + P10b: L1 策略持久化 + P10c: Deep Dream 复盘挂载 | P0-P9 已完成，P10 现状探查+执行计划已制定，待正式开工 |
+| **Helix-Mind** | ✅ P10 完成（2026-09-06） | 无（P10a 触发链路 + P10b L1 策略落盘 + P10c Deep Dream 全通）；P10d 预约制闹钟为后续规划项 | 无 |
 | **HelixECO-Glove** | P4-T1 完成，P4-T2 预览 | P4-T2: L2 dry_run 沙箱预执行 + 审查规则自进化 | L1 静态审查 9 条规则已完成（10 测试全绿），macOS Glove 核心已实现 |
 | **Helix-MCP-Learner** | 核心完成 + 生态联调成功 | 升级 mcp_proxy.js 为真实 MCP 代理执行体 + 修复 1 个失败测试 | 全链路联调畅通（学习→审查→stable/→Tentacle加载→执行），真实 MCP 执行待升级 |
 
@@ -104,7 +104,7 @@
 1. **Anaphase 候选 D'** — M1.5 深化（seen_entropy_bloom 重放守卫 ✅ / main.rs pipeline 接线 ✅ / **D'-2 Tuck 深度集成 ✅（SecurityGate 接线点，ADR-0008，真实 TuckSecurityGate 连通验证）** / D'-4 真实场景插件待 MCP-Learner）
 1.5. **Anaphase CI-144 传输层（✅ 完成 2026-09-06，ADR-0017）** — 驾驶舱闭环咽喉：--stdio 切换 CIB/1.0 MessagePack（握手 + LE u32 帧 + Manifest 首帧 + 1s 快照推流 + Action 响应），vendored 类型 src/ci144/，160 tests 全绿（+6）+ live 实测真实二进制
 2. **Anaphase 候选 G（✅ 完成 2026-09-06）** — Anaphase 驾驶舱（正名：监控意识层，Helix-Mind 灵魂本体不驾驶）：G-T2 AgentSnapshot 端点（ADR-0010）+ G-T3..T5 Cellrix 消费/渲染/live（ADR-0009）+ G-T6 文档；**候选 G2（待启动）**：Web 面板（消费同一 snapshot 协议，DSH 式可视化，低摩擦）
-3. **Helix-Mind P10 开工** — 认知工艺与生态深度集成（P10a 触发链路 → P10b L1 策略持久化 → P10c Deep Dream 复盘挂载）
+3. **Helix-Mind P10 完成** — 认知工艺生态深度集成全通（P10a 触发链路 + P10b L1 策略持久化 + P10c Deep Dream 复盘）；下一候选：P10d 预约制闹钟（设计方向已获认可）
 
 ### 第二优先级（可并行启动）
 4. **真实 MCP 执行升级** — 将 mcp_proxy.js 从占位脚本升级为真实 MCP 代理执行体
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.49** | **2026-09-06** | **P10 认知工艺生态深度集成完成** — ①P10b（5e7dd32）：synthesis 落 DAG L1 策略层（provenance `craft#{job_id}` + name-based 确定性 id 幂等；ValueAssessor 分级写元数据 + 响应回显；L1 进共享 FTS 索引，helix_query 天然命中策略复用）；②P10c（476b485）：Deep Dream 睡眠复盘（consolidate:hibernate → 遗忘冷 L3 → L1 新旧覆盖差 ≥ 阈值 → Stale/Viable → AdaptiveMutation EMA 适应 → mutation-state 幂等落盘 + 跨重启 restore，全链路确定性 0 Token；挂载点实现期修正为 api 编排层避免代谢↔认知循环依赖）；③Helix-Mind 测试 101→**107**（+2 P10b 落盘/幂等 + 4 P10c 复盘套件）；④全生态测试总数 1400→**1404**；⑤ADR-0031 D2/D3 落地标注 + 挂载点修正、PLAN v6.4（P10 全 ✅）、GROWTH v1.6（P10 记录 + P0-P9 归档）、README（107/P10 Complete） |
 | **v1.48** | **2026-09-06** | **P10a 认知工艺触发链路完成** — ①Helix-Mind：helix_craft RPC（独立编排 RPC，检索/编排解耦）+ 零硬编码收口（trace_id 确定性化 `craft#{job_id}` 去 uuid、阈值进配置）+ 确定性 Adapter 0 token 默认，测试 98→**101**（+3 craft 集成：确定性 trace+synth / 跨调用字节级一致 / fail-closed）；②Anaphase：proto 客户端同步 + MemoryAdapter.craft() 默认降级 + GrpcMindAdapter 调 helix_craft（工序集/约束 MindConfig 协议默认）+ run_cycle MemoryRetrieval 按需触发 + Reasoning [think-first] 折入 synthesis，测试 195→**198**（+3：触发注入 / 结构化跳过 / Noop 降级）；③闭环：Anaphase 触发 → Mind helix_craft → CognitiveCraft orchestrate → 0 token synthesis → 注入 LLM prompt（先思考后花钱）；④全生态测试总数 1394→**1400**；⑤ADR-0031 Accepted、PLAN v6.3、GROWTH 双仓归档清理 |
 | **v1.47** | **2026-09-06** | **Callosum 归档 + 生态引用清理（前缀稳定重定源）** — ①**Helix-Callosum 退役**（DEPRECATE.md + README 标记，Python v0.2.0 冻结为算法参考）：物理事实核验——方法论变化稀释 KV cache 价值前提（确定性优先 + 0 tokens 通道 + 按需组装）、70% 功能与 FlowModus 重叠（Composite Router/Economic Profiler/适配器）、生态零运行时依赖（Anaphase endpoint 默认 None / Tentacle bloom 从未接通 / Mind gene-lock 仅为 spec）、3.5 个月零活动；②**前缀稳定重定源**：lodestone L0/L1/L2 确定性投影（稳定前缀从源头生成，非事后重排）+ FlowModus canonicalizer（字节级确定性）——两者之间无 Callosum 位置；KV 缓存折扣为附带红利，成本节省主来自"prompt 本来就短且稳定"；③生态清理：Anaphase 移除 callosum_endpoint（config.rs/gloves.rs，测试全绿）、Tentacle bloom 注释改本地实现（零 Callosum 引用）、Helix-Mind gene-lock 静态前缀池 → lodestone 投影池；④Anaphase 存量 6 处 unused-import warning 披露（非本次引入，独立技术债）；⑤测试总数 1394 不变（本轮含 Anaphase 代码清理，测试数未变） |
 | **v1.46** | **2026-09-06** | **Tuck 测试数核验完成（310→316）** — `cargo test --workspace` 实测 **316 passed, 0 failed**（bin 9 + lib 307 + doc-tests 8 ignored）；§1 Tuck 行从 310 修正为 316（原为历史滞后值）；全生态总数注释本就用 316（319+316+195+142+98+153+45+43+83=1394 自洽），**全生态测试总数 1394 不变** |

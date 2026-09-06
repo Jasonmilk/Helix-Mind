@@ -1,17 +1,17 @@
 # Helix-Mind 开发导航牌（PLAN）
 
-> **版本**：v6.3（P10a 完成，2026-09-06）
-> **状态**：🚧 P10 认知工艺与生态深度集成（P10a 触发链路完成，P10b 待开工）
+> **版本**：v6.4（P10 完成，2026-09-06）
+> **状态**：✅ P10 认知工艺与生态深度集成（P10a 触发 + P10b L1 落盘 + P10c Deep Dream 全通）
 > **分支**：rs-dev
 > **所属方法论**：phyt-DNA 方法论 v1.0（PLAN 动态流转闭环，方法论锚点项目 https://github.com/Jasonmilk/phyt-DNA）
 > **规则**：本文件只含当前阶段 + 下一阶段预览 + 阶段总览地图。完成阶段 → GROWTH.md。总行数 ≤150，超出触发历史迁移。
-> **⚠️ 状态修正记录**：v5.2 顶部状态停留在 P3（计划待起草），但阶段总览已显示 P0-P9 全部完成（2026-08-28）。v6.0 修正顶部状态与阶段总览一致。v6.2 定稿 P10 任务书（ADR-0031）。v6.3 P10a 完成（helix_craft RPC + Anaphase 触发）。
+> **⚠️ 状态修正记录**：v5.2 顶部状态停留在 P3（计划待起草），但阶段总览已显示 P0-P9 全部完成（2026-08-28）。v6.0 修正顶部状态与阶段总览一致。v6.2 定稿 P10 任务书（ADR-0031）。v6.3 P10a 完成（helix_craft RPC + Anaphase 触发）。v6.4 P10 完成（P10b L1 策略落盘 + P10c Deep Dream 睡眠复盘）。
 
 ---
 
 ## 1. 当前阶段：P10 认知工艺与生态深度集成（任务书）
 
-> **状态**：🚧 P10a 完成（P10-0 零硬编码 + helix_craft 触发链路全通），P10b 待开工。
+> **状态**：✅ P10 全部完成——P10a 触发链路（helix_craft RPC + Anaphase 按需触发）、P10b L1 策略持久化（幂等 + 价值分级）、P10c Deep Dream（睡眠复盘 + 突变适应）全通。
 > **前置依赖**：P9 认知工艺 Phase 3 已完成（价值评估 + 自适应突变 + 睡眠复盘 + bm25 门控增强）。
 
 ### 1.1 P10 任务书（ADR-0031 已立）
@@ -22,12 +22,12 @@
 | P10a-T1 | proto + server | 新增 `helix_craft` RPC（请求/响应/转换） | ✅ 8c15a4f：gRPC 编译 + 3 集成测试 |
 | P10a-T2 | 接线 CognitiveCraft | helix_craft → CognitiveCraft.orchestrate（CraftConfig 注入） | ✅ 并入 T1：DeterministicAdapter 默认 0-token |
 | P10a-T3 | Anaphase 触发点 | mind adapter 新增 craft + run_cycle 按需触发 | ✅ db07c5b：MemoryRetrieval 触发 + [think-first] 注入 |
-| P10b-T1 | 策略节点 schema | L1 策略节点 + provenance `craft#` | 类型落地 |
-| P10b-T2 | synthesis 持久化 | CraftResult → L1（storage 复用，WAL 投影器） | 落盘 + 回读一致 |
-| P10b-T3 | 价值分级 + 检索复用 | ValueAssessor 分级写元数据；helix_query 命中策略节点 | 策略复用生效 |
-| P10c-T1 | Deep Dream 挂载 | trigger_hibernate → SleepReview.review_path | 事件驱动复盘执行 |
-| P10c-T2 | 突变应用 | AdaptiveMutation 状态持久化 + Stale 降权 | 权重更新落盘 |
-| P10-T | 测试 + 文档 | 集成测试全绿；ADR-0031 + PLAN v6.2 + GROWTH + README + ECOSYSTEM | 全绿 + 文档对齐 |
+| P10b-T1 | 策略节点 schema | L1 策略节点 + provenance `craft#` | ✅ 5e7dd32：name-based id + WAL 管道 |
+| P10b-T2 | synthesis 持久化 | CraftResult → L1（storage 复用，WAL 投影器） | ✅ 5e7dd32：落盘 + 回读一致 + 幂等 |
+| P10b-T3 | 价值分级 + 检索复用 | ValueAssessor 分级写元数据；helix_query 命中策略节点 | ✅ 5e7dd32：value_grade 回显 + FTS 天然命中 |
+| P10c-T1 | Deep Dream 挂载 | trigger_hibernate → SleepReview.review_path | ✅ 476b485：api 编排层（无循环依赖） |
+| P10c-T2 | 突变应用 | AdaptiveMutation 状态持久化 + Stale 降权 | ✅ 476b485：mutation-state 幂等落盘 + restore |
+| P10-T | 测试 + 文档 | 集成测试全绿；ADR-0031 + PLAN v6.4 + GROWTH + README + ECOSYSTEM | ✅ 107 全绿 + 文档对齐 |
 
 **边界（ADR-0031 D5）**：认知工艺不直连 LLM（B1 保持）；不做自动路由（M3 边界，触发由 Anaphase 判断）；不新建存储/crate（极致复用）；不破坏 helix_query 语义（向后兼容）。
 
