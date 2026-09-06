@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.54
+> **版本**：v1.55
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（up 全栈接入潜意识层——Tentacle+Mind+Anaphase 三进程一键启动，真实见面冒烟通过，全生态 1418）
+> **最后更新**：2026-09-06（驾驶舱真身——stdio 全栈共享装配 + WebUI 一键接入，全生态 1418 不变）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.55** | **2026-09-06** | **驾驶舱真身 + WebUI 一键接入** — ①Anaphase 装配提取为共享 `build_agent`：CI-144 stdio 驾驶舱与 HTTP daemon 复用同一装配（Mind gRPC + LLM 链 + Tentacle pipeline + rails + judge + mode），驾驶舱对话即真 Helix（此前 stdio 是精简 Noop）；②up 驾驶舱主 agent 换成 Anaphase 本体（`--exec "anaphase --mode stdio"`），mock-agent 回归 demo；③WebUI（cellrix-web :8080，WEB_PORT 覆盖）一键接入；④端点注入改进程级 set_var（MIND/TENTACLE/HELIX_CODEX 绝对路径），子进程一律继承；⑤codex 路径支持 HELIX_CODEX env 覆盖（任意 cwd 可装配 pipeline）；⑥Anaphase 206 全绿，stdio 握手 + 四端口冒烟真实通过 |
 | **v1.54** | **2026-09-06** | **up 全栈（Anaphase 206，全生态 1418）** — `up` 一键启动接入潜意识层：Mind（helix-mind-cli）自动装配（默认配置写入 `.helix/mind/`、gene_lock 取仓库 example、端口与 Tentacle 冲突自动 +1、缺失 fail-open）；`ANAPHASE_MIND_ENDPOINT` env 注入（12-factor）；真实三进程冒烟通过（Tentacle :50051 + Mind :50052 + Anaphase :50061 partner，snapshot 显示 mind/tentacle Available，events 白盒记录状态机迁移）；Anaphase 测试 205→**206**（+mind env override） |
 | **v1.53** | **2026-09-06** | **命名规范落地（Anaphase 94436a9）** — 测试文件阶段号→能力名：`m1_e2e_live`→`tentacle_live`、`m1_5_d4_live`→`plugin_live`、`m1_e2e`→`pipeline_e2e`、`p10_live`→`mind_live`；规则：能力词+层级词（trigger/integration/live），阶段代号不入名；测试数不变（Anaphase 205，全生态 1417） |
 | **v1.52** | **2026-09-06** | **P10 收尾** — Anaphase gRPC 级闭环补齐（mind_integration +3：craft/wakeup+ack/consolidate 走真实 wire）+ **tests/mind_live.rs**（真实 helix-mind-cli 二进制全链路 live 联调，物理验证通过，`--ignored` 手动运行）；Anaphase 测试 202→**205** + 1 live；全生态 1414→**1417**；README 增 P10 live 运行段；ECOSYSTEM 更新（Anaphase 行 205） |
