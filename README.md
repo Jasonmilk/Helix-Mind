@@ -31,17 +31,17 @@ This project is managed by the **phyt-DNA Methodology v1.0** (methodology anchor
 
 ## 📊 Current Status
 
-**P0-P9 Complete** (as of 2026-08-30). **P10 Complete** (2026-09-06): helix_craft trigger chain (P10a) + synthesis → L1 strategy persistence (P10b) + Deep Dream sleep review (P10c) — ADR-0031.
+**P0-P9 Complete** (as of 2026-08-30). **P10 Complete** (2026-09-06): helix_craft trigger chain (P10a) + synthesis → L1 strategy persistence (P10b) + Deep Dream sleep review (P10c) — ADR-0031; **P10d** (2026-09-06): ana_wakeup wake-up channel + peak-congestion guard — ADR-0032.
 
-> **Ecosystem sync (2026-09-06)**: ECOSYSTEM.md **v1.49** is the SSOT. P10
+> **Ecosystem sync (2026-09-06)**: ECOSYSTEM.md **v1.50** is the SSOT. P10
 > delivers the cognitive-craft trigger link: Mind exposes `helix_craft`
 > (deterministic orchestration, 0-token DeterministicAdapter default), Anaphase
 > triggers it on demand and folds the synthesis into the Reasoning prompt as a
-> [think-first] note. Ecosystem total: **1404 tests**.
+> [think-first] note. Ecosystem total: **1410 tests**.
 
 | Metric | Value |
 |:---|:---|
-| **Tests Passing** | 107 (workspace-wide, `cargo test --workspace`) |
+| **Tests Passing** | 113 (workspace-wide, `cargo test --workspace`) |
 | **Crates** | 12 (core, retrieval, metabolism, storage, wal, cognitive, api, cli, federation, reincarnation, + integration tests) |
 | **ADRs** | 31 (docs/decisions/0001-0031) |
 | **Workspace** | 0 errors, 0 warnings |
