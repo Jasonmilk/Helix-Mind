@@ -33,6 +33,11 @@ This project is managed by the **phyt-DNA Methodology v1.0** (methodology anchor
 
 **P0-P9 Complete** (as of 2026-08-30). **P10 Preview** (Cognitive Craft & Ecosystem Deep Integration).
 
+> **Ecosystem sync (2026-09-06)**: ECOSYSTEM.md **v1.35** is the SSOT — Anaphase
+> has completed Rails (ADR-0018, 0-token verbatim citation rails) + O-2 stage
+> event bus (ADR-0019, process white-box). Ecosystem total: **1292 tests**.
+> VISION.md v1.2 carries the ecosystem-landing mapping.
+
 | Metric | Value |
 |:---|:---|
 | **Tests Passing** | 98 (workspace-wide, `cargo test --workspace`) |

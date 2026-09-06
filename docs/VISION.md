@@ -1,6 +1,6 @@
 # Helix-Mind 愿景索引
-> **版本**：v1.1（对齐知识本体 v4.1 认知相态范式）
-> **日期**：2026-08-27
+> **版本**：v1.2（对齐知识本体 v4.1 认知相态范式；2026-09-06 补生态落地对照）
+> **日期**：2026-08-27（更新 2026-09-06）
 > **性质**：本文件是 `SPEC.md`（叙事）、`docs/spec/`（规格）、`docs/decisions/`（决策）之间的根索引。
 > **用途**：所有架构决策应以本文件中提炼的原子原则为最终裁判。
 > **继承自**：Helix-Mind 知识本体 v4.1 + DNA 自生长方法论 v1.0
@@ -77,6 +77,17 @@ Helix-Mind 不是孤岛。它是 Helix 数字生命体的**认知中枢——相
 | **CI-144 协议家族** | Helix 种群母语 | INTENT-7（意图）、BIND-19（传输）、CAPABILITY-13（能力认证） |
 
 **版本基准**：知识本体 **v4.1**（本文件基准，2026-08-27）；代码/白皮书版本 v3.4（rs-dev）——二者不同轴，勿混用。
+
+### 生态落地对照（2026-09-06，Anaphase 侧对 VISION 原则的物理兑现）
+
+| VISION 原则 | Anaphase 落地 | 决策 |
+|---|---|---|
+| 4 极致节能是生存伦理（0 Token 优先） | **Rails 心智外铁轨**：人类知识 DAG（宪法/律法/SOP）只读引用，rail 命中时 Reasoning 短路 LLM——回答 = 0-token 确定性拼装的原文引用（含节点 id），无编造空间；`RailScope::Read` 类型级只读 | ADR-0018（anaphase-helix） |
+| 9 确定性/可回放（DNA 原则） | **过程白盒第四层**：append-only stage 事件环（事件=过程，ledger=事实，evidence=支撑）+ 六 stage 边界插桩 + `?after=seq` 增量拉取；trace_id=派生 job_id，FakeClock 下字节级可回放 | ADR-0019（anaphase-helix） |
+| 熟练模式（心智内软铁轨） | **rails = 心智外硬铁轨**：同一张 DAG 导航图两端——心智内（EMA 权重会进化）vs 心智外（SHA-256 冻结、验证器锁死）；**硬度 = 错误的代价**（法律错误错不起就硬） | ADR-0018 |
+| 认知工艺（ADR-0021，Mind） | Anaphase 只触发不实现：编排哲学（ADR-0016）把四拍/五工序归 Mind，身体零工序实现 | ADR-0016（anaphase-helix） |
+
+白盒四层全景：**能力**（Manifest）→ **状态**（SemanticSnapshot）→ **过程**（stage events）→ **事实**（ledger+evidence）——Helix 的每一次呼吸都可回放、可审查。
 
 ## 快速导航
 
