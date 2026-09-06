@@ -25,6 +25,7 @@
 ├── lodestone-spec/                   ← 知识表示协议（v2.0-draft 磁石 DAG；v1.3 冻结）
 ├── lodestone-md/                     ← 协议参考实现（crate mddag，v2 线，零依赖）
 ├── phyt-DNA/                         ← 方法论体系（自生长方法论）
+├── Helix-Callosum/                  ← ⚰️ 已归档（2026-09-06，DEPRECATE.md 见仓库；前缀稳定归 lodestone 投影 + FlowModus canonicalizer）
 └── commonintents/                    ← CommonIntents 组织仓库集合
     ├── BIND-19/                      ← 协议规范（权威来源）
     ├── CAPABILITY-13/                ← 能力授权协议
@@ -284,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.47** | **2026-09-06** | **Callosum 归档 + 生态引用清理（前缀稳定重定源）** — ①**Helix-Callosum 退役**（DEPRECATE.md + README 标记，Python v0.2.0 冻结为算法参考）：物理事实核验——方法论变化稀释 KV cache 价值前提（确定性优先 + 0 tokens 通道 + 按需组装）、70% 功能与 FlowModus 重叠（Composite Router/Economic Profiler/适配器）、生态零运行时依赖（Anaphase endpoint 默认 None / Tentacle bloom 从未接通 / Mind gene-lock 仅为 spec）、3.5 个月零活动；②**前缀稳定重定源**：lodestone L0/L1/L2 确定性投影（稳定前缀从源头生成，非事后重排）+ FlowModus canonicalizer（字节级确定性）——两者之间无 Callosum 位置；KV 缓存折扣为附带红利，成本节省主来自"prompt 本来就短且稳定"；③生态清理：Anaphase 移除 callosum_endpoint（config.rs/gloves.rs，测试全绿）、Tentacle bloom 注释改本地实现（零 Callosum 引用）、Helix-Mind gene-lock 静态前缀池 → lodestone 投影池；④Anaphase 存量 6 处 unused-import warning 披露（非本次引入，独立技术债）；⑤测试总数 1394 不变（本轮含 Anaphase 代码清理，测试数未变） |
 | **v1.46** | **2026-09-06** | **Tuck 测试数核验完成（310→316）** — `cargo test --workspace` 实测 **316 passed, 0 failed**（bin 9 + lib 307 + doc-tests 8 ignored）；§1 Tuck 行从 310 修正为 316（原为历史滞后值）；全生态总数注释本就用 316（319+316+195+142+98+153+45+43+83=1394 自洽），**全生态测试总数 1394 不变** |
 | **v1.45** | **2026-09-06** | **README 双语化 + Tuck 许可对齐 + 文档语言规范** — ①全生态 README.md 默认英文落地：phyt-DNA/FlowModus/Tuck/helix-tentacle 四仓库 README 转英文主文档，中文版转 README.zh-CN.md（双向互链），其余仓库本就英文；②**Tuck 许可修正：MIT → Apache 2.0**（LICENSE 文件替换，全生态统一许可策略落地，phyt-DNA PROTECTION v1.1）；③phyt-DNA PROTECTION v1.2 新增"文档语言规范"（公开文档默认英文，内部过程文档不受限）；④Tuck README 测试数 316 vs ECOSYSTEM 310 **口径不一致，待核验**；⑤测试总数 1394 不变（纯文档/许可轮） |
 | **v1.44** | **2026-09-06** | **许可策略决策 + CI-144 协议级防御性公开落地** — ①phyt-DNA PROTECTION v1.1 新增"许可策略"章节：全生态统一 Apache 2.0 不分层（Apache 与 MIT 采用友好度等价，Apache 免费附带专利授权+报复条款；"消费者项目"承载协议之外独立价值；真正分层的是未来商业服务层而非代码层；宽松=开放采用而非降级许可）；②CommonIntents 协议级防御性公开落地：`.github/docs/prior-art-ci144.md`（四层协议栈 12 项创新点，架构级/传输级/能力级/安全级/语义级/扩展协议，各带证据路径，2026-09-06 公开，profile README 可发现性链接）；③FlowModus prior-art §三 状态更新（CI-144 家族从"待拍板"转"已落地"）；④测试总数 1394 不变（纯保护轮） |
