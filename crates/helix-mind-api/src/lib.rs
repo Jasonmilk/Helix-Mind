@@ -3,6 +3,7 @@ pub mod layer2;
 pub mod layer3;
 pub mod server;
 pub mod sleep_review;
+pub mod alarm;
 pub mod health;
 pub mod middleware;
 

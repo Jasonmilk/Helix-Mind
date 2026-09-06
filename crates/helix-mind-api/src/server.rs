@@ -128,6 +128,14 @@ impl crate::proto::helix_mind_server::HelixMind for HelixMindServiceImpl {
     async fn helix_craft(&self, request: Request<HelixCraftRequest>) -> Result<Response<HelixCraftResult>, Status> {
         super::layer3::handle_helix_craft(self, request).await
     }
+
+    async fn ana_wakeup(&self, request: Request<AnaWakeupRequest>) -> Result<Response<AnaWakeupResult>, Status> {
+        super::layer3::handle_ana_wakeup(self, request).await
+    }
+
+    async fn ana_wakeup_ack(&self, request: Request<AnaWakeupAckRequest>) -> Result<Response<AnaWakeupAckResult>, Status> {
+        super::layer3::handle_ana_wakeup_ack(self, request).await
+    }
     async fn federated_dag_share(&self, request: Request<FederatedDagShareRequest>) -> Result<Response<FederatedDagShareResponse>, Status> {
         super::layer3::handle_federated_share(self, request).await
     }

@@ -380,3 +380,48 @@ pub async fn handle_helix_craft(
 
     Ok(Response::new(response))
 }
+
+// P10d (ADR-0032): ana_wakeup ack — close or renew a claimed alarm.
+pub async fn handle_ana_wakeup_ack(
+    service: &HelixMindServiceImpl,
+    request: Request<AnaWakeupAckRequest>,
+) -> Result<Response<AnaWakeupAckResult>, Status> {
+    let req = request.into_inner();
+    let ok = super::alarm::ack_alarm(&service.storage, &req.claim_id, &req.status)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    Ok(Response::new(AnaWakeupAckResult {
+        success: ok,
+        message: if ok {
+            "alarm acknowledged".into()
+        } else {
+            "unknown claim or status".into()
+        },
+    }))
+}
+
+// P10d (ADR-0032): ana_wakeup — list due alarms (atomically claimed).
+pub async fn handle_ana_wakeup(
+    service: &HelixMindServiceImpl,
+    request: Request<AnaWakeupRequest>,
+) -> Result<Response<AnaWakeupResult>, Status> {
+    let req = request.into_inner();
+    let alarms = super::alarm::list_due_alarms(&service.storage, req.jitter_minutes)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+    let count = alarms.len() as u32;
+    let due = alarms
+        .into_iter()
+        .map(|a| AlarmDue {
+            job_id: a.job_id,
+            action: a.action,
+            due_at: a.due_at,
+            mode: a.mode,
+            claim_id: a.claim_id,
+        })
+        .collect();
+    Ok(Response::new(AnaWakeupResult {
+        alarms: due,
+        claimed: count,
+    }))
+}
