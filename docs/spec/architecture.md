@@ -26,7 +26,7 @@ Mind 的职责是给出基于当前知识的最佳认知输出。如果认知输
 
 **Mind 外包的功能**：
 - P2P 网络 → Rhizax
-- KV 缓存 → Helix-Callosum
+- KV 缓存 → lodestone L0/L1 投影
 - 本地推理 → Tuck
 - UI 渲染 → Cellrix
 - 意图解析 → CIS
@@ -38,7 +38,7 @@ Mind 的职责是给出基于当前知识的最佳认知输出。如果认知输
 **生态级极致复用原则**：
 - **工具说明书单源复用**：彻底消灭 Anaphase 本地的 YAML 工具配置。Tentacle 的 `.manifest.json` 是全生态唯一真理源。
 - **脑区推理硬件单核复用**：运行时 0-Token 寻路（SA-Core 纯数学矩阵乘法），只有 Anaphase 的 Think 阶段和 Mind 的睡眠管道被允许调用 LLM。
-- **已见熵过滤器索引复用**：Callosum 直接读取 Mind 内存拓扑层中的活跃 Node ID 列表生成布隆过滤器，无需任何数据库读写。
+- **已见熵过滤器索引复用**：Tentacle 本地 bloom（bloomfilter crate）维护活跃 Node ID 的布隆过滤器，无需任何数据库读写。
 - **小脑反射环沙箱复用**：彻底复用 Tentacle 的 WASM 运行时。Helix-Mind 在深睡期提炼的反射策略，输出为轻量 JSON/TOML 决策矩阵配置文件。
 - **记忆轨迹事件流溯源复用**：Anaphase 的 HXR 日志就是 Mind 的 L3 情景记忆，一份 JSONL，既是审计日志又是记忆档案。
 
@@ -53,7 +53,7 @@ Mind 内部模块边界清晰：
 | `absorption` | 吸收：Deep Dream 提炼 L2、隐私洗脱 |
 | `storage` | 存储：DAG 读写、索引更新、深冷归档 |
 | `forgetting` | 遗忘：Heat 衰减、隐性基因归档、突触切断 |
-| `recycling` | 复用：高频节点推送 Callosum 静态前缀池 |
+| `recycling` | 复用：高频节点构建 lodestone L0/L1 投影池 |
 | `reincarnation` | 轮回：生命周期管理、传承晶体生成 |
 
 ### 双态内存引擎

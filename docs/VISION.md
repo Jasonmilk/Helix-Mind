@@ -119,7 +119,7 @@ Helix-Mind 不是孤岛。它是 Helix 数字生命体的**认知中枢——相
 | Anaphase-Helix | https://github.com/Jasonmilk/Anaphase-Helix/tree/rs | Rust，活跃开发 |
 | Cellrix | https://github.com/Jasonmilk/Cellrix | Rust，活跃开发 |
 | Helix-Tentacle | https://github.com/Jasonmilk/Helix-Tentacle | Rust，活跃开发 |
-| Helix-Callosum | https://github.com/Jasonmilk/Helix-Callosum | Rust，待实现 |
+| Helix-Callosum | https://github.com/Jasonmilk/Helix-Callosum | ⚰️ 已归档 2026-09-06（DEPRECATE.md） |
 | Tuck | https://github.com/Jasonmilk/Tuck/tree/Tuck-beta | Python beta，规划 Rust 重构 |
 | FlowModus | https://github.com/Jasonmilk/FlowModus | 半成品，规划 Rust 重构 |
 

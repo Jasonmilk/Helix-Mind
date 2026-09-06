@@ -9,7 +9,7 @@
 
 Helix-Mind 是 Helix 的海马体——它的记忆中枢。
 
-Helix 是一个完整的数字生命体。Anaphase 是它的大脑皮层，Tentacle 是它的手脚，Callosum 是它的胼胝体，FlowModus 是它的决策回路。Helix-Mind 负责其中一件事：记忆。
+Helix 是一个完整的数字生命体。Anaphase 是它的大脑皮层，Tentacle 是它的手脚，lodestone 是它的知识形状（MD-DAG 投影），FlowModus 是它的决策回路。Helix-Mind 负责其中一件事：记忆。
 
 ---
 

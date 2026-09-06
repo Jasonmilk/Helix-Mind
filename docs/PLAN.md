@@ -61,7 +61,7 @@ P0-Pre → P9 全部于 2026-08-28 完成，详见阶段总览（第 2 节）。
 
 ### 1.7 下一阶段预览：P4 硬冻结兑现 + 生态接口
 - M-10 `activation_vector`（Append-Only 扩展，reserved 13 落地）
-- Mind→Callosum 调用契约文档（消费方，非实现）
+- Mind→lodestone 投影契约文档（消费方，非实现）
 - M-12 Rhizax 预留接口
 
 ---
@@ -76,7 +76,7 @@ P0-Pre → P9 全部于 2026-08-28 完成，详见阶段总览（第 2 节）。
 | P1 | 检索闭环（FTS5 trigram + 异步索引 + 注入防御 + 相态加权，ADR-0013） | ✅ 2026-08-28 |
 | P2 | 代谢闭环（a/b/c 拆分，无 LLM 起步，ADR-0014/0017） | ✅ 2026-08-28 |
 | P3 | 安全与契约（联邦审查、UDS SO_PEERCRED / 远程 mTLS、API/Health） | ✅ 2026-08-28 |
-| P4 | 硬冻结兑现 + 生态接口（activation_vector、Mind→Callosum 契约、Rhizax 预留） | ✅ 2026-08-28 |
+| P4 | 硬冻结兑现 + 生态接口（activation_vector、Mind→lodestone 投影契约、Rhizax 预留） | ✅ 2026-08-28 |
 | P4.5 | 架构审查点（ADR-0015 WAL 设计 + 原型，4 项产出） | ✅ 2026-08-28 |
 | P5 | 领域 WAL（独立日志 + 完整性校验 + 投影器 + replay） | ✅ 2026-08-28 |
 | P6 | 数据诚实 + 轮回 + 商业化（parquet 名实相符、多租户 WAL 分区） | ✅ 2026-08-28 |

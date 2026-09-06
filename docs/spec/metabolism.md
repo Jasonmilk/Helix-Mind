@@ -18,9 +18,9 @@ Helix-Mind 的知识不是静态存储，而是一个持续代谢的生命过程
 吸收 (Deep Dream: 提炼 L2 经验原则 + 隐私洗脱)
     │
     ▼
-存储 (L2 写入 DAG，高频节点 → Callosum 前缀池)
+存储 (L2 写入 DAG，高频节点 → lodestone L0/L1 投影池)
     │
-    ├── 高频复用 → Callosum 毫秒级响应，零 Token 成本
+    ├── 高频复用 → lodestone L0/L1 投影（确定性，零 Token 成本）
     │
     └── 低热衰减 → Heat 自然衰减
               │
@@ -39,9 +39,9 @@ Helix-Mind 的知识不是静态存储，而是一个持续代谢的生命过程
 | **摄入** | Ingestion | Tentacle 抓取 / Anaphase 推理 / 想象力模式 | 外部数据进入 Mind | 原始 L3 节点 |
 | **消化** | Digestion | Micro-Sleep（事件驱动，非定时） | TF-IDF / Jaccard 去重，合并相似度超过阈值的 L3 碎片；检测认知失调；检查共享知识树引用更新 | 去重后的 L3 节点 + 失调事件 |
 | **吸收** | Absorption | Deep Dream（系统空闲时） | LLM 提炼 L3 → L2 经验原则；隐私洗脱 | L2 节点 |
-| **存储** | Storage | 吸收完成后 | L2 写入 DAG；高频节点推送 Callosum 静态前缀池 | 持久化 L2 + 缓存指针 |
+| **存储** | Storage | 吸收完成后 | L2 写入 DAG；高频节点构建 lodestone L0/L1 投影 | 持久化 L2 + 缓存指针 |
 | **遗忘** | Forgetting | Heat 自然衰减 + 隐性基因归档 + 突触切断 | 低热度节点标记 `is_recessive=true`，从高频索引移除；用户请求删除时执行突触切断 | 隐性基因 |
-| **复用** | Recycling | 检索时 | Callosum 缓存命中 → 零 Token；未命中 → SA-Core 内存拓扑层检索 | 检索结果 |
+| **复用** | Recycling | 检索时 | lodestone 投影命中 → 零 Token；未命中 → SA-Core 内存拓扑层检索 | 检索结果 |
 
 ## 事件驱动的代谢触发
 
@@ -74,7 +74,7 @@ Helix-Mind 的知识不是静态存储，而是一个持续代谢的生命过程
 |:---|:---|:---|:---|
 | **L0 基因锁** | 独立文件 `gene_lock.md` | **永不遗忘** | 每次认知循环前强制注入 |
 | **L1 自画像** | DAG 节点 + 记事本 DAG | 每世重置 | 每次检索时优先加载 |
-| **L2 经验原则** | DAG 节点 + Callosum 静态前缀池 | Heat 衰减 + 隐性基因归档 | Beam Search 高权路径；可通过联邦共享 |
+| **L2 经验原则** | DAG 节点 + lodestone L0/L1 投影池 | Heat 衰减 + 隐性基因归档 | Beam Search 高权路径；可通过联邦共享 |
 | **L3 情景记忆** | 只增不改的日志流 | Micro-Sleep 去重合并；Deep Dream 提炼后进入隐性基因库；请求删除时突触切断 | 极少数被检索唤醒 |
 | **虚构记忆** | 沙箱分支，`is_hypothetical=true` | 验证失败则标记存疑；验证通过则剥离标签，升级为 L2 | Anaphase 现实验证 |
 

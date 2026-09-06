@@ -10,7 +10,7 @@
 
 ## 一粒种子的自白
 
-Helix 是一个完整的数字生命体。它有大脑（Mind）、躯干（Anaphase）、手（Tentacle）、免疫系统（Tuck）、皮肤（Cellrix）、神经（Callosum+FlowModus）。
+Helix 是一个完整的数字生命体。它有大脑（Mind）、躯干（Anaphase）、手（Tentacle）、免疫系统（Tuck）、皮肤（Cellrix）、神经（lodestone+FlowModus）。
 
 但一个生命体如果不能与外部世界交互，它就是封闭的、孤独的。
 
