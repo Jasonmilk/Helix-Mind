@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.55
+> **版本**：v1.56
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（驾驶舱真身——stdio 全栈共享装配 + WebUI 一键接入，全生态 1418 不变）
+> **最后更新**：2026-09-06（驾驶舱真对话——needs_input 文本输入 + 真实 LLM 回复，Cellrix 321，全生态 1420）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -41,7 +41,7 @@
 
 | # | 项目 | 分支 | 测试数 | 当前阶段 | 最后提交 | 状态 | 仓库 |
 |---|---|---|---|---|---|---|---|
-| 1 | **Cellrix** | rs2 | 319 | **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
+| 1 | **Cellrix** | rs2 | 321 | **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 316 | P0-P7 全部完成；P6-T5 Cellrix 状态流（StatusProvider，ADR-0003）已落地 | 2026-09-05 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
 | 3 | **Anaphase** | rs | 206 | P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（ADR-0023：记忆折叠注入 Reasoning——修复检索断裂 + 25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
@@ -52,7 +52,7 @@
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 | 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告）；Python v1.7 保留 main 分支 | 2026-09-06 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1418**（Cellrix 319 + Tuck 316 + Anaphase **206** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
+**全生态测试总数**：**1420**（Cellrix **321** + Tuck 316 + Anaphase **206** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.56** | **2026-09-06** | **驾驶舱真对话** — ①Anaphase manifest 暴露 `send_message`（参数声明 message: string）+ 投影 semantic_tree 增加 ActionButton（`needs_input: true` 声明式扩展，UI 零 manifest 知识）；②Cellrix UI 文本输入模式（Enter 打开输入/字符/退格/Enter 发送/Esc 取消）+ 回复渲染输入行；③`ANAPHASE_CONFIG` env 覆盖 config 路径（驾驶舱子进程任意 cwd 加载同一 config——此前相对路径在 Cellrix cwd 下 Noop 无 LLM，真实对话失败根因）；④**真实对话验证**：send_message 帧 → run_cycle → deepseek API 真实调用 → 回复"我是 DeepSeek 的 AI 助手..."（非 mock 非 Noop）；⑤Cellrix 319→**321**（+2 输入字段测试），Anaphase 206，全生态 **1420** |
 | **v1.55** | **2026-09-06** | **驾驶舱真身 + WebUI 一键接入** — ①Anaphase 装配提取为共享 `build_agent`：CI-144 stdio 驾驶舱与 HTTP daemon 复用同一装配（Mind gRPC + LLM 链 + Tentacle pipeline + rails + judge + mode），驾驶舱对话即真 Helix（此前 stdio 是精简 Noop）；②up 驾驶舱主 agent 换成 Anaphase 本体（`--exec "anaphase --mode stdio"`），mock-agent 回归 demo；③WebUI（cellrix-web :8080，WEB_PORT 覆盖）一键接入；④端点注入改进程级 set_var（MIND/TENTACLE/HELIX_CODEX 绝对路径），子进程一律继承；⑤codex 路径支持 HELIX_CODEX env 覆盖（任意 cwd 可装配 pipeline）；⑥Anaphase 206 全绿，stdio 握手 + 四端口冒烟真实通过 |
 | **v1.54** | **2026-09-06** | **up 全栈（Anaphase 206，全生态 1418）** — `up` 一键启动接入潜意识层：Mind（helix-mind-cli）自动装配（默认配置写入 `.helix/mind/`、gene_lock 取仓库 example、端口与 Tentacle 冲突自动 +1、缺失 fail-open）；`ANAPHASE_MIND_ENDPOINT` env 注入（12-factor）；真实三进程冒烟通过（Tentacle :50051 + Mind :50052 + Anaphase :50061 partner，snapshot 显示 mind/tentacle Available，events 白盒记录状态机迁移）；Anaphase 测试 205→**206**（+mind env override） |
 | **v1.53** | **2026-09-06** | **命名规范落地（Anaphase 94436a9）** — 测试文件阶段号→能力名：`m1_e2e_live`→`tentacle_live`、`m1_5_d4_live`→`plugin_live`、`m1_e2e`→`pipeline_e2e`、`p10_live`→`mind_live`；规则：能力词+层级词（trigger/integration/live），阶段代号不入名；测试数不变（Anaphase 205，全生态 1417） |
