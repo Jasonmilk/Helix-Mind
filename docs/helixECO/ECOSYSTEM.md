@@ -1,6 +1,6 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.35
+> **版本**：v1.36
 > **创建日期**：2026-08-30
 > **最后更新**：2026-09-06（**O-2 stage 事件总线 ADR-0019 落地**——过程白盒第四层，全生态 1292）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
@@ -50,7 +50,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：**1292**（Cellrix 319 + Tuck 316 + Anaphase 176 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292）
+**全生态测试总数**：**1296**（Cellrix 319 + Tuck 316 + Anaphase 180 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -276,7 +276,8 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
-| **v1.35** | **2026-09-06** | **Anaphase O-2 stage 事件总线（ADR-0019）**。过程白盒第四层：append-only 事件环（事件=过程，ledger=事实，evidence=支撑）+ 六 stage 边界插桩（stage1/2 Reasoning、stage3 execute_calls begin+per-call end、stage4 evidence、stage5/6 Reflection criteria+verdict）+ trace_id=派生 job_id（一次 cycle 一条 trace）+ `GET /v1/agent/events?after=N` 增量拉取（记录非控制流）+ events_cap 来自 codex contract。Anaphase 测试 169→176（+3 events 单元 +4 stage_events 集成），全生态 1285→**1292**。零新依赖（拒绝 OTel SDK/集中式后端）。⑧VISION.md v1.2 补"生态落地对照"（rails 0-token 引用 + 白盒四层 + 熟练 vs 硬铁轨同源）；Helix-Mind README 补生态同步行 |
+| **v1.36** | **2026-09-06** | **O-3 事件轨迹持久化（ADR-0020，Anaphase）** — ①`EventRing::from_jsonl`：round-trip 字节一致 / seq 跨重启接续 / 坏行失败关闭 / cap 强制（4 新单元测试）；②`events_log_path` 默认 `events.jsonl`（session_notes 先例，实时逐轮追加，崩溃最多丢在飞轮）；③main 装配恢复历史（fail-open）+ 主循环增量 flush；④白盒四层（能力/状态/过程/事实）全部可跨重启追溯；⑤Anaphase 176→**180**，全生态 1292→**1296**；⑥PLAN O-3/O-5 编号修正（事件持久化 = O-3，按需加载落点移 O-5） |
+| **v1.35** | **2026-09-06** | **Anaphase O-2 stage 事件总线（ADR-0019）**。过程白盒第四层：append-only 事件环（事件=过程，ledger=事实，evidence=支撑）+ 六 stage 边界插桩（stage1/2 Reasoning、stage3 execute_calls begin+per-call end、stage4 evidence、stage5/6 Reflection criteria+verdict）+ trace_id=派生 job_id（一次 cycle 一条 trace）+ `GET /v1/agent/events?after=N` 增量拉取（记录非控制流）+ events_cap 来自 codex contract。Anaphase 测试 169→176（+3 events 单元 +4 stage_events 集成），全生态 1285→**1296**。零新依赖（拒绝 OTel SDK/集中式后端）。⑧VISION.md v1.2 补"生态落地对照"（rails 0-token 引用 + 白盒四层 + 熟练 vs 硬铁轨同源）；Helix-Mind README 补生态同步行 |
 | **v1.34** | **2026-09-06** | **Rails 输出契约层 + MCP doctest 修复**。①Anaphase rails 输出契约层（ADR-0018）：rail 命中时 Reasoning 短路 LLM——回答 = assemble_rail_answer 确定性拼装（0 tokens、无编造空间、含节点 id + 原文逐字引用），e2e 断言 LLM 调用数=0；代码注释 ADR-XXXX 全部落定 ADR-0018；测试数 169 不变。②Helix-MCP-Learner doctest 修复：glove 模块文档示例引用 HelixECO-Glove 的 crate（非本仓依赖）→ 标 rust,ignore，套件全绿（50 单元 + doctests）。全生态 **1285** 不变 |
 | **v1.33** | **2026-09-06** | **Anaphase Rails 心智外铁轨（ADR-0018）**。人类知识 DAG（宪法/律法/SOP）只读引用铁轨：knowledge_base/rails/<kb>/ markdown + 确定性索引（SHA-256 版本冻结、断链即错）+ 铁轨导航（词项 + CJK bigram，无嵌入）+ 引用契约（原文引用 + visited check 验证器 + 引不到答 NO_RAIL_CONTENT）；RailScope 类型级只读；接线 MemoryRetrieval。Anaphase 测试 160→169；全生态合计物理核对重算：历史记录 1287 含累计误差（实为 1276，各仓库已逐仓核对），本轮后 **1285**（+9）。与熟练模式同源（心智内软铁轨 vs 心智外硬铁轨，硬度=错误的代价）|
 | **v1.32** | **2026-09-06** | **Cellrix 侧 CI-144 stdio 闭环（ADR-0017 跨仓库完成）**。①StdioTransport::send_action 落地（此前 NotImplemented）：untagged Incoming enum 单 reader 分发——AgentEvent 走事件流、ActionResponse 走专用响应通道，无帧竞争（确定性）；②cli --exec 生态启动约定（追加 `--mode stdio`）与 Anaphase 兼容（Anaphase main.rs 接受 `--stdio`/`--mode stdio` 双标志）；③真实 Anaphase 二进制三通道实测：manifest（CapabilityManifest{anaphase-helix}）/ snapshot（partner + 3 节点布局引擎消费）/ action（status + send_message 真实 run_cycle）；④新 live 测试 transport/tests/ci144_anaphase_live.rs（#[ignore]，ANAPHASE_BIN env）；⑤测试数不变：Cellrix 319 / Anaphase 160，全生态 1287 |
