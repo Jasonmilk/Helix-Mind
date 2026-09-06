@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.56
+> **版本**：v1.57
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（驾驶舱真对话——needs_input 文本输入 + 真实 LLM 回复，Cellrix 321，全生态 1420）
+> **最后更新**：2026-09-06（驾驶舱输入可发现——常驻输入框 + 三态反馈 + WebUI 连接诚实化，全生态 1420 不变）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.57** | **2026-09-06** | **驾驶舱输入可发现与反馈** — ①Cellrix TUI 底部常驻 3 行输入框（标题/输入/状态，独立带框）——不再隐藏动态行；②全局 Enter 聚焦（无按钮选中即打开输入），Enter 发送、Esc 退出（草稿保留）、发送后保持聚焦连续对话；③三态反馈：绿 ✓ 成功+回复 / 红 ✗ 失败+原因 / 蓝 Helix 回复——修复旧实现发送后回复行被裁掉的不可见 bug；④WebUI 连接诚实化：代理非 200/无快照时明确显示原因（根因：!snap 分支只更新 mode 未更新 sub，永远"连接中…"）；⑤实测：up 全栈 → send_message → deepseek API 完整多行回复；⑥Cellrix 321 不变，全生态 1420 |
 | **v1.56** | **2026-09-06** | **驾驶舱真对话** — ①Anaphase manifest 暴露 `send_message`（参数声明 message: string）+ 投影 semantic_tree 增加 ActionButton（`needs_input: true` 声明式扩展，UI 零 manifest 知识）；②Cellrix UI 文本输入模式（Enter 打开输入/字符/退格/Enter 发送/Esc 取消）+ 回复渲染输入行；③`ANAPHASE_CONFIG` env 覆盖 config 路径（驾驶舱子进程任意 cwd 加载同一 config——此前相对路径在 Cellrix cwd 下 Noop 无 LLM，真实对话失败根因）；④**真实对话验证**：send_message 帧 → run_cycle → deepseek API 真实调用 → 回复"我是 DeepSeek 的 AI 助手..."（非 mock 非 Noop）；⑤Cellrix 319→**321**（+2 输入字段测试），Anaphase 206，全生态 **1420** |
 | **v1.55** | **2026-09-06** | **驾驶舱真身 + WebUI 一键接入** — ①Anaphase 装配提取为共享 `build_agent`：CI-144 stdio 驾驶舱与 HTTP daemon 复用同一装配（Mind gRPC + LLM 链 + Tentacle pipeline + rails + judge + mode），驾驶舱对话即真 Helix（此前 stdio 是精简 Noop）；②up 驾驶舱主 agent 换成 Anaphase 本体（`--exec "anaphase --mode stdio"`），mock-agent 回归 demo；③WebUI（cellrix-web :8080，WEB_PORT 覆盖）一键接入；④端点注入改进程级 set_var（MIND/TENTACLE/HELIX_CODEX 绝对路径），子进程一律继承；⑤codex 路径支持 HELIX_CODEX env 覆盖（任意 cwd 可装配 pipeline）；⑥Anaphase 206 全绿，stdio 握手 + 四端口冒烟真实通过 |
 | **v1.54** | **2026-09-06** | **up 全栈（Anaphase 206，全生态 1418）** — `up` 一键启动接入潜意识层：Mind（helix-mind-cli）自动装配（默认配置写入 `.helix/mind/`、gene_lock 取仓库 example、端口与 Tentacle 冲突自动 +1、缺失 fail-open）；`ANAPHASE_MIND_ENDPOINT` env 注入（12-factor）；真实三进程冒烟通过（Tentacle :50051 + Mind :50052 + Anaphase :50061 partner，snapshot 显示 mind/tentacle Available，events 白盒记录状态机迁移）；Anaphase 测试 205→**206**（+mind env override） |
