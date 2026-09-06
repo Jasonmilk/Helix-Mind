@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.53
+> **版本**：v1.54
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（命名规范落地——Anaphase 测试文件全量改能力命名，全生态 1417 不变）
+> **最后更新**：2026-09-06（up 全栈接入潜意识层——Tentacle+Mind+Anaphase 三进程一键启动，真实见面冒烟通过，全生态 1418）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -43,7 +43,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 319 | **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 316 | P0-P7 全部完成；P6-T5 Cellrix 状态流（StatusProvider，ADR-0003）已落地 | 2026-09-05 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 205 | P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（ADR-0023：记忆折叠注入 Reasoning——修复检索断裂 + 25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
+| 3 | **Anaphase** | rs | 206 | P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（ADR-0023：记忆折叠注入 Reasoning——修复检索断裂 + 25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 113 | P0-P10 全部完成：P10a helix_craft 触发链路 + P10b synthesis→L1 策略落盘 + P10c Deep Dream 睡眠复盘 + P10d ana_wakeup 预约制闹钟（高峰拥挤保护，无心跳） | 2026-09-06 | ✅ P10 完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
@@ -52,7 +52,7 @@
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 | 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告）；Python v1.7 保留 main 分支 | 2026-09-06 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1417**（Cellrix 319 + Tuck 316 + Anaphase **205** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
+**全生态测试总数**：**1418**（Cellrix 319 + Tuck 316 + Anaphase **206** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.54** | **2026-09-06** | **up 全栈（Anaphase 206，全生态 1418）** — `up` 一键启动接入潜意识层：Mind（helix-mind-cli）自动装配（默认配置写入 `.helix/mind/`、gene_lock 取仓库 example、端口与 Tentacle 冲突自动 +1、缺失 fail-open）；`ANAPHASE_MIND_ENDPOINT` env 注入（12-factor）；真实三进程冒烟通过（Tentacle :50051 + Mind :50052 + Anaphase :50061 partner，snapshot 显示 mind/tentacle Available，events 白盒记录状态机迁移）；Anaphase 测试 205→**206**（+mind env override） |
 | **v1.53** | **2026-09-06** | **命名规范落地（Anaphase 94436a9）** — 测试文件阶段号→能力名：`m1_e2e_live`→`tentacle_live`、`m1_5_d4_live`→`plugin_live`、`m1_e2e`→`pipeline_e2e`、`p10_live`→`mind_live`；规则：能力词+层级词（trigger/integration/live），阶段代号不入名；测试数不变（Anaphase 205，全生态 1417） |
 | **v1.52** | **2026-09-06** | **P10 收尾** — Anaphase gRPC 级闭环补齐（mind_integration +3：craft/wakeup+ack/consolidate 走真实 wire）+ **tests/mind_live.rs**（真实 helix-mind-cli 二进制全链路 live 联调，物理验证通过，`--ignored` 手动运行）；Anaphase 测试 202→**205** + 1 live；全生态 1414→**1417**；README 增 P10 live 运行段；ECOSYSTEM 更新（Anaphase 行 205） |
 | **v1.51** | **2026-09-06** | **P10d 预约制闹钟全栈完成** — Anaphase 唤醒侧接线（47ec05d）：proto 客户端同步 + MemoryAdapter wakeup/wakeup_ack/consolidate 默认降级 + GrpcMindAdapter 实现 + run_cycle 入口 check_wakeup（白名单 action → consolidate 链 → ack done；未知/失败 → ack done 释放永不死锁；不可用 → 静默跳过）+ RunCycleConfig 三字段（enabled/jitter 60/actions [hibernate]，serde default 保旧 TOML）；Anaphase 测试 198→**202**（+4 wakeup 套件）；全生态 1410→**1414**；ECOSYSTEM 更新（Anaphase 行 202） |
