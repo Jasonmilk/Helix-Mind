@@ -144,11 +144,26 @@ pub async fn handle_helix_consolidate(
             true
         }
         "hibernate" => {
+            // P10c (ADR-0031 D3): Deep Dream chain — forget cold L3 first,
+            // then review L1 strategy coverage and adapt the mutation rate
+            // (deterministic, 0 tokens). Review failure degrades the pass,
+            // never the forget path (physical facts first).
             service
                 .metabolism
                 .trigger_hibernate()
                 .await
                 .map_err(|e| Status::internal(e.to_string()))?;
+            let report = super::sleep_review::run_sleep_review(&service.storage)
+                .await
+                .map_err(|e| Status::internal(e.to_string()))?;
+            tracing::info!(
+                "[consolidate:hibernate] sleep review: compared={} legacy={} review={} verdict={:?} rate={:.4}",
+                report.compared,
+                report.legacy_coverage,
+                report.review_coverage,
+                report.verdict,
+                report.mutation_rate,
+            );
             true
         }
         _ => return Err(Status::invalid_argument("Invalid consolidation type")),

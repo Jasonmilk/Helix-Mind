@@ -55,6 +55,17 @@ impl AdaptiveMutation {
         }
     }
 
+    /// Deterministically rebuild state from persisted values (P10c,
+    /// ADR-0031 D3): sleep review restores the mutation rate / EMA across
+    /// restarts. Caller validates ranges; values are clamped defensively.
+    pub fn restore(mutation_rate: f64, ema_success: f64, config: MutationConfig) -> Self {
+        Self {
+            mutation_rate: mutation_rate.clamp(config.min_rate, config.max_rate),
+            ema_success: ema_success.clamp(0.0, 1.0),
+            config,
+        }
+    }
+
     /// ε-Greedy 决策：给定均匀随机数 rng ∈ [0,1)，是否探索（尝试非熟练路径）。
     ///
     /// 调用方传入确定性/伪随机数（测试可注入，生产可用固定步长避免非确定性）。

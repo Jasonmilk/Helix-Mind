@@ -17,6 +17,6 @@ pub mod value;
 pub use converge::converge_hegelian;
 pub use craft::{CognitiveCraft, CraftConfig, CraftInput, CraftResult, Mode, Process, ProcessStep};
 pub use gate::{system0_gate, system0_gate_enhanced, GateDecision, GateSignals};
-pub use mutation::AdaptiveMutation;
-pub use review::{ReviewVerdict, SleepReview};
+pub use mutation::{AdaptiveMutation, MutationConfig};
+pub use review::{ReviewConfig, ReviewVerdict, SleepReview};
 pub use value::{ValueAssessor, ValueGrade};
