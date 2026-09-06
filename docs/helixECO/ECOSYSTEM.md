@@ -1,6 +1,6 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.39
+> **版本**：v1.40
 > **创建日期**：2026-08-30
 > **最后更新**：2026-09-06（**O-2 stage 事件总线 ADR-0019 落地**——过程白盒第四层，全生态 1292）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
@@ -42,7 +42,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 319 | **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 316 | P0-P7 全部完成；P6-T5 Cellrix 状态流（StatusProvider，ADR-0003）已落地 | 2026-09-05 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 183 | O-4 认知工艺触发接线验证完成（ADR-0022：伙伴模式触发链 wire-layer 验证 + Drive 零接触回归守卫 + MindConfig 零硬编码收口）；O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
+| 3 | **Anaphase** | rs | 189 | O-5 按需认知注入完成（ADR-0023：记忆折叠注入 Reasoning——修复检索断裂 + 25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 98 | P0-P9 全部完成，P10 准备完成（认知工艺与生态深度集成） | 2026-08-31 | 🚧 P10 待启动 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
@@ -50,7 +50,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：**1299**（Cellrix 319 + Tuck 316 + Anaphase 183 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.39 Anaphase 183 → 全生态 1299）
+**全生态测试总数**：**1305**（Cellrix 319 + Tuck 316 + Anaphase 189 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.40 Anaphase 189 → 全生态 1305）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -276,6 +276,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.40** | **2026-09-06** | **O-5 按需认知注入（ADR-0023，Anaphase）** — ①探查确认记忆检索断裂：memory_nodes 存 context 但从未注入 LLM（检索白做）→ 修复：折叠注入 Reasoning prompt（join + 预算截断 + 显式折叠标记）；②`memory_inject_chars`（`[anaphase]`，协议默认 800）单一来源，0=纯无状态（legacy 兼容）；③25 轮上下文近零增长验收（注入量预算封顶与轮数无关，+6 测试）；④演示输入来源化：`--input` > `smoke_input` config > 协议默认 const（0 硬编码）；⑤窗口 L0 诚实标注：无对话入口（数据源缺失），切片待 UI 会话层接入，不伪造缓冲；⑥Anaphase 183→**189**，全生态 1299→**1305** |
 | **v1.39** | **2026-09-06** | **O-4 认知工艺触发接线验证 + MindConfig 零硬编码收口（ADR-0022，Anaphase）** — ①探查确认触发链代码早已存在（ADR-0001）但从未跑通真实 gRPC：复用既有 mock Mind（mind_integration.rs）+ p11b 闭环（不重复建设，common 临时 MockMind 已回滚）；②T3 回归守卫：驾驶模式（Noop 装配）下 Mind 零接触——模式门=装配，零运行时分支；③mind.rs 12 处无来源字面量（EnergyContext 数值/推导阈值/探针回退/探索关键词）→ MindConfig（`[anaphase.mind]` 可覆盖）单一来源收口，grep 仅剩 heliotropism=0.0（注释声明派生）；④`GrpcMindAdapter::new(endpoint, config)` 签名变更（8 处调用点）；⑤Anaphase 182→**183**，全生态 1298→**1299** |
 | **v1.38** | **2026-09-06** | **ADR-0021 时钟复用修正（Anaphase）** — ①审查发现 cycle 级事件初版用墙钟（`Utc::now`），违背极致复用（ledger 已有 `Clock` trait）与确定性优先（黑匣子不可回放）；②修正：`AgentLoop.clock`（默认 SystemClock）+ `with_clock`，cycle ts = `unix_secs_to_rfc3339(clock.now())`——与 stage/ledger 同一时间源；③FakeClock 下黑匣子字节级可回放（+1 测试 `black_box_replays_byte_identical_under_fake_clock`）；④Anaphase 181→**182**，全生态 1297→**1298** |
 | **v1.37** | **2026-09-06** | **ADR-0021 模式无关事件环（Anaphase）** — ①事件环从 pipeline 提升 AgentLoop 级：驾驶模式（无 tentacle/Noop 装配）每次 run_cycle 也记录 cycle 黑匣子（stage=0：begin/state/tool/end，trace=derive_job_id）；②pipeline 装配复用同一环（stage 1..=6 同流同游标），一个 `?after=` 拉全部；③flush/恢复挂载点改 agent.events（驾驶模式同样持久化跨重启可回放）；④ts 分权：cycle=墙钟审计真值，stage/ledger=FakeClock 回放契约；⑤物理验证：无 tentacle 二进制 → events.jsonl 7 条 stage=0 事件；⑥Anaphase 180→**181**，全生态 1296→**1298**；⑦白盒四层模式无关（驾驶=黑匣子，伙伴=黑匣子+六 stage） |
