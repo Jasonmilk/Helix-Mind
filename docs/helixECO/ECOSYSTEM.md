@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.52
+> **版本**：v1.53
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（P10 收尾完成——gRPC 级闭环 + 真实 Mind 二进制 live 物理验证，全生态 1417）
+> **最后更新**：2026-09-06（命名规范落地——Anaphase 测试文件全量改能力命名，全生态 1417 不变）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.53** | **2026-09-06** | **命名规范落地（Anaphase 94436a9）** — 测试文件阶段号→能力名：`m1_e2e_live`→`tentacle_live`、`m1_5_d4_live`→`plugin_live`、`m1_e2e`→`pipeline_e2e`、`p10_live`→`mind_live`；规则：能力词+层级词（trigger/integration/live），阶段代号不入名；测试数不变（Anaphase 205，全生态 1417） |
 | **v1.52** | **2026-09-06** | **P10 收尾** — Anaphase gRPC 级闭环补齐（mind_integration +3：craft/wakeup+ack/consolidate 走真实 wire）+ **tests/mind_live.rs**（真实 helix-mind-cli 二进制全链路 live 联调，物理验证通过，`--ignored` 手动运行）；Anaphase 测试 202→**205** + 1 live；全生态 1414→**1417**；README 增 P10 live 运行段；ECOSYSTEM 更新（Anaphase 行 205） |
 | **v1.51** | **2026-09-06** | **P10d 预约制闹钟全栈完成** — Anaphase 唤醒侧接线（47ec05d）：proto 客户端同步 + MemoryAdapter wakeup/wakeup_ack/consolidate 默认降级 + GrpcMindAdapter 实现 + run_cycle 入口 check_wakeup（白名单 action → consolidate 链 → ack done；未知/失败 → ack done 释放永不死锁；不可用 → 静默跳过）+ RunCycleConfig 三字段（enabled/jitter 60/actions [hibernate]，serde default 保旧 TOML）；Anaphase 测试 198→**202**（+4 wakeup 套件）；全生态 1410→**1414**；ECOSYSTEM 更新（Anaphase 行 202） |
 | **v1.50** | **2026-09-06** | **P10d 预约制闹钟完成** — ①ana_wakeup RPC（列出到期 + 原子认领防重入）+ ana_wakeup_ack（done 关闭 / renewed 从原 due 续约防漂移，幂等）；②双档到期：punctual（Helix 预约准点）/ jittered（Ana 唤醒弹性窗口 [due±m]，m 来自调用方 config 默认 60，0=关闭）——高峰拥挤保护无随机无定时器；③预约 = L2 节点（provenance `alarm#{job_id}`，name-based 确定性 id），复用 storage 零新存储；④无心跳铁律保持（Mind 永不主动执行，Anaphase 持有时钟）；⑤Helix-Mind 测试 107→**113**（+6 ana_wakeup 套件）；⑥全生态 1404→**1410**；⑦ADR-0032 Accepted、PLAN v6.5、GROWTH v1.7（P10d + 归档）、README（113） |
