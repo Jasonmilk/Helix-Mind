@@ -49,8 +49,9 @@
 | 7 | **HelixECO-Glove** | main | 45 | P4-T1 完成（L1 静态审查 9 条规则），P4-T2 预览 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/HelixECO-Glove](https://github.com/Jasonmilk/HelixECO-Glove) |
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
+| 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告）；Python v1.7 保留 main 分支 | 2026-09-06 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1311**（Cellrix 319 + Tuck 316 + Anaphase 195 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
+**全生态测试总数**：**1394**（Cellrix 319 + Tuck 316 + Anaphase 195 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -240,6 +241,13 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 - [README.md](../../BIND-19/README.md) — 项目说明
 - [规范目录](../../BIND-19/docs/spec/) — PFP/SAP 规范权威来源
 
+### FlowModus
+- [README.md](../../FlowModus/README.md) — 项目说明（rs 重构段含 CLI 用法）
+- [VISION.md](../../FlowModus/docs/VISION.md) — 度量衡宣言（v2.0-rs）
+- [PLAN.md](../../FlowModus/docs/PLAN.md) — 开发导航牌（R-0..R-6 全 ✅）
+- [ADR-0100](../../FlowModus/docs/decisions/ADR-0100-rs-refactor.md) — rs 重构决策记录
+- [judge-points contract](../../FlowModus/docs/engineering-manual/judge-points-contract.md) — 判断点契约（v1.1，Anaphase 消费方已就绪 O-6）
+
 ### phyt-DNA
 - [README.md](../../phyt-DNA/README.md) — 方法论说明
 - [DNA.md](../../phyt-DNA/docs/DNA.md) — 方法论宪法
@@ -276,6 +284,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.42** | **2026-09-06** | **FlowModus rs 重构收口 + 生态入库** — ①FlowModus rs 分支 R-1..R-6 全部完成（83 测试全绿，clippy 零警告）：五层确定性管线（STE/注册表/偏移量/成本/过滤/评分熵路由）、三调用模式（Manual 直连 / Group 优先级+确定性权重采样 / Auto 全五层，Python Group stub 真实落地）、控制面（canonicalizer 补 Unicode NFC 协议缺口 / Ed25519 单键+M-of-N 验签 / anti-corruption 白名单 fail-closed）、寄生遥测（零探测铁律 0，补齐 Python 无生产者的失败冷却 DEGRADED→TERMINAL）、judge-points 契约 v1.1 Rules 后端（JP-1/JP-2 确定性 0 tokens，Anaphase O-6 消费侧已就绪）；②CLI 真实可用（`flowmodus judge/measure/verify`，真机 smoke 全通）；③全生态测试总数 1311→**1394**（+FlowModus 83）；④协议 Apache 2.0 双分支（main/rs） |
 | **v1.41** | **2026-09-06** | **O-6 判断点后端可配化（ADR-0024，Anaphase）** — ①用户务实修正编排哲学：0 tokens 是默认通道不是教条，3B 级小 LLM 判断 ROI 足够高时可用（固化 HANDOFF §1.3）；②新建 `src/judge.rs`：Judge trait（全后端必返回 1/2/3）+ RulesJudge（阈值来自 MindConfig，删除 assess_complexity 残留 10/40 字面量——0 硬编码收口）+ SmallLlmJudge（OpenAI 兼容 3B 端点，任何失败回退 Rules）；③config `judge_backend`/`judge_endpoint`/`judge_model`；④judge-points contract v1.0-draft 入 FlowModus docs（JP-1/JP-2 规格，显式选后端，不做 Auto Router）；⑤Anaphase 189→**195**，全生态 1305→**1311** |
 | **v1.40** | **2026-09-06** | **O-5 按需认知注入（ADR-0023，Anaphase）** — ①探查确认记忆检索断裂：memory_nodes 存 context 但从未注入 LLM（检索白做）→ 修复：折叠注入 Reasoning prompt（join + 预算截断 + 显式折叠标记）；②`memory_inject_chars`（`[anaphase]`，协议默认 800）单一来源，0=纯无状态（legacy 兼容）；③25 轮上下文近零增长验收（注入量预算封顶与轮数无关，+6 测试）；④演示输入来源化：`--input` > `smoke_input` config > 协议默认 const（0 硬编码）；⑤窗口 L0 诚实标注：无对话入口（数据源缺失），切片待 UI 会话层接入，不伪造缓冲；⑥Anaphase 183→**189**，全生态 1299→**1305** |
 | **v1.39** | **2026-09-06** | **O-4 认知工艺触发接线验证 + MindConfig 零硬编码收口（ADR-0022，Anaphase）** — ①探查确认触发链代码早已存在（ADR-0001）但从未跑通真实 gRPC：复用既有 mock Mind（mind_integration.rs）+ p11b 闭环（不重复建设，common 临时 MockMind 已回滚）；②T3 回归守卫：驾驶模式（Noop 装配）下 Mind 零接触——模式门=装配，零运行时分支；③mind.rs 12 处无来源字面量（EnergyContext 数值/推导阈值/探针回退/探索关键词）→ MindConfig（`[anaphase.mind]` 可覆盖）单一来源收口，grep 仅剩 heliotropism=0.0（注释声明派生）；④`GrpcMindAdapter::new(endpoint, config)` 签名变更（8 处调用点）；⑤Anaphase 182→**183**，全生态 1298→**1299** |
