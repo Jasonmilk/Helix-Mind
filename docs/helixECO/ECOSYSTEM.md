@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.33
+> **版本**：v1.34
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-06（**Anaphase Rails 心智外铁轨 ADR-0018 落地**——人类知识 DAG 只读引用；全生态合计物理核对 1285）
+> **最后更新**：2026-09-06（**Rails 输出契约层 + MCP doctest 修复**——rail 命中 0-token 原文引用回答；全生态 1285）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -50,7 +50,7 @@
 | 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 定稿生效 | 2026-08-29 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 
-**全生态测试总数**：**1285**（Cellrix 319 + Tuck 316 + Anaphase 169 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169 后为 1285。MCP 另有 1 doctest 失败待修）
+**全生态测试总数**：**1285**（Cellrix 319 + Tuck 316 + Anaphase 169 + BIND-19 142 + Helix-Mind 98 + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169 后为 1285）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -276,7 +276,8 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
-| **v1.33** | **2026-09-06** | **Anaphase Rails 心智外铁轨（ADR-0018）**。人类知识 DAG（宪法/律法/SOP）只读引用铁轨：knowledge_base/rails/<kb>/ markdown + 确定性索引（SHA-256 版本冻结、断链即错）+ 铁轨导航（词项 + CJK bigram，无嵌入）+ 引用契约（原文引用 + visited check 验证器 + 引不到答 NO_RAIL_CONTENT）；RailScope 类型级只读；接线 MemoryRetrieval。Anaphase 测试 160→169；全生态合计物理核对重算：历史记录 1287 含累计误差（实为 1276，各仓库已逐仓核对），本轮后 **1285**（+9）。MCP 另有 1 doctest 失败待修（非阻塞）。与熟练模式同源（心智内软铁轨 vs 心智外硬铁轨，硬度=错误的代价）|
+| **v1.34** | **2026-09-06** | **Rails 输出契约层 + MCP doctest 修复**。①Anaphase rails 输出契约层（ADR-0018）：rail 命中时 Reasoning 短路 LLM——回答 = assemble_rail_answer 确定性拼装（0 tokens、无编造空间、含节点 id + 原文逐字引用），e2e 断言 LLM 调用数=0；代码注释 ADR-XXXX 全部落定 ADR-0018；测试数 169 不变。②Helix-MCP-Learner doctest 修复：glove 模块文档示例引用 HelixECO-Glove 的 crate（非本仓依赖）→ 标 rust,ignore，套件全绿（50 单元 + doctests）。全生态 **1285** 不变 |
+| **v1.33** | **2026-09-06** | **Anaphase Rails 心智外铁轨（ADR-0018）**。人类知识 DAG（宪法/律法/SOP）只读引用铁轨：knowledge_base/rails/<kb>/ markdown + 确定性索引（SHA-256 版本冻结、断链即错）+ 铁轨导航（词项 + CJK bigram，无嵌入）+ 引用契约（原文引用 + visited check 验证器 + 引不到答 NO_RAIL_CONTENT）；RailScope 类型级只读；接线 MemoryRetrieval。Anaphase 测试 160→169；全生态合计物理核对重算：历史记录 1287 含累计误差（实为 1276，各仓库已逐仓核对），本轮后 **1285**（+9）。与熟练模式同源（心智内软铁轨 vs 心智外硬铁轨，硬度=错误的代价）|
 | **v1.32** | **2026-09-06** | **Cellrix 侧 CI-144 stdio 闭环（ADR-0017 跨仓库完成）**。①StdioTransport::send_action 落地（此前 NotImplemented）：untagged Incoming enum 单 reader 分发——AgentEvent 走事件流、ActionResponse 走专用响应通道，无帧竞争（确定性）；②cli --exec 生态启动约定（追加 `--mode stdio`）与 Anaphase 兼容（Anaphase main.rs 接受 `--stdio`/`--mode stdio` 双标志）；③真实 Anaphase 二进制三通道实测：manifest（CapabilityManifest{anaphase-helix}）/ snapshot（partner + 3 节点布局引擎消费）/ action（status + send_message 真实 run_cycle）；④新 live 测试 transport/tests/ci144_anaphase_live.rs（#[ignore]，ANAPHASE_BIN env）；⑤测试数不变：Cellrix 319 / Anaphase 160，全生态 1287 |
 | **v1.31** | **2026-09-06** | **Anaphase CI-144 传输层落地（ADR-0017，驾驶舱闭环咽喉）**。①--stdio 从 JSON-lines 临时协议切换为 CIB/1.0 MessagePack：握手首行 → LE u32 长度前缀帧 → Manifest 首帧 → 1s 节律 Snapshot 推流（SNAPSHOT_PUSH_INTERVAL，config 可调不硬编码）→ ActionRequest/Response；②协议类型 vendored 到 src/ci144/（serde 逐字段对齐 Cellrix，tag/content/snake_case/开放枚举降级），不跨仓库依赖（极致解耦）；③协议层业务无关：run_loop(reader, writer, snapshot, handle_action, interval) 注入回调，launcher 挂 status/send_message（真实 run_cycle，cap 尊重 cycle_cap）；④select 单任务事件循环（biased 确定性，无 spawn/Send 体操）；⑤测试 154→160（+6：握手 x2/帧往返/投影形状/vendored serde 形状/duplex 全协议会话）+ live 实测（tests/ci144_live.rs #[ignore]：真实二进制全链路握手→Manifest→Snapshot→status→send_message→unknown→EOF 退出）；⑥全生态 1281→1287 |
 | **v1.30** | **2026-09-06** | **Cellrix 驾驶舱 P0 落地 + 0 warnings 收敛**。①cellrix-web（ADR-0014 G2）实测通过：Anaphase :50061 snapshot → :8080 代理，mode/state/episode/ledger/ecosystem 渲染 + 2s 轮询；②Cellrix 全 workspace 0 warnings（RiskLevel 三域歧义显式路径化、transport 死 import 清理、ui 组件库预留标注）；③测试 307→319（workspace 实测，含 G2 面板与 up 入口测试）；④全生态 1269→1281 |
