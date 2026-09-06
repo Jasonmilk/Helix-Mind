@@ -50,27 +50,22 @@ CI-144 v2.0 协议规范升级计划通过完整审查（原 8 项前置必填 +
 ### 状态
 🧬 待提交（用户确认后 push）
 ---
-
-## [2026-08-28] 完成：P8 认知工艺 Phase 2 — 编排器最小原型
+## [2026-09-06] 完成：P10a 认知工艺触发链路（helix_craft RPC + Anaphase 按需触发）
 
 ### 触发条件
-P7 认知工艺 Phase 1 定稿（ADR-0021 Active）后，用户授权 Phase 2 编码（编排器最小原型，DeterministicAdapter 闭环验证编排逻辑）。
+P10 任务书定稿（ADR-0031 Accepted，2026-09-06 用户确认）后开工；P10-0 零硬编码收口完成（trace_id 确定性化、阈值进配置、去 uuid）。
 
 ### 变更性质
-- **新 crate `helix-mind-cognitive`**（认知工艺编排器，Mind 核心域）
-- **System 0 门控**（`gate.rs`，B2）：规则匹配（触发关键词 + 长度阈值）+ 用户意图标签（显式深入跳过门控），0 Token；FTS5 bm25 相关度留 Phase 3（GateSignal 接口预留）
-- **编排器**（`craft.rs`，B1）：`CognitiveCraft`——熔断（步骤数 1..=5 / 单步超时 30s / Token 预算 EnergyExhausted）→ 独立会话执行（每步仅注入 MSC=原始输入+工序Prompt+全局约束，不横向引用草稿 → 会话隔离）→ 根 trace_id 生成（全息留痕，子工序共享）→ 黑格尔确定性收敛
-- **工序 × 模式**：5 工序（结构性/批判性/创造性/情境/元批判）× 3 模式（熟练/锚定/想象力）；工序执行经 ADR-0017 CognitiveService 注入（生产默认 DeterministicAdapter，0 Token；Remote 仅 debug_direct）
-- **收敛**（`converge.rs`，R1）：确定性合题——正题（非批判输出）+ 反题（批判输出）→ 条件化命题"当且仅当风险被排除"
-- **执行边界锁死**：编排器零 LLM 直连，全部经 CognitiveService trait（Z2 延续）
+- **helix_craft RPC**（P10a-T1/T2，`8c15a4f`）：Mind 新增独立编排 RPC（检索/编排解耦，D1）——`HelixCraftRequest/Result` + `ProcessStep/StepOutput`；server 携带 `Arc<CognitiveCraft>`；handler 做 wire 字符串 → 认知 Process/Mode 转换（未知值 fail-closed）；确定性 trace_id `craft#{job_id}`（去 uuid）；traceparent 透传（P3c 规则，Mind 不是 trace 根）；value_grade 诚实留空（P10b 填充）；cli 以 DeterministicAdapter（0 token）装配，B1 保持（编排不直连 LLM）
+- **Anaphase 触发点**（P10a-T3，`db07c5b`）：proto 客户端同步；`MemoryAdapter.craft()` 默认方法（Err=不可用，Noop 零改动静默降级）；`GrpcMindAdapter.craft()` 调 helix_craft——工序集/约束来自 MindConfig（协议默认，DNA 原则 11），循环只问"要不要想"、adapter 决定"怎么想"（按需驱动）；run_cycle MemoryRetrieval 阶段对非结构化输入触发（确定性 job_id），Reasoning 阶段以 `[think-first]` 折入 synthesis（0 token 思考先于 LLM tokens）
+- **测试**：Mind +3 集成（确定性 trace+synth / 跨调用字节级一致 / fail-closed）；Anaphase +3（触发+注入 / 结构化跳过 / Noop 降级）
 
 ### 兼容性
-- 新 crate，零既有代码改动；硬冻结契约零变更
-- 依赖 helix-mind-metabolism（CognitiveService trait 消费方，无循环依赖）
+helix_query 语义零改动（向后兼容）；现有 195+98 测试零改动全绿；Noop/默认适配器无需实现 craft。
 
 ### 验收
-`cargo test --workspace` 全绿（新增 cognitive 单元 12 + 集成 4，workspace 总 86，0 warning）｜ 门控：简单跳过/复杂触发/显式标签优先 ✅ ｜ 编排闭环：结构+批判+创造三工序收敛出条件化命题 ✅ ｜ 熔断：步骤超限 / 超时(慢执行器) / 预算耗尽 三路全断 ✅ ｜ 会话隔离：批判会话不引用结构草稿 ✅
+Mind workspace 101 全绿 0 warning（`8c15a4f`）；Anaphase 198 全绿 0 warning（`db07c5b`）；跨仓库闭环：Anaphase 触发 → Mind helix_craft → CognitiveCraft orchestrate → 0 token synthesis → 注入 reasoning prompt。
 
 ### 状态
-🧬 待提交（用户确认后 push）
+✅ 已推送（Mind rs-dev / Anaphase rs）
 ---
