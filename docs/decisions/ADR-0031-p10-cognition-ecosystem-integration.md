@@ -1,6 +1,6 @@
 # ADR-0031: P10 认知工艺生态深度集成（触发链路 / L1 策略持久化 / Deep Dream 挂载）
 
-- **状态**: Proposed
+- **状态**: Accepted（2026-09-06 用户确认）
 - **日期**: 2026-09-06
 - **决策范围**: Helix-Mind（认知工艺 crate + API crate + 代谢 crate）/ Anaphase（触发链路）
 - **关联**: ADR-0021（认知工艺）、ADR-0022（O-4 Mind-craft 参数）、ADR-0016（确定性优先）、ADR-0010（EnergyContext / budget_tier）、ADR-0006（领域 WAL）

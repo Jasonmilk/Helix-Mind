@@ -963,6 +963,7 @@ name = "helix-mind-api"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "helix-mind-cognitive",
  "helix-mind-core",
  "helix-mind-federation",
  "helix-mind-metabolism",
@@ -991,6 +992,7 @@ dependencies = [
  "chrono",
  "clap",
  "helix-mind-api",
+ "helix-mind-cognitive",
  "helix-mind-core",
  "helix-mind-federation",
  "helix-mind-metabolism",

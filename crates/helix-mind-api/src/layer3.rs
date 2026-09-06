@@ -259,3 +259,72 @@ pub async fn handle_sync_human_view(
         conflicts,
     }))
 }
+
+/// P10 (ADR-0031): cognitive craft — Anaphase-triggered orchestration.
+///
+/// Retrieval (helix_query) and orchestration (helix_craft) stay decoupled:
+/// this handler maps the wire request onto the cognitive crate's
+/// `CognitiveCraft` and returns the orchestration result. Deterministic
+/// trace_id (`craft#{job_id}`) comes from the caller's job id, never a UUID.
+pub async fn handle_helix_craft(
+    service: &HelixMindServiceImpl,
+    request: Request<HelixCraftRequest>,
+) -> Result<Response<HelixCraftResult>, Status> {
+    use helix_mind_cognitive::{CraftInput, Process, ProcessStep, Mode};
+
+    let req = request.into_inner();
+
+    // Parse process+mode pairs; unknown values rejected (fail-closed).
+    let mut steps = Vec::with_capacity(req.steps.len());
+    for s in &req.steps {
+        let process = match s.process.as_str() {
+            "structural" => Process::Structural,
+            "critical" => Process::Critical,
+            "creative" => Process::Creative,
+            "situational" => Process::Situational,
+            "meta_critical" => Process::MetaCritical,
+            other => return Err(Status::invalid_argument(format!("Unknown process: {other}"))),
+        };
+        let mode = match s.mode.as_str() {
+            "skilled" => Mode::Skilled,
+            "anchored" => Mode::Anchored,
+            "imaginative" => Mode::Imaginative,
+            other => return Err(Status::invalid_argument(format!("Unknown mode: {other}"))),
+        };
+        steps.push(ProcessStep::new(process, mode));
+    }
+
+    let input = CraftInput {
+        query: req.query,
+        steps,
+        global_constraints: req.global_constraints,
+        job_id: req.job_id,
+    };
+
+    let result = service
+        .cognitive
+        .orchestrate(input)
+        .await
+        .map_err(|e| Status::internal(e.to_string()))?;
+
+    let response = HelixCraftResult {
+        trace_id: result.trace_id,
+        steps: result
+            .steps
+            .into_iter()
+            .map(|o| StepOutput {
+                process: format!("{:?}", o.process).to_ascii_lowercase(),
+                content: o.content,
+            })
+            .collect(),
+        synthesis: result.synthesis,
+        // P10b populates value_grade (ValueAssessor); empty until then (honest).
+        value_grade: String::new(),
+        tokens_consumed: 0,
+        // P3c (ADR-0020): traceparent pass-through — echo the request value,
+        // never generate. Empty in → empty out (Mind is not the trace root).
+        traceparent: req.traceparent.clone(),
+    };
+
+    Ok(Response::new(response))
+}

@@ -3,6 +3,7 @@ use helix_mind_core::config::Config;
 use helix_mind_storage::StorageEngine;
 use helix_mind_retrieval::RetrievalEngine;
 use helix_mind_metabolism::MetabolismEngine;
+use helix_mind_cognitive::CognitiveCraft;
 use helix_mind_federation::FederationEngine;
 use helix_mind_reincarnation::ReincarnationEngine;
 use crate::proto::helix_mind_server::HelixMindServer;
@@ -18,6 +19,7 @@ pub struct HelixMindServiceImpl {
     pub metabolism: Arc<MetabolismEngine>,
     pub federation: Arc<FederationEngine>,
     pub reincarnation: Arc<ReincarnationEngine>,
+    pub cognitive: Arc<CognitiveCraft>,
 }
 
 impl HelixMindServiceImpl {
@@ -28,6 +30,7 @@ impl HelixMindServiceImpl {
         metabolism: Arc<MetabolismEngine>,
         federation: Arc<FederationEngine>,
         reincarnation: Arc<ReincarnationEngine>,
+        cognitive: Arc<CognitiveCraft>,
     ) -> Self {
         Self {
             config,
@@ -36,6 +39,7 @@ impl HelixMindServiceImpl {
             metabolism,
             federation,
             reincarnation,
+            cognitive,
         }
     }
 }
@@ -120,6 +124,9 @@ impl crate::proto::helix_mind_server::HelixMind for HelixMindServiceImpl {
     }
     async fn helix_consolidate(&self, request: Request<HelixConsolidateRequest>) -> Result<Response<HelixConsolidateResult>, Status> {
         super::layer3::handle_helix_consolidate(self, request).await
+    }
+    async fn helix_craft(&self, request: Request<HelixCraftRequest>) -> Result<Response<HelixCraftResult>, Status> {
+        super::layer3::handle_helix_craft(self, request).await
     }
     async fn federated_dag_share(&self, request: Request<FederatedDagShareRequest>) -> Result<Response<FederatedDagShareResponse>, Status> {
         super::layer3::handle_federated_share(self, request).await

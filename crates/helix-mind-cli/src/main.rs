@@ -85,6 +85,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 storage.clone(),
             ));
 
+            // ── Cognitive craft (P10, ADR-0031) ────────────────────
+            // Production default: DeterministicAdapter (0-token orchestration).
+            // B1 kept: Mind orchestrates, execution goes through
+            // CognitiveService injection — never a direct LLM call here.
+            let cognitive = std::sync::Arc::new(
+                helix_mind_cognitive::CognitiveCraft::new(
+                    std::sync::Arc::new(
+                        helix_mind_metabolism::DeterministicAdapter::new(
+                            helix_mind_core::config::MetabolismConfig::default(),
+                        ),
+                    ),
+                    helix_mind_cognitive::CraftConfig::default(),
+                ),
+            );
+
             // ── Assemble service ─────────────────────────────────
             let service = helix_mind_api::HelixMindServiceImpl::new(
                 config.clone(),
@@ -93,6 +108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 metabolism,
                 federation,
                 reincarnation,
+                cognitive,
             );
 
             // 传输模式由 ApiConfig.transport 决定（TCP / UDS，ADR-0019 P3b）

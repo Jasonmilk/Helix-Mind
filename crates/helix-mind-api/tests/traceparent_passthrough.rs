@@ -46,6 +46,10 @@ async fn build_service() -> HelixMindServiceImpl {
         metabolism,
         federation,
         reincarnation,
+        std::sync::Arc::new(helix_mind_cognitive::CognitiveCraft::new(
+            std::sync::Arc::new(helix_mind_metabolism::DeterministicAdapter::new(helix_mind_core::config::MetabolismConfig::default())),
+            helix_mind_cognitive::CraftConfig::default(),
+        )),
     )
 }
 

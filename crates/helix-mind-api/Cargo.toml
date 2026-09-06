@@ -8,6 +8,7 @@ helix-mind-core = { path = "../helix-mind-core" }
 helix-mind-storage = { path = "../helix-mind-storage" }
 helix-mind-retrieval = { path = "../helix-mind-retrieval" }
 helix-mind-metabolism = { path = "../helix-mind-metabolism" }
+helix-mind-cognitive = { path = "../helix-mind-cognitive" }
 helix-mind-federation = { path = "../helix-mind-federation" }
 helix-mind-reincarnation = { path = "../helix-mind-reincarnation" }
 tonic = "0.10"
