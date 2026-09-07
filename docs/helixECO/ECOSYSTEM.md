@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.72** | **2026-09-07** | **WebUI 点击失活根因修复（CDP 实证）** — 页面 script 为 IIFE，onclick 引用的 4 个函数不挂 window → 内联 onclick 全局解析 ReferenceError → 点击无声失败；IIFE 末尾显式导出 `window.showView/sendChat/applyFilter/clearFilter`。CDP 硬件管道真实点击验证视图切换生效；TUI 空消息防护（Enter 不发空请求）；README §6.9 操作说明。测试数不变（Cellrix 337 / 全生态 1531） |
 | **v1.71** | **2026-09-07** | **WebUI 状态行修复 + up 界面选择权 + TUI 全链路** — ①sub JS TypeError（`m` 声明前引用）修复，状态行现显示「Anaphase 在线 · PARTNER · …」；②up 问 `[1] Web（回车） [2] TUI`，不强制 WebUI；③Anaphase `--config <path>` flag（flags>env>默认），stdio TUI 子进程注入同一配置且不占 cap_http；④workspace_root 两级 parent 修正；⑤无头验证 sub 正常 + TUI Spawning 路径正确；测试数不变（Cellrix 337 / Anaphase 225 / 全生态 1531） |
 | **v1.70** | **2026-09-07** | **up 幂等启动** — 面板已在运行时重复 `up` 探测到即直达（GET / 查 view-chat 标记，诚实区分自家面板 vs 外部占用），不再 AddrInUse 崩溃；Cellrix 336→**337**、全生态 1530→**1531** |
 | **v1.69** | **2026-09-07** | **伙伴模式对话打通（小白首跑实测）** — ①Anaphase 新增 POST /v1/chat：gate_ok → build_agent → 单周期 run_cycle（每请求全新装配，无跨会话串话；连续性归未来 Memory）；②Cellrix 面板第三视图「对话 Chat」（输入框+消息流+/api/chat 代理，绑定后签名）；③up 无参数也按 Tuck 协议默认探测/启动（60052 + tk-local-gate），engram 始终接线；④真实验证：首跑全自动（命令一次→绑定→面板）、二次零输入、Tuck ✅、engram 25 条审计、**对话 200 真实 LLM 回复**；⑤测试数不变（Cellrix 336 / Anaphase 225 / 全生态 1530） |
