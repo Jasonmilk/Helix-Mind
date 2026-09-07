@@ -52,7 +52,7 @@
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 | 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告，工作树干净）；Python v1.7 保留 main 分支；2026-09-07 复测 flowmodus-rs cargo test = 83（72+4+3+4，与 R-5 一致） | 2026-09-07 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1550**（Cellrix **337** + Tuck **369** + Anaphase **236** + BIND-19 142 + Helix-Mind **118** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner **50** + **FlowModus 83**）（2026-09-07 物理核对修正：Anaphase/Mind/Tuck/Cellrix 实测重跑；MCP-Learner 42→50（实测）；FlowModus 79→83（flowmodus-rs 复测，与 R-5 "83 tests green" 一致）；Cellrix --all-features 修复 LogFormat/E0282 后 327 实测成立（Engram TUI+Web），4 warning 待清；BIND-19/Tentacle/Glove 沿用上轮记录）
+**全生态测试总数**：**1554**（Cellrix **341** + Tuck **369** + Anaphase **236** + BIND-19 142 + Helix-Mind **118** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner **50** + **FlowModus 83**）（2026-09-07 物理核对修正：Anaphase/Mind/Tuck/Cellrix 实测重跑；MCP-Learner 42→50（实测）；FlowModus 79→83（flowmodus-rs 复测，与 R-5 "83 tests green" 一致）；Cellrix --all-features 修复 LogFormat/E0282 后 327 实测成立（Engram TUI+Web），4 warning 待清；BIND-19/Tentacle/Glove 沿用上轮记录）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.83** | **2026-09-07** | **生态点亮 + 一键重启** — Cellrix WebUI 新增生态状态条（/api/ecosystem，TCP+HTTP 双检，四色语义：绿=健康/黄=启动未联通/灰=未运行/红=错误）；`up --restart` 全生态一键重启（逆依赖序停止 → 依赖序启动 → 每步健康检查，SIGKILL 兜底）；Engram v2 经历时间线 UI 落地（会话侧栏 + turn 徽标 + 统计条，聊天视图同源）；Cellrix 337→**341**，全生态 1550→**1554** |
 | **v1.82** | **2026-09-07** | **Engram v2 会话经历时间线** — Anaphase 新增 `/v1/sessions`（经历列表）+ `/v1/events`（单轮事件流查询，ADR-0026 续，Anaphase 234→**236**）；Cellrix 印痕视图重画（左侧经历列表 + 右侧 turn 时间线，DSH 式徽标 START/USER/CONTEXT/ATTEMPT/TOOL/RESULT/VERDICT/END + Duration/Events/Tools/Verdict 统计），Chat 视图加同一经历侧栏；全生态 1548→**1550** |
 | **v1.81** | **2026-09-07** | **会话事件流（ADR-0026）** — Anaphase 新增每周期事件流（turn/start · user/message · context/inject · assistant/attempt · tool/call · tool/result · verdict/status · turn/end，JSONL 按 `run-<12hex>` join key，写前脱敏），判据与行动进入同一可回放时间线（Engram turn 时间线数据源）；Anaphase 231→**234**（+3 事件流测试），全生态 1545→**1548** |
 | **v1.8** | **2026-09-07** | **L0-L3 实弹（ADR-0025）** — Anaphase identity_block 注入 + 工具链闭环（calc/web_search）+ L2 知识层写入（remember_node 层路由），Anaphase 228→231，全生态 1542→1545 |
