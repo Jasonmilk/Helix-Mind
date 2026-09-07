@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.78** | **2026-09-07** | **Helix-Mind 物理打通（live）** — Anaphase `mind_endpoint` → Mind gRPC :50052：①glove 探测 mind Available；②MemoryRetrieval → helix_query 真实调用；③craft note 0-token 确定性编排；④Reflection → remember → L3 写入（库 24 节点）。诚实缺口：FTS5 短语匹配召回弱（语义模型未加载），写入全通、读取召回待 P10 增强 |
 | **v1.77** | **2026-09-07** | **Cellrix chat 输入 = 语义树组件（根治"分层"）** — 用户批评"上下分层、操作逻辑变、需要动态属性输入框组件"：①新 InputBoxWidget：ActionButton 声明 needs_input → 渲染为输入面板（对话记录/输入行/状态）落在网格槽位，背景边框焦点统一；②布局槽位默认 active 优先 needs_input 节点（agent 要输入框 UI 就给）；③AppState.manual_slot_overrides：Tab 手动切换保留，未切换跟随布局默认；④run_loop 恢复纯语义树布局。桥确认：Anaphase LayoutHints/GridDefinition 声明布局与节点属性，Cellrix 执行。测试 340 全绿 |
 | **v1.76** | **2026-09-07** | **Cellrix chat 面板接回语义树 + 对话记录同构** — 用户批评"chat 框与 Cellrix 内部隔离"：预聚焦硬编码旁路 → 改为 pending_chat 标记 + 首个快照到达后从语义树派生（聚焦 agent 声明的 needs_input ActionButton，id/标题全部从节点读取，零硬编码）；TUI 新增对话记录（谁+HH:MM+文本）与 WebUI 消息流同构，错误不进对话流（TUI 状态行红字=WebUI toast）；README 新增同构契约。测试 337 全绿 |
 | **v1.75** | **2026-09-07** | **Cellrix 交互三修复** — ①WebUI 无回复根因：post_stream 透传 Anaphase 响应头+chunked 帧，前端 SSE 解析全丢；修复为完整 HTTP 中继（剥响应头+chunked 解码），浏览器等效测试 18 delta+done 行全通；②TUI 打字看不到根因：Enter 聚焦被选中按钮拦截；修复为启动预聚焦（打开即打字）；③WebUI 错误改居中 toast（不冒充 Helix 气泡）+ 消息时间戳（学 Cherry Studio/DSH）。测试数不变（Cellrix 337 / 全生态 1533） |
