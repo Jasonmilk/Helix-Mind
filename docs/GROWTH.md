@@ -76,3 +76,8 @@ ADR-0032（Accepted）｜ PLAN v6.5（P10d ✅）｜ README（113 tests）｜ EC
 
 ### 状态
 🧬 已完成
+
+## [2026-09-07] remember 层路由（ADR-0025 联动）
+- proto `RememberRequest.node_type`：-1/缺省=协议默认 L3；0..=3=L0..L3
+- handler 层路由：编排方只命名层，Mind 执行语义（极致解耦）
+- L2 知识层首次实弹：熵增定律/质量守恒/万有引力（主张+适用边界）入库

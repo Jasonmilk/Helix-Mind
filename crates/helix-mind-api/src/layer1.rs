@@ -38,6 +38,17 @@ pub async fn handle_remember(
     let mut node = helix_mind_core::graph::Node::default();
     node.content = helix_mind_core::graph::NodeContent::Text(req.content);
     node.sensitivity = Some(helix_mind_core::graph::Sensitivity::Private);
+    // Layer routing: 0..=3 maps to L0..L3; absent or -1 keeps the protocol
+    // default (L3 episodic). The knowledge layer (L2) is the only non-default
+    // target used today — rails/facts land there.
+    if (0..=3).contains(&req.node_type) {
+        node.node_type = match req.node_type {
+            0 => helix_mind_core::graph::NodeType::L0,
+            1 => helix_mind_core::graph::NodeType::L1,
+            2 => helix_mind_core::graph::NodeType::L2,
+            _ => helix_mind_core::graph::NodeType::L3,
+        };
+    }
 
     let node_id = node.id; // Save UUID before moving node
     service.storage.write_node(node, 
