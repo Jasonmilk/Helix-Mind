@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.84
+> **版本**：v1.85
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-07（印痕 v3：记忆决策白盒 + 会话续聊 + 甘特图，全生态测试 1555）
+> **最后更新**：2026-09-08（WebUI 五修 + SSE 确定性 + 会话命名，ADR-0028）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.85** | **2026-09-08** | **WebUI 五修 + SSE 确定性（ADR-0028）** — ①SSE 根因修复：`select!` 等 delta/done 随机丢包 → 三阶段 unfold（done 后 draining 排空再发唯一终行 `{done,reply}`），reply 权威覆盖前端打字机（连发两轮实测无截断/空回复）；②思考透传 `StreamDelta{content,thinking}`（DSH ReasoningRow 式折叠行，仅展示不参与判据）；③印痕形态纠错：对照 DSH session-turn-outline 确认轨迹= turn 大纲非时间轴甘特（删 ganttSvg），SA-Core 选择/L1-L3 节点 chip 标签化（L1×1 L3×19 + mnode `L1·id heat phase`）；④会话自动命名（preview 全文件扫首条 user 消息）+ ✎ 重命名（sidecar `.name` 落盘，空名回退）+ 续接下拉（聊天框右下，显式续接）；⑤Cellrix proxy 加 `/api/sessions/rename` 路由（Route::SessionsRename，client_bearer 签名转发）。Anaphase 237 全绿、Cellrix 341 全绿，全生态 1555 不变（测试数无增减） |
 | **v1.84** | **2026-09-07** | **印痕 v3：记忆决策白盒 + 会话续聊** — Anaphase `QueryResult.nodes` 升级 `Vec<MemoryNode>`（透传 Mind 的 id/tier/heat/phase，此前只取 content_json 丢弃白盒能力，ADR-0027）；vendored `helix_mind.proto` Node 补字段 16-19（phase_state 等，与官方字段号对齐）；`context/inject` 写 SA-Core 选择明细 `choice`（tiers 分布 + top 节点，provenance only 不写正文）；`/v1/chat` 收 `job_id` 显式续聊（`read_summary` 展平上一轮为 true history 注入 + 记 `resume_from`）；Cellrix 印痕 v3：甘特图（纯 SVG 时间轴）+ CONTEXT 白盒展开 + 经历「继续」按钮；Anaphase 236→**237**，Cellrix 341 全绿，全生态 1554→**1555** |
 | **v1.83** | **2026-09-07** | **生态点亮 + 一键重启** — Cellrix WebUI 新增生态状态条（/api/ecosystem，TCP+HTTP 双检，四色语义：绿=健康/黄=启动未联通/灰=未运行/红=错误）；`up --restart` 全生态一键重启（逆依赖序停止 → 依赖序启动 → 每步健康检查，SIGKILL 兜底）；Engram v2 经历时间线 UI 落地（会话侧栏 + turn 徽标 + 统计条，聊天视图同源）；Cellrix 337→**341**，全生态 1550→**1554** |
 | **v1.82** | **2026-09-07** | **Engram v2 会话经历时间线** — Anaphase 新增 `/v1/sessions`（经历列表）+ `/v1/events`（单轮事件流查询，ADR-0026 续，Anaphase 234→**236**）；Cellrix 印痕视图重画（左侧经历列表 + 右侧 turn 时间线，DSH 式徽标 START/USER/CONTEXT/ATTEMPT/TOOL/RESULT/VERDICT/END + Duration/Events/Tools/Verdict 统计），Chat 视图加同一经历侧栏；全生态 1548→**1550** |
