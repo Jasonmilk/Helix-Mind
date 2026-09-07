@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.86
+> **版本**：v1.87
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-08（WebUI 五修 + SSE 确定性 + 会话命名，ADR-0028）
+> **最后更新**：2026-09-08（SSE 事件序运行时焊死，ADR-0030）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -43,7 +43,7 @@
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 337 | **up 引导模式 + 1对1绑定 + Engram 分组/高亮**（/v1/health 探头 + --open；时间线按轮分组 + 正文 [REDACTED] 高亮）| **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 369 | 内容治理网关 v1（ADR-0004）+ 旁路焊死：网关服务（feature gateway）+ L2 凭证注入（upstream_key 物理边缘替换）+ 身份门（静态 key + JWT）+ 检测/混淆/拦截/全量审计 + `/v1/audit` 只读查询；Anaphase 零代码改动接入；--all-features 零警告 | 2026-09-07 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
-| 3 | **Anaphase** | rs | 228 | **Engram 正文轨迹 + 全文回放 + /v1/health 生态级自检（看表 SSOT）**（ADR-0004 印痕半体：推理 round trip 脱敏落盘 + 三键合一 x-tuck-trace 头——审计链/正文/ledger 同一 trace_id join）+ P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（记忆折叠注入 Reasoning：注入打通——serde 默认修复 + fold 剥离账本尾行 + 经历化标签，25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
+| 3 | **Anaphase** | rs | 239 | **SSE 事件序运行时焊死（ADR-0030，done 行确定性到达）** + **Engram 正文轨迹 + 全文回放 + /v1/health 生态级自检（看表 SSOT）**（ADR-0004 印痕半体：推理 round trip 脱敏落盘 + 三键合一 x-tuck-trace 头——审计链/正文/ledger 同一 trace_id join）+ P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（记忆折叠注入 Reasoning：注入打通——serde 默认修复 + fold 剥离账本尾行 + 经历化标签，25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 118 | P0-P10 全部完成：P10a helix_craft 触发链路 + P10b synthesis→L1 策略落盘 + P10c Deep Dream 睡眠复盘 + P10d ana_wakeup 预约制闹钟（高峰拥挤保护，无心跳）+ P10 召回增强（ADR-0033：分词检索 + 种子保底 + 原文透传 + LIKE 短优先） | 2026-09-06 | ✅ P10 完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.87** | **2026-09-08** | **SSE 事件序运行时焊死（ADR-0030）** — 终态通道 oneshot→mpsc：oneshot 在 complete 后重复 poll 触发 tokio panic（`called after complete`）→ unfold 流在 done 行前中断 → 浏览器只收 attempt 裸 JSON delta（"Helix 回复是计划文本"）。mpsc `recv()` 可安全重复 poll，done 行确定性到达；事件序契约不变（ADR-0028：delta 先、done 后、drain flush 尾部）；周期崩溃（sender 未发送即 drop）流静默结束不伪造 done。实测：浏览器 8^3 显示 `calc: 512`（此前裸 JSON）、连续两次 curl SSE 均收 done、`grep -c panicked`=0、Anaphase 239 全绿。全生态 1557 不变（测试数无增减） |
 | **v1.86** | **2026-09-08** | **印痕链条完整性（ADR-0029）** — ①链条闭环：`tool/result` 补 `outcome + outcome_sha`（产出物字节可对合）、CheckReport 扩 judge/gate/expect/evidence_id、新增 `check/status` 事件（判决自带身份证）、VERDICT 补 reason、END.success 立铁律 `≡ verdict ≠ Unmet`（禁止状态机自报）；②思考进印痕：reason_stream 加 thinking sink → `assistant/think` 事件（脱敏、显示专用、判据永不消费），前端统一 fold 原语（点击展开/再点关闭/悬浮预览）服务 think/check/outcome 所有可折叠行；③结晶闭环：`crystallize()` + `POST /v1/crystallize` 扫 Unmet 轮析出 0-token 规则建议（`crystallized/rule-*.json`，机器只建议人不审核不上线）；④断连修复：proxy 读超时 30s→180s、EOF 冲刷剩余半行不再 `origin ended mid-line` 硬断、前端 error 已有内容静默保留；⑤续接升级：下拉选中即加载该经历历史进会话空间；⑥health 测试并行竞态修复（固定测试端口 + 锁 + 超时 10s）。Anaphase 237→**239** 全绿、Cellrix 341 全绿，全生态 1555→**1557** |
 | **v1.85** | **2026-09-08** | **WebUI 五修 + SSE 确定性（ADR-0028）** — ①SSE 根因修复：`select!` 等 delta/done 随机丢包 → 三阶段 unfold（done 后 draining 排空再发唯一终行 `{done,reply}`），reply 权威覆盖前端打字机（连发两轮实测无截断/空回复）；②思考透传 `StreamDelta{content,thinking}`（DSH ReasoningRow 式折叠行，仅展示不参与判据）；③印痕形态纠错：对照 DSH session-turn-outline 确认轨迹= turn 大纲非时间轴甘特（删 ganttSvg），SA-Core 选择/L1-L3 节点 chip 标签化（L1×1 L3×19 + mnode `L1·id heat phase`）；④会话自动命名（preview 全文件扫首条 user 消息）+ ✎ 重命名（sidecar `.name` 落盘，空名回退）+ 续接下拉（聊天框右下，显式续接）；⑤Cellrix proxy 加 `/api/sessions/rename` 路由（Route::SessionsRename，client_bearer 签名转发）。Anaphase 237 全绿、Cellrix 341 全绿，全生态 1555 不变（测试数无增减） |
 | **v1.84** | **2026-09-07** | **印痕 v3：记忆决策白盒 + 会话续聊** — Anaphase `QueryResult.nodes` 升级 `Vec<MemoryNode>`（透传 Mind 的 id/tier/heat/phase，此前只取 content_json 丢弃白盒能力，ADR-0027）；vendored `helix_mind.proto` Node 补字段 16-19（phase_state 等，与官方字段号对齐）；`context/inject` 写 SA-Core 选择明细 `choice`（tiers 分布 + top 节点，provenance only 不写正文）；`/v1/chat` 收 `job_id` 显式续聊（`read_summary` 展平上一轮为 true history 注入 + 记 `resume_from`）；Cellrix 印痕 v3：甘特图（纯 SVG 时间轴）+ CONTEXT 白盒展开 + 经历「继续」按钮；Anaphase 236→**237**，Cellrix 341 全绿，全生态 1554→**1555** |
