@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.58
+> **版本**：v1.59
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-07（Tuck 内容治理网关 v1——全量过门 + 审计链真实兑现，Tuck 316→365，全生态 1469）
+> **最后更新**：2026-09-07（Tuck 零警告专项 + 会话令牌 JWT + 只读审计查询，Tuck 365→368，全生态 1472）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -42,7 +42,7 @@
 | # | 项目 | 分支 | 测试数 | 当前阶段 | 最后提交 | 状态 | 仓库 |
 |---|---|---|---|---|---|---|---|
 | 1 | **Cellrix** | rs2 | 321 | **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
-| 2 | **Tuck** | rs | 365 | 内容治理网关 v1（ADR-0004）：审计链（SHA-256 + Ed25519 锚定）+ 身份门 + 检测/混淆/拦截/全量审计，所有 LLM 流量必经一道门 | 2026-09-07 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
+| 2 | **Tuck** | rs | 368 | 内容治理网关 v1（ADR-0004）：审计链（SHA-256 + Ed25519 锚定）+ 身份门（静态 key + JWT HS256 会话令牌，scope=三模式 scopes）+ 检测/混淆/拦截/全量审计 + 只读审计查询 `GET /v1/audit`；--all-features 零警告 | 2026-09-07 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
 | 3 | **Anaphase** | rs | 206 | P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（ADR-0023：记忆折叠注入 Reasoning——修复检索断裂 + 25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
 | 5 | **Helix-Mind** | rs-dev | 113 | P0-P10 全部完成：P10a helix_craft 触发链路 + P10b synthesis→L1 策略落盘 + P10c Deep Dream 睡眠复盘 + P10d ana_wakeup 预约制闹钟（高峰拥挤保护，无心跳） | 2026-09-06 | ✅ P10 完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
@@ -52,7 +52,7 @@
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 | 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告）；Python v1.7 保留 main 分支 | 2026-09-06 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1469**（Cellrix **321** + Tuck **365** + Anaphase **206** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
+**全生态测试总数**：**1472**（Cellrix **321** + Tuck **368** + Anaphase **206** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -63,7 +63,7 @@
 | 项目 | 完成内容 | 关键成果 |
 |---|---|---|
 | **Cellrix** | P0-P6 全部完成 + 候选 G 驾驶舱 | 316 测试，Helix 四大组件全部接入，生产就绪；候选 G：AnaphaseClient get_snapshot（一次拉全）+ CockpitWidget（模式栏/经历时间线/Ledger 审查视图）+ renderer strip + attach_cockpit 轮询 + cli --anaphase-endpoint（ADR-0009），双端协议（TUI 先行，Web=G2） |
-| **Tuck** | P1-P7 + 内容治理网关 v1 完成 | 365 测试，PFP 第一个消费者，亚微秒级决策，fail-closed，全息审计（tuck-audit 真实兑现 + Ed25519 批锚定），四层管控接口，内容治理（mapping/guard/hold 三表政策、判字符串不判含义、混淆态入链、trace_id 跨账本），身份门 fail-closed（ADR-0003 + ADR-0004） |
+| **Tuck** | P1-P7 + 内容治理网关 v1 完成 | 368 测试（--all-features 零警告），PFP 第一个消费者，亚微秒级决策，fail-closed，全息审计（tuck-audit 真实兑现 + Ed25519 批锚定），四层管控接口，内容治理（mapping/guard/hold 三表政策、判字符串不判含义、混淆态入链、trace_id 跨账本），身份门双通道（静态 key + JWT HS256 scope 进审计），只读审计查询 /v1/audit（ADR-0003 + ADR-0004 D11） |
 | **Anaphase** | M1 + M1.5 + 候选 E + F + D' 4/4 + G + 编排哲学 ADR-0016 + O-1 + **CI-144 传输层 ADR-0017** | 160 测试，六 stage 确定性流水线（MET/UNMET/replay 字节级一致），真实 Tentacle gRPC 连通（fixture 插件全链路），Reasoning 结构化输出协议，run_cycle ↔ pipeline 完整 merge，零硬编码收口（RunCycleConfig），会话即经历（ADR-0006），重放守卫指纹（ADR-0007），SecurityGate 接线点 + ledger blocked（ADR-0008），真实场景插件 D'-4（ADR-0009），AgentSnapshot 共享快照投影端点（ADR-0010）；**O-1（ADR-0016）**：结构化命令 `!tool` 分诊零 LLM + probe_ecosystem 生态点亮 + 感知点 + **run_cycle 单周期原语化**（7 状态 DAG 一圈返回 CycleOutcome，循环归调用方，模块 agent_loop→run_cycle 改名归位）；**CI-144 传输层（ADR-0017）**：--stdio 从 JSON-lines 切换为 CIB/1.0 MessagePack 握手 + LE u32 长度前缀帧 + Manifest 首帧 + 1s 节律 Snapshot 推流 + ActionRequest/Response（status/send_message 经真实 run_cycle，协议层业务无关经注入回调），vendored 类型 src/ci144/（serde 逐字段对齐 Cellrix），select 单任务事件循环（biased 确定性），live 实测真实二进制全链路 |
 | **BIND-19** | v2.0-alpha 核心实现（默认分支） | 142 测试（实测），33 组测试向量，14 个基准测试，PFP+SAP 解析器；main=规范正文（v1.0.0-RFC-4，tag 锚定） |
 | **Helix-Tentacle** | P5 完成 + P6 进行中（M1.5） | 153 测试，性能基准+资源限制+可观测性+STDIO/gRPC 传输层，fixture 插件（numbers/rate，SHA-256），MCP-Learner 全链路联调畅通 |
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.59** | **2026-09-07** | **Tuck 零警告专项 + 会话令牌 + 只读审计查询** — ①零警告专项：tuck-core 47 个 warning 全清，并修复 --all-features 隐藏炸弹（tuck-audit `Box<dyn Fn>` → `Arc<dyn Fn + Send + Sync>`，SSE 治理流编译不再挂）；②会话令牌 JWT HS256（零魔法 hmac+sha2 手写三段式，`scope` claim = CAPABILITY-13 三模式 scopes 载体，透传进审计，算法钉死 + 常量时间比较 + 签发确定性）；③只读审计查询 `GET /v1/audit`（trace_id/kind/action 过滤，身份门拦截，读链文件不碰热路径）——WebUI 驾驶舱轨迹视图数据源（按 trace_id join Anaphase ledger = 全链路白盒）；④VISION v2.1 + SPEC/RNA 对齐：消除"帧层不解密载荷 vs 内容治理"表面歧义（帧层永不碰载荷 / 内容层判字符串不判含义，DNA 红线未动）；⑤Tuck 365→**368**（+6 token + 3 audit query），全生态 1469→**1472** |
 | **v1.58** | **2026-09-07** | **Tuck 内容治理网关 v1（ADR-0004）** — ①Tuck 升级为全生态唯一 LLM 流量之门（本地+外网全量过门，分级政策：本地卫生永不拦截 / 外网全量管控）；②审计链真实兑现 P4 承诺：`tuck-audit` 通用链（SHA-256 链式 + 崩溃续写 + 篡改/删行/重排检测）+ Ed25519 批锚定（防整链重写）；③三表政策矩阵（mapping=混淆 / guard=隐私拦截 / hold=危险行为挂起，CAPABILITY-13 HITL 对齐），fail-closed block>hold>pass；④身份门 Bearer（无密钥=拒绝一切）；⑤每笔调用 2 条链记录（request/response）带 trace_id，混淆态入链映射表驻内存；⑥Tuck 316→**365**（+11 audit + 38 gateway），全生态 1420→**1469**；⑦旁路焊死为架构铁律（Anaphase 唯一出口待联动） |
 | **v1.57** | **2026-09-06** | **驾驶舱输入可发现与反馈** — ①Cellrix TUI 底部常驻 3 行输入框（标题/输入/状态，独立带框）——不再隐藏动态行；②全局 Enter 聚焦（无按钮选中即打开输入），Enter 发送、Esc 退出（草稿保留）、发送后保持聚焦连续对话；③三态反馈：绿 ✓ 成功+回复 / 红 ✗ 失败+原因 / 蓝 Helix 回复——修复旧实现发送后回复行被裁掉的不可见 bug；④WebUI 连接诚实化：代理非 200/无快照时明确显示原因（根因：!snap 分支只更新 mode 未更新 sub，永远"连接中…"）；⑤实测：up 全栈 → send_message → deepseek API 完整多行回复；⑥Cellrix 321 不变，全生态 1420 |
 | **v1.56** | **2026-09-06** | **驾驶舱真对话** — ①Anaphase manifest 暴露 `send_message`（参数声明 message: string）+ 投影 semantic_tree 增加 ActionButton（`needs_input: true` 声明式扩展，UI 零 manifest 知识）；②Cellrix UI 文本输入模式（Enter 打开输入/字符/退格/Enter 发送/Esc 取消）+ 回复渲染输入行；③`ANAPHASE_CONFIG` env 覆盖 config 路径（驾驶舱子进程任意 cwd 加载同一 config——此前相对路径在 Cellrix cwd 下 Noop 无 LLM，真实对话失败根因）；④**真实对话验证**：send_message 帧 → run_cycle → deepseek API 真实调用 → 回复"我是 DeepSeek 的 AI 助手..."（非 mock 非 Noop）；⑤Cellrix 319→**321**（+2 输入字段测试），Anaphase 206，全生态 **1420** |
