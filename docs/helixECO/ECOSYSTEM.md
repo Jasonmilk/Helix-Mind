@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.60
+> **版本**：v1.61
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-07（Tuck 旁路焊死——网关服务装配 + L2 凭证注入 + Anaphase 零改动接入，Tuck 368→369，全生态 1473）
+> **最后更新**：2026-09-07（Tuck 真实链路 live 验证 + 凭证治理机制 + 全生态测试数物理核对修正：MCP-Learner 42→50、FlowModus 83→79、总数 1473→1478；Cellrix --all-features 编译修复）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -48,11 +48,11 @@
 | 5 | **Helix-Mind** | rs-dev | 113 | P0-P10 全部完成：P10a helix_craft 触发链路 + P10b synthesis→L1 策略落盘 + P10c Deep Dream 睡眠复盘 + P10d ana_wakeup 预约制闹钟（高峰拥挤保护，无心跳） | 2026-09-06 | ✅ P10 完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
 | 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
 | 7 | **HelixECO-Glove** | main | 45 | P4-T1 完成（L1 静态审查 9 条规则），P4-T2 预览 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/HelixECO-Glove](https://github.com/Jasonmilk/HelixECO-Glove) |
-| 8 | **Helix-MCP-Learner** | main | 42 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；1 失败测试未修（非阻塞） | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
+| 8 | **Helix-MCP-Learner** | main | 50 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；实测 50 passed 0 failed（v1.61 物理核对修正 42→50） | 2026-09-07 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
-| 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告）；Python v1.7 保留 main 分支 | 2026-09-06 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
+| 10 | **FlowModus** | rs | **79** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告）；Python v1.7 保留 main 分支；v1.61 实测 flowmodus-rs 79（修正 83） | 2026-09-07 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1473**（Cellrix **321** + Tuck **369** + Anaphase **206** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner 43 + **FlowModus 83**）（2026-09-06 物理核对重算：历史合计含累计误差 +11，v1.31/32 的 1287 实为 1276；Anaphase 160→169→176 后为 1292；v1.41 Anaphase 195 → 全生态 1311）
+**全生态测试总数**：**1478**（Cellrix **321** + Tuck **369** + Anaphase **206** + BIND-19 142 + Helix-Mind **113** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner **50** + **FlowModus 79**）（2026-09-07 物理核对修正：Anaphase/Mind/Tuck/Cellrix 实测重跑；MCP-Learner 42→50（实测）；FlowModus 83→79（flowmodus-rs 实测）；Cellrix --all-features 修复 LogFormat/E0282 后 321 实测成立，4 warning 待清；BIND-19/Tentacle/Glove 沿用上轮记录）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.61** | **2026-09-07** | **Tuck live 验证 + 凭证治理 + 测试数物理核对** — ①Anaphase reasoning 真实切到 Tuck 网关，真实 deepseek 响应经 Tuck 之门（审计链双记录，dest=external）；②Tuck reqwest 补 rustls-tls（default-features=false 无 TLS 后端的真伤）；③凭证治理机制：Anaphase config.toml/.bak untrack（部署配置永不进 git）、Tuck *.jsonl ignore；④**全生态测试数物理核对修正**：MCP-Learner 42→**50**、FlowModus 83→**79**（flowmodus-rs 实测）、总数 1473→**1478**；Cellrix --all-features 编译修复（LogFormat cfg 门控 + fmt::layer 类型参数，321 实测成立，4 warning 待清）。待办：用户轮换 deepseek key 后更新 Tuck config |
 | **v1.60** | **2026-09-07** | **Tuck 旁路焊死（ADR-0004 D12）** — ①`tuck` 二进制 feature `gateway`（按需加载）：TuckConfig.gateway 装配 governance_router 并 serve（复用 server 端口，零硬编码）；②L2 凭证物理注入落地：`upstream_key` 转发时替换 Authorization，调用方凭证永不离开本机（mock upstream 回显实证）；③**Anaphase 零代码改动接入**：reasoning_endpoint 指向 Tuck 网关 = 物理上唯一出口（D7 铁律达成，旁路焊死）；④e2e 验证：无 key 401 / 带 key 200 / 上游只见上游凭证 / 审计链双记录 / `/v1/audit` 查询 2 条；⑤Tuck 368→**369**（+1 L2 注入测试），全生态 1472→**1473** |
 | **v1.59** | **2026-09-07** | **Tuck 零警告专项 + 会话令牌 + 只读审计查询** — ①零警告专项：tuck-core 47 个 warning 全清，并修复 --all-features 隐藏炸弹（tuck-audit `Box<dyn Fn>` → `Arc<dyn Fn + Send + Sync>`，SSE 治理流编译不再挂）；②会话令牌 JWT HS256（零魔法 hmac+sha2 手写三段式，`scope` claim = CAPABILITY-13 三模式 scopes 载体，透传进审计，算法钉死 + 常量时间比较 + 签发确定性）；③只读审计查询 `GET /v1/audit`（trace_id/kind/action 过滤，身份门拦截，读链文件不碰热路径）——WebUI 驾驶舱轨迹视图数据源（按 trace_id join Anaphase ledger = 全链路白盒）；④VISION v2.1 + SPEC/RNA 对齐：消除"帧层不解密载荷 vs 内容治理"表面歧义（帧层永不碰载荷 / 内容层判字符串不判含义，DNA 红线未动）；⑤Tuck 365→**368**（+6 token + 3 audit query），全生态 1469→**1472** |
 | **v1.58** | **2026-09-07** | **Tuck 内容治理网关 v1（ADR-0004）** — ①Tuck 升级为全生态唯一 LLM 流量之门（本地+外网全量过门，分级政策：本地卫生永不拦截 / 外网全量管控）；②审计链真实兑现 P4 承诺：`tuck-audit` 通用链（SHA-256 链式 + 崩溃续写 + 篡改/删行/重排检测）+ Ed25519 批锚定（防整链重写）；③三表政策矩阵（mapping=混淆 / guard=隐私拦截 / hold=危险行为挂起，CAPABILITY-13 HITL 对齐），fail-closed block>hold>pass；④身份门 Bearer（无密钥=拒绝一切）；⑤每笔调用 2 条链记录（request/response）带 trace_id，混淆态入链映射表驻内存；⑥Tuck 316→**365**（+11 audit + 38 gateway），全生态 1420→**1469**；⑦旁路焊死为架构铁律（Anaphase 唯一出口待联动） |
