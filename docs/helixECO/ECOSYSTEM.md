@@ -1,6 +1,6 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.85
+> **版本**：v1.86
 > **创建日期**：2026-08-30
 > **最后更新**：2026-09-08（WebUI 五修 + SSE 确定性 + 会话命名，ADR-0028）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
@@ -52,7 +52,7 @@
 | 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
 | 10 | **FlowModus** | rs | **83** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告，工作树干净）；Python v1.7 保留 main 分支；2026-09-07 复测 flowmodus-rs cargo test = 83（72+4+3+4，与 R-5 一致） | 2026-09-07 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
 
-**全生态测试总数**：**1555**（Cellrix **341** + Tuck **369** + Anaphase **237** + BIND-19 142 + Helix-Mind **118** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner **50** + **FlowModus 83**）（2026-09-07 物理核对修正：Anaphase/Mind/Tuck/Cellrix 实测重跑；MCP-Learner 42→50（实测）；FlowModus 79→83（flowmodus-rs 复测，与 R-5 "83 tests green" 一致）；Cellrix --all-features 修复 LogFormat/E0282 后 327 实测成立（Engram TUI+Web），4 warning 待清；BIND-19/Tentacle/Glove 沿用上轮记录）
+**全生态测试总数**：**1557**（Cellrix **341** + Tuck **369** + Anaphase **239** + BIND-19 142 + Helix-Mind **118** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner **50** + **FlowModus 83**）（2026-09-07 物理核对修正：Anaphase/Mind/Tuck/Cellrix 实测重跑；MCP-Learner 42→50（实测）；FlowModus 79→83（flowmodus-rs 复测，与 R-5 "83 tests green" 一致）；Cellrix --all-features 修复 LogFormat/E0282 后 327 实测成立（Engram TUI+Web），4 warning 待清；BIND-19/Tentacle/Glove 沿用上轮记录）
 
 > **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
 
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.86** | **2026-09-08** | **印痕链条完整性（ADR-0029）** — ①链条闭环：`tool/result` 补 `outcome + outcome_sha`（产出物字节可对合）、CheckReport 扩 judge/gate/expect/evidence_id、新增 `check/status` 事件（判决自带身份证）、VERDICT 补 reason、END.success 立铁律 `≡ verdict ≠ Unmet`（禁止状态机自报）；②思考进印痕：reason_stream 加 thinking sink → `assistant/think` 事件（脱敏、显示专用、判据永不消费），前端统一 fold 原语（点击展开/再点关闭/悬浮预览）服务 think/check/outcome 所有可折叠行；③结晶闭环：`crystallize()` + `POST /v1/crystallize` 扫 Unmet 轮析出 0-token 规则建议（`crystallized/rule-*.json`，机器只建议人不审核不上线）；④断连修复：proxy 读超时 30s→180s、EOF 冲刷剩余半行不再 `origin ended mid-line` 硬断、前端 error 已有内容静默保留；⑤续接升级：下拉选中即加载该经历历史进会话空间；⑥health 测试并行竞态修复（固定测试端口 + 锁 + 超时 10s）。Anaphase 237→**239** 全绿、Cellrix 341 全绿，全生态 1555→**1557** |
 | **v1.85** | **2026-09-08** | **WebUI 五修 + SSE 确定性（ADR-0028）** — ①SSE 根因修复：`select!` 等 delta/done 随机丢包 → 三阶段 unfold（done 后 draining 排空再发唯一终行 `{done,reply}`），reply 权威覆盖前端打字机（连发两轮实测无截断/空回复）；②思考透传 `StreamDelta{content,thinking}`（DSH ReasoningRow 式折叠行，仅展示不参与判据）；③印痕形态纠错：对照 DSH session-turn-outline 确认轨迹= turn 大纲非时间轴甘特（删 ganttSvg），SA-Core 选择/L1-L3 节点 chip 标签化（L1×1 L3×19 + mnode `L1·id heat phase`）；④会话自动命名（preview 全文件扫首条 user 消息）+ ✎ 重命名（sidecar `.name` 落盘，空名回退）+ 续接下拉（聊天框右下，显式续接）；⑤Cellrix proxy 加 `/api/sessions/rename` 路由（Route::SessionsRename，client_bearer 签名转发）。Anaphase 237 全绿、Cellrix 341 全绿，全生态 1555 不变（测试数无增减） |
 | **v1.84** | **2026-09-07** | **印痕 v3：记忆决策白盒 + 会话续聊** — Anaphase `QueryResult.nodes` 升级 `Vec<MemoryNode>`（透传 Mind 的 id/tier/heat/phase，此前只取 content_json 丢弃白盒能力，ADR-0027）；vendored `helix_mind.proto` Node 补字段 16-19（phase_state 等，与官方字段号对齐）；`context/inject` 写 SA-Core 选择明细 `choice`（tiers 分布 + top 节点，provenance only 不写正文）；`/v1/chat` 收 `job_id` 显式续聊（`read_summary` 展平上一轮为 true history 注入 + 记 `resume_from`）；Cellrix 印痕 v3：甘特图（纯 SVG 时间轴）+ CONTEXT 白盒展开 + 经历「继续」按钮；Anaphase 236→**237**，Cellrix 341 全绿，全生态 1554→**1555** |
 | **v1.83** | **2026-09-07** | **生态点亮 + 一键重启** — Cellrix WebUI 新增生态状态条（/api/ecosystem，TCP+HTTP 双检，四色语义：绿=健康/黄=启动未联通/灰=未运行/红=错误）；`up --restart` 全生态一键重启（逆依赖序停止 → 依赖序启动 → 每步健康检查，SIGKILL 兜底）；Engram v2 经历时间线 UI 落地（会话侧栏 + turn 徽标 + 统计条，聊天视图同源）；Cellrix 337→**341**，全生态 1550→**1554** |
