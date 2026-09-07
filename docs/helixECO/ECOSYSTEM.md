@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.71** | **2026-09-07** | **WebUI 状态行修复 + up 界面选择权 + TUI 全链路** — ①sub JS TypeError（`m` 声明前引用）修复，状态行现显示「Anaphase 在线 · PARTNER · …」；②up 问 `[1] Web（回车） [2] TUI`，不强制 WebUI；③Anaphase `--config <path>` flag（flags>env>默认），stdio TUI 子进程注入同一配置且不占 cap_http；④workspace_root 两级 parent 修正；⑤无头验证 sub 正常 + TUI Spawning 路径正确；测试数不变（Cellrix 337 / Anaphase 225 / 全生态 1531） |
 | **v1.70** | **2026-09-07** | **up 幂等启动** — 面板已在运行时重复 `up` 探测到即直达（GET / 查 view-chat 标记，诚实区分自家面板 vs 外部占用），不再 AddrInUse 崩溃；Cellrix 336→**337**、全生态 1530→**1531** |
 | **v1.69** | **2026-09-07** | **伙伴模式对话打通（小白首跑实测）** — ①Anaphase 新增 POST /v1/chat：gate_ok → build_agent → 单周期 run_cycle（每请求全新装配，无跨会话串话；连续性归未来 Memory）；②Cellrix 面板第三视图「对话 Chat」（输入框+消息流+/api/chat 代理，绑定后签名）；③up 无参数也按 Tuck 协议默认探测/启动（60052 + tk-local-gate），engram 始终接线；④真实验证：首跑全自动（命令一次→绑定→面板）、二次零输入、Tuck ✅、engram 25 条审计、**对话 200 真实 LLM 回复**；⑤测试数不变（Cellrix 336 / Anaphase 225 / 全生态 1530） |
 | **v1.68** | **2026-09-07** | **1对1 身份绑定（Anaphase 发起）** — ①src/bind.rs：配对码（6 位一次性 10 分钟）→ HITL 确认 → device_id+secret → 落盘 0600；②验证四关：device_id+ts±60s+nonce 一次性+HMAC（手写 RFC2104 复用 sha2）；③绑定后 cap_http 除 bind/health 全端点验 Bearer，未绑定开放（诚实 not bound）；④Anaphase 219→**225**、Cellrix web 签名（sign_bearer+post_json+extract 无 serde）11→**14**、333→**336**、全生态 1503→**1530**；⑤up 绑定引导（Anaphase 发起只转达，选择题→配对码→回车→双 0600）；⑥真实验证：401 门禁+签名 200+**重放 401**+health 开放+面板签名访问正常 |
