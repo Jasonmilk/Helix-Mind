@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.73** | **2026-09-07** | **第二次对话 EAGAIN 修复 + TUI 日志门控** — ①HttpReasoningAdapter 禁连接池复用（`pool_max_idle_per_host(0)`）：网关关闭 keep-alive 导致第二次调用 EAGAIN（os error 35），实测两次 chat 1.1s/1.4s 全成功；②`--config` 后 chdir 配置目录：TUI stdio 子进程 repo 相对资源（fixture-codex/rails）正确解析；③Cellrix transport DEBUG 日志加 `CELLRIX_DEBUG` 门控，不再污染 TUI 终端。测试数不变（Anaphase 225 / Cellrix 337 / 全生态 1531） |
 | **v1.72** | **2026-09-07** | **WebUI 点击失活根因修复（CDP 实证）** — 页面 script 为 IIFE，onclick 引用的 4 个函数不挂 window → 内联 onclick 全局解析 ReferenceError → 点击无声失败；IIFE 末尾显式导出 `window.showView/sendChat/applyFilter/clearFilter`。CDP 硬件管道真实点击验证视图切换生效；TUI 空消息防护（Enter 不发空请求）；README §6.9 操作说明。测试数不变（Cellrix 337 / 全生态 1531） |
 | **v1.71** | **2026-09-07** | **WebUI 状态行修复 + up 界面选择权 + TUI 全链路** — ①sub JS TypeError（`m` 声明前引用）修复，状态行现显示「Anaphase 在线 · PARTNER · …」；②up 问 `[1] Web（回车） [2] TUI`，不强制 WebUI；③Anaphase `--config <path>` flag（flags>env>默认），stdio TUI 子进程注入同一配置且不占 cap_http；④workspace_root 两级 parent 修正；⑤无头验证 sub 正常 + TUI Spawning 路径正确；测试数不变（Cellrix 337 / Anaphase 225 / 全生态 1531） |
 | **v1.70** | **2026-09-07** | **up 幂等启动** — 面板已在运行时重复 `up` 探测到即直达（GET / 查 view-chat 标记，诚实区分自家面板 vs 外部占用），不再 AddrInUse 崩溃；Cellrix 336→**337**、全生态 1530→**1531** |
