@@ -22,7 +22,7 @@ async fn memory_storage() -> Arc<StorageEngine> {
 }
 
 fn retrieval_config() -> RetrievalConfig {
-    RetrievalConfig {
+    RetrievalConfig { stopwords: Vec::new(),
         beam_width: 3,
         // Low threshold: SA-Core keeps only nodes whose activation survives the
         // attenuation loop. A 1-hop leaf (A→B) holds 0.25; threshold 0.5 would
@@ -134,5 +134,36 @@ async fn retrieval_traverses_causal_edge_to_neighbor() {
     assert!(
         returned.contains(&id_b),
         "skilled traversal should reach B via the causal edge"
+    );
+}
+
+// ── P10 seed-floor regression (2026-09-07) ──────────────────────────────
+
+#[tokio::test]
+async fn isolated_seed_survives_default_threshold() {
+    // Default weight_threshold is 0.8; an isolated (edge-less) seed node
+    // decays to (1 - alpha) * 1.0 = 0.5 per hop and used to be zeroed,
+    // silently killing recall. Seed = hard evidence: it must survive.
+    let storage = memory_storage().await;
+    let node = l2_node("我叫Jason", 0.9);
+    let node_id = node.id;
+    storage
+        .write_node(node, WritePriority::Critical)
+        .await
+        .unwrap();
+    storage.flush_fts_index().await.unwrap();
+
+    let mut fake = FakeAdapter::new();
+    fake.add("我叫Jason", vec![node_id]);
+    let engine = RetrievalEngine::with_extractor(RetrievalConfig::default(), storage, Arc::new(fake));
+    let result = engine
+        .query("我叫Jason", helix_mind_core::graph::CognitiveMode::Skilled, &energy(), false, false, AutonomyLevel::Agent)
+        .await
+        .unwrap();
+    assert!(
+        result.nodes.iter().any(|n| n.id == node_id),
+        "seed node must survive default threshold; got {} nodes: {:?}",
+        result.nodes.len(),
+        result.nodes.iter().map(|n| &n.content).collect::<Vec<_>>()
     );
 }

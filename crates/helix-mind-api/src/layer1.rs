@@ -65,7 +65,14 @@ pub(crate) fn convert_node(node: helix_mind_core::graph::Node) -> Node {
     Node {
         id: node.id.to_string(),
         node_type: format!("{:?}", node.node_type),
-        content_json: serde_json::to_string(&node.content).unwrap_or_default(),
+        // Text content is the node's physical text — hand it over raw, not
+        // JSON-wrapped (P10): consumers (Anaphase prompt injection) read it
+        // verbatim; wrapping buried the actual memory in `{"Text":"..."}`.
+        // Non-text shapes keep the JSON form for structural fidelity.
+        content_json: match &node.content {
+            helix_mind_core::graph::NodeContent::Text(t) => t.clone(),
+            other => serde_json::to_string(other).unwrap_or_default(),
+        },
         heat: node.heat,
         is_hypothetical: node.is_hypothetical,
         is_recessive: node.is_recessive,

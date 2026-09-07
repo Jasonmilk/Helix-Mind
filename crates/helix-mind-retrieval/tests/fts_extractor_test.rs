@@ -66,7 +66,7 @@ async fn fts_extractor_recalls_chinese_content() {
         .unwrap();
     engine.flush_fts_index().await.unwrap();
 
-    let extractor = FtsExtractor::new(&engine, 20);
+    let extractor = FtsExtractor::new(&engine, 20, Vec::new());
     let ids = extractor.extract_start_nodes("认知相态");
     assert!(
         ids.contains(&node.id),
@@ -85,7 +85,7 @@ async fn fts_extractor_falls_back_to_like_for_short_query() {
         .unwrap();
     engine.flush_fts_index().await.unwrap();
 
-    let extractor = FtsExtractor::new(&engine, 20);
+    let extractor = FtsExtractor::new(&engine, 20, Vec::new());
     let ids = extractor.extract_start_nodes("ru");
     assert!(
         ids.contains(&node.id),
@@ -109,7 +109,7 @@ async fn fts_extractor_ranks_crystal_above_liquid() {
         .unwrap();
     engine.flush_fts_index().await.unwrap();
 
-    let extractor = FtsExtractor::new(&engine, 20);
+    let extractor = FtsExtractor::new(&engine, 20, Vec::new());
     let ids = extractor.extract_start_nodes("算法设计");
     assert!(ids.contains(&crystal.id) && ids.contains(&liquid.id), "both phases match");
     assert_eq!(
@@ -130,7 +130,7 @@ async fn fts_extractor_sanitizes_injection_input_and_audits() {
         .unwrap();
     engine.flush_fts_index().await.unwrap();
 
-    let extractor = FtsExtractor::new(&engine, 20);
+    let extractor = FtsExtractor::new(&engine, 20, Vec::new());
     // Attempted FTS5 / SQL injection: quotes, semicolons, DROP TABLE. The
     // whitelist strips non-alphanumeric/non-space chars (quotes, semicolons);
     // benign words like "DROP"/"TABLE" survive but form a *different literal
@@ -191,5 +191,26 @@ async fn retrieval_engine_end_to_end_with_fts_default() {
         result.nodes.iter().any(|n| n.id == node.id),
         "the FTS-extracted start node must appear in the result"
     );
+    cleanup(&dir);
+}
+
+// ── P10 recall tests (2026-09-07) ───────────────────────────────────────
+
+#[tokio::test]
+async fn p10_natural_language_question_recalls_name() {
+    // Regression for P10: a Chinese natural-language question ("我叫Jason你记得
+    // 我吗") must recall a stored L3 node containing "你好,我是Jason" via
+    // tokenized retrieval — the FTS5 whole-phrase match returned zero hits.
+    let (engine, dir) = temp_engine().await;
+    let node = node_with("你好,我是Jason", PhaseState::default());
+    let id = node.id;
+    engine
+        .write_node(node, WritePriority::Critical)
+        .await
+        .unwrap();
+    engine.flush_fts_index().await.unwrap();
+    let extractor = FtsExtractor::new(&engine, 20, RetrievalConfig::default().stopwords);
+    let start = extractor.extract_start_nodes("我叫Jason你记得我吗？");
+    assert!(start.contains(&id), "start nodes: {:?}", start);
     cleanup(&dir);
 }

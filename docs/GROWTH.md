@@ -1,4 +1,24 @@
-## [2026-09-06] 完成：P10a 认知工艺触发链路（helix_craft RPC + Anaphase 按需触发）
+## [2026-09-07] 完成：P10 召回增强（ADR-0033，四处根因 + 注入打通）
+
+### 触发条件
+用户"P10 开始！"——写入侧已可用（L3 写入 + Reflection remember），读取侧真实失效：中文问句零召回。
+
+### 变更性质
+- **分词检索**（fts_extractor.rs）：`tokenize_query`（ascii 整词保 + 停用词过滤 + Han 按"最早位置/同位置最长"stopword 切分）+ `bigram_candidates`（≥4 字双字窗口兜底）+ 新 `extract_start_nodes`（token 级 fts/like 累积 → bigram → 整句短语兜底，行为不退化）；单字 token 丢弃（LIKE 噪声）；停用词表只留纯虚词 + 双字高频词（三轮迭代：单字代词切碎"你好"→同位置最长→最终版）
+- **种子保底**（topology.rs）：`a_current[j] = if val < weight_threshold && a_0[j] == 0.0 { 0.0 } else { val }`——查询命中不被扩散衰减清零（孤立 seed 默认 0.8 阈值必返回）
+- **原文透传**（layer1.rs）：`NodeContent::Text` 直接返回原文，去 JSON 包裹 + 去 craft 前缀淹没
+- **L3 经历化**（Anaphase run_cycle.rs）：Reflection note 改 `User said: {}\nCycle completed. …`
+- **注入打通**（Anaphase）：fold 剥离 `\nCycle` 账本尾行 + 标签 `[memory: Helix's past experiences — true history, answer from them]` + `memory_inject_chars` serde 默认修复（`#[serde(default)]` 对 usize 反序列化为 0 的 bug——协议默认 800 只在 impl Default，Deserialize 路径从未生效）——单一常量 `DEFAULT_MEMORY_INJECT_CHARS`
+- **LIKE 排序**（fts.rs）：`length(content) ASC`——短内容（具体经历）优先于冗长抽象（"结论（正题）…"），极致节能
+- **诊断闭环**：`[MemoryRetrieval] N memory node(s)` 预览 + `inject_chars`/craft 一行日志（白盒审计，非膨胀）
+
+### 兼容性
+helix_query/helix_craft 语义零改动；现有 118+228 测试全绿 0 warning；Anaphase daemon 保活方式改为 `sh -c 'nohup … &'`（double-fork，实测稳定）。
+
+### 验收
+端到端：`"我叫什么名字？"` → `[MemoryRetrieval] 14 memory node(s)`（User said: 我叫Jason 排前）→ LLM 回复"你叫Jason。"（重复实测稳定）；回归：`p10_natural_language_question_recalls_name` / `isolated_seed_survives_default_threshold` / `fold_strips_bookkeeping_tail_keeps_experience`（Anaphase 新增）。
+
+
 
 ### 触发条件
 P10 任务书定稿（ADR-0031 Accepted，2026-09-06 用户确认）后开工；P10-0 零硬编码收口完成（trace_id 确定性化、阈值进配置、去 uuid）。

@@ -28,7 +28,11 @@ impl RetrievalEngine {
     pub fn new(config: RetrievalConfig, storage: Arc<StorageEngine>) -> Self {
         // P1 (M-01): the real FTS5-trigram extractor is the production default.
         // Tests override via `with_extractor` (FakeAdapter / EmptyExtractor).
-        let extractor = Arc::new(FtsExtractor::new(&storage, config.max_nodes_per_query));
+        let extractor = Arc::new(FtsExtractor::new(
+            &storage,
+            config.max_nodes_per_query,
+            config.stopwords.clone(),
+        ));
         Self::with_extractor(config, storage, extractor)
     }
 

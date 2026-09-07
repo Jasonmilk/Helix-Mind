@@ -99,6 +99,7 @@ async fn test_retrieval_engine_basic() {
     storage.add_edge(&edge).await.unwrap();
 
     let retrieval_config = RetrievalConfig {
+        stopwords: Vec::new(),
         beam_width: 3,
         // Low threshold (see retrieval_test.rs): SA-Core zeroes a 1-hop leaf
         // at threshold 0.5; 0.2 keeps it so traversal is observable.

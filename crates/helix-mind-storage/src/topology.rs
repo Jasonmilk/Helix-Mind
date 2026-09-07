@@ -355,10 +355,18 @@ impl MemoryTopology {
                 }
             }
 
-            // Attenuation and initial focus injection
+            // Attenuation and initial focus injection. Seed nodes (a_0 > 0)
+            // are hard evidence — a query hit must be returned regardless of
+            // the threshold, otherwise an isolated node is zeroed at
+            // (1 - alpha) * 1.0 = 0.5 < threshold and recall silently dies.
+            // Diffusion only EXTENDS seeds; it never extinguishes them.
             for j in 0..n {
                 let val = alpha * a_next[j] + (1.0 - alpha) * a_0[j];
-                a_current[j] = if val < weight_threshold { 0.0 } else { val };
+                a_current[j] = if val < weight_threshold && a_0[j] == 0.0 {
+                    0.0
+                } else {
+                    val
+                };
             }
         }
 

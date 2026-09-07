@@ -270,8 +270,9 @@ pub fn fts_like_search(
         .prepare(
             "SELECT id, 1.0 FROM nodes
              WHERE content LIKE ?1 ESCAPE '\\'
-             ORDER BY CASE phase_state
-                 WHEN 'Crystal' THEN 0 WHEN 'Liquid' THEN 1 ELSE 2 END
+             ORDER BY length(content) ASC,
+                      CASE phase_state
+                          WHEN 'Crystal' THEN 0 WHEN 'Liquid' THEN 1 ELSE 2 END
              LIMIT ?2",
         )
         .map_err(|e| MindError::Storage(e.to_string()))?;

@@ -54,6 +54,13 @@ pub struct RetrievalConfig {
     pub dead_end_penalty_factor: f64,
     #[serde(default = "default_tentative_edge_weight")]
     pub tentative_edge_weight: f64,
+    /// Query tokens dropped before FTS retrieval (P10 recall, 2026-09-07).
+    /// A natural-language question as one phrase almost never matches
+    /// stored text; tokenized retrieval strips function words first. Protocol
+    /// defaults cover common Chinese/English stopwords — overridable in
+    /// config `[retrieval] stopwords`, zero hardcoding.
+    #[serde(default = "default_stopwords")]
+    pub stopwords: Vec<String>,
 }
 
 // Manual Default (P0 debt fix): derive(Default) ignored serde default fns and
@@ -69,6 +76,7 @@ impl Default for RetrievalConfig {
             max_nodes_per_query: default_max_nodes_per_query(),
             dead_end_penalty_factor: default_dead_end_penalty(),
             tentative_edge_weight: default_tentative_edge_weight(),
+            stopwords: default_stopwords(),
         }
     }
 }
@@ -343,6 +351,25 @@ fn default_weight_threshold() -> f64 { 0.8 }
 fn default_soft_edge_decay() -> f64 { 0.8 }
 fn default_soft_edge_min_weight() -> f64 { 0.1 }
 fn default_max_nodes_per_query() -> usize { 20 }
+
+/// Protocol-default stopword list (P10 recall). Deterministic, config-overridable.
+fn default_stopwords() -> Vec<String> {
+    [
+        // Pure function words / auxiliary particles only. Single-char
+        // pronouns (我/你/他…) and single-char verbs (说/聊/问…) are
+        // deliberately absent: they appear inside content words
+        // ("你好", "聊过") and would split them.
+        "的", "了", "吗", "呢", "吧", "啊", "哦", "嗯", "是", "在", "有", "和",
+        "与", "或", "及", "我们", "你们", "他们", "她们", "它们", "什么", "怎么",
+        "为什么", "如何", "记得", "知道", "之前", "现在", "这个", "那个", "这样",
+        "那样", "the", "a", "an", "is", "are", "do", "does", "what", "how",
+        "why", "you", "me", "i", "we", "they", "it", "of", "and", "or", "to",
+        "in", "on", "for",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect()
+}
 fn default_dead_end_penalty() -> f64 { 0.8 }
 fn default_tentative_edge_weight() -> f64 { 0.3 }
 
