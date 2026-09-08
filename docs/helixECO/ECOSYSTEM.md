@@ -1,6 +1,6 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.89
+> **版本**：v1.90
 > **创建日期**：2026-08-30
 > **最后更新**：2026-09-09（Cellrix WebUI 水之波光化，ADR-0015）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
@@ -41,7 +41,7 @@
 
 | # | 项目 | 分支 | 测试数 | 当前阶段 | 最后提交 | 状态 | 仓库 |
 |---|---|---|---|---|---|---|---|
-| 1 | **Cellrix** | rs2 | 337 | **up 引导模式 + 1对1绑定 + Engram 分组/高亮**（/v1/health 探头 + --open；时间线按轮分组 + 正文 [REDACTED] 高亮）| **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
+| 1 | **Cellrix** | rs2 | 337 | **印痕 v3（水之波光 v11.2.0 轨迹骨架）完成**（五列事件表 + Overview 三轨共用标尺 + 工具栏等宽/折叠/展开/重放/搜索 + 统计栏 + 检查器抽屉五页签；SA-Core 选择白盒短 id；真实数据无 tokens 显示 —）+ **视图全资产化解耦**（main.rs 1323→633，web/assets/ 六资产 = 唯一渲染源，index_html 退化为 replace 拼装零 format! 转义）+ up 引导模式 + 1对1绑定 + Engram 分组/高亮 | **CI-144 stdio 闭环完成**（ADR-0017：StdioTransport::send_action + 单 reader 分发，真实 Anaphase 二进制 manifest/snapshot/action 三通道实测通过）| P0-P6 + 驾驶舱（G-2..G-6）+ **Web 面板 G2 首拉**（cellrix-web，ADR-0014，浏览器白盒窗口）；下一步 Web 优化（React 组件接入/up 菜单第 5 项） | 2026-09-06 | ✅ 完成 + 🔄 Web 优化待启 | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
 | 2 | **Tuck** | rs | 369 | 内容治理网关 v1（ADR-0004）+ 旁路焊死：网关服务（feature gateway）+ L2 凭证注入（upstream_key 物理边缘替换）+ 身份门（静态 key + JWT）+ 检测/混淆/拦截/全量审计 + `/v1/audit` 只读查询；Anaphase 零代码改动接入；--all-features 零警告 | 2026-09-07 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
 | 3 | **Anaphase** | rs | 240 | **回答被思考吞掉修复（ADR-0034：reasoning 共享 token 预算 + 有界直答重试 + 空回复诚实标记）** + **SSE 事件序运行时焊死（ADR-0030，done 行确定性到达）** + **Engram 正文轨迹 + 全文回放 + /v1/health 生态级自检（看表 SSOT）**（ADR-0004 印痕半体：推理 round trip 脱敏落盘 + 三键合一 x-tuck-trace 头——审计链/正文/ledger 同一 trace_id join）+ P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（记忆折叠注入 Reasoning：注入打通——serde 默认修复 + fold 剥离账本尾行 + 经历化标签，25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 |
 | 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
