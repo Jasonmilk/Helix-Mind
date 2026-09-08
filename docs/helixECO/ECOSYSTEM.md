@@ -1,8 +1,8 @@
 # Helix 生态导航（ECOSYSTEM.md）
 
-> **版本**：v1.88
+> **版本**：v1.89
 > **创建日期**：2026-08-30
-> **最后更新**：2026-09-08（回答被思考吞掉——token 预算共享修复，ADR-0034）
+> **最后更新**：2026-09-09（Cellrix WebUI 水之波光化，ADR-0015）
 > **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
 > **维护者**：Jasonmilk / CommonIntents
 > **所属方法论**：phyt-DNA v1.0
@@ -285,6 +285,7 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 
 | 版本 | 日期 | 变更内容 |
 |---|---|---|
+| **v1.89** | **2026-09-09** | **Cellrix WebUI 水之波光化（ADR-0015）** — WebUI 按「水之波光 · 触境」（Lumtract 设计体系 v10.0.4）重做：①设计令牌与 `lumtract-tokens.css` 同源（暗/浅双主题 + 跟随/日间/暗黑切换，FOUC 引导防闪）；②印痕事件类型 badge 单色相中性（类型靠文字区分，去除 10 色噪音 [PHYS:P-016]），语义状态保留语义色 [PHYS:L-002]；③选中行背景高亮、移除彩色加粗左边框 [PHYS:D-003]（修复「轨迹明细每列加颜色+加粗左边框」同型缺陷）；④波纹反馈果从因处生长、状态点纯色静态 [PHYS:R-003]；⑤降级阶梯覆盖 reduced-motion / prefers-contrast / 窄屏单列；⑥根目录水之波光 html 同步修整 v10.0.4（窄屏列名标签在上/值在下 + 帧率探针 Tier 阶梯）。Cellrix 341 测试全绿 |
 | **v1.88** | **2026-09-08** | **回答被思考吞掉修复（ADR-0034）** — reasoning 模型思考与回答共享输出 token 预算；`max_tokens=2048` 下思考耗尽预算 → content 空（47 条记录 8 条空，17%，DeepSeek 家族已知行为，检索证据：DeepSeek 社区实测 + GitHub worldmonitor/MiroShark）。三层修：①根因 `reasoning_max_tokens` 2048→8192（config 单一来源）；②兜底 `empty_reply_retries`（默认 1）——空输出 → 直答指令重试（解除思考需求释放预算，有界不风暴）；③诚实终态 attempt 事件 `empty` 标记（不假装空行是答案）。复现问题实测：think 5816 + attempt 103（`empty=False`）回答落地；Anaphase 239→**240** 全绿。全生态 1557→**1558** |
 | **v1.87** | **2026-09-08** | **SSE 事件序运行时焊死（ADR-0030）** — 终态通道 oneshot→mpsc：oneshot 在 complete 后重复 poll 触发 tokio panic（`called after complete`）→ unfold 流在 done 行前中断 → 浏览器只收 attempt 裸 JSON delta（"Helix 回复是计划文本"）。mpsc `recv()` 可安全重复 poll，done 行确定性到达；事件序契约不变（ADR-0028：delta 先、done 后、drain flush 尾部）；周期崩溃（sender 未发送即 drop）流静默结束不伪造 done。实测：浏览器 8^3 显示 `calc: 512`（此前裸 JSON）、连续两次 curl SSE 均收 done、`grep -c panicked`=0、Anaphase 239 全绿。全生态 1557 不变（测试数无增减） |
 | **v1.86** | **2026-09-08** | **印痕链条完整性（ADR-0029）** — ①链条闭环：`tool/result` 补 `outcome + outcome_sha`（产出物字节可对合）、CheckReport 扩 judge/gate/expect/evidence_id、新增 `check/status` 事件（判决自带身份证）、VERDICT 补 reason、END.success 立铁律 `≡ verdict ≠ Unmet`（禁止状态机自报）；②思考进印痕：reason_stream 加 thinking sink → `assistant/think` 事件（脱敏、显示专用、判据永不消费），前端统一 fold 原语（点击展开/再点关闭/悬浮预览）服务 think/check/outcome 所有可折叠行；③结晶闭环：`crystallize()` + `POST /v1/crystallize` 扫 Unmet 轮析出 0-token 规则建议（`crystallized/rule-*.json`，机器只建议人不审核不上线）；④断连修复：proxy 读超时 30s→180s、EOF 冲刷剩余半行不再 `origin ended mid-line` 硬断、前端 error 已有内容静默保留；⑤续接升级：下拉选中即加载该经历历史进会话空间；⑥health 测试并行竞态修复（固定测试端口 + 锁 + 超时 10s）。Anaphase 237→**239** 全绿、Cellrix 341 全绿，全生态 1555→**1557** |
