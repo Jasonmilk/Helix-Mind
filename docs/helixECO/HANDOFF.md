@@ -70,5 +70,5 @@
 - 文档先子后父：ADR → PLAN → GROWTH → README → ECOSYSTEM，全部推 GitHub，commit 关联 ADR。
 - README 必更新（badge 测试数同步）；ECOSYSTEM 是 SSOT，项目状态变必须同步。
 - 零行业词汇（测试/字段只用 tool/args/expect/numbers/rate/text/fixture/mock/schema）；拒绝正则、拒绝补丁思维、第一性原理。
-- DSH/Cherry 只作灵感，不借命名（轨迹=证轨 ProveTrack）；内部命名简短准确省 tokens。
+- 外部实现只作灵感、不借名号（轨迹 = 证轨 ProveTrack）；内部命名简短准确省 tokens。
 - 运行时产物（*.jsonl 审计/事件）不进 git。
