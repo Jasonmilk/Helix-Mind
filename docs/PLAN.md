@@ -95,6 +95,8 @@ P0-Pre → P9 全部于 2026-08-28 完成，详见阶段总览（第 2 节）。
 | CI-144 对齐 | VISION 生态位置 + INTENT-7 / BIND-19 / CAPABILITY-13（P3/P7） |
 | 认知工艺 | ADR-0021 + `spec/cognitive-craft.md`（Mind=编排 / CognitiveService=执行，Phase 1 定稿） |
 | 参考资源 | Event Sourcing / The Log / CI-144 / Lumtract（见 VISION 组件仓库索引） |
+| 跨仓缺陷登记 | `docs/helixECO/KNOWN_ISSUES.md` —— 生态**唯一**登记处（K1-K8，2026-09-15） |
+| IP 保护台账 | `docs/helixECO/PROTECTION.md` —— 2026-09-15 从 phyt-DNA 迁入；通用规范本身在 `phyt-DNA/docs/PROTECTION.md` |
 
 ---
 

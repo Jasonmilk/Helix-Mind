@@ -1,0 +1,52 @@
+# Helix 生态既有缺陷登记表（KNOWN_ISSUES）
+
+> **性质**：跨仓缺陷的**唯一**登记处。不是待办清单，不是 ADR，不是 DEPRECATE。
+> **为什么单独一份**：这些缺陷跨仓（涉及 anaphase / Cellrix / helix-mind），
+> 塞进任一单仓都会变成"归属错误的文档"；放在工作区根又不在任何 git 仓里 —— **等于可丢失**。
+> 故紧邻生态 SSOT（`helix-mind/docs/helixECO/ECOSYSTEM.md`）存放。
+>
+> **登记规则**：
+> 1. 一条缺陷 = 一个**已被物理核对确认**的事实（附文件 + 行号 + 核对日期）。
+> 2. 未核对的猜测**不登记**（宁可空着，不猜）。
+> 3. 修复后**不删除**，转入 §2 已修（历史永不删除，只前进不回头）。
+> 4. 每条必须写清「为什么它现在还没修」—— 是**待裁决**还是**没人做**，两者不同。
+
+---
+
+## 1. 未修
+
+| # | 缺陷 | 位置（事实基线 2026-09-15） | 为什么还没修 | 关联 |
+|---|---|---|---|---|
+| **K1** | `value_grade` 的注释与实现不符：`adapters/mod.rs:48` 写 `P10b fills value_grade; empty until then (honest)`，但 `helix-mind-api/src/layer3.rs:332/350/374` **已经在填**（`ValueAssessor.assess(&synthesis)` → L1 `notes` → 回传），值为 `Debug` 串（`Low`/`Medium`/`High`） | anaphase-helix `src/adapters/mod.rs:48` | 注释过期，属文档缺陷；**改注释零风险**，只是没人做 | — |
+| **K2** | ADR 索引文档过期：`docs/decisions/README.md` 命名规范写 `NNNN-<kebab>.md`（实际 `ADR-NNNN-…`）；索引表**只列了 0001**，实际已有 34 份 | anaphase-helix `docs/decisions/README.md` | 需一次性补 34 行索引，是**整理工作**不是决策 | — |
+| **K3** | `run_cycle.rs:1052` 把 `reasoning_mode`（`"left_brain"` 模式标签）当 `model` 写进 `traces/reasoning.jsonl`，与 `assistant/reply` 的 physical model（ADR-0036）**不是同一事实** | anaphase-helix `src/run_cycle.rs:1052` | **用户明确要求"再议"**（2026-09-14），故冻结不动 | `anaphase:ADR-0036` |
+| **K4** | ADR 编号**跨仓撞号且不同义**：`anaphase:ADR-0016`（编排哲学）vs `Cellrix:ADR-0016`（证轨资产解耦）；`anaphase:ADR-0017`（CI-144 传输层）vs `Cellrix:ADR-0017`（资产语言） | 两仓 `docs/decisions/` | 编号是**生态共享序列**，不能回改。缓解办法已落地：**跨仓引用一律仓名限定**（见各 ADR 头部） | 本表 §3 |
+| **K5** | ECOSYSTEM.md 自述为生态 SSOT，但其内部存在**多份互相打架的组件清单**（目录树 / 项目状态总览 / 架构图 / 快速入口） | `helix-mind/docs/helixECO/ECOSYSTEM.md` v1.94（390 行） | **先收敛 SSOT 本身**，再谈投影一致 —— 否则会收敛到一个自相矛盾的源 | — |
+| **K6** | `GROWTH.md` 已有 **9 条**（记录 0–8），远超其自定的 ≤3；且归档目标目录 **`docs/growth-archive/` 不存在** ⇒ 该文件头部的归档规则**当前无法执行** | `FlowModus/docs/GROWTH.md:3` + 目录缺失（核对 2026-09-15） | 归档 6 条是**独立治理动作**，混进「ADR 收敛」提交会污染提交语义；用户已裁决**另起治理提交** | 本表 §1 K7 |
+| **K7** | PLAN 与 GROWTH 对同一里程碑给出**相反状态**：里程碑总览 R-4/R-5/R-6 标 ⏳，而 GROWTH 记录 5/6/7 标 ✅ 完成 | `FlowModus/docs/PLAN.md:16-18` vs `GROWTH.md:83/106/124`（核对 2026-09-15） | 同 K6，属治理轮。**判定暂以 GROWTH 为准** —— 它带验收数字，PLAN 表是快照未回写 | K6 |
+| **K8** | `GROWTH.md` 有 **4 条**，超 ≤3 一条 | `helix-mind/docs/GROWTH.md`（核对 2026-09-15） | 同 K6，治理轮一并处理 | K6 |
+
+---
+
+## 2. 已修
+
+| # | 缺陷 | 修于 | 出处 |
+|---|---|---|---|
+| **F1** | `base.html` 第 1 行残留 `        r#"` → DOCTYPE 不在首位 → quirks mode + 页面顶部渲染字面量 | 2026-09-14 | `Cellrix:ADR-0016` D5 |
+| **F2** | 证轨状态栏三格恒 `—`（`TOKENS` / 缓存命中 / `TOK/S`）—— 无数据源，非未实现 | 2026-09-14 | `anaphase:ADR-0038` |
+| **F3** | 测试临时目录竞态：`mod tests` 与 `mod query_tests` 共用 `anaphase-session-events-test-3/4` → 全量偶败 | 2026-09-14 | ECOSYSTEM v1.94 |
+| **F4** | cellrix 手套空串遮蔽：`cellrix_endpoint` 配置为空时仍被当成显式端点，导致兜底被跳过、Native 手套恒暗 | 2026-09-14 | 抽 `cellrix_probe_target()` 单一决策点 |
+| **F5** | SSE 终局行缺 physical model；前端 sender 槽位不唯一 | 2026-09-14 | `anaphase:ADR-0036` |
+
+---
+
+## 3. 已落地的缓解措施（不是修复，是止血）
+
+| 缺陷 | 缓解 | 状态 |
+|---|---|---|
+| **K4 撞号** | 跨仓引用一律**仓名限定**（`anaphase:ADR-0016` / `Cellrix:ADR-0016`）。已写入 ADR-0018 / 0039 / 0040 / 0102 的头部与参考节 | ✅ 已落地 |
+| **K1/K2/K3/K5** | 登记在案（本表），不再依赖记忆文件保存 | ✅ 已落地（本表） |
+
+---
+
+*登记 ≠ 认领。修不修、什么时候修，另议。*
