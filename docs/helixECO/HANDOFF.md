@@ -1,22 +1,27 @@
 # HANDOFF — 生态交接点
 
+> ⚠️ **本文件是 2026-09-08 的历史快照，已过期，不再是交接真相源。**
+> **唯一交接真相源 = 工作区根目录 `/Users/jason/Doubao/chats/Jasonmilk/HANDOFF.md`**（会话级镜像），生态 SSOT = `ECOSYSTEM.md`（v1.91）。
+> 已更正的下述错误：本文件 §0 声称"服务全部 RUNNING"——**2026-09-14 13:00 实测 `:50061/:8080/:60052/:60053` 全部未监听（服务全灭）**；测试数 1558 已重校为 **1544**（见 ECOSYSTEM v1.91）；术语「印痕/Engram」已更名「**证轨/ProveTrack**」（ADR-0037）。
+> 保留本文件仅因其 §3「未完成事项」仍有参考价值；**新的交接请写根目录 HANDOFF.md，不要续写本文件**。
+
 > 更新时间：2026-09-08（ADR-0034 空回复修复完成）
 > 用途：跨会话恢复上下文的权威快照。先读本文件 → ECOSYSTEM.md（SSOT）→ 目标项目 PLAN.md/GROWTH.md。
 > 维护：每次交接时更新本文件（覆盖式，保持单页、准确、不冗余）。
 
-## 0. 当前物理状态（已核对）
+## 0. 当前物理状态（**已过期**——见上方横幅；此处保留 09-08 快照原文）
 
 | 服务 | 端口 | 状态 | 进程 |
 |---|---|---|---|
-| anaphase-helix | 50061 | ✅ RUNNING（含 ADR-0034 新二进制） | target/debug/anaphase |
-| cellrix-web | 8080 | ✅ RUNNING | target/debug/cellrix-web |
-| tuck | 60052 | ✅ RUNNING（Bearer tk-local-gate） | target/debug/tuck |
-| helix-mind-cli | — | ✅ RUNNING（config: .helix/mind/config.toml） | helix-mind-cli run |
+| anaphase-helix | 50061 | ~~✅ RUNNING~~（09-14 实测：未监听） | target/debug/anaphase |
+| cellrix-web | 8080 | ~~✅ RUNNING~~（09-14 实测：未监听） | target/debug/cellrix-web |
+| tuck | 60052 | ~~✅ RUNNING~~（09-14 实测：未监听） | target/debug/tuck |
+| helix-mind-cli | — | ~~✅ RUNNING~~（09-14 实测：未监听） | helix-mind-cli run |
 
 浏览器入口：`http://127.0.0.1:8080/`（WebUI + TUI 同构，TUI 经 `up` 选择 [2]）。
 白盒核对路径：`.helix/events/run-*.events.jsonl`（会话事件，权威）、`.helix/traces/reasoning.jsonl`（推理正文）、`Tuck/gateway-audit.jsonl`（审计链）。
 
-## 1. 各仓库对齐状态（2026-09-08 物理核对，全部已推送）
+## 1. 各仓库对齐状态（**2026-09-08 快照，已过期**——当前状态见根目录 HANDOFF.md）
 
 | 仓库 | 分支 | HEAD | 说明 |
 |---|---|---|---|
@@ -29,7 +34,7 @@
 | Helix-MCP-Learner | main | 3b98a67 | 核心完成 |
 | phyt-DNA | main | e7bfbbf | PROTECTION v1.3（IP 条款 + spec headers） |
 
-全生态测试：1558（Anaphase 240 / Cellrix 341 / Tuck 369 / Mind 118 / BIND-19 142 / Tentacle 153 / Glove 45 / MCP-Learner 50 / FlowModus 83）。
+全生态测试：**1544**（2026-09-14 重校：Anaphase **245** / Cellrix **341** / Tuck **363**（须 `--features gateway`）/ Mind 118 / BIND-19 142 / Tentacle 153 / Glove 45 / MCP-Learner 50 / FlowModus **87**）。原 09-08 快照值 1558 已废弃。
 
 ## 2. 最近完成（已推送，勿重复）
 
@@ -54,7 +59,7 @@
 
 ## 4. 下一步建议（按你的节奏）
 
-1. **优先 P0-1/2/3**（判据诚实三件套）：一次提交让 Engram 账本自洽——"判据能解释自己、参数名被 schema 锁定、哈希只盖业务产物"。这是上次审查的核心结论，做完 run-1dc862 就成了最好的 demo。
+1. **优先 P0-1/2/3**（判据诚实三件套）：一次提交让 ProveTrack 账本自洽——"判据能解释自己、参数名被 schema 锁定、哈希只盖业务产物"。这是上次审查的核心结论，做完 run-1dc862 就成了最好的 demo。
 2. **P0-4**（CONTEXT 可读性）顺手同批修。
 3. **P1-6**（结晶）值得认真做——"审计是结晶的矿源"是 Helix 差异化（0-token 拦在前面），但需先定人机确认 UI（Cellrix 侧）。
 4. **P2** 按用户裁定暂缓。
@@ -65,5 +70,5 @@
 - 文档先子后父：ADR → PLAN → GROWTH → README → ECOSYSTEM，全部推 GitHub，commit 关联 ADR。
 - README 必更新（badge 测试数同步）；ECOSYSTEM 是 SSOT，项目状态变必须同步。
 - 零行业词汇（测试/字段只用 tool/args/expect/numbers/rate/text/fixture/mock/schema）；拒绝正则、拒绝补丁思维、第一性原理。
-- DSH/Cherry 只作灵感，不借命名（轨迹=印痕 Engram）；内部命名简短准确省 tokens。
+- DSH/Cherry 只作灵感，不借命名（轨迹=证轨 ProveTrack）；内部命名简短准确省 tokens。
 - 运行时产物（*.jsonl 审计/事件）不进 git。
