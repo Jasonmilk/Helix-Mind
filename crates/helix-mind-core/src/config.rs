@@ -54,6 +54,16 @@ pub struct RetrievalConfig {
     pub dead_end_penalty_factor: f64,
     #[serde(default = "default_tentative_edge_weight")]
     pub tentative_edge_weight: f64,
+    /// System load above which mode negotiation forces Skilled (energy guard).
+    /// Thresholds live here, not inline - zero hardcoding.
+    #[serde(default = "default_high_system_load")]
+    pub high_system_load: f64,
+    /// Latency budget (ms) below which mode negotiation forces Skilled.
+    #[serde(default = "default_min_latency_limit_ms")]
+    pub min_latency_limit_ms: u64,
+    /// Token budget below which mode negotiation forces Skilled.
+    #[serde(default = "default_min_token_budget")]
+    pub min_token_budget: u64,
     /// Query tokens dropped before FTS retrieval (P10 recall, 2026-09-07).
     /// A natural-language question as one phrase almost never matches
     /// stored text; tokenized retrieval strips function words first. Protocol
@@ -76,6 +86,9 @@ impl Default for RetrievalConfig {
             max_nodes_per_query: default_max_nodes_per_query(),
             dead_end_penalty_factor: default_dead_end_penalty(),
             tentative_edge_weight: default_tentative_edge_weight(),
+            high_system_load: default_high_system_load(),
+            min_latency_limit_ms: default_min_latency_limit_ms(),
+            min_token_budget: default_min_token_budget(),
             stopwords: default_stopwords(),
         }
     }
@@ -351,6 +364,9 @@ fn default_weight_threshold() -> f64 { 0.8 }
 fn default_soft_edge_decay() -> f64 { 0.8 }
 fn default_soft_edge_min_weight() -> f64 { 0.1 }
 fn default_max_nodes_per_query() -> usize { 20 }
+fn default_high_system_load() -> f64 { 0.9 }
+fn default_min_latency_limit_ms() -> u64 { 100 }
+fn default_min_token_budget() -> u64 { 100 }
 
 /// Protocol-default stopword list (P10 recall). Deterministic, config-overridable.
 fn default_stopwords() -> Vec<String> {

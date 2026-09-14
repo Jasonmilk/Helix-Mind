@@ -110,6 +110,7 @@ async fn test_retrieval_engine_basic() {
         soft_edge_decay_factor: 0.8,
         soft_edge_min_weight: 0.1,
         tentative_edge_weight: 0.3,
+        ..Default::default()
     };
     // P0.5: inject the deterministic FakeAdapter as the start-node extractor.
     let mut fake = FakeAdapter::new();

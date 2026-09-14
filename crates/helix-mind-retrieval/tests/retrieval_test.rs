@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use helix_mind_core::config::{RetrievalConfig, StorageConfig};
 use helix_mind_core::graph::*;
-use helix_mind_retrieval::{FakeAdapter, RetrievalEngine};
+use helix_mind_retrieval::{energy_degraded, FakeAdapter, RetrievalEngine};
 use helix_mind_storage::{StorageEngine, WritePriority};
 use uuid::Uuid;
 
@@ -34,6 +34,7 @@ fn retrieval_config() -> RetrievalConfig {
         soft_edge_decay_factor: 0.8,
         soft_edge_min_weight: 0.1,
         tentative_edge_weight: 0.3,
+        ..Default::default()
     }
 }
 
@@ -166,4 +167,48 @@ async fn isolated_seed_survives_default_threshold() {
         result.nodes.len(),
         result.nodes.iter().map(|n| &n.content).collect::<Vec<_>>()
     );
+}
+
+
+// ── K9: energy-guard thresholds live in config, not inline ──────────────
+
+fn energy_at(system_load: f64, latency_limit_ms: u64, token_budget: u64) -> EnergyContext {
+    EnergyContext {
+        system_load,
+        latency_limit_ms,
+        token_budget,
+        ..Default::default()
+    }
+}
+
+#[test]
+fn energy_guard_defaults_equal_the_original_literals() {
+    let cfg = RetrievalConfig::default();
+    assert_eq!(cfg.high_system_load, 0.9);
+    assert_eq!(cfg.min_latency_limit_ms, 100);
+    assert_eq!(cfg.min_token_budget, 100);
+}
+
+#[test]
+fn energy_guard_degrades_only_past_the_threshold() {
+    let cfg = RetrievalConfig::default();
+    // Exactly at every threshold: still healthy (all three comparisons are strict).
+    assert!(!energy_degraded(&energy_at(0.9, 100, 100), &cfg));
+    // Past any single threshold: degraded.
+    assert!(energy_degraded(&energy_at(0.91, 100, 100), &cfg));
+    assert!(energy_degraded(&energy_at(0.0, 99, 100), &cfg));
+    assert!(energy_degraded(&energy_at(0.0, 100, 99), &cfg));
+    // Comfortably inside every budget: healthy.
+    assert!(!energy_degraded(&energy_at(0.1, 5_000, 4_096), &cfg));
+}
+
+#[test]
+fn energy_guard_thresholds_are_config_overridable() {
+    let mut strict = RetrievalConfig::default();
+    strict.high_system_load = 0.5;
+    strict.min_token_budget = 2_048;
+    let e = energy_at(0.6, 5_000, 1_024);
+    // One energy context, two configs: the guard follows config, not a constant.
+    assert!(!energy_degraded(&e, &RetrievalConfig::default()));
+    assert!(energy_degraded(&e, &strict));
 }

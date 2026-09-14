@@ -24,6 +24,17 @@ pub struct RetrievalEngine {
     recent_embeddings: tokio::sync::RwLock<Vec<Vec<f32>>>,
 }
 
+/// Whether energy constraints force the cognitive mode down to Skilled.
+///
+/// Named pure function: thresholds are read from `RetrievalConfig`
+/// (config-overridable, zero hardcoding) and the predicate carries no state,
+/// so it is testable without constructing a `RetrievalEngine`.
+pub fn energy_degraded(energy: &EnergyContext, cfg: &RetrievalConfig) -> bool {
+    energy.system_load > cfg.high_system_load
+        || energy.latency_limit_ms < cfg.min_latency_limit_ms
+        || energy.token_budget < cfg.min_token_budget
+}
+
 impl RetrievalEngine {
     pub fn new(config: RetrievalConfig, storage: Arc<StorageEngine>) -> Self {
         // P1 (M-01): the real FTS5-trigram extractor is the production default.
@@ -383,8 +394,10 @@ impl RetrievalEngine {
             return (CognitiveMode::Anchor, "Moderate impasse: using Anchor mode".into());
         }
 
-        // Standard negotiation based on energy
-        if energy.system_load > 0.9 || energy.latency_limit_ms < 100 || energy.token_budget < 100 {
+        // Standard negotiation based on energy. Thresholds come from
+        // RetrievalConfig (zero hardcoding); the predicate is a named pure
+        // function so it can be tested without building an engine.
+        if energy_degraded(energy, &self.config) {
             return (CognitiveMode::Skilled, "Degraded to Skilled due to energy constraints".into());
         }
 
