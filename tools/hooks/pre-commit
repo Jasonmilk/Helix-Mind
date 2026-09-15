@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Two gates, both from failures that actually happened on 2026-09-15.
+#
+# 1. An ADR whose first line is not an ADR header is refused. Three times that
+#    day an ADR was replaced by the full text of a chat reply; each time the
+#    first line gave it away. The check calls tools/adr_head.py — the ONE
+#    parser for that fact — rather than carrying its own regex.
+#
+# 2. A staged diff larger than LARGE_DIFF_MAX lines is refused unless the
+#    operator says so. This is the 5-Whys landing point: the third overwrite
+#    was committed after the author SAW "+62/-258" and did not stop. Nothing
+#    forced the stop. Now something does.
+#
+#    To commit a genuinely large change:   SKIP_LARGE_DIFF=1 git commit ...
+#
+# Install with tools/install-hooks.sh (core.hooksPath), not by copying.
+set -u
+
+LARGE_DIFF_MAX="${LARGE_DIFF_MAX:-50}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARSER="$HERE/../adr_head.py"
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+fail=0
+
+# ---------------------------------------------------------------- gate 1: ADRs
+# `ADR-*.md` only. A `*.md` glob also catches the index README and, in repos
+# whose history predates the convention, files named `0001-<title>.md` — real
+# ADRs that simply do not carry the prefix. Those are not defects and must not
+# be reported as pollution.
+adrs="$(git diff --cached --name-only --diff-filter=ACM -- 'docs/decisions/ADR-*.md' 2>/dev/null || true)"
+if [ -n "$adrs" ]; then
+  # FAIL-OPEN. A gate that cannot run must not block work: if the parser or the
+  # interpreter is missing, say so and let the commit through. A hook that
+  # refuses everything is a 100%-coverage, zero-assertion test — it would also
+  # mean that moving this directory makes the repo uncommittable.
+  if ! command -v python3 > /dev/null 2>&1 || [ ! -f "$PARSER" ]; then
+    echo "WARN: ADR 首行检查已跳过（fail-open）—— $(command -v python3 > /dev/null 2>&1 && echo "解析器缺失: $PARSER" || echo "python3 不可用")"
+    adrs=""
+  fi
+fi
+if [ -n "$adrs" ]; then
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    [ -f "$ROOT/$f" ] || continue
+    if ! python3 "$PARSER" "$ROOT/$f" > /dev/null 2>&1; then
+      echo "REJECT: $f 首行不是 ADR 头 —— 疑似回复正文被整份写入"
+      head -1 "$ROOT/$f" | cut -c1-70 | sed 's/^/        /'
+      echo "        (解析器: ${PARSER#$ROOT/})"
+      fail=1
+    fi
+  done <<EOF
+$adrs
+EOF
+fi
+
+# ------------------------------------------------------ gate 2: diff magnitude
+if [ "${SKIP_LARGE_DIFF:-}" != "1" ]; then
+  stat="$(git diff --cached --shortstat 2>/dev/null || true)"
+  if [ -n "$stat" ]; then
+    ins="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) insertion.*/\1/p')"
+    del="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) deletion.*/\1/p')"
+    total=$(( ${ins:-0} + ${del:-0} ))
+    if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
+      echo "REJECT: staged diff is $total lines (limit $LARGE_DIFF_MAX) — $stat"
+      echo "        大改动常常是「整份被替换」而不是「逐处修改」。"
+      echo "        确认这是本意后重跑： SKIP_LARGE_DIFF=1 git commit ..."
+      fail=1
+    fi
+  fi
+fi
+
+exit $fail
