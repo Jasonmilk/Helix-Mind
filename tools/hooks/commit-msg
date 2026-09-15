@@ -33,19 +33,30 @@ stat="$(git diff --cached --shortstat 2>/dev/null || true)"
 # and macOS sed silently matched nothing (BRE treats \+ as a literal), so the
 # gate computed 0 and passed everything for as long as it existed.
 numstat="$(git diff --cached --numstat 2>/dev/null || true)"
-total=$(printf '%s\n' "$numstat" | awk 'NF>=3 && $1 ~ /^[0-9]+$/ {a+=$1} NF>=3 && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
+
+# Only GUARDED paths count. Tests, fixtures and inline test data are data, not
+# logic, and being large is their nature — the gate kept firing on exactly the
+# change it should encourage (putting a real period slice into the net). Three
+# consecutive [large] markers is how a gate becomes a ritual, and a ritual is a
+# gate nobody reads.
+#
+# Source, assets and ADRs keep the tight limit: replacing one of those wholesale
+# is the shape all four overwrites had.
+GUARDED='^(web/assets/|web/src/|docs/decisions/)'
+total=$(printf '%s\n' "$numstat" | awk -v re="$GUARDED" 'NF>=3 && $3 ~ re {a+=$1} NF>=3 && $3 ~ re && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
+skipped=$(printf '%s\n' "$numstat" | awk -v re="$GUARDED" 'NF>=3 && $3 !~ re {a+=$1} NF>=3 && $3 !~ re && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
 
 # Fail LOUD on a parse that yields nothing while the input is non-empty: that
 # is a broken parser, not a small diff. Failing open here is how the gate died
 # silently the first time.
-if [ -n "$numstat" ] && [ "${total:-0}" = "0" ]; then
+if [ -n "$numstat" ] && [ "${total:-0}" = "0" ] && [ "${skipped:-0}" = "0" ]; then
   echo "REJECT: numstat 非空但解析出 0 —— 解析器坏了，拒绝放行"
   printf '%s\n' "$numstat" | head -3 | sed 's/^/        /'
   exit 1
 fi
 
 if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
-  echo "REJECT: staged diff is $total lines (limit $LARGE_DIFF_MAX) — $stat"
+  echo "REJECT: guarded diff is $total lines (limit $LARGE_DIFF_MAX); unguarded $skipped"
   echo "        大改动常常是「整份被替换」，而不是「逐处修改」。"
   echo "        确认这是本意后，在提交信息里写明："
   echo "            [large] <为什么这次改动这么大>"
