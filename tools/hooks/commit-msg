@@ -28,8 +28,10 @@ fi
 stat="$(git diff --cached --shortstat 2>/dev/null || true)"
 [ -n "$stat" ] || exit 0
 
-ins="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) insertion.*/\1/p')"
-del="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) deletion.*/\1/p')"
+# -E, not BRE: macOS sed treats \+ as a literal, so the BRE form silently
+# parses nothing and the gate never fires (measured: total=0 for an 80-line diff).
+ins="$(printf '%s' "$stat" | sed -nE 's/.*[^0-9]([0-9]+) insertion.*/\1/p')"
+del="$(printf '%s' "$stat" | sed -nE 's/.*[^0-9]([0-9]+) deletion.*/\1/p')"
 total=$(( ${ins:-0} + ${del:-0} ))
 
 if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
