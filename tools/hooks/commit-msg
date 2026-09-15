@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Large-diff gate, driven by the commit message rather than an environment
+# variable.
+#
+# An env var is invisible to `git log`: who skipped the gate and why becomes
+# unrecoverable, and habit makes people carry it permanently — at which point
+# the gate is decoration, which is exactly the failure it exists to prevent
+# (the third overwrite was committed after the author saw "+62/-258").
+#
+# A marker in the message is auditable:  git log --grep='\[large\]'
+#
+# Why this is the general solution and a content check is not: the four
+# overwrites on 2026-09-15/16 had one physical shape in common — the whole file
+# was replaced. That shows up as hundreds of changed lines. It does not require
+# knowing what the pollution looks like, so it cannot be outrun by wording.
+#
+#   [large] 重建 ADR 索引（36 份）
+set -u
+
+LARGE_DIFF_MAX="${LARGE_DIFF_MAX:-50}"
+MSG_FILE="${1:-}"
+[ -n "$MSG_FILE" ] && [ -f "$MSG_FILE" ] || exit 0
+
+if grep -q '\[large\]' "$MSG_FILE" 2>/dev/null; then
+  exit 0
+fi
+
+stat="$(git diff --cached --shortstat 2>/dev/null || true)"
+[ -n "$stat" ] || exit 0
+
+ins="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) insertion.*/\1/p')"
+del="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) deletion.*/\1/p')"
+total=$(( ${ins:-0} + ${del:-0} ))
+
+if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
+  echo "REJECT: staged diff is $total lines (limit $LARGE_DIFF_MAX) — $stat"
+  echo "        大改动常常是「整份被替换」，而不是「逐处修改」。"
+  echo "        确认这是本意后，在提交信息里写明："
+  echo "            [large] <为什么这次改动这么大>"
+  exit 1
+fi
+exit 0

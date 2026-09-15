@@ -1,22 +1,17 @@
 #!/usr/bin/env bash
-# Two gates, both from failures that actually happened on 2026-09-15.
+# One gate: an ADR whose first line is not an ADR header is refused.
 #
-# 1. An ADR whose first line is not an ADR header is refused. Three times that
-#    day an ADR was replaced by the full text of a chat reply; each time the
-#    first line gave it away. The check calls tools/adr_head.py — the ONE
-#    parser for that fact — rather than carrying its own regex.
+# Four times on 2026-09-15/16 a file was replaced by the full text of a chat
+# reply; the first line gave it away each time. The check calls
+# tools/adr_head.py — the ONE parser for that fact — rather than carrying its
+# own regex.
 #
-# 2. A staged diff larger than LARGE_DIFF_MAX lines is refused unless the
-#    operator says so. This is the 5-Whys landing point: the third overwrite
-#    was committed after the author SAW "+62/-258" and did not stop. Nothing
-#    forced the stop. Now something does.
-#
-#    To commit a genuinely large change:   SKIP_LARGE_DIFF=1 git commit ...
+# The other gate (diff magnitude) is in commit-msg, because it reads the
+# [large] marker from the commit message and this hook runs before one exists.
 #
 # Install with tools/install-hooks.sh (core.hooksPath), not by copying.
 set -u
 
-LARGE_DIFF_MAX="${LARGE_DIFF_MAX:-50}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARSER="$HERE/../adr_head.py"
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
@@ -53,20 +48,9 @@ $adrs
 EOF
 fi
 
-# ------------------------------------------------------ gate 2: diff magnitude
-if [ "${SKIP_LARGE_DIFF:-}" != "1" ]; then
-  stat="$(git diff --cached --shortstat 2>/dev/null || true)"
-  if [ -n "$stat" ]; then
-    ins="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) insertion.*/\1/p')"
-    del="$(printf '%s' "$stat" | sed -n 's/.*[^0-9]\([0-9]\+\) deletion.*/\1/p')"
-    total=$(( ${ins:-0} + ${del:-0} ))
-    if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
-      echo "REJECT: staged diff is $total lines (limit $LARGE_DIFF_MAX) — $stat"
-      echo "        大改动常常是「整份被替换」而不是「逐处修改」。"
-      echo "        确认这是本意后重跑： SKIP_LARGE_DIFF=1 git commit ..."
-      fail=1
-    fi
-  fi
-fi
+# Gate 2 (diff magnitude) lives in commit-msg, not here — it needs the commit
+# message to read the [large] marker, and this hook runs before there is one.
+# Keeping a copy here would mean two implementations of one rule, which is the
+# shape Cellrix:ADR-0018 exists to remove.
 
 exit $fail
