@@ -34,19 +34,20 @@ python3 adr_head.py <file>...     # 每个文件一行 JSON；任一不可解析
 
 ---
 
-## ⚠️ 状态：**尚未完成双向验证，暂勿 install**
+## ✅ 状态：双向验证已通过（2026-09-16）
 
-已验（单向）：
+| 闸门 | true positive | true negative |
+|---|---|---|
+| **gate1** | 被污染的 ADR 首行 ⇒ **拒绝** ✓ | 合法 ADR ⇒ **通过** ✓ |
+| **gate2** | 80 行 diff、无标记 ⇒ **拒绝** ✓ | 带 `[large]` ⇒ 通过 ✓ ／ 小 diff ⇒ 通过 ✓ |
 
-| 闸门 | 证据 |
-|---|---|
-| gate1 true positive | 回复正文 ⇒ 拒绝，退出码 1 ✓ |
-| gate1 true negative | 合法 ADR ⇒ 通过，退出码 0 ✓（正确解出 number/title/status/date） |
+验证方式：`/tmp` 假仓 + `core.hooksPath` 指向本目录，用
+`git rev-list --count HEAD` 前后对比确认提交是否真的发生。
 
-**未验（缺）：**
+**gate2 曾经完全失效，值得记一笔**：它用的是
+`sed -n 's/…\([0-9]\+\)…'` —— **macOS 的 BRE 下 `\+` 是字面量**，
+于是解析出 `total=0`，永远比不过阈值 50，**放行一切**。
+这和 `grep \|` 是同一类坑：**工具静默地什么都不匹配，失败长得像通过**。
+改用 `-E` 后三重验证通过。
 
-- gate1 尚未用**真实被污染的文件**测过（此前用的是手写字符串）
-- **gate2 从未成功拦截过** —— 一次 80 行 diff 的提交**直接通过了**
-- gate2 未用「提交前后 `git rev-list --count` 对比」确认它真的拦住了
-
-**⇒ 在双向验证完成前，不要跑 `install-hooks.sh`。**
+⇒ 现在可以 `./install-hooks.sh`。
