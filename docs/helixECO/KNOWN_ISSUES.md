@@ -21,6 +21,7 @@
 | **K3** | `run_cycle.rs:1052` 把 `reasoning_mode`（`"left_brain"` 模式标签）当 `model` 写进 `traces/reasoning.jsonl`，与 `assistant/reply` 的 physical model（ADR-0036）**不是同一事实** | anaphase-helix `src/run_cycle.rs:1052` | **用户明确要求"再议"**（2026-09-14），故冻结不动 | `anaphase:ADR-0036` |
 | **K4** | ADR 编号**跨仓撞号且不同义**：`anaphase:ADR-0016`（编排哲学）vs `Cellrix:ADR-0016`（证轨资产解耦）；`anaphase:ADR-0017`（CI-144 传输层）vs `Cellrix:ADR-0017`（资产语言） | 两仓 `docs/decisions/` | 编号是**生态共享序列**，不能回改。缓解办法已落地：**跨仓引用一律仓名限定**（见各 ADR 头部） | 本表 §3 |
 | **K11** | `assistant/usage`（计量事件）被 `prove_track.data.js::derivePeriodUsage` 期待，但**不在 `anaphase:ADR-0026` D2 词表中**，真实事件流亦从未出现 ⇒ 该原语恒 `null`。**危险面**：若上游日后补齐计量事件，装配层（按词表校验）会**拒收**它 —— 词表与实现的期待彼此不一致，补哪边都不通 | `Cellrix/web/assets/prove_track.data.js:168` ／ `anaphase-helix/docs/decisions/ADR-0026-session-event-stream.md` §D2 | 需裁决：① 词表补 metering 事件（协议扩展），或 ② 明确「计量不进事件流」并移除 Cellrix 的期待 | — |
+| **K12** | Cellrix 证轨视图 e2e **4 条既有失败**：侧栏有 `45 rows` 却判定「available to drive」失败；进入证轨后 `event rows rendered [0 rows]`、`no lane block`、`no in-table turn toggle`。**现象已确认，根因未查** | `Cellrix/web/tests/all_views_test.js`（`RESULT: 31 passed, 4 failed`） | 待查：是视图渲染缺陷，还是测试选择器随资产拆分而过期。**A/B 已证与 `ADR-0018` T3 无关**（改动前后逐项一致 31/4） | — |
 | **K5** | ECOSYSTEM.md 自述为生态 SSOT，但其内部存在**多份互相打架的组件清单**（目录树 / 项目状态总览 / 架构图 / 快速入口） | `helix-mind/docs/helixECO/ECOSYSTEM.md` v1.94（390 行） | **先收敛 SSOT 本身**，再谈投影一致 —— 否则会收敛到一个自相矛盾的源 | — |
 
 ---
