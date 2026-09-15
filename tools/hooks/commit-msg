@@ -28,11 +28,21 @@ fi
 stat="$(git diff --cached --shortstat 2>/dev/null || true)"
 [ -n "$stat" ] || exit 0
 
-# -E, not BRE: macOS sed treats \+ as a literal, so the BRE form silently
-# parses nothing and the gate never fires (measured: total=0 for an 80-line diff).
-ins="$(printf '%s' "$stat" | sed -nE 's/.*[^0-9]([0-9]+) insertion.*/\1/p')"
-del="$(printf '%s' "$stat" | sed -nE 's/.*[^0-9]([0-9]+) deletion.*/\1/p')"
-total=$(( ${ins:-0} + ${del:-0} ))
+# --numstat is a machine format (added, deleted, path) — no human text to parse
+# and no dialect to get wrong. The previous version used --shortstat plus sed,
+# and macOS sed silently matched nothing (BRE treats \+ as a literal), so the
+# gate computed 0 and passed everything for as long as it existed.
+numstat="$(git diff --cached --numstat 2>/dev/null || true)"
+total=$(printf '%s\n' "$numstat" | awk 'NF>=3 && $1 ~ /^[0-9]+$/ {a+=$1} NF>=3 && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
+
+# Fail LOUD on a parse that yields nothing while the input is non-empty: that
+# is a broken parser, not a small diff. Failing open here is how the gate died
+# silently the first time.
+if [ -n "$numstat" ] && [ "${total:-0}" = "0" ]; then
+  echo "REJECT: numstat 非空但解析出 0 —— 解析器坏了，拒绝放行"
+  printf '%s\n' "$numstat" | head -3 | sed 's/^/        /'
+  exit 1
+fi
 
 if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
   echo "REJECT: staged diff is $total lines (limit $LARGE_DIFF_MAX) — $stat"
