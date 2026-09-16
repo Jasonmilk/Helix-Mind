@@ -45,6 +45,11 @@ message RememberRequest {
   // episodic). L2 is the knowledge layer — law-text rails and scientific
   // facts live here, writable by the orchestrator.
   int32 node_type = 2;
+  // INTENT-7 §3.2 `WRITE_NODE` declares `parent_ids`: the nodes this one derives
+  // from, appended into a directed acyclic graph. Field number appended per
+  // ADR-0012 (never reused, never renumbered). Absent = no parents = no edges,
+  // which is exactly the pre-ADR-0043 behaviour (tolerant degradation).
+  repeated string parent_ids = 3;
 }
 
 message RememberResponse {

@@ -556,3 +556,90 @@ fn skilled_mode_disables_soft_edges_entirely() {
     let (ids, _, _, _) = topo.skilled_traverse(&[a], &params, 8, 0, 100);
     assert_eq!(ids, vec![a], "an association edge must be inert in Skilled mode");
 }
+
+// ── D5：内存侧幂等（SQL 已幂等，petgraph 不会）────────────────────────
+
+/// `add_edge` 必须在**内存**里也幂等。
+///
+/// `edges` 表以 `(source_id, target_id, relation_type)` 为主键且走
+/// `ON CONFLICT DO UPDATE`，所以 SQL 会去重；而 `MemoryTopology::add_edge` 原先
+/// 直接 `petgraph::add_edge`，会加一条**平行边**。两处不一致的后果是
+/// **事实来源（SQL）与图（内存）静默分叉**，而 `sa_core_diffusion` 读的正是内存图；
+/// 平行边还会让同一条关系在 `sum_abs` 与 `a_next` 里各计两次，静默改变权重。
+#[test]
+fn repeated_add_edge_updates_instead_of_duplicating() {
+    let mut topo = MemoryTopology::new();
+    let a = Uuid::new_v4();
+    let b = Uuid::new_v4();
+    topo.add_node(&node(a));
+    topo.add_node(&node(b));
+
+    let mut e = hard_edge(a, b, RelationType::Temporal);
+    e.weight = 0.3;
+    topo.add_edge(a, b, &e).unwrap();
+    assert_eq!(topo.graph.edge_count(), 1, "first add must create exactly one edge");
+
+    // Same triple, new weight: must UPDATE, not append.
+    e.weight = 0.9;
+    topo.add_edge(a, b, &e).unwrap();
+    assert_eq!(
+        topo.graph.edge_count(),
+        1,
+        "a repeated (source, target, relation) must update in place; petgraph's \
+         add_edge would have created a parallel edge and diverged from the SQL row"
+    );
+    let w = topo.graph.edges(topo.id_to_index[&a]).next().unwrap().weight().weight;
+    assert!((w - 0.9).abs() < 1e-12, "the weight must be updated to 0.9, got {w}");
+
+    // Same endpoints, DIFFERENT relation: a genuinely different edge (matches the
+    // SQL primary key, which includes relation_type).
+    let other = hard_edge(a, b, RelationType::Refines);
+    topo.add_edge(a, b, &other).unwrap();
+    assert_eq!(
+        topo.graph.edge_count(),
+        2,
+        "a different relation between the same endpoints is a distinct edge"
+    );
+}
+
+/// 平行边会**静默改变扩散权重**——但只在源**还有别的出边**时才如此。
+///
+/// 这一点必须写清楚，因为「重复边一定改变权重」是**错的**：若源只有这一个目标，
+/// 平行边让 `sum_abs` 与 `a_next` **同比**放大，归一化后**完全抵消**（份额仍是 1）。
+/// 只有存在兄弟边时，重复边才会**抢走兄弟的份额**。
+///
+/// ⇒ 本测试的图**必须**有兄弟边（A→B 重复 + A→C）。初版只建了 A→B，于是
+/// 在「退回无条件 add_edge」的变异下**照样通过**（空转）；加了 A→C 才咬得住。
+#[test]
+fn repeated_add_edge_does_not_change_diffusion() {
+    let build = |repeat: bool| {
+        let mut topo = MemoryTopology::new();
+        let a = Uuid::new_v4();
+        let b = Uuid::new_v4();
+        let c = Uuid::new_v4();
+        topo.add_node(&node(a));
+        topo.add_node(&node(b));
+        topo.add_node(&node(c));
+        let e = hard_edge(a, b, RelationType::Temporal);
+        topo.add_edge(a, b, &e).unwrap();
+        if repeat {
+            topo.add_edge(a, b, &e).unwrap();
+        }
+        // 兄弟边：它是「重复边抢份额」这个后果的**唯一**见证者。
+        let sib = hard_edge(a, c, RelationType::Causal);
+        topo.add_edge(a, c, &sib).unwrap();
+        let (_, acts, _, _) = topo.skilled_traverse(&[a], &skilled(0.0), 4, 0, 100);
+        // Compare the activation MULTISET, not the ids: each `build()` mints fresh
+        // random UUIDs, so including them would make the two runs uncomparable and
+        // the assertion vacuous. Sorted descending, the values are positionally
+        // meaningful regardless of which uuid landed where.
+        let mut v: Vec<i64> = acts.iter().map(|(_, x)| (x * 1e12).round() as i64).collect();
+        v.sort_unstable_by(|x, y| y.cmp(x));
+        v
+    };
+    assert_eq!(
+        build(false),
+        build(true),
+        "re-adding the same edge must be a no-op for diffusion, not a reweighting"
+    );
+}

@@ -103,7 +103,34 @@ impl MemoryTopology {
             relation_type: edge.relation_type.clone(),
             is_soft: edge.is_soft,
         };
-        self.graph.add_edge(src_idx, tgt_idx, topo);
+        // ADR-0043 D5: idempotent in MEMORY too, not only in SQL.
+        //
+        // The `edges` table is keyed `(source_id, target_id, relation_type)` and
+        // `upsert_edge` does `ON CONFLICT ... DO UPDATE`, so SQL dedupes. Petgraph's
+        // `add_edge` does not: it would add a PARALLEL edge, and `sa_core_diffusion`
+        // reads this in-memory graph. Two calls for the same triple would therefore
+        // give 1 SQL row and 2 memory edges — the fact source and the graph would
+        // silently diverge, and the parallel edge would be counted twice in both
+        // `sum_abs` and `a_next`, silently reweighting propagation.
+        //
+        // The dedupe key matches SQL's primary key exactly: same endpoints AND same
+        // relation type is the same edge; same endpoints with a different relation
+        // type is a genuinely different edge and stays.
+        let existing = self.graph.edges(src_idx).find(|e| {
+            e.target() == tgt_idx && e.weight().relation_type == edge.relation_type
+        });
+        match existing {
+            Some(e) => {
+                let id = e.id();
+                if let Some(w) = self.graph.edge_weight_mut(id) {
+                    w.weight = edge.weight;
+                    w.is_soft = edge.is_soft;
+                }
+            }
+            None => {
+                self.graph.add_edge(src_idx, tgt_idx, topo);
+            }
+        }
         Ok(())
     }
 

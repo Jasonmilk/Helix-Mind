@@ -50,11 +50,75 @@ pub async fn handle_remember(
         };
     }
 
+    // ADR-0043: `parent_ids` is INTENT-7 §3.2 `WRITE_NODE`'s parent set — the
+    // nodes this one derives from. It becomes the node's `derived_from` (an
+    // existing field that crystallize already writes) and, after the write, one
+    // edge per parent. Direction is derived -> origin, matching crystallize.
+    //
+    // Unparseable ids and self-references are dropped rather than fatal: a bad
+    // parent must not cost the caller the node itself. Absent `parent_ids` yields
+    // no edges, which is exactly the behaviour before ADR-0043 (tolerant
+    // degradation, ADR-0043 D6).
+    let parents: Vec<uuid::Uuid> = req.parent_ids
+        .iter()
+        .filter_map(|raw| uuid::Uuid::parse_str(raw).ok())
+        .filter(|id| *id != node.id)
+        .collect();
+    node.derived_from = parents.clone();
+    // Capture the resolved layer before `node` is moved into the write.
+    let layer = node.node_type.clone();
+
     let node_id = node.id; // Save UUID before moving node
     service.storage.write_node(node, 
     helix_mind_storage::WritePriority::Critical).await
         .map_err(|e| Status::internal(e.to_string()))?;
+
+    for parent in &parents {
+        match service.storage.add_edge(&derived_edge(node_id, *parent, &layer)).await {
+            Ok(()) => {}
+            // A parent link that would close a HARD-edge cycle is skipped, not
+            // fatal. The node is already valid and written; letting a topology
+            // constraint veto a memory write would be backwards, and the DAG
+            // requirement still holds for hard edges (ADR-0043 D8).
+            Err(helix_mind_core::error::MindError::CycleDetected { .. }) => {
+                tracing::warn!(
+                    node = %node_id,
+                    parent = %parent,
+                    "skipped a parent link that would close a hard-edge cycle (ADR-0043 D8)"
+                );
+            }
+            Err(e) => return Err(Status::internal(e.to_string())),
+        }
+    }
+
     Ok(Response::new(RememberResponse { node_id: node_id.to_string() }))
+}
+
+/// ADR-0043 D7: the relation a `parent_ids` entry becomes.
+///
+/// `TEMPORAL` for L3 episodic succession. The relation table in
+/// `docs/spec/data-contract.md` permits `TEMPORAL` between L2/L3 and restricts
+/// `REFINES` to L2 -> L2, so `REFINES` was never a legal choice for an L3 parent.
+/// L2 keeps `REFINES`, which is crystallize's existing convention.
+///
+/// Weight 0.8 reuses crystallize's existing value; ADR-0043 deliberately does not
+/// re-calibrate weights in the same batch that first creates edges, otherwise a
+/// recall change could not be attributed to either cause.
+///
+/// Hard edge (`is_soft = false`) and direction derived -> origin.
+pub fn derived_edge(source: uuid::Uuid, parent: uuid::Uuid, source_layer: &helix_mind_core::graph::NodeType) -> helix_mind_core::graph::Edge {
+    use helix_mind_core::graph::{Edge, NodeType, RelationType};
+    let relation_type = match source_layer {
+        NodeType::L2 => RelationType::Refines,
+        _ => RelationType::Temporal,
+    };
+    Edge {
+        source_id: source,
+        target_id: parent,
+        weight: 0.8,
+        relation_type,
+        is_soft: false,
+    }
 }
 
 pub async fn handle_forget(
@@ -116,5 +180,40 @@ pub(crate) fn convert_edge(edge: helix_mind_core::graph::Edge) -> Edge {
         weight: edge.weight,
         relation_type: format!("{:?}", edge.relation_type),
         is_soft: edge.is_soft,
+    }
+}
+
+
+#[cfg(test)]
+mod derived_edge_tests {
+    use super::derived_edge;
+    use helix_mind_core::graph::{NodeType, RelationType};
+    use uuid::Uuid;
+
+    /// L3 episodic succession must be TEMPORAL, never REFINES: the spec's relation
+    /// table restricts REFINES to L2 -> L2, so it is not a legal L3 parent relation.
+    #[test]
+    fn l3_succession_is_temporal() {
+        let e = derived_edge(Uuid::new_v4(), Uuid::new_v4(), &NodeType::L3);
+        assert_eq!(e.relation_type, RelationType::Temporal);
+        assert!(!e.is_soft, "provenance edges are hard edges");
+    }
+
+    /// L2 keeps crystallize's existing REFINES convention.
+    #[test]
+    fn l2_abstraction_is_refines() {
+        let e = derived_edge(Uuid::new_v4(), Uuid::new_v4(), &NodeType::L2);
+        assert_eq!(e.relation_type, RelationType::Refines);
+    }
+
+    /// Direction is derived -> origin, as crystallize established. Reversing it
+    /// would make diffusion flow backwards in time without any error.
+    #[test]
+    fn direction_is_derived_to_origin() {
+        let derived = Uuid::new_v4();
+        let origin = Uuid::new_v4();
+        let e = derived_edge(derived, origin, &NodeType::L3);
+        assert_eq!(e.source_id, derived);
+        assert_eq!(e.target_id, origin);
     }
 }
