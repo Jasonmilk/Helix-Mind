@@ -289,3 +289,51 @@ parse_tool_fence(response).ok_or_else(|| format!("invalid JSON from LLM: {json_e
 真失败只有 08:30 三轮（`4^23 别口算`、`天气`），**真凶 = 测试壳，已修并重放验证**。
 
 ⇒ **本项降级为「不再追查」，优先级归零**。**这是本轮最后一个还能再烧十轮的口子，就此关闭。**
+
+## 十、**根因已判定**：`expect` 是必填字段，而模型会漏写它（用户第二条诉求）
+
+**证据（同一条链、同一进程内）**：
+
+| `assistant/attempt` 的原文 | 结果 |
+|---|---|
+| `{"calls":[{"tool":"weather","args":{"city":"广州"},"expect":"ok"}]}` | ✅ 派发、执行 1916ms、两道 check 通过 |
+| `{"calls":[{"tool":"web_search","args":{"max":10,"q":"…"}}]}` ×3 | ❌ **未派发**，原文成为交付物 |
+
+**代码**：`contract/mod.rs`
+
+```rust
+pub struct Call { tool: String, args: BTreeMap<String, serde_json::Value>, expect: Expect }
+pub enum Expect { Numbers, Rate, Text, Ok }     // 无 Default，字段无 #[serde(default)]
+```
+
+⇒ **`expect` 必填且无默认** ⇒ 模型漏写时 `serde_json::from_value::<Vec<Call>>` 报 `missing field
+expect` ⇒ `parse_reasoning_output` 的两条路径都不成立 ⇒ `warn!("Unstructured output")` ⇒ **原文即答案**。
+
+**请求（一行级）**：给 `expect` 加 `#[serde(default)]`（并 `impl Default for Expect { Ok }`），
+与注入指令里那句 `"expect":"ok"` 一致。**或**把指令改成"缺 `expect` 视为 ok"。
+**判据**：连 3 次「用 web_search 搜一个词」，3 次都出现 `tool/call web_search`。
+
+**注意**：这与 P0-D-1（未执行的意图不得成为交付物）是**两条独立缺陷** ——
+即使补上默认值，解析失败时的泄漏仍会发生。
+
+## 十一、P0-E 记忆与当前对话**必须可区分**（新，跨仓）
+
+实测（用户 8 轮导出）：Turn 4 的 USER 行原文是「**我还没说什么项目你就回答了?**」——
+用户自述从未问过那个项目；而 Turn 6 的 THINK 自述它回忆到
+「**选品三原则 / 获客渠道**的学习内容」与「一个 **previous episode** 提到 GitHub 项目 Lumtract」。
+
+⇒ **别场会话的 episodic memory 被注入 CONTEXT，模型把它当成了本轮对话的历史**，于是回答了一个
+根本没被问的问题。**没有 THINK 与 CONTEXT 的 payload 全文，这个缺陷永远只表现为"模型偶尔犯傻"。**
+
+**请求**：注入的 episodic memory 在**结构上**与本轮对话可区分（不同通道 / 不同标记），
+使模型（与审查者）能分辨「我记得的」与「你刚说的」。
+**判据**：本轮 USER 行的原文能在事件流里被逐字回溯；模型不得把 injection 当作 user turn。
+
+## 十二、P0-F 无判据的轮次**不得** `success=true`（新，跨仓）
+
+实测：Turn 5 / 7 / 8 的 `turn/end` 都是 `done=true · success=true`，而这三轮
+**没有 `check/status`、没有 `verdict/status`，交付物是 JSON**。
+
+⇒ `success=true` 在**零判据**下成立 ⇒ 它是"没崩溃"，不是"成功了"，与 `answer.delivered`
+那道 check 的语义直接冲突。
+**请求**：无 verdict 的轮次，`success` 不得为 true（或把该字段改名为 `completed`）。
