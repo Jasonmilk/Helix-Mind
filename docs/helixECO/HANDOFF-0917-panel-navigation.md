@@ -17,7 +17,7 @@
 | mind 存储 | `3 nodes / 0 edges`（仅 3 条 L2 物理知识；这是**干净基线**） |
 | 经历 | 138 period（`.helix/events/run-*.events.jsonl` + `.name` 侧车） |
 | 测试 | Helix-Mind **158** / Anaphase **277** / 全生态 **1630**；面板 JS 回归网 **10 suites green / 1 need input** |
-| 工作区 | 干净。仅剩人类在飞文件：`helix-mind/docs/helixECO/HANDOFF-0916.md`、`anaphase-helix/session_notes.json`、Cellrix 的几何工作在飞文件 |
+| 工作区 | **三仓全干净**。仅剩人类在飞文件：`helix-mind/docs/helixECO/HANDOFF-0916.md`、`anaphase-helix/session_notes.json` |
 
 ## 2. 已经做完（不要重做）
 
@@ -25,7 +25,13 @@
 - **Anaphase**：T5b 传血缘、P0 修「人类摘要占父指针槽」、悬空父指针归一化、T6 白盒读 `activation_vector`（字段 `heat` → `activation`）、**卡片标题创建时冻结**（+141 个旧 period 已补内容标题）
 - **Cellrix**：`ADR-0022`（导航约束 N 系列）、`all_views_test.js` 从"永不执行"接通、`parseHash`/`buildHash` + 6 条测试、`eng-assertion check`（N1，变异注入证明非空转）
 
-## 3. 下一步：N2（唯一会动面板活动渲染的一步）
+## 3. N2 ✅ 已完成（`Cellrix:5783cfb`）；**下一步 N3**
+
+> **本节以下内容是 N2 的设计记录**（它已落地，保留作依据）。接手者请直接看 §3.6 的 N3。
+
+### 3.0 N2 结果
+
+N2 已由另一次工作落地：`5783cfb feat(nav): one selection state, and the address bar is its serialisation`，并新增 `web/tests/nav_state_test.js` 断言 **N-003（唯一选择态）**，已在网内通过。**接手者不必重做 N2。**
 
 ### 3.1 要做什么
 
@@ -63,6 +69,15 @@
    `curl -s http://127.0.0.1:8080/ | grep -c "<你新加的标识>"`
 5. 跑回归网：`cd Cellrix/web && node tests/run_all.js`（应仍是 **10 suites green**；`all_views_test.js` 会对着真面板跑 55 条断言）
 
+### 3.6 N3 的起点（下一步）
+
+**槽位注册表 + 主辅分层**（ADR-0022 N-001 / N-007）：
+
+- 引入一份**槽位注册表**（复现 `single/list/keyed/chain` 语义），替换 4 个写死 `#view-*` + 手写 switch ⇒ N-007
+- 按 **N-001 主任务主张**分层：主 = **对话**；辅助 = 证轨 / 流 / 仪表 **降为侧板或抽屉**，不再与主平级
+- **不引入容器与新构建体系**（保持 Rust + `include_str!`）——借形状，不借容器
+- ⚠️ 这一步**必然改变 DOM 清单**，`dom_contract_test.js` 会受影响：**同步重写它，别等它变红**（N4）
+
 ### 3.5 已知风险
 
 - 改选择态会动 `session.html` 与 `script.html` 两处**共享状态**，容易只改一半
@@ -78,7 +93,7 @@
 
 - **`anaphase-helix/tests/stage_events.rs::deterministic_replay_same_clock_same_trail` 有抖动**：本会话出现 **4 次**单条失败、每次复跑全绿（弱机负载下两条 trail 的一条被截断）。**它是已知的测试可靠性问题**，不影响产品代码，但**会污染每一次"全绿"的可信度**。值得单独查一轮。
 - `answer.delivered` 判据名实不符（检查的是工具边，不是"用户是否拿到答案"），**有意未改**。
-- `layout_test.js` 跳过是**诚实**的（需 Chrome on :9222）。
+- `layout_test.js` 跳过是**诚实**的（需 Chrome on :9222）。**注意**：4a 断言已随「检查器=弹出抽屉」的 2026-09-16 决改写（`Cellrix:89d3f09`，含 `docs/panel-geometry-contract.md` 同步），但**该几何行为在本环境未被验证**——无 Chrome 时它只被断言、未被演示。开 Chrome（`--remote-debugging-port=9222`）后跑 `node web/tests/layout_test.js` 即可判定。
 
 ## 6. 工作规矩（人类反复强调过，务必遵守）
 
