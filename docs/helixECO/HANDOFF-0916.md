@@ -12,7 +12,7 @@
 
 | 仓库 | HEAD |
 |---|---|
-| Cellrix | `24d5a1f` |
+| Cellrix | `02e6ac5` |
 | Tuck | `5557bfd` |
 | anaphase-helix | `69cc136` |
 | helix-mind | `0c1ee57` |
@@ -63,9 +63,46 @@ FAIL  the naive legacy wiring is gone
 | DOM 契约（改布局前必读） | `Cellrix/docs/dom-contract.md` |
 | 工作日志 | `.workbuddy-ai/memory/2026-09-16.md` |
 
+## 批次 4 已落 —— 3b-3 + 4b 合并完成（Cellrix `02e6ac5`）
+
+**证轨连续性接通。** 证轨不再是「另一个取数口」：**它是这笔 tape 的 target**，
+壳层 `loadWindow` 只读一次链并喂 tape，对话渲染 events，证轨读 `snapshot.nodes`。
+`__proveTrackLoad` 的 `stream` 形参**已删**，证轨自己的 `/api/events` 取数**已删**。
+
+**真链证据（单条命令内起栈→探→停）**：独立打开证轨（不选经历）= 整条链；
+该数由 e2e **自己从 API 重算**，不问应用要 ⇒ e2e **55 passed / 0 failed**；
+服务端页面逐字等于资产 ⇒ **56 passed / 0 failed**；回归网 **7 套件全绿**。
+
+**切换前用「两层逐字段对拍」查出并已修的 6 类缺陷**（全部有实测，不是读代码读出来的）：
+
+| # | 缺陷 | 真因 |
+|---|---|---|
+| 1 | 4 个模板里出现游离 `—`（context / turn-end / tool-result / verdict） | **`opt` 键被写成了 `{slot}`** ⇒ 先填 em dash 再追加真值；而 `—` 与「诚实缺失」同形 ⇒ 看不见 |
+| 2 | check 标签恒为字面量 `gate` | 应为 payload 的 `gate` 值（真值 `hard`） |
+| 3 | tool/result 面板显示 **digest** 而非 outcome | 审查面板要看的是产物本身 |
+| 4 | context 面板丢节点命中列表 | `detailOf` 少了 context 分支 |
+| 5 | reply 行丢周期总量与可展开正文；reasoning/plan 丢 gap 时长 ⇒ `LLM TIME` 恒 `—` | 用量从「被筛过的流」推导，而 metering 恰不在其中 |
+| 6 | metering 变成行（每链多 10 行）且重定义所有时长 | 旧的「不成行」决定没被搬过来 |
+
+**做法上的一条要点**：`validate()` 在**装载期**跑，把第 1 类缺陷变成**不可能状态**
+（槽位无法解析 / 槽位与 opt 同名 / kind 两表都没登记 ⇒ 模块拒绝加载）。
+守卫带**阳性对照**：给 `validateTables` 喂坏表，必须抛。
+
+**新增结构事实（写 ADR 前先看这里）**：
+- `prove_track.render.js` = **表**（`LANE_OF` / `SUMMARY` / `KIND_NOTE` / `STATUS_OF` / 校验器）；
+  **`SUMMARY` 就是行集** —— 没有条目 = 不成行；`NOT_DRAWN` 显式声明例外（metering）。
+- 会话项字段**只命名一次**：`cls / lane / detail / term / kindNote / fields / ord / ts`；
+  `seq`/`time` 无人读 ⇒ 已删。
+- Node 带 **`source`**（与 `lineNo` 并列）：turn 表头因此能写出该轮来自哪一段；
+  `node === source + '#' + lineNo` 是断言，不是约定。
+
 ## 下一步
 
-**批次 0 已完成**（本文件）。**批次 1–7 见 `PLAN-targets.md`。**
+**批次 0–4 已完成**（4 见上）。**批次 5–7 见 `PLAN-targets.md`。**
+
+**用户侧还剩 4 项诉求**（架构杠杆已接通，不会再跑掉）：
+**导出证轨 / 三分布局 / 密码解锁 / Tentacle 搜索**。
+用户原话：**「做完这一次切换，请立刻转向导出与布局。」**
 
 **核心判断**：接上 `ADR-0018` 的 **`one tape, many targets`**。
 现状不是「接口空置」，是**两套机制并存**：`flush()` 消费 `subscribers`，
@@ -92,3 +129,14 @@ FAIL  the naive legacy wiring is gone
 - **API 数是服务端事实，不是消费方事实。**
 - **检查一个约束，不如让违反它变得不可能。**
 - **写注释前先自问语言**：源码英文，沟通中文。
+- **换数据源之前，先拿真数据把两层**「逐字段对拍」——本轮 6 类缺陷全部由此查出，
+  其中 4 类**读代码看不出来**（游离 `—` 与诚实缺失同形；`LLM TIME` 恒 `—`；
+  digest 冒充产物；metering 变行）。对拍脚本**不进仓**（它比较的那一侧即将消失），
+  但**对拍这个动作必须做**。
+- **「0 行」的根因常常是你喂错了输入端**，不是字段名 —— 本轮真因是
+  **把 events 喂给了收 node 的层**。改字段名改了两次都没动它。
+- **哨兵要喂正确的那个产物**：`verify_live` 被指向**冻结快照**（JS 跑完后的 DOM），
+  于是「应用自己设过的 inline style」被读成「烧入坏了」⇒ **两条永久假红**，
+  而永久假红会训练人忽略检查。现在它**拒收冻结快照并说明该喂哪个文件**。
+- **一条自己算不出来的断言毫无价值**：e2e 的判据「整条链」由**测试自己从 API 重算**，
+  不向应用要数 —— 否则应用自己的计数只会与自己一致。
