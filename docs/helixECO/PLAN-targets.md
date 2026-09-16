@@ -56,7 +56,7 @@ mergeChain(...)  →  tape.feed(merged)  →  flush()
 | 批次 | 动作 | 为什么在这个位置 |
 |---|---|---|
 | **0** | ✅ **HANDOFF 最小版入库** | 决定「下一轮是否存在」 |
-| **1** | **定义 Canonical Snapshot + 投影算子**；**ADR-0018 细化 D5** | 见下「前置」 |
+| **1** | **定义 Canonical Snapshot**（语义 `kind` + `payload`、identity 与 `ord` 分离）；**ADR-0018 细化 D5** | 见下「前置」；**判据：重放一致** |
 | **2** | **`register(name, factory)` ＋ `activate` 作为唯一构造点** | **构造锁** |
 | **3** | `flush()` 出口迁移到 `activeTargets()`；`subscribers` 退役（**语义要搬家**，见下） | 出口 |
 | **4** | 证轨**注册为 target**（fallback **结构上无处落脚**）＋ 真链 80 事件断言 ＋ 变异 | 此时 fallback 自然消失 |
@@ -73,13 +73,48 @@ mergeChain(...)  →  tape.feed(merged)  →  flush()
 然后**各自再去取一次数** —— 那份推导会以「target 化已完成」的名义复活。
 
 **必须先有 Canonical Snapshot**：拓扑还原 / 时序排序 / 归一化
-**在全系统发生且仅发生一次**，产出**不可变**快照，暴露**投影算子**而非 raw 遍历：
+**在全系统发生且仅发生一次**，产出**不可变**快照。
+
+⚠️ **投影算子放 target 侧，不放 snapshot 侧**（两份外援在此相反，本计划采此裁决）：
+- ❌ `snapshot.projectConversation()` —— **assembly 里写死三个 project 方法**
+  ⇒ **每加一个视图就要改 assembly** ⇒ **把耦合搬进了核心层**
+- ✅ **project 是 target 自己的纯函数**：输入 Node 流，输出视图数据；
+  **assembly 只保证「Node 流唯一且已解释完」**
+
+> 区分点很干脆：**Lens = 「我给你准备好视图」**（核心层知道有哪些视图）；
+> **project = 「你自己算」**（核心层不需要知道）。**采后者。**
+
+### 批次 1 的真实工作量：给 fold 补一层解释
+
+**类型锁与证轨直接冲突**：锁要求 Node **不暴露可供分支的 type**（否则 target 能重新解释）；
+而证轨**就是要区分** token / 工具 / 检查 —— **它需要分支**。
+
+**解法：fold 输出语义字段，不输出 type 字符串。**
 
 ```
-projectConversation()  → 消息序列
-projectAudit()         → token / 工具 / 检查
-projectExport()        → 可审查结构
+❌ node.type = 'tool/call'   ← target 可以 switch，能重新解释 ⇒ 违锁
+✅ node.kind = 'tool'        ← 语义已定型，target 只能 select
+   node.payload = { name, args, durationMs }
 ```
+
+⇒ **批次 1 的主要工程量在这里**：把 **12 个事件类型的 `data` 解释成语义化 payload**。
+**不是给 `snapshot()` 加几个字段** —— 是**给 fold 补一层解释**。
+不写清这条，批次 1 会停在「snapshot 加字段」，然后发现**证轨仍然拿不到东西**。
+
+### Node 的 identity 与 ord 必须分离
+
+```
+node = jobId#gseq   ← 把身份与顺序焊死
+```
+⇒ 同一事件**从 root 读是 `B#10`、从中间片读是 `B#0`** ⇒ **违反确定性**。
+
+⇒ **identity 锚「文件内可自证的量」；`gseq` 降为纯 `ord`，不进 id。**
+
+### 批次 1 的判据
+
+> **用 Canonical Snapshot 重放现有「对话视图」与「证轨视图」，输出必须与当前实现一致。**
+
+这是唯一能证明「它撑得起」的方法 —— 否则又是一次「改完了但没人证明」。
 
 **⚠️ 同时细化 `ADR-0018` 的 D5**（原文「target 不得扫描窗口」会被误读成禁止此事）：
 
