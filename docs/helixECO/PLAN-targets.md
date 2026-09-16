@@ -207,6 +207,46 @@ node = jobId#gseq   ← 把身份与顺序焊死
 | 4 | 真链 10 period ⇒ 80 事件全接受、0 拒收；变异：去掉 `reverse` 顺序断言必须红 |
 | **7** | **未解锁 ⇒ 证轨零 DOM 节点 + 零内存对象**（**不是 `display:none`**） |
 
+### 批次 4：实测体量（**不猜**）
+
+**先读，再估。** 读完全部用点后的实测：
+
+| 项 | 现状 | 量 |
+|---|---|---|
+| **`prove_track.data.js:45` 的 `TYPES`** | **第四份类型词表**（协议名 → `{type, track}`） | 改为 **`KIND_CLASS`（按 `kind` 键）+ `classOf(node)`** |
+| **`summarize(e)`** | **11 个 `if (t === '…')` 按协议名分派** | ~50 行，改按 `kind` + 读 `payload` |
+| **`statusOf(e)`** | 同 | ~10 行 |
+| **`buildSession(events, meta)`** | `TYPES[e.type]`（2 处）+ 吃原始事件 | 改吃 `nodes` |
+| **合计** | | **~120 行** |
+
+**⇒ 一轮做不完**（且需 e2e 验证）。**4a / 4b 两步**：
+
+| 半步 | 动作 | 判据 |
+|---|---|---|
+| **4a** | `buildSession` 消费 Node 流（含 `summarize`/`statusOf`/`KIND_CLASS`） | **证轨输出与当前一致** |
+| **4b** | 证轨注册为 target + 删 `stream` 参数与 fallback | **真链 80 事件；fallback 无处落脚** |
+
+**⇒ 这不是"意外"**：**类型锁 = Node 不暴露 `type`** ⇒ **所有 `switch(e.type)` 的消费者必然同时失效**。
+**它是锁在兑现承诺** —— **若没有消费者因此坏掉，说明锁没锁住任何东西。**
+
+**已确认（步骤 0.5）**：`buildSession` **只在 `prove_track.js:121` 调用** ⇒
+**对话视图不走它** ⇒ **1e 没漏验** ✓
+
+### 批次 4 的隐藏前置：**tape 是伪单例**
+
+`session.html` **每次 `loadPeriodToChat` 都 `create()`** ⇒ **每次新 tape**。后果：
+
+- **注册的 target 每次都丢** ⇒ **批次 7 的密码锁解锁后换个经历就掉了**
+- **`flush()` 的历史消化丢失**
+
+⇒ **4b 之前必须解决**：**单例 + 切 job 时 `reset`**，或**按 job 缓存 + 切换时重建**。
+（单例必须配 `reset`，否则上一个会话的事件会留在 tape 里。）
+
+### 纪律：批次 4 **不重跑脚本**
+
+半改状态下的那个脚本**已被验证过一次是错的**。**手工改四处**（`buildSession` / `prove_track.js` / `session.html` / `script.html`），**每改一处跑一次测试**。
+⇒ **与「ADR 禁用脚本全局替换」是同一条纪律。**
+
 ### 批次 5：导出是 Pull，不是 Push
 
 | 视图 | 动力学 |
