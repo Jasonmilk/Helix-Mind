@@ -106,6 +106,14 @@ pub struct SaCoreConfig {
     /// 再造一个数值相同的字段属于假精度（见本模块头部 D2 说明）。
     #[serde(default = "default_convergence_epsilon")]
     pub convergence_epsilon: f64,
+
+    // ---- k-core 剪枝（D4）----
+    /// `k_core` 低于此值的节点不参与**传播**。默认 `0` = 不剪枝（行为中性）。
+    ///
+    /// **种子豁免**：见 `sa_core_diffusion` 的过滤器注释——不豁免会把孤立节点
+    /// 连种子一起剪掉，而稀疏图上大多数节点正是 `k_core = 0`。
+    #[serde(default = "default_min_k_core")]
+    pub min_k_core: usize,
 }
 
 impl Default for SaCoreConfig {
@@ -120,6 +128,7 @@ impl Default for SaCoreConfig {
             alpha_ceiling: default_alpha_ceiling(),
             gate_relative_tau: default_gate_relative_tau(),
             convergence_epsilon: default_convergence_epsilon(),
+            min_k_core: default_min_k_core(),
         }
     }
 }
@@ -138,6 +147,8 @@ pub struct SaCoreParams {
     pub gate_relative_tau: f64,
     /// 相对 ℓ1 收敛阈值。
     pub convergence_epsilon: f64,
+    /// k-core 剪枝下限（D4）。种子豁免由算法侧保证。
+    pub min_k_core: usize,
 }
 
 /// α = clamp(base + gain · heliotropism, floor, ceiling)。
@@ -185,6 +196,7 @@ impl SaCoreParams {
             decay_factor,
             gate_relative_tau: sa.gate_relative_tau,
             convergence_epsilon: sa.convergence_epsilon,
+            min_k_core: sa.min_k_core,
         }
     }
 }
@@ -199,6 +211,7 @@ fn default_alpha_floor() -> f64 { 0.2 }
 fn default_alpha_ceiling() -> f64 { 0.95 }
 fn default_gate_relative_tau() -> f64 { 0.02 }
 fn default_convergence_epsilon() -> f64 { 1e-6 }
+fn default_min_k_core() -> usize { 0 }
 
 #[cfg(test)]
 mod tests {

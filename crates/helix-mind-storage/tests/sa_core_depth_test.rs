@@ -643,3 +643,58 @@ fn repeated_add_edge_does_not_change_diffusion() {
         "re-adding the same edge must be a no-op for diffusion, not a reweighting"
     );
 }
+
+// ── D4：k-core 剪枝，且种子豁免 ──────────────────────────────────────
+
+fn with_min_k_core(min_k_core: usize) -> SaCoreParams {
+    let mut cfg = RetrievalConfig::default();
+    cfg.sa_core.min_k_core = min_k_core;
+    SaCoreParams::for_mode(CognitiveMode::Skilled, 0.0, &cfg)
+}
+
+/// 默认必须是 0，否则 D4 会顺带改变现有召回（同批改两个变量就无法归因）。
+#[test]
+fn min_k_core_defaults_to_off() {
+    assert_eq!(RetrievalConfig::default().sa_core.min_k_core, 0);
+    assert_eq!(with_min_k_core(0).min_k_core, 0);
+}
+
+/// **种子豁免**：孤立（`k_core = 0`）的查询命中在任意剪枝级别下都必须返回。
+///
+/// 这条是 D4 不能照字面实施的原因。稀疏图上大多数节点 `k_core = 0`，而
+/// `sa_core_diffusion` 的过滤器原先**不豁免种子**（紧邻的 domain 过滤器却豁免）
+/// ⇒ 打开剪枝会把孤立节点连种子一起剪掉，任何只命中孤立节点的查询召回归零 ——
+/// 正是 `GROWTH.md` 记的「recall silently dies」。
+#[test]
+fn k_core_pruning_never_removes_a_seed() {
+    for level in [1usize, 2, 9, 99] {
+        let mut topo = MemoryTopology::new();
+        let isolated = Uuid::new_v4();
+        topo.add_node(&node(isolated));
+
+        let (ids, _, _, _) = topo.skilled_traverse(&[isolated], &with_min_k_core(level), 4, 0, 100);
+        assert_eq!(
+            ids,
+            vec![isolated],
+            "an isolated seed must survive k-core pruning at level {level}"
+        );
+    }
+}
+
+/// 剪枝确实作用于**非种子**：一个极高的 `min_k_core` 会让可达的非种子节点消失，
+/// 而种子仍在。若有人把剪枝整个关掉，这条会红。
+#[test]
+fn k_core_pruning_removes_non_seeds_when_set_high() {
+    let mut topo = MemoryTopology::new();
+    let c = chain(3, &mut topo);
+
+    let (kept, _, _, _) = topo.skilled_traverse(&c[..1], &with_min_k_core(0), 4, 0, 100);
+    assert!(kept.len() > 1, "with pruning off the chain must be walked");
+
+    let (pruned, _, _, _) = topo.skilled_traverse(&c[..1], &with_min_k_core(99), 4, 0, 100);
+    assert_eq!(
+        pruned,
+        vec![c[0]],
+        "an impossible k-core level must prune every non-seed, leaving only the seed"
+    );
+}

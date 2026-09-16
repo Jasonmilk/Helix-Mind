@@ -313,13 +313,17 @@ impl MemoryTopology {
         max_iterations: usize,
         max_nodes: usize,
         target_domain: Option<String>,
-        min_k_core: usize,
     ) -> (Vec<Uuid>, Vec<(Uuid, f64)>) {
         let SaCoreParams {
             alpha,
             decay_factor,
             gate_relative_tau,
             convergence_epsilon,
+            // D4: `min_k_core` has exactly ONE source — `SaCoreParams`. The public
+            // `sa_core_traverse` still takes it as an argument for API stability, but
+            // folds it into params at that boundary, so no layer ever sees two
+            // competing values.
+            min_k_core,
         } = *params;
         // 1. Gather active nodes filtered by domain and k-core thresholding
         let active_nodes: Vec<NodeIndex> = self.graph.node_indices()
@@ -328,8 +332,16 @@ impl MemoryTopology {
                     if node.is_recessive {
                         return false;
                     }
-                    // Prune by k-core threshold to eliminate low-cohesion noise
-                    if node.k_core < min_k_core {
+                    // Prune by k-core threshold to eliminate low-cohesion noise.
+                    //
+                    // Seeds are EXEMPT — exactly as they already are in the domain
+                    // filter just below, and as they are for the relative gate.
+                    // ADR-0042 D4 originally said only "stop hardcoding 0", but on a
+                    // sparse graph most nodes have `k_core == 0`, so pruning them
+                    // would remove isolated nodes EVEN AS SEEDS and zero out recall
+                    // for any query matching only isolated nodes — the very failure
+                    // mode GROWTH.md records as "recall silently dies".
+                    if node.k_core < min_k_core && !start_ids.contains(&node.id) {
                         return false;
                     }
                     // Prune by domain if target domain is specified
@@ -561,13 +573,15 @@ impl MemoryTopology {
         target_domain: Option<String>,
         min_k_core: usize,
     ) -> (Vec<Uuid>, Vec<(Uuid, f64)>) {
+        // Boundary fold: the argument exists for callers that have not moved to
+        // params yet, but it becomes the single value that reaches the algorithm.
+        let effective = SaCoreParams { min_k_core, ..*params };
         self.sa_core_diffusion(
             start_ids,
-            params,
+            &effective,
             max_iterations,
             max_nodes,
             target_domain,
-            min_k_core,
         )
     }
 
@@ -596,7 +610,6 @@ impl MemoryTopology {
             max_iterations,
             max_nodes,
             None,
-            0,
         );
 
         (result_ids, activations, false, None)
@@ -617,7 +630,6 @@ impl MemoryTopology {
             max_iterations,
             max_nodes,
             None,
-            0,
         );
 
         (result_ids, activations, false, None)
@@ -649,7 +661,6 @@ impl MemoryTopology {
             max_iterations,
             max_nodes,
             None,
-            0,
         );
 
         (result_ids, activations, false, None)
