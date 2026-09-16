@@ -1,6 +1,7 @@
 # ADR-0043: 建边 —— 让日常写入路径记录关系（ADR-0042 T5）
 
-- **状态**: Proposed（待人类批准；关键分歧见 §4 与 §8）
+- **状态**: Accepted（人类 2026-09-17 批准开工；T5a/T5b 已落地，线上验收见 §5 D9）
+- **实现进度**: T5a ✅ / T5b ✅ / T5c（T6）⏳ / T5d ⏳；§4 的待决项见该节
 - **日期**: 2026-09-17
 - **决策范围**: helix-mind（`proto/helix_mind.proto`、`api/`、`storage/`）/ anaphase-helix（`MemoryAdapter` trait + 写入调用点）
 - **关联**: `ADR-0042`（T5 分期：本 ADR 是其前置）、`ADR-0012`（Append-Only 字段号演进）、`ADR-0020`（INTENT-7 动词映射：`WRITE_NODE` ↔ `Remember`）、`ADR-0033`（P10 召回）、INTENT-7 `WRITE_NODE`（`parent_ids`）、`ECOSYSTEM §3.1`
