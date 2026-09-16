@@ -291,6 +291,53 @@ node = jobId#gseq   ← 把身份与顺序焊死
 
 **⇒ 任何时刻中断，工作区都是干净可提交的。**
 
+### 批次 4 · 3b 的设计（**已读清，未开工**）
+
+**为什么不可分**：`summarize` / `statusOf` / `toolName` / `payloadOf` / `detailOf` /
+`buildSession` / `derivePeriodUsage` 的**输入要一起从 `event` 换成 `node`**。
+分开做就是「改签名不改调用方」—— 正是上轮回滚的那个半步。
+
+#### 步骤 0 的分类结果（**有数字**）
+
+| 类别 | 数量 | 去向 |
+|---|---|---|
+| **分支在协议名上**（`t === '…'`） | **23** | **塌成查表** |
+| **分支在 payload 值上**（`d.ok` / `d.passed` / `d.status === 'Met'` / `d.empty`） | 嵌在 return 内 | **保留 ⇒ 抽具名谓词**（`isToolOk` / `isCheckPassed` / `isVerdictMet` / `isEmptyReply`） |
+
+> **判据**：**kind 类 = 0**；**值类允许但必须具名**（可单测）。
+> 一律塌会把「什么算通过」搬进数据表 —— 可读性归零、无法单测、改规则要改数据。
+
+#### 分派与投影的分界
+
+| 表 | 归处 | 内容 |
+|---|---|---|
+| **`KIND_CLASS`** | **契约层** ✅ 已就位 | `kind → cls`（**中性语义轴，单一字符串**） |
+| **`LANE_OF`** | **视图侧（新）** | `kind → lane`（`model` / `input` / `tool`）—— **渲染概念，不进契约**（ADR-0019 §4） |
+| **`SUMMARY`** | **视图侧（新）** | `kind → { tpl, fmt, opt, when }` —— **声明，非分支** |
+| **`STATUS`** | **视图侧（新）** | `kind → status` —— **查表** |
+
+#### 调用链（**两处必须同改**）
+
+```
+prove_track.js:121   buildSession(events, S.meta)   →  buildSession(nodes)
+prove_track.js:122   derivePeriodUsage(events)      →  derivePeriodUsage(nodes)
+prove_track.data.js  buildSession(events, meta)     →  buildSession(nodes)
+```
+
+**`meta` 不再需要**：`note` 是显示文案，而 Node 流已含全部所需。
+**`deriveCoordinates` 不再需要**：`nodes` 已含 `turn` / `node` / `ord`。
+
+#### 判据（**可机器验证**）
+
+1. **`prove_track.data.js` 里 kind 类分支 = 0** —— 用
+   `grep -cE "=== '[a-z]+/" ` 计数（值类谓词不计入）。
+2. **证轨零协议名**：`grep -En "turn/|tool/|check/|verdict/|assistant/" prove_track*` **= 0**。
+3. **真链 10 period ⇒ 80 事件**；**每类 `kind` 都被归类**（无 `unknown`）；
+   **`summarize` 对每种 kind 产出非空摘要**。
+4. **7 个新字段真实出现次数 ≥ 1** ✅ 已验证（`choice` 98/112、`empty` 74/109、
+   `outcome_sha` 20/24、`index` 20/24、`verdict` 20/111、
+   `cached_tokens` 33/33、`reasoning_tokens` 33/33、`model` 33/33）。
+
 ### 批次 5：导出是 Pull，不是 Push
 
 | 视图 | 动力学 |
