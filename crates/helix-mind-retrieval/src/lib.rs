@@ -1,4 +1,3 @@
-pub mod mode;
 pub mod adapter;
 pub mod fts_extractor;
 
@@ -7,6 +6,7 @@ pub use fts_extractor::{FtsExtractor, sanitize_query, escape_fts};
 
 use helix_mind_core::graph::*;
 use helix_mind_core::config::RetrievalConfig;
+use helix_mind_core::sa_core::SaCoreParams;
 use helix_mind_storage::StorageEngine;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -291,10 +291,17 @@ impl RetrievalEngine {
         start_ids: &[Uuid],
         energy: &EnergyContext,
     ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), helix_mind_core::error::MindError> {
+        // Skilled is the *semantically correct* parameter set here: this stage is
+        // the focused local pass, and `negotiate_mode` has not run yet (it is
+        // called after this stage). What changed with ADR-0042 D1 is only that
+        // α is no longer the hardcoded literal 0.5 — it is now the Skilled base
+        // modulated by `heliotropism`, which at the neutral 0.0 reproduces 0.5
+        // exactly.
+        let params = SaCoreParams::for_mode(CognitiveMode::Skilled, energy.heliotropism, &self.config);
         self.storage.skilled_retrieve(
             start_ids,
-            self.config.beam_width,
-            self.config.weight_threshold,
+            &params,
+            self.config.max_hops,
             energy.token_budget,
             self.config.max_nodes_per_query,
         ).await
@@ -343,12 +350,19 @@ impl RetrievalEngine {
         start_ids: &[Uuid],
         energy: &EnergyContext,
     ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
-        // Use anchor traversal with lower weight threshold to include recessive
+        // Historical note: this stage used to pass an absolute `0.3` threshold
+        // with the comment "lower threshold to catch recessive". That was doubly
+        // wrong — (a) an absolute threshold is not scale-invariant (ADR-0042 D0),
+        // and (b) it could never include a recessive node anyway, because
+        // `sa_core_diffusion` hard-filters `is_recessive` at collection time.
+        // Recessive inclusion is a protocol-level decision (`include_recessive`
+        // on the request), not a threshold side effect.
+        let params = SaCoreParams::for_mode(CognitiveMode::Anchor, energy.heliotropism, &self.config);
         let (ids, _, _, _) = self.storage.anchor_retrieve(
             start_ids,
             None,
-            self.config.beam_width,
-            0.3, // lower threshold to catch recessive
+            &params,
+            self.config.max_hops,
             energy.token_budget / 2,
             self.config.max_nodes_per_query / 2,
         ).await?;
@@ -361,10 +375,16 @@ impl RetrievalEngine {
         start_ids: &[Uuid],
         energy: &EnergyContext,
     ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
-        // High-temperature, unfiltered exploration
+        // High-temperature, unfiltered exploration. `energy.pulse` modulates the
+        // RELATIVE gate (higher temperature admits weaker activations) instead of
+        // the old absolute `(0.01 * (1 - temperature)).max(0.001)`.
+        let params =
+            SaCoreParams::for_mode(CognitiveMode::Imagination, energy.heliotropism, &self.config);
         let (ids, _, _, _) = self.storage.imagination_retrieve(
             start_ids,
             energy.pulse,
+            &params,
+            self.config.max_hops,
             energy.token_budget / 2,
             self.config.max_nodes_per_query / 2,
         ).await?;

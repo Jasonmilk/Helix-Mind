@@ -2,6 +2,7 @@ use super::{StorageEngine, StorageStats, WritePriority};
 use crate::codec::*;
 use helix_mind_core::graph::*;
 use helix_mind_core::error::MindError;
+use helix_mind_core::sa_core::SaCoreParams;
 use helix_mind_wal::WalEvent;
 use r2d2::PooledConnection;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -16,10 +17,8 @@ impl StorageEngine {
     pub async fn sa_core_retrieve(
         &self,
         start_ids: &[Uuid],
-        alpha: f64,
-        decay_factor: f64,
-        weight_threshold: f64,
-        max_hops: usize,
+        params: &SaCoreParams,
+        max_iterations: usize,
         max_nodes: usize,
         target_domain: Option<String>,
         min_k_core: usize,
@@ -27,10 +26,8 @@ impl StorageEngine {
         let topo = self.topology.read().await;
         let result = topo.sa_core_traverse(
             start_ids,
-            alpha,
-            decay_factor,
-            weight_threshold,
-            max_hops,
+            params,
+            max_iterations,
             max_nodes,
             target_domain,
             min_k_core,
@@ -353,13 +350,13 @@ impl StorageEngine {
     pub async fn skilled_retrieve(
         &self,
         start_ids: &[Uuid],
-        beam_width: usize,
-        weight_threshold: f64,
+        params: &SaCoreParams,
+        max_iterations: usize,
         energy_budget: u64,
         max_nodes: usize,
     ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), MindError> {
         let topo = self.topology.read().await;
-        let result = topo.skilled_traverse(start_ids, beam_width, weight_threshold, energy_budget, max_nodes);
+        let result = topo.skilled_traverse(start_ids, params, max_iterations, energy_budget, max_nodes);
         Ok(result)
     }
 
@@ -367,13 +364,13 @@ impl StorageEngine {
         &self,
         start_ids: &[Uuid],
         _query_embedding: Option<Vec<f32>>,
-        beam_width: usize,
-        weight_threshold: f64,
+        params: &SaCoreParams,
+        max_iterations: usize,
         energy_budget: u64,
         max_nodes: usize,
     ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), MindError> {
         let topo = self.topology.read().await;
-        let result = topo.anchor_traverse(start_ids, beam_width, weight_threshold, energy_budget, max_nodes);
+        let result = topo.anchor_traverse(start_ids, params, max_iterations, energy_budget, max_nodes);
         Ok(result)
     }
 
@@ -381,11 +378,20 @@ impl StorageEngine {
         &self,
         start_ids: &[Uuid],
         temperature: f64,
+        params: &SaCoreParams,
+        max_iterations: usize,
         energy_budget: u64,
         max_nodes: usize,
     ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), MindError> {
         let topo = self.topology.read().await;
-        let result = topo.imagination_traverse(start_ids, temperature, energy_budget, max_nodes);
+        let result = topo.imagination_traverse(
+            start_ids,
+            temperature,
+            params,
+            max_iterations,
+            energy_budget,
+            max_nodes,
+        );
         Ok(result)
     }
 

@@ -56,10 +56,20 @@ sqlite_path = "data/memory.db"
 parquet_dir = "data/parquet"
 node_cache_capacity = 1000
 [retrieval]
-max_hops = 3
-beam_width = 5
-weight_threshold = 0.3
-max_nodes_per_query = 10
+max_hops = 3                 # 算力预算：同步幂迭代下一步 == 一跳
+beam_width = 3
+max_nodes_per_query = 20
+
+# SA-Core 参数（ADR-0042）：alpha / 闸门 / 收敛的唯一来源。
+[retrieval.sa_core]
+alpha_skilled = 0.5          # heliotropism = 0.0 处的基准 alpha（半径 1/(1-a) = 2 跳）
+alpha_anchor = 0.7           # 半径 ≈ 3.3 跳
+alpha_imagination = 0.9      # 半径 10 跳
+heliotropism_gain = 0.3      # 0.5 ± 0.3 即已公告的 0.8 / 0.2（skilled 两角）
+alpha_floor = 0.2
+alpha_ceiling = 0.95         # 必须 < 1.0：rho(alpha*W) <= alpha 是收敛前提
+gate_relative_tau = 0.02     # 低于当轮峰值激活的 2% 即剪枝
+convergence_epsilon = 1e-6   # 相对 L1 残差
 [metabolism]
 digest_interval_sec = 300
 idle_timeout_sec = 7200
@@ -82,10 +92,26 @@ Dash
 ---
 ## 📡 4. 核心 API 与激活扩散公式
 ### 4.1 SA-Core 引擎公式
-查询时，记忆图转换为稀疏邻接矩阵 $W$。活跃搜索路径通过 **激活扩散** 代数计算：
+查询时，记忆图转换为稀疏邻接矩阵 $W$。活跃搜索路径通过 **激活扩散** 代数计算（个性化 PageRank 幂迭代，跑到收敛）：
 $$a_{t+1} = \alpha \cdot a_t \cdot W + (1-\alpha) \cdot a_0$$
-*   **$\alpha$（衰减/向阳因子）**：基于 `EnergyContext.heliotropism` 动态计算（乐观模式 = 0.8，防御模式 = 0.2）。
-*   **抑制性压制**：对于已纠正节点，`CORRECTS` 边映射权重为 $-1.0$。这在向量乘法中从过时节点中减去能量，自动将其最终能量钳制为 `0.0`。
+*   **$\alpha$（阻尼因子 damping，*不是* 衰减）**：不是固定常量，而是派生量
+    `α = clamp(base_α(mode) + gain · heliotropism, 0.2, 0.95)`，其中 `gain = 0.3`、
+    `base_α` = **Skilled 0.5 / Anchor 0.7 / Imagination 0.9**。因此此前公告的
+    「乐观 0.8 / 防御 0.2」恰好是 **Skilled 模式的两个角**（`0.5 ± 0.3`）——
+    那是一个特例，不是全部映射。有效扩散半径是 `1/(1−α)`。
+    配置见 `[retrieval.sa_core]`。`α` 必须保持 `< 1.0`，因为 `ρ(αW) ≤ α` 正是收敛的保证。
+*   **剪枝闸门（相对，绝不绝对）**：非种子节点只有在持有「当轮**峰值**激活的至少
+    `gate_relative_tau`（默认 `0.02`）」时才在迭代中存活。必须是相对量，因为 `a_0`
+    对**每个**种子注入 `1.0`，向量尺度就是种子个数——绝对阈值对不同查询含义不同。
+    锚定**峰值**（而非总质量）还保证扩散深度对种子个数不变。
+    种子（查询命中）节点豁免，因此**命中必被返回**。
+*   **停止规则**：相对 L1 残差 `Σ|a_{t+1} − a_t| < convergence_epsilon · Σ|a_t|`
+    （默认 `1e-6`）。`[retrieval] max_hops`（默认 3）是**算力预算**——一次迭代恰好推进一跳，
+    所以它与跳数是同一个量。用尽预算是**被记入日志**的截断，而不是答案。
+*   **抑制性压制**：对于已纠正节点，`CORRECTS` 边映射权重为 $-1.0$。闸门会把被抑制节点
+    **清零**，而不是让它把负值向外传播，因此白盒向量里**不含任何负值**。
+    过时知识是从活跃集合中**移除**，而不是仅仅排名靠后。
+    （ADR-0042 D3 将把抑制彻底移出矩阵，改为确定性的 `superseded_by` 门控。）
 ### 4.2 发光思维流（`activation_vector`）
 查询完成时，`Helix-Mind` 通过 `HelixQueryResult` 返回所有能量节点的精确最终激活状态：
 ```json
@@ -96,11 +122,14 @@ $$a_{t+1} = \alpha \cdot a_t \cdot W + (1-\alpha) \cdot a_0$$
   "activation_vector": [
     { "node_id": "UUID-physics-entropy", "energy": 0.95 },
     { "node_id": "UUID-math-shannon", "energy": 0.78 },
-    { "node_id": "UUID-art-poetic", "energy": -0.45 }
+    { "node_id": "UUID-art-poetic", "energy": 0.12 }
   ]
 }
 ```
 `Cellrix` 将此向量渲染为实时发光动画，让人类肉眼能目睹 Helix 思考时的神经状态。
+
+> 条目**严格为正**：剪枝闸门会在构建向量之前把被抑制（负值）的节点清零，
+> 所以这里永远不会出现负的 `energy`。（本文档早先的示例写的 `-0.45` 不可复现。）
 ---
 ## 📝 5. AI-to-AI 协作指南
 如果您是为本仓库编写代码的 AI 智能体，请严格遵循以下 **铁律**：

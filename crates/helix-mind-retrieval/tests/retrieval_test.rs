@@ -24,10 +24,11 @@ async fn memory_storage() -> Arc<StorageEngine> {
 fn retrieval_config() -> RetrievalConfig {
     RetrievalConfig { stopwords: Vec::new(),
         beam_width: 3,
-        // Low threshold: SA-Core keeps only nodes whose activation survives the
-        // attenuation loop. A 1-hop leaf (A→B) holds 0.25; threshold 0.5 would
-        // zero it, hiding traversal. 0.2 lets the test observe the edge reach.
-        weight_threshold: 0.2,
+        // ADR-0042 D0: the threshold workaround is gone. The gate is relative
+        // (τ · activation mass), so a 1-hop leaf A→B holding ≈0.25 of mass ≈1
+        // survives the default τ=0.02. The previous `weight_threshold: 0.2`
+        // existed solely to get under the absolute 0.8 gate — which sat ABOVE
+        // the first-hop ceiling α, zeroing every non-seed node.
         max_nodes_per_query: 100,
         dead_end_penalty_factor: 0.8,
         max_hops: 5,
@@ -142,9 +143,14 @@ async fn retrieval_traverses_causal_edge_to_neighbor() {
 
 #[tokio::test]
 async fn isolated_seed_survives_default_threshold() {
-    // Default weight_threshold is 0.8; an isolated (edge-less) seed node
-    // decays to (1 - alpha) * 1.0 = 0.5 per hop and used to be zeroed,
-    // silently killing recall. Seed = hard evidence: it must survive.
+    // An isolated (edge-less) seed node decays to (1 - alpha) * 1.0 = 0.5 per hop
+    // and used to be zeroed by the absolute `weight_threshold = 0.8`, silently
+    // killing recall. Seed = hard evidence: it must survive.
+    //
+    // ADR-0042 D0 removed the absolute gate in favour of a relative one, so this
+    // is no longer a close call — but the invariant is what matters, not the
+    // margin, and it must hold for any gate setting (see the storage-layer
+    // `seeds_survive_even_an_absurd_gate`).
     let storage = memory_storage().await;
     let node = l2_node("我叫Jason", 0.9);
     let node_id = node.id;

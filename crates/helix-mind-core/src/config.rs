@@ -38,12 +38,22 @@ impl Default for Config {
 // ---------- RetrievalConfig ----------
 #[derive(Debug, Clone, Deserialize)]
 pub struct RetrievalConfig {
+    /// 幂迭代上限。**同步幂迭代下一次迭代 = 一跳**，所以这既是跳数上限也是
+    /// 算力预算；二者是同一个量，不存在第二个 `max_iterations` 旋钮（ADR-0042 D2）。
+    /// 循环的实际停止规则是**收敛判据**（`sa_core.convergence_epsilon`）；
+    /// 本字段只是预算上限，超出即为显式记录的截断。
+    ///
+    /// 在 ADR-0042 D0 之前这个旋钮是**被架空的**：绝对闸门 `0.8` 高于第 1 跳
+    /// 的激活上界 `α`，所有非种子节点在第 1 轮就被清零，调 3 和调 12 结果相同。
     #[serde(default = "default_max_hops")]
     pub max_hops: usize,
     #[serde(default = "default_beam_width")]
     pub beam_width: usize,
-    #[serde(default = "default_weight_threshold")]
-    pub weight_threshold: f64,
+    /// **`weight_threshold` 已删除（ADR-0042 D0）**：绝对闸门阈值曾是 `0.8`，
+    /// 但它不是尺度不变量——`a_0` 对**每个**种子注入 `1.0`，故激活总质量的
+    /// 量纲是「种子个数 k」。绝对阈值对单种子查询恒为致命（第 1 跳激活上界
+    /// `α ≤ 0.7 < 0.8`，非种子全被清零 ⇒ 扩散退化成关键词命中）。
+    /// 取代者是 [`SaCoreConfig::gate_relative_tau`]：阈值相对**当前激活总质量**。
     #[serde(default = "default_soft_edge_decay")]
     pub soft_edge_decay_factor: f64,
     #[serde(default = "default_soft_edge_min_weight")]
@@ -71,6 +81,10 @@ pub struct RetrievalConfig {
     /// config `[retrieval] stopwords`, zero hardcoding.
     #[serde(default = "default_stopwords")]
     pub stopwords: Vec<String>,
+    /// SA-Core 的参数层（ADR-0042）：α / 软边衰减 / 相对闸门 / 迭代预算。
+    /// 放在 `[retrieval.sa_core]` 下，是这些量的**单一来源**。
+    #[serde(default)]
+    pub sa_core: crate::sa_core::SaCoreConfig,
 }
 
 // Manual Default (P0 debt fix): derive(Default) ignored serde default fns and
@@ -80,7 +94,6 @@ impl Default for RetrievalConfig {
         Self {
             max_hops: default_max_hops(),
             beam_width: default_beam_width(),
-            weight_threshold: default_weight_threshold(),
             soft_edge_decay_factor: default_soft_edge_decay(),
             soft_edge_min_weight: default_soft_edge_min_weight(),
             max_nodes_per_query: default_max_nodes_per_query(),
@@ -90,6 +103,7 @@ impl Default for RetrievalConfig {
             min_latency_limit_ms: default_min_latency_limit_ms(),
             min_token_budget: default_min_token_budget(),
             stopwords: default_stopwords(),
+            sa_core: crate::sa_core::SaCoreConfig::default(),
         }
     }
 }
@@ -360,7 +374,8 @@ impl Default for MindSystemConfig {
 // ---------- Default Functions ----------
 fn default_max_hops() -> usize { 3 }
 fn default_beam_width() -> usize { 3 }
-fn default_weight_threshold() -> f64 { 0.8 }
+// `default_weight_threshold` was removed with the field itself (ADR-0042 D0):
+// an absolute gate is not scale-invariant. See `sa_core::gate_relative_tau`.
 fn default_soft_edge_decay() -> f64 { 0.8 }
 fn default_soft_edge_min_weight() -> f64 { 0.1 }
 fn default_max_nodes_per_query() -> usize { 20 }

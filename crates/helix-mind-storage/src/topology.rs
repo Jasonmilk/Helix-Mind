@@ -1,4 +1,5 @@
 use helix_mind_core::graph::{Node, NodeType, Edge, RelationType, NodeContent};
+use helix_mind_core::sa_core::SaCoreParams;
 use petgraph::graph::{DiGraph, NodeIndex};
 use petgraph::visit::EdgeRef;
 use std::collections::{HashMap, HashSet};
@@ -253,14 +254,18 @@ impl MemoryTopology {
     fn sa_core_diffusion(
         &self,
         start_ids: &[Uuid],
-        alpha: f64,
-        decay_factor: f64,
-        weight_threshold: f64,
-        max_hops: usize,
+        params: &SaCoreParams,
+        max_iterations: usize,
         max_nodes: usize,
         target_domain: Option<String>,
         min_k_core: usize,
     ) -> (Vec<Uuid>, Vec<(Uuid, f64)>) {
+        let SaCoreParams {
+            alpha,
+            decay_factor,
+            gate_relative_tau,
+            convergence_epsilon,
+        } = *params;
         // 1. Gather active nodes filtered by domain and k-core thresholding
         let active_nodes: Vec<NodeIndex> = self.graph.node_indices()
             .filter(|&idx| {
@@ -324,8 +329,20 @@ impl MemoryTopology {
             }
         };
 
-        // 3. Spreading activation loop
-        for _ in 0..max_hops {
+        // 3. Spreading activation loop (power iteration).
+        //
+        // One iteration advances exactly one graph hop: in a synchronous
+        // (Jacobi) power iteration the two are the SAME unit, so `max_iterations`
+        // is a **compute budget**, not a semantic "depth". What changed with
+        // ADR-0042 D2 is not the unit but the stopping rule: the loop now exits
+        // on convergence, so the result is a fixed point when the budget allows
+        // it, and an *explicitly logged* truncation when it does not.
+        let mut converged = false;
+        let mut iterations_done = 0usize;
+        let mut next_state: Vec<f64> = vec![0.0; n];
+
+        for _ in 0..max_iterations {
+            iterations_done += 1;
             let mut a_next: Vec<f64> = vec![0.0; n];
 
             for (i, &src_idx) in active_nodes.iter().enumerate() {
@@ -355,19 +372,75 @@ impl MemoryTopology {
                 }
             }
 
-            // Attenuation and initial focus injection. Seed nodes (a_0 > 0)
-            // are hard evidence — a query hit must be returned regardless of
-            // the threshold, otherwise an isolated node is zeroed at
-            // (1 - alpha) * 1.0 = 0.5 < threshold and recall silently dies.
+            // Attenuation and initial focus injection. Seed nodes (a_0 > 0) are
+            // hard evidence — a query hit must be returned regardless of the
+            // gate, otherwise an isolated node is zeroed at
+            // (1 - alpha) * 1.0 = 0.5 < theta and recall silently dies.
             // Diffusion only EXTENDS seeds; it never extinguishes them.
+            //
+            // The gate reference `theta` is RELATIVE to this iteration's own
+            // activation mass (ADR-0042 D0). An absolute threshold is not
+            // scale-invariant: `a_0` injects 1.0 PER seed, so total mass is
+            // ~|seeds|. The old absolute 0.8 was unconditionally fatal — the
+            // first-hop ceiling is alpha (0.5 skilled / 0.7 anchor) < 0.8, so
+            // every non-seed node was zeroed and diffusion degenerated into
+            // plain keyword matching.
             for j in 0..n {
-                let val = alpha * a_next[j] + (1.0 - alpha) * a_0[j];
-                a_current[j] = if val < weight_threshold && a_0[j] == 0.0 {
+                next_state[j] = alpha * a_next[j] + (1.0 - alpha) * a_0[j];
+            }
+            // The gate reference `theta` is RELATIVE to this iteration's PEAK
+            // activation (ADR-0042 D0). Two properties are wanted, and only the
+            // peak gives both:
+            //
+            //  1. *Not absolute.* An absolute threshold is not scale-invariant:
+            //     `a_0` injects 1.0 PER seed, so the vector's scale is set by the
+            //     seed count. The removed absolute 0.8 was unconditionally fatal
+            //     — the first-hop ceiling is alpha (0.5 skilled / 0.7 anchor) <
+            //     0.8, so every non-seed node was zeroed at round one and
+            //     diffusion degenerated into plain keyword matching.
+            //  2. *Depth-stable in the seed count.* Relative-to-total-mass would
+            //     also remove the absolute scale, but total mass grows linearly
+            //     with the seed count while the peak does not — so a mass-
+            //     relative gate makes multi-seed queries explore SHALLOWER than
+            //     single-seed ones for the same tau. The peak is invariant, so
+            //     "tau means the same thing" holds exactly.
+            let peak = next_state.iter().fold(0.0f64, |m, v| m.max(v.abs()));
+            let theta = gate_relative_tau * peak;
+
+            // Relative L1 residual. `delta` scales with the vector's mass and
+            // `mass` scales with the seed count, so the RATIO is invariant in
+            // the seed count — an absolute epsilon would not be.
+            let mass: f64 = a_current.iter().map(|v| v.abs()).sum();
+            let mut delta = 0.0;
+            for j in 0..n {
+                let val = if next_state[j] < theta && a_0[j] == 0.0 {
                     0.0
                 } else {
-                    val
+                    next_state[j]
                 };
+                delta += (val - a_current[j]).abs();
+                next_state[j] = val;
             }
+
+            // `next_state` now holds the gated values; move it into `a_current`.
+            std::mem::swap(&mut a_current, &mut next_state);
+
+            if delta < convergence_epsilon * mass {
+                converged = true;
+                break;
+            }
+        }
+
+        // Truncation is a documented outcome, never a silent one: α=0.95 needs
+        // ~269 iterations to reach ε=1e-6, so a 32-iteration budget WILL
+        // truncate. Callers tuning `alpha_ceiling` upward must see this.
+        if !converged {
+            tracing::debug!(
+                iterations = iterations_done,
+                max_iterations,
+                alpha,
+                "SA-Core iteration budget exhausted before convergence (truncated power iteration)"
+            );
         }
 
         // 4. Map back flat indices to Uuids and sort by final energy descending
@@ -395,20 +468,16 @@ impl MemoryTopology {
     pub fn sa_core_traverse(
         &self,
         start_ids: &[Uuid],
-        alpha: f64,
-        decay_factor: f64,
-        weight_threshold: f64,
-        max_hops: usize,
+        params: &SaCoreParams,
+        max_iterations: usize,
         max_nodes: usize,
         target_domain: Option<String>,
         min_k_core: usize,
     ) -> (Vec<Uuid>, Vec<(Uuid, f64)>) {
         self.sa_core_diffusion(
             start_ids,
-            alpha,
-            decay_factor,
-            weight_threshold,
-            max_hops,
+            params,
+            max_iterations,
             max_nodes,
             target_domain,
             min_k_core,
@@ -418,27 +487,26 @@ impl MemoryTopology {
     // ── Legacy Traversal Mapped to SA-Core ───────────────────────────
 
     /// Skilled mode: only diffuse along non-soft edges
+    ///
+    /// α / 软边衰减 / 闸门 τ / 收敛 ε 全部来自 `params`（ADR-0042 D1：单一来源）。
+    /// 本函数曾经把这些数字硬编码在体内（`alpha = 0.5` 等），与
+    /// `retrieval/src/mode.rs` 的另一套数值互相矛盾 —— DNA 原则 11（0 硬编码）。
     pub fn skilled_traverse(
         &self,
         start_ids: &[Uuid],
-        beam_width: usize,
-        weight_threshold: f64,
+        params: &SaCoreParams,
+        max_iterations: usize,
         _energy_budget: u64,
         max_nodes: usize,
     ) -> (Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>) {
-        let max_hops = beam_width.max(3);
-        let alpha = 0.5;
-
         // The activations were computed and thrown away until 2026-09-17. The
         // white-box (`HelixQueryResult.activation_vector`) exists precisely to
         // carry them, and every layer above — storage API, proto field 13, the
         // API mapping — was already in place. This is the layer that was not.
         let (result_ids, activations) = self.sa_core_diffusion(
             start_ids,
-            alpha,
-            0.0,
-            weight_threshold,
-            max_hops,
+            params,
+            max_iterations,
             max_nodes,
             None,
             0,
@@ -451,21 +519,15 @@ impl MemoryTopology {
     pub fn anchor_traverse(
         &self,
         start_ids: &[Uuid],
-        beam_width: usize,
-        weight_threshold: f64,
+        params: &SaCoreParams,
+        max_iterations: usize,
         _energy_budget: u64,
         max_nodes: usize,
     ) -> (Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>) {
-        let max_hops = beam_width.max(3);
-        let alpha = 0.7;
-        let decay_factor = 0.8;
-
         let (result_ids, activations) = self.sa_core_diffusion(
             start_ids,
-            alpha,
-            decay_factor,
-            weight_threshold,
-            max_hops,
+            params,
+            max_iterations,
             max_nodes,
             None,
             0,
@@ -475,24 +537,29 @@ impl MemoryTopology {
     }
 
     /// Imagination mode: chaotic walk
+    ///
+    /// `temperature` 现在只调制**相对**闸门 τ：温度越高，越愿意接纳弱激活
+    /// （`τ_eff = τ · (1 − temperature)`）。旧的 `(0.01·(1−temperature)).max(0.001)`
+    /// 是绝对刻度，同一个数在不同种子数下含义不同。
     pub fn imagination_traverse(
         &self,
         start_ids: &[Uuid],
         temperature: f64,
+        params: &SaCoreParams,
+        max_iterations: usize,
         _energy_budget: u64,
         max_nodes: usize,
     ) -> (Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>) {
-        let max_hops = 5;
-        let alpha = 0.9;
-        let decay_factor = 0.95;
-        let threshold = (0.01 * (1.0 - temperature)).max(0.001);
+        let tau = params.gate_relative_tau * (1.0 - temperature.clamp(0.0, 1.0));
+        let effective = SaCoreParams {
+            gate_relative_tau: tau,
+            ..*params
+        };
 
         let (result_ids, activations) = self.sa_core_diffusion(
             start_ids,
-            alpha,
-            decay_factor,
-            threshold,
-            max_hops,
+            &effective,
+            max_iterations,
             max_nodes,
             None,
             0,

@@ -115,10 +115,20 @@ parquet_dir = "data/parquet"
 node_cache_capacity = 1000
 
 [retrieval]
-max_hops = 3
-beam_width = 5
-weight_threshold = 0.3
-max_nodes_per_query = 10
+max_hops = 3                 # compute budget: one power-iteration step == one graph hop
+beam_width = 3
+max_nodes_per_query = 20
+
+# SA-Core parameters (ADR-0042): the single source for alpha / gate / convergence.
+[retrieval.sa_core]
+alpha_skilled = 0.5          # base alpha at heliotropism = 0.0 (radius 1/(1-a) = 2 hops)
+alpha_anchor = 0.7           # radius ~3.3 hops
+alpha_imagination = 0.9      # radius 10 hops
+heliotropism_gain = 0.3      # 0.5 +/- 0.3 == the published 0.8 / 0.2 skilled corners
+alpha_floor = 0.2
+alpha_ceiling = 0.95         # must stay < 1.0: rho(alpha*W) <= alpha
+gate_relative_tau = 0.02     # prune below 2% of this iteration's PEAK activation
+convergence_epsilon = 1e-6   # relative L1 residual
 
 [metabolism]
 digest_interval_sec = 300
@@ -150,12 +160,34 @@ Dash
 ## 📡 3. Core API & Spreading Activation Formula
 
 ### 3.1 SA-Core Engine Formula
-At query-time, the memory graph is converted to a sparse adjacency matrix $W$. The active search path is computed algebraically via **Spreading Activation**:
+At query-time, the memory graph is converted to a sparse adjacency matrix $W$. The active search path is computed algebraically via **Spreading Activation** — a personalised-PageRank power iteration, run to convergence:
 
 $$a_{t+1} = \alpha \cdot a_t \cdot W + (1-\alpha) \cdot a_0$$
 
-*   **$\alpha$ (Decay / Heliotropism Factor)**: Dynamically calculated based on `EnergyContext.heliotropism` (Optimistic mode = 0.8, Defensive mode = 0.2) [12.5, 12.7].
-*   **Inhibitory suppression**: For corrected nodes, the `CORRECTS` edge is mapped with a weight of $-1.0$ [4.1, 12.5]. This subtracts energy from outdated nodes in the vector multiplication, automatically clamping their final energy to `0.0` [4.1, 12.5].
+*   **$\alpha$ (damping factor — *not* a decay)**: not a fixed constant. It is derived as
+    `α = clamp(base_α(mode) + gain · heliotropism, 0.2, 0.95)`, with `gain = 0.3` and
+    `base_α` = **Skilled 0.5 / Anchor 0.7 / Imagination 0.9**. The previously published
+    "Optimistic 0.8 / Defensive 0.2" are therefore exactly the **Skilled** mode's two
+    corners (`0.5 ± 0.3`) — a special case, not the whole mapping. Effective diffusion
+    radius is `1/(1−α)`. Config: `[retrieval.sa_core]`. `α` must stay `< 1.0` because
+    `ρ(αW) ≤ α` is what guarantees convergence.
+*   **Pruning gate (relative, never absolute)**: a non-seed node survives an iteration
+    only if it holds at least `gate_relative_tau` (default `0.02`) of that iteration's
+    **peak** activation. It must be relative because `a_0` injects `1.0` *per seed*, so
+    the vector's scale is the seed count — an absolute threshold means something
+    different for every query. Anchoring on the peak (rather than the total mass) also
+    keeps depth invariant in the seed count. Seed (query-hit) nodes are exempt, so **a
+    hit is always returned**.
+*   **Stopping rule**: relative L1 residual `Σ|a_{t+1} − a_t| < convergence_epsilon · Σ|a_t|`
+    (default `1e-6`). `[retrieval] max_hops` (default 3) is a **compute budget** — one
+    iteration advances exactly one hop, so it is the same quantity as a hop count.
+    Exhausting it is a *logged* truncation, not the answer.
+*   **Inhibitory suppression**: for corrected nodes, the `CORRECTS` edge is mapped with a
+    weight of $-1.0$ [4.1, 12.5]. The gate **zeroes** a suppressed node instead of letting
+    it propagate a negative value outward, so the white-box vector contains **no negative
+    entries** [4.1, 12.5]. Outdated knowledge is removed from the live set rather than
+    merely ranked low. (ADR-0042 D3 will move suppression out of the matrix entirely,
+    into a deterministic `superseded_by` gate.)
 
 ### 3.2 The Glowing Thought Stream (`activation_vector`)
 When a query completes, `Helix-Mind` returns the exact final activation state of all energized nodes through `HelixQueryResult`:
@@ -168,11 +200,15 @@ When a query completes, `Helix-Mind` returns the exact final activation state of
   "activation_vector": [
     { "node_id": "UUID-physics-entropy", "energy": 0.95 },
     { "node_id": "UUID-math-shannon", "energy": 0.78 },
-    { "node_id": "UUID-art-poetic", "energy": -0.45 }
+    { "node_id": "UUID-art-poetic", "energy": 0.12 }
   ]
 }
 ```
 `Cellrix` renders this vector as a real-time glowing animation, allowing humans to physically witness Helix’s neural state as it thinks.
+
+> Entries are **strictly positive**: the pruning gate zeroes a suppressed (negative) node
+> before the vector is built, so a negative `energy` can never appear here. (An earlier
+> revision of this example showed `-0.45`, which was not reproducible.)
 
 ---
 

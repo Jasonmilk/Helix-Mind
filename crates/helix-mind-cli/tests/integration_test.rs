@@ -101,9 +101,10 @@ async fn test_retrieval_engine_basic() {
     let retrieval_config = RetrievalConfig {
         stopwords: Vec::new(),
         beam_width: 3,
-        // Low threshold (see retrieval_test.rs): SA-Core zeroes a 1-hop leaf
-        // at threshold 0.5; 0.2 keeps it so traversal is observable.
-        weight_threshold: 0.2,
+        // ADR-0042 D0: no threshold workaround needed — the gate is relative
+        // to the activation mass, so a 1-hop leaf survives the default τ=0.02.
+        // (`weight_threshold: 0.2` used to be required to slip under the
+        // absolute 0.8 gate, which sat above the first-hop ceiling α.)
         max_nodes_per_query: 100,
         dead_end_penalty_factor: 0.8,
         max_hops: 5,

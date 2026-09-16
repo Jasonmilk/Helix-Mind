@@ -46,12 +46,12 @@ fn node_with(content: &str, phase: PhaseState) -> Node {
     }
 }
 
-fn low_threshold_retrieval_config() -> RetrievalConfig {
-    // SA-Core zeroes a leaf start node above 0.5 (see PLAN.md §3.6 note); 0.2
-    // keeps the extracted node observable in the end-to-end pipeline test.
-    let mut cfg = RetrievalConfig::default();
-    cfg.weight_threshold = 0.2;
-    cfg
+fn default_retrieval_config() -> RetrievalConfig {
+    // ADR-0042 D0: the gate is now RELATIVE to the activation mass, so a 1-hop
+    // leaf (≈0.25 of mass ≈1) survives `gate_relative_tau = 0.02` under plain
+    // defaults. The old workaround here — `weight_threshold = 0.2` — existed
+    // only because the absolute 0.8 gate sat ABOVE the first-hop ceiling α.
+    RetrievalConfig::default()
 }
 
 // ── M-01 / M-03 tests ───────────────────────────────────────────────────
@@ -170,7 +170,7 @@ async fn retrieval_engine_end_to_end_with_fts_default() {
     engine.flush_fts_index().await.unwrap();
 
     // `RetrievalEngine::new` defaults to the real FtsExtractor (P1 M-01).
-    let retrieval = RetrievalEngine::new(low_threshold_retrieval_config(), engine.clone());
+    let retrieval = RetrievalEngine::new(default_retrieval_config(), engine.clone());
     let energy = EnergyContext::default();
     let result = retrieval
         .query(

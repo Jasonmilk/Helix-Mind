@@ -5,6 +5,11 @@ pub mod graph;
 pub mod tracing;
 pub mod audit;
 
+// SA-Core parameter layer (ADR-0042): the single source for α / soft-edge decay /
+// relative gate / iteration budget. Lives in `core` (not `storage`) so the
+// diffusion stays pure graph work while parameter *policy* stays configurable.
+pub mod sa_core;
+
 // === v3.3 New Modules (Ordered per architect guidance)
 pub mod envelope;
 pub mod router;
@@ -18,6 +23,7 @@ pub mod symbolic;
 pub use config::Config;
 pub use error::MindError;
 pub use graph::*;
+pub use sa_core::{SaCoreConfig, SaCoreParams};
 
 // Re-export key types for convenience (per architect guidance)
 pub use envelope::{IntentEnvelope, IntentResponse};
