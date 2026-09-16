@@ -106,6 +106,14 @@ FAIL  the naive legacy wiring is gone
 **注**：`start-panel.sh` 已补 `--plugins-dir`（`3cb437e`），`ab_verify.sh` 已加文本守卫（含反向自检）。
 上面两条是把这件事做成**结构上不可能再犯**，而不是「这次补上了」。
 
+## 未修（已登记，别让它消失）
+
+| # | 事项 | 实测 | 修法与判据 |
+|---|---|---|---|
+| **U1** | **一个周期里第二次 LLM 调用的时长不可见** | `run-24135d386e8e8452`：span **8.0s**，行上 wait 合计 **4.6s** ⇒ **3.4s 不属于任何行** | `|span − Σ可见wait| ≤ 500ms` 可作为断言；根因在 anaphase（第二次调用的记录与归属），不是本侧渲染。**导出头部已把差值打印出来**，不再让它沉默 |
+| **U2** | **REPLY 行的 token 是"该次调用总量"（含重发上下文），列名却只写 tokens** | 同段 total **2531**（prompt 2414 + completion **117**） | 列名已改为 **`call tok`**；若要更细，按 call 归属（本侧已有 `usageBySource`，可按 metering 与其后第一个已绘制行配对） |
+| **U3** | **命名事故只做了"遮蔽"这一类**（`naming_test.js`）；另一类**做不成扫描**：`state.chatJobId = …` 落到 `id="state"` 的命名访问，与**故意的** `mode.textContent = …` 静态同形 | 闸门 55 → 46/1 | 结构性解法是**禁命名访问**（shell 里一律 `getElementById`）——那是对既有可用代码的重构，不是一条断言。在此登记 |
+
 ## 下一步
 
 **批次 0–4 已完成**（4 见上）。**批次 5–7 见 `PLAN-targets.md`。**
