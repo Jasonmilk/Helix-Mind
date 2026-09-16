@@ -13,7 +13,7 @@
 
 | 项 | 值 |
 |---|---|
-| 服务 | mind `bash-15`（:50052）/ anaphase `bash-19`（:50061）/ 面板 `bash-18`（:8080） |
+| 服务 | mind `bash-15`（:50052）/ anaphase `bash-19`（:50061）/ 面板 **:8080**（**非托管作业**——用 `ps -eo pid,command \| grep cellrix-web` 查；它会被人以不带参数的方式重启，实测端点有协议默认值、功能完整） |
 | mind 存储 | `3 nodes / 0 edges`（仅 3 条 L2 物理知识；这是**干净基线**） |
 | 经历 | 138 period（`.helix/events/run-*.events.jsonl` + `.name` 侧车） |
 | 测试 | Helix-Mind **158** / Anaphase **277** / 全生态 **1630**；面板 JS 回归网 **10 suites green / 1 need input** |
@@ -59,7 +59,7 @@
 1. `cd Cellrix && cargo build`
 2. 确认二进制**比资产新**：`ls -lT target/debug/cellrix-web web/assets/session.html`
 3. 重启面板（当前是 harness 后台作业 `bash-18`；用 `pkill -f debug/cellrix-web` 后以**后台作业**重启，命令见该作业）
-4. **对页面 grep 核实**（`/assets/...` 直接取是空的——资产是内联的，我踩过这个假阴性）：
+4. **对页面 grep 核实**（重启前先看是不是已有人启了一个：`ps -eo pid,command | grep cellrix-web`；**若已在服务就别杀**）（`/assets/...` 直接取是空的——资产是内联的，我踩过这个假阴性）：
    `curl -s http://127.0.0.1:8080/ | grep -c "<你新加的标识>"`
 5. 跑回归网：`cd Cellrix/web && node tests/run_all.js`（应仍是 **10 suites green**；`all_views_test.js` 会对着真面板跑 55 条断言）
 
