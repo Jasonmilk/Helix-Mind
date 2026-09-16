@@ -337,3 +337,27 @@ expect` ⇒ `parse_reasoning_output` 的两条路径都不成立 ⇒ `warn!("Uns
 ⇒ `success=true` 在**零判据**下成立 ⇒ 它是"没崩溃"，不是"成功了"，与 `answer.delivered`
 那道 check 的语义直接冲突。
 **请求**：无 verdict 的轮次，`success` 不得为 true（或把该字段改名为 `completed`）。
+
+## 十三、`expect` 判定结果：**不可派生** ⇒ 「未声明留痕」，**不用 serde(default)**
+
+**查证**：`helix-tentacle/fixtures/*.manifest.json` 只有 `name / version / description / author /
+executable / integrity / parameters_schema / security_level / tags` —— **无返回类型**。
+而 `expect` 的消费点是 `criteria/mod.rs::run_for_expect(&r.expect, &data, rules)`：**它选择用哪一族判据**。
+⇒ 四个变体不对应任何 manifest 字段，**派生不出来**。
+
+**改法**：`pub expect: Option<Expect>`；未声明时**不是默认 Ok**，而是记一条**失败**的 check
+（`check: "expect.declared"`、`detail: "the model did not declare which criterion family applies"`）。
+
+**为何不用 `#[serde(default)]`**：静默替模型发明意图（K13 同类），无计数无留痕，且**不修泄漏**。
+
+**涟漪（跨仓重构，勿盲改）**：`criteria/mod.rs`（`run_for_expect`）、`session_events.rs`
+（事件 `expect: String` 与 `with_provenance(expect: &str, ..)`）、`run_cycle.rs`（两处构造事件）、
+以及 `contract/mod.rs` 里若干 `expect: Expect::*` 的测试断言。
+
+## 十四、P0-D-1 的落点（**今天就该落的那一条**）
+
+`run_cycle.rs` 的「无结构输出」分支（`warn!("[Reasoning] Unstructured output (no calls plan)")` 附近）：
+**解析失败时原文不得成为交付物** —— 原文进 payload / 事件，`reply` 放一条可读失败说明
+（如 `(the model produced no parsable plan; raw output withheld — see the audit chain)`）。
+
+**判据（不依赖复现）**：喂一段畸形 JSON ⇒ `turn/end.reply` 不含 `{"calls"` 子串，且事件流有可读失败原因。
