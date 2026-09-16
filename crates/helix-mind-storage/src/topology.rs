@@ -14,6 +14,20 @@ pub struct TopoNode {
     pub is_recessive: bool,
     pub domain: Option<String>,
     pub k_core: usize,
+    /// ADR-0042 D3: the deterministic supersession gate.
+    ///
+    /// This is `Node::corrected_by` — reused, not reinvented. That field already
+    /// exists, is already populated by metabolic digestion
+    /// (`metabolism/src/digest.rs`, symbolic arbitration → `Corrects` edge +
+    /// `update_corrected_by`), is already persisted and decoded, and is already
+    /// surfaced by the API. D3 therefore needed **no schema change**.
+    ///
+    /// Suppression used to be arithmetic: a `Corrects` edge entered the
+    /// propagation matrix as `-1.0` and was then diluted by row normalisation —
+    /// a hub with 9 positive edges plus 1 `Corrects` edge normalised the
+    /// inhibition down to `-0.1`. That is the "soft weight doing a hard gate's
+    /// job" defect. It is now a hard, dilution-immune gate.
+    pub superseded_by: Option<Uuid>,
 }
 
 #[derive(Debug, Clone)]
@@ -57,6 +71,7 @@ impl MemoryTopology {
             is_recessive: node.is_recessive,
             domain,
             k_core: 0,
+            superseded_by: node.corrected_by,
         };
         let idx = self.graph.add_node(topo);
         self.id_to_index.insert(node.id, idx);
@@ -96,6 +111,19 @@ impl MemoryTopology {
         if let Some(idx) = self.id_to_index.get(node_id) {
             if let Some(node) = self.graph.node_weight_mut(*idx) {
                 node.is_recessive = true;
+            }
+        }
+    }
+
+    /// ADR-0042 D3: record that `node_id` has been superseded by `corrector_id`.
+    ///
+    /// Mirrors `mark_recessive`, and exists because `StorageEngine::update_corrected_by`
+    /// writes only to SQLite — without this the in-memory graph would keep serving
+    /// the node as live until the next `rebuild_from_sqlite`.
+    pub fn mark_superseded(&mut self, node_id: &Uuid, corrector_id: Uuid) {
+        if let Some(idx) = self.id_to_index.get(node_id) {
+            if let Some(node) = self.graph.node_weight_mut(*idx) {
+                node.superseded_by = Some(corrector_id);
             }
         }
     }
@@ -315,10 +343,16 @@ impl MemoryTopology {
 
         let mut a_current = a_0.clone();
 
-        // Map edge properties to algebraic variables
+        // Map edge properties to algebraic variables.
+        //
+        // ADR-0042 D3: `Corrects` no longer participates in propagation at all.
+        // It used to be `-1.0` — an inhibitory postsynaptic weight — and row
+        // normalisation then diluted it: a hub with 9 positive edges plus 1
+        // `Corrects` edge turned the -1.0 into -0.1, so the more a node was
+        // connected, the LESS it could be corrected. Suppression is now the
+        // deterministic gate below, which dilution cannot touch.
         let get_raw_weight = |edge: &TopoEdge| -> f64 {
             let base_weight = match edge.relation_type {
-                RelationType::Corrects => -1.0, // Inhibitory postsynaptic IPSP signal
                 RelationType::Doubts => 0.3,
                 _ => edge.weight,
             };
@@ -328,6 +362,16 @@ impl MemoryTopology {
                 base_weight
             }
         };
+
+        // Does this relation carry activation between nodes at all?
+        //
+        // `Corrects` is a *record* of supersession, not a knowledge association:
+        // it says "the target is outdated", not "the target is related". It is
+        // therefore skipped entirely rather than given a weight, so it can
+        // neither energise nor dilute.
+        fn carries_activation(relation_type: &RelationType) -> bool {
+            !matches!(relation_type, RelationType::Corrects)
+        }
 
         // 3. Spreading activation loop (power iteration).
         //
@@ -357,6 +401,9 @@ impl MemoryTopology {
                 for edge_ref in self.graph.edges(src_idx) {
                     let target_idx = edge_ref.target();
                     if let Some(&j) = idx_to_flat.get(&target_idx) {
+                        if !carries_activation(&edge_ref.weight().relation_type) {
+                            continue;
+                        }
                         let w = get_raw_weight(edge_ref.weight());
                         sum_abs += w.abs();
                         active_edges.push((j, w));
@@ -413,7 +460,20 @@ impl MemoryTopology {
             let mass: f64 = a_current.iter().map(|v| v.abs()).sum();
             let mut delta = 0.0;
             for j in 0..n {
-                let val = if next_state[j] < theta && a_0[j] == 0.0 {
+                // ADR-0042 D3: the deterministic supersession gate, applied
+                // BEFORE (and overriding) the seed exemption. A seed that has
+                // been corrected is still outdated knowledge, so it must not be
+                // returned as live merely because the query matched it — that was
+                // the hole the seed exemption left open while suppression was
+                // arithmetic. Being a hard gate, it cannot be diluted by fan-out.
+                let superseded = self.graph
+                    .node_weight(active_nodes[j])
+                    .map(|node| node.superseded_by.is_some())
+                    .unwrap_or(false);
+
+                let val = if superseded {
+                    0.0
+                } else if next_state[j] < theta && a_0[j] == 0.0 {
                     0.0
                 } else {
                     next_state[j]
@@ -576,7 +636,7 @@ impl MemoryTopology {
 
         // Load nodes (loading content to dynamically extract domain attributes)
         let mut stmt = conn.prepare(
-            "SELECT id, node_type, is_recessive, content FROM nodes"
+            "SELECT id, node_type, is_recessive, content, corrected_by FROM nodes"
         ).map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
         let node_iter = stmt.query_map([], |row| {
             Ok((
@@ -584,11 +644,12 @@ impl MemoryTopology {
                 row.get::<_, String>(1)?,
                 row.get::<_, bool>(2)?,
                 row.get::<_, String>(3)?,
+                row.get::<_, Option<String>>(4)?,
             ))
         }).map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
 
         for row in node_iter {
-            let (id_str, type_str, is_recessive, content_json) = row.map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
+            let (id_str, type_str, is_recessive, content_json, corrected_by) = row.map_err(|e| helix_mind_core::error::MindError::Storage(e.to_string()))?;
             let id = Uuid::parse_str(&id_str).unwrap_or_else(|_| Uuid::new_v4());
             let node_type = match type_str.as_str() {
                 "L0" => NodeType::L0,
@@ -604,7 +665,15 @@ impl MemoryTopology {
                 None
             };
 
-            let topo = TopoNode { id, node_type, is_recessive, domain, k_core: 0 };
+            // A malformed/absent `corrected_by` must not resurrect a superseded
+            // node, but it also must not abort the whole rebuild: `None` on parse
+            // failure is the conservative-but-survivable reading, and the storage
+            // layer still holds the authoritative value.
+            let superseded_by = corrected_by
+                .as_deref()
+                .and_then(|s| Uuid::parse_str(s).ok());
+
+            let topo = TopoNode { id, node_type, is_recessive, domain, k_core: 0, superseded_by };
             let idx = topology.graph.add_node(topo);
             topology.id_to_index.insert(id, idx);
             topology.index_to_id.insert(idx, id);

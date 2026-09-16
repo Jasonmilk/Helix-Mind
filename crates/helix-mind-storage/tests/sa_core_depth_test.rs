@@ -255,8 +255,6 @@ fn optimistic_heliotropism_reaches_strictly_farther_than_defensive() {
 }
 
 /// CORRECTS 的非种子目标必须仍被压到 0（抑制语义未被 D0 破坏）。
-/// 这条同时记录了一个仍然存在的洞：被抑制的节点**若成为种子**会因种子豁免
-/// 而存活——那属于 D3（抑制改确定性门控）的范围，不在这里修。
 #[test]
 fn corrects_still_suppresses_a_non_seed_target() {
     let mut topo = MemoryTopology::new();
@@ -278,6 +276,128 @@ fn corrects_still_suppresses_a_non_seed_target() {
         activations.iter().all(|(_, a)| *a > 0.0),
         "no negative activation may leak into the white-box vector"
     );
+}
+
+// ── D3：抑制是确定性门控，不是会被扇出稀释的软权重 ──────────────────
+
+/// 这是 ADR-0042 §2 P0-1 的可执行复现，也是 D3 立论的根据。
+///
+/// 旧实现把 `Corrects` 当 `-1.0` 送进传播矩阵，再被**行归一化**稀释。
+/// **稀释的分母是「纠正者」的出度**（`sum_abs` 对源点求和），所以要注意方向：
+/// 扇出必须加在 `current`（纠正者）身上。设 `current` 有 `S` 条正边和 1 条
+/// Corrects，归一化后抑制只剩 `-1/(S+1)`；`S = 9` 时是 `-0.1`。
+///
+/// 而它为什么**只有对种子才致命**：非种子节点的负值会被闸门（`val < theta`）
+/// 归零，所以负值本身活不下来；真正漏网的是**同时是种子的陈旧节点** ——
+/// 种子豁免让它绕过闸门，于是 `α·(-0.1) + (1−α)·1 = 0.45 > 0` 活了下来。
+/// 这正是第一轮审查说的「越 hub 越压不住」唯一真正可达的形态。
+///
+/// D3 之后抑制根本不进矩阵，扇出**无法**影响它。
+#[test]
+fn suppression_is_immune_to_corrector_fanout_dilution() {
+    let cfg = RetrievalConfig::default();
+
+    // `stale` 始终是种子（查询命中它），`current` 的出度随 fanout 变化。
+    let stale_survives = |fanout: usize| -> bool {
+        let mut topo = MemoryTopology::new();
+        let current = Uuid::new_v4();
+        let stale = Uuid::new_v4();
+        let mut stale_node = node(stale);
+        // 关键：陈旧标记来自 `Node::corrected_by`（既有字段，非新字段）。
+        stale_node.corrected_by = Some(current);
+        topo.add_node(&node(current));
+        topo.add_node(&stale_node);
+        // 纠正者 → 陈旧节点：旧实现里这条边就是被稀释的抑制来源。
+        let correcting = hard_edge(current, stale, RelationType::Corrects);
+        topo.add_edge(current, stale, &correcting).unwrap();
+        // 纠节者的其它正边：它们抬高归一化分母，从而稀释抑制。
+        for _ in 0..fanout {
+            let other = Uuid::new_v4();
+            topo.add_node(&node(other));
+            let e = hard_edge(current, other, RelationType::Causal);
+            topo.add_edge(current, other, &e).unwrap();
+        }
+
+        let params = SaCoreParams::for_mode(CognitiveMode::Skilled, 0.0, &cfg);
+        let (ids, _, _, _) = topo.skilled_traverse(&[current, stale], &params, 4, 0, 100);
+        ids.contains(&stale)
+    };
+
+    assert!(
+        !stale_survives(0),
+        "a superseded seed must not survive when the corrector has no fan-out"
+    );
+    assert!(
+        !stale_survives(9),
+        "a superseded seed must not survive when the corrector IS a hub — under the \
+         old arithmetic weight the inhibition was diluted to -0.1 and it DID survive"
+    );
+}
+
+/// 种子豁免不得给过时知识开后门（第一轮审查指出的那个洞）。
+///
+/// 旧实现：`:365` 的 `a_0[j] == 0.0` 让**种子**绕过闸门 ⇒ 被纠正的节点只要
+/// 查询命中它就会作为「活跃知识」返回。D3 让抑制门控**优先于**种子豁免。
+#[test]
+fn supersession_overrides_the_seed_exemption() {
+    let mut topo = MemoryTopology::new();
+    let stale = Uuid::new_v4();
+    let mut stale_node = node(stale);
+    stale_node.corrected_by = Some(Uuid::new_v4());
+    topo.add_node(&stale_node);
+
+    let (ids, _, _, _) = topo.skilled_traverse(&[stale], &skilled(0.0), 4, 0, 100);
+
+    assert!(
+        ids.is_empty(),
+        "a query hit that has been superseded must not be returned as live, \
+         but got {ids:?}"
+    );
+}
+
+/// 记录上述行为的一个真实代价：若查询**只**命中过时知识，活跃集合会变空。
+/// 这是 D3 有意的取义（宁可不答，不可把过时知识当真知），但它必须在测试里
+/// 显式存在，而不是等生产上被发现。
+///
+/// 逃生口是协议层的 `include_recessive` 一类的显式开关（尚未实现）——
+/// 历史仍然完整保留在存储里供审计。
+#[test]
+fn superseded_only_query_yields_an_empty_live_set_by_design() {
+    let mut topo = MemoryTopology::new();
+    let a = Uuid::new_v4();
+    let b = Uuid::new_v4();
+    let mut na = node(a);
+    na.corrected_by = Some(b);
+    let mut nb = node(b);
+    nb.corrected_by = Some(a);
+    topo.add_node(&na);
+    topo.add_node(&nb);
+
+    let (ids, _, _, _) = topo.skilled_traverse(&[a, b], &skilled(0.0), 4, 0, 100);
+    assert!(ids.is_empty(), "expected an empty live set, got {ids:?}");
+}
+
+/// 抑制是**确定性**的：多次运行、以及改变预算，结果都一致。
+/// 软权重的老实现会随迭代次数变化（每轮衰减一次），门控不会。
+#[test]
+fn suppression_is_deterministic_across_budgets() {
+    let mut topo = MemoryTopology::new();
+    let current = Uuid::new_v4();
+    let stale = Uuid::new_v4();
+    let mut stale_node = node(stale);
+    stale_node.corrected_by = Some(current);
+    topo.add_node(&node(current));
+    topo.add_node(&stale_node);
+    let e = hard_edge(current, stale, RelationType::Corrects);
+    topo.add_edge(current, stale, &e).unwrap();
+
+    let run = |budget: usize| {
+        let (ids, _, _, _) = topo.skilled_traverse(&[current], &skilled(0.0), budget, 0, 100);
+        ids.contains(&stale)
+    };
+    for budget in [1, 2, 4, 32] {
+        assert!(!run(budget), "budget {budget} let a superseded node through");
+    }
 }
 
 /// imagination 的 `temperature` 现在调制**相对** τ：温度越高越接纳弱激活。

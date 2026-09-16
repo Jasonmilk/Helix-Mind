@@ -214,7 +214,25 @@ async fn stage_local_dominant(...) -> ... {
 `CORRECTS` **不进传播矩阵**；改为传播后的确定性门控：节点带 `superseded_by` / `valid_until`，检索时硬过滤（或能量乘 0），历史照留供审计。
 **理由**：① 软抑制被 fan-out 稀释（§2 已验证）；② **与既有语汇同向** —— `is_recessive` / `generation` / `metabolism/decay.rs` 已是"硬门控 + 时态"机制，本决策是其**自然延伸**，不引入新范式。
 **不采纳**建议书的 B 方案（signed normalization）：那仍是"靠数值压"。
-**与 D0/D5 的耦合（本轮新增）**：正因为 `CORRECTS` 仍留在矩阵里（直到 D3 落地），「种子豁免」才会留下一个洞——被抑制的节点若同时是种子就绕过闸门。D3 把抑制移出矩阵后，这个洞随之消失；**在那之前它是已知且被记录的**（见 `sa_core_depth_test.rs::corrects_still_suppresses_a_non_seed_target` 的注释）。
+
+**实施结论（T4 已落地）：零 schema 变更 —— `superseded_by` 就是既有的 `Node::corrected_by`。** 本 ADR 原先写「引入新字段 `superseded_by` / `valid_until`」，动手时查明**不需要**：
+
+- `Node::corrected_by: Option<Uuid>` **已存在**（`core/src/graph.rs`）；
+- 它**已被 metabolism 写入**（`metabolism/src/digest.rs`：符号仲裁 → `Corrects` 边 + `update_corrected_by`）；
+- 已入库、已由 codec 解码、已由 API（`layer1.rs`）暴露；
+- `engine.rs` 的 FTS 查询**已经**在用 `corrected_by IS NOT NULL` 做降权排序。
+
+⇒ 新增字段将是**重复发明既有实体**（违「极致复用」）。故 `valid_until` **不引入**：时态终点没有消费者，按「勿增实体」留待真有消费者时再立。实现改为：
+
+1. `TopoNode` 增 `superseded_by: Option<Uuid>`（内存镜像，来源 `Node::corrected_by`）；
+2. `get_raw_weight` **移除** `Corrects => -1.0`，并在边收集处**整条跳过** `Corrects`（它不是知识关联，是纠正**记录**，因此既不能赋能也不该进归一化分母）；
+3. 迭代内加**硬门控**：`superseded_by.is_some()` ⇒ 激活置 0，且**优先于种子豁免**；
+4. `update_corrected_by` 补 `mark_superseded` —— 它此前**只写 SQLite 不更新内存图**，内存图会一直把已纠正节点当活的，直到下次 `rebuild_from_sqlite`；
+5. `rebuild_from_sqlite` 的节点 SELECT 补 `corrected_by` 列。
+
+**为什么只有「同时是种子的陈旧节点」才真正漏网（对本 ADR §2 P0-1 的重要限定）**：非种子节点的负值会被闸门 `val < θ` 归零，负值本身活不下来；而种子豁免让**种子**绕过闸门，于是归一化后的 `-0.1` 仍可得 `α·(-0.1) + (1−α)·1 = 0.45 > 0` 存活。所以「越 hub 越压不住」唯一**可达**的形态是「陈旧节点恰是查询命中」。这条限定已写成可执行测试 `suppression_is_immune_to_corrector_fanout_dilution`（扇出必须加在**纠正者**身上——稀释的分母是源点的出度，加错方向该测试就空转）。
+
+**代价（有意）**：若查询**只**命中过时知识，活跃集合会变空。这是本决策有意的取义（宁可不答，不可把过时知识当真知），已由 `superseded_only_query_yields_an_empty_live_set_by_design` 显式钉住。逃生口是协议层一个 `include_recessive` 式的显式开关（**尚未实现**）；历史仍完整保留供审计。
 
 ### D3b：`ModeConfig` 的处置改为**删除**，而不是复活
 
@@ -248,11 +266,11 @@ async fn stage_local_dominant(...) -> ... {
 | **T1** ✅**已完成** | D0 + D1 + D2 + D3b（闸门相对化、α 单一来源、收敛判据、删除矛盾的 `mode.rs`） | 无 |
 | **T2** ⏳ | D6（文档更正：README §2.1/§3.1、一般化 α 声明） | 与 T1 同批 |
 | **T3** ⏳ | D4（打开 k-core） | **本轮故意未做**，避免与 D0 叠两个改变召回的因素 |
-| **T4** | D3（抑制门控：`superseded_by`/`valid_until`） | **须在建边之前落地**，否则门控无输入 |
+| **T4** ✅**已完成** | D3（抑制门控） | **已在 T5 建边之前落地**（这是本 ADR 的硬顺序要求）。零 schema 变更：复用既有 `Node::corrected_by`，见 §5 D3 |
 | **T5** | 建边（日常写入路径记关系；proto 补 `parent_ids` —— INTENT-7 的 `WRITE_NODE` 已规定该字段） | 独立决策，另立 ADR。**待人类确认开工** |
 | **T6** | Anaphase 白盒改读 `activation_vector`（当轮激活）而非持久化 `Node.heat` | T5 之后才有意义 |
 
-**顺序的理由**：T1 使算法可解释 → T4 在边出现**之前**把门控装好 → T5 建边（P0-1 的修复此时可验证）→ T6 让效果可见。
+**顺序的理由**：T1 使算法可解释 → T4 在边出现**之前**把门控装好 → T5 建边（P0-1 的修复此时可验证）→ T6 让效果可见。**T4 已完成，建边的前置条件已满足。**
 
 **一处必须显式记录的依赖反转（第二轮审查后修订）**：原分期假设「T1 的效果可立即验收」。**这不成立**——`edges` 为 0，T1 在真实库上的**可见效果为零**。T1 的验收因此**只由合成图回归网承担**（`sa_core_depth_test.rs`，10 条断言 + 4 项变异测试），真实库上的召回再验收必须等 T5。
 
@@ -269,6 +287,21 @@ async fn stage_local_dominant(...) -> ... {
 - `sa_core_depth_test.rs`：10 条，覆盖 D0/D1/D2/D5 各一个失效模式。
 - **变异测试 4/4 被杀**：①闸门退回绝对 `0.8` → 3 条红；②锚总质量而非峰值 → 尺度不变性红；③删除种子豁免 → 种子保底红；④α 不再由 `heliotropism` 派生 → 乐观/保守深度红。
 - **变异测试自身修正了一条空转断言**：④最初**存活**，因为原断言写成 `>=`，在「heliotropism 完全失效」时两边相等也通过；已收紧为严格不等后被杀。这条记录在此，是因为它正是「变异测试证明非空转」这条纪律的实例。
+
+### 5.6 实施结果（T4/D3，2026-09-17，同批第二刀）
+
+**变更**：`storage/topology.rs`（`TopoNode.superseded_by`、`mark_superseded`、`rebuild_from_sqlite` 读 `corrected_by`、`Corrects` 整条跳过传播、迭代内硬门控优先于种子豁免）、`storage/engine.rs`（`update_corrected_by` 同步内存图，并把连接作用域化以免 future 非 `Send`）。
+
+**行为中性保证**：线上 **545 nodes / 0 superseded**（`corrected_by` 全为 NULL，实测），`edges` 亦为 0 ⇒ 本轮门控**当前是空操作**，不改变任何现存召回。
+
+**验证**：`sa_core_depth_test.rs` 增至 **14 条**；`cargo test --workspace --no-fail-fast` = **143 passed / 0 failed / 0 ignored**。
+
+**变异测试 2/2 被杀**：
+- 变异 A（**完整复原 D3 之前的实现**：`Corrects => -1.0` 进矩阵 + 关闭门控）⇒ 3 条红；
+- 变异 B（仅关闭门控）⇒ 同样 3 条红。
+⇒ 门控与「抑制不进矩阵」两条都是**承重**的，不是装饰。
+
+**我自己在这轮写错并修正的一处**：`suppression_is_immune_to_corrector_fanout_dilution` 初版把扇出加在**陈旧节点**身上，而稀释的分母是**纠正者**的出度——放错方向后该测试**无法**区分新旧实现（空转）。已改正方向，并由变异 A 证明它现在确实能抓住旧实现。
 
 ---
 
@@ -306,11 +339,13 @@ async fn stage_local_dominant(...) -> ... {
 5. **D3 的字段**（`superseded_by` / `valid_until` 命名）→ 尚未裁决，待 T4 开工前确认。
 6. **状态** → 批准，本 ADR 转 **Accepted**。
 
-**仍待人类决策**：
+**仍待人类决策 / 已知未修**：
 
-- **T5 是否开工**（建边 + proto 补 `parent_ids`，跨三仓，另立 ADR）—— 它是 T1 在真实库上产生可见效果的前置条件。
-- **T4 的字段命名**。
+- **T5 是否开工**（建边 + proto 补 `parent_ids`，跨三仓，另立 ADR）—— 它是 T1 在真实库上产生可见效果的前置条件。**T4 已完成，前置条件已满足。**
 - **T2 的文档措辞**（本轮已把依据写进 D6，实际改写 README 待确认）。
+- **D4**（打开 `min_k_core`，三处仍传 `0`）。
+- **本轮新发现、故意未修**：`get_raw_weight` 里 `Doubts => 0.3` 与刚移除的 `Corrects => -1.0` 是**同一类病**——拿关系语义当数值权重。「怀疑」被建模成**正**权重，意味着**怀疑者的能量会流向被怀疑者**，语义上是反的。但它在 D3 的范围内无消费者（`Doubts` 边由谁创建尚未查明），故只登记不修，以免在没有消费者的地方再造一次「假精度」。
+- **D3 的逃生口**：一个 `include_recessive` 式的显式开关，让调用方可按需取回历史视图（当前只命中过时知识时活跃集合会变空，见 §5 D3 代价）。
 
 ---
 

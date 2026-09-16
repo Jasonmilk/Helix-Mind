@@ -251,13 +251,24 @@ impl StorageEngine {
         node_id: &Uuid,
         corrector_id: &Uuid,
     ) -> Result<(), MindError> {
-        let conn = self.sqlite.get()?;
-        conn.execute(
-            "UPDATE nodes SET corrected_by = ?1 WHERE id = ?2",
-            rusqlite::params![corrector_id.to_string(), node_id.to_string()],
-        )
-        .map_err(|e| MindError::Storage(e.to_string()))?;
+        // Scope the pooled connection so it is dropped before the topology lock is
+        // awaited; holding it across the await would make this future non-Send.
+        {
+            let conn = self.sqlite.get()?;
+            conn.execute(
+                "UPDATE nodes SET corrected_by = ?1 WHERE id = ?2",
+                rusqlite::params![corrector_id.to_string(), node_id.to_string()],
+            )
+            .map_err(|e| MindError::Storage(e.to_string()))?;
+        }
         self.cache.invalidate(node_id);
+        // ADR-0042 D3: the supersession gate reads the in-memory graph, so the
+        // graph must learn about the correction immediately — otherwise the node
+        // keeps being served as live until the next `rebuild_from_sqlite`.
+        self.topology
+            .write()
+            .await
+            .mark_superseded(node_id, *corrector_id);
         Ok(())
     }
 
