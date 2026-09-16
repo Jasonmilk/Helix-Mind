@@ -357,7 +357,7 @@ impl StorageEngine {
         weight_threshold: f64,
         energy_budget: u64,
         max_nodes: usize,
-    ) -> Result<(Vec<Uuid>, bool, Option<String>), MindError> {
+    ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), MindError> {
         let topo = self.topology.read().await;
         let result = topo.skilled_traverse(start_ids, beam_width, weight_threshold, energy_budget, max_nodes);
         Ok(result)
@@ -371,7 +371,7 @@ impl StorageEngine {
         weight_threshold: f64,
         energy_budget: u64,
         max_nodes: usize,
-    ) -> Result<(Vec<Uuid>, bool, Option<String>), MindError> {
+    ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), MindError> {
         let topo = self.topology.read().await;
         let result = topo.anchor_traverse(start_ids, beam_width, weight_threshold, energy_budget, max_nodes);
         Ok(result)
@@ -383,7 +383,7 @@ impl StorageEngine {
         temperature: f64,
         energy_budget: u64,
         max_nodes: usize,
-    ) -> Result<(Vec<Uuid>, bool, Option<String>), MindError> {
+    ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), MindError> {
         let topo = self.topology.read().await;
         let result = topo.imagination_traverse(start_ids, temperature, energy_budget, max_nodes);
         Ok(result)

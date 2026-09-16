@@ -425,11 +425,15 @@ impl MemoryTopology {
         weight_threshold: f64,
         _energy_budget: u64,
         max_nodes: usize,
-    ) -> (Vec<Uuid>, bool, Option<String>) {
+    ) -> (Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>) {
         let max_hops = beam_width.max(3);
         let alpha = 0.5;
 
-        let (result_ids, _) = self.sa_core_diffusion(
+        // The activations were computed and thrown away until 2026-09-17. The
+        // white-box (`HelixQueryResult.activation_vector`) exists precisely to
+        // carry them, and every layer above — storage API, proto field 13, the
+        // API mapping — was already in place. This is the layer that was not.
+        let (result_ids, activations) = self.sa_core_diffusion(
             start_ids,
             alpha,
             0.0,
@@ -440,7 +444,7 @@ impl MemoryTopology {
             0,
         );
 
-        (result_ids, false, None)
+        (result_ids, activations, false, None)
     }
 
     /// Anchor mode: introduce soft edge decay penalty
@@ -451,12 +455,12 @@ impl MemoryTopology {
         weight_threshold: f64,
         _energy_budget: u64,
         max_nodes: usize,
-    ) -> (Vec<Uuid>, bool, Option<String>) {
+    ) -> (Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>) {
         let max_hops = beam_width.max(3);
         let alpha = 0.7;
         let decay_factor = 0.8;
 
-        let (result_ids, _) = self.sa_core_diffusion(
+        let (result_ids, activations) = self.sa_core_diffusion(
             start_ids,
             alpha,
             decay_factor,
@@ -467,7 +471,7 @@ impl MemoryTopology {
             0,
         );
 
-        (result_ids, false, None)
+        (result_ids, activations, false, None)
     }
 
     /// Imagination mode: chaotic walk
@@ -477,13 +481,13 @@ impl MemoryTopology {
         temperature: f64,
         _energy_budget: u64,
         max_nodes: usize,
-    ) -> (Vec<Uuid>, bool, Option<String>) {
+    ) -> (Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>) {
         let max_hops = 5;
         let alpha = 0.9;
         let decay_factor = 0.95;
         let threshold = (0.01 * (1.0 - temperature)).max(0.001);
 
-        let (result_ids, _) = self.sa_core_diffusion(
+        let (result_ids, activations) = self.sa_core_diffusion(
             start_ids,
             alpha,
             decay_factor,
@@ -494,7 +498,7 @@ impl MemoryTopology {
             0,
         );
 
-        (result_ids, false, None)
+        (result_ids, activations, false, None)
     }
 
     // ── Rebuild from SQLite ──────────────────────────────────────────

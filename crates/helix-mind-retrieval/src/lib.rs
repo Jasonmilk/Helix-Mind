@@ -35,6 +35,22 @@ pub fn energy_degraded(energy: &EnergyContext, cfg: &RetrievalConfig) -> bool {
         || energy.token_budget < cfg.min_token_budget
 }
 
+
+/// Map SA-Core activations into the protocol's `ActivationEntry` list.
+///
+/// Pure and order-preserving: the diffusion returns each node with its final
+/// activation for THIS cycle, and the white-box contract is "what SA-Core
+/// actually chose" — so the order it produced is the order reported.
+fn activation_entries(pairs: &[(Uuid, f64)]) -> Vec<ActivationEntry> {
+    pairs
+        .iter()
+        .map(|(node_id, activation)| ActivationEntry {
+            node_id: *node_id,
+            activation: *activation,
+        })
+        .collect()
+}
+
 impl RetrievalEngine {
     pub fn new(config: RetrievalConfig, storage: Arc<StorageEngine>) -> Self {
         // P1 (M-01): the real FTS5-trigram extractor is the production default.
@@ -97,13 +113,23 @@ impl RetrievalEngine {
                 impasse_level: ImpasseLevel::None,
                 stages_attempted: 0,
                 suggested_actions: Vec::new(),
-                // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
+                // No start nodes -> nothing to seed, so genuinely empty. (The
+                // other sites used to say the same thing and were wrong: the
+                // algorithm existed, the call was missing.)
                 activation_vector: Vec::new(),
             });
         }
 
         // 2. Stage 1: Local Dominant Retrieval
-        let (node_ids, is_partial, exhaustion_reason) = self.stage_local_dominant(
+        // SA-Core (2026-09-17): the activation the diffusion already computes now
+        // travels with the stage's node ids instead of being dropped one layer
+        // down. Every result used to carry `activation_vector: Vec::new()` under a
+        // comment claiming the algorithm was "not yet implemented" — it WAS
+        // implemented (storage::topology::sa_core_diffusion), and every layer above
+        // already carried it: the storage API returned it, proto field 13 reserved
+        // a seat for it, and helix-mind-api already mapped it. The retrieval call
+        // was the one layer missing.
+        let (node_ids, activations, is_partial, exhaustion_reason) = self.stage_local_dominant(
             &start_ids,
             energy_context,
         ).await?;
@@ -136,8 +162,7 @@ impl RetrievalEngine {
                 impasse_level: ImpasseLevel::None,
                 stages_attempted,
                 suggested_actions: Vec::new(),
-                // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
-                activation_vector: Vec::new(),
+                activation_vector: activation_entries(&activations),
             });
         }
 
@@ -174,8 +199,7 @@ impl RetrievalEngine {
                     impasse_level: ImpasseLevel::None,
                     stages_attempted,
                     suggested_actions: Vec::new(),
-                    // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
-                    activation_vector: Vec::new(),
+                    activation_vector: activation_entries(&activations),
                 });
             }
         }
@@ -257,8 +281,7 @@ impl RetrievalEngine {
             impasse_level,
             stages_attempted,
             suggested_actions: Vec::new(),
-            // P4 M-10: SA-Core diffusion algorithm not yet implemented — honest empty.
-            activation_vector: Vec::new(),
+            activation_vector: activation_entries(&activations),
         })
     }
 
@@ -267,7 +290,7 @@ impl RetrievalEngine {
         &self,
         start_ids: &[Uuid],
         energy: &EnergyContext,
-    ) -> Result<(Vec<Uuid>, bool, Option<String>), helix_mind_core::error::MindError> {
+    ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), helix_mind_core::error::MindError> {
         self.storage.skilled_retrieve(
             start_ids,
             self.config.beam_width,
@@ -321,7 +344,7 @@ impl RetrievalEngine {
         energy: &EnergyContext,
     ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
         // Use anchor traversal with lower weight threshold to include recessive
-        let (ids, _, _) = self.storage.anchor_retrieve(
+        let (ids, _, _, _) = self.storage.anchor_retrieve(
             start_ids,
             None,
             self.config.beam_width,
@@ -339,7 +362,7 @@ impl RetrievalEngine {
         energy: &EnergyContext,
     ) -> Result<Vec<Uuid>, helix_mind_core::error::MindError> {
         // High-temperature, unfiltered exploration
-        let (ids, _, _) = self.storage.imagination_retrieve(
+        let (ids, _, _, _) = self.storage.imagination_retrieve(
             start_ids,
             energy.pulse,
             energy.token_budget / 2,

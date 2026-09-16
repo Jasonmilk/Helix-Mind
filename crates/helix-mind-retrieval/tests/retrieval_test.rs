@@ -212,3 +212,101 @@ fn energy_guard_thresholds_are_config_overridable() {
     assert!(!energy_degraded(&e, &RetrievalConfig::default()));
     assert!(energy_degraded(&e, &strict));
 }
+
+// ── SA-Core activation reaches the white-box (2026-09-17) ───────────────
+//
+// `HelixQueryResult.activation_vector` was reserved for this and returned empty
+// everywhere, under a comment claiming the diffusion was "not yet implemented".
+// It WAS implemented (storage::topology::sa_core_diffusion) and every layer above
+// already carried it — the storage API returned it, proto field 13 reserved a
+// seat, helix-mind-api already mapped it. The retrieval call was the one layer
+// missing, so the panel's white-box reported the persisted `heat` column
+// (540/540 nodes at its 0.5 construction default) instead of this cycle's
+// activation.
+//
+// White-box honesty is the point: the answer must say what SA-Core actually
+// chose AND how strongly, not just which ids came back.
+
+#[tokio::test]
+async fn activation_vector_reports_what_sa_core_actually_computed() {
+    let storage = memory_storage().await;
+    let a = l2_node("A leads to B", 0.9);
+    let b = l2_node("B is the result", 0.9);
+    let id_a = a.id;
+    let id_b = b.id;
+    storage.write_node(a, WritePriority::Critical).await.unwrap();
+    storage.write_node(b, WritePriority::Critical).await.unwrap();
+    storage
+        .add_edge(&Edge {
+            source_id: id_a,
+            target_id: id_b,
+            weight: 0.9,
+            relation_type: RelationType::Causal,
+            is_soft: false,
+        })
+        .await
+        .unwrap();
+
+    let mut fake = FakeAdapter::new();
+    fake.add("A", vec![id_a]);
+    let engine = RetrievalEngine::with_extractor(retrieval_config(), storage, Arc::new(fake));
+
+    let result = engine
+        .query("A", CognitiveMode::Anchor, &energy(), false, false, AutonomyLevel::Open)
+        .await
+        .unwrap();
+
+    assert!(
+        !result.activation_vector.is_empty(),
+        "SA-Core ran and produced activations; the white-box must carry them"
+    );
+    let seed = result
+        .activation_vector
+        .iter()
+        .find(|e| e.node_id == id_a)
+        .expect("the seed must appear in the activation vector");
+    assert!(
+        seed.activation > 0.0,
+        "the seed is hard evidence and must carry activation; got {}",
+        seed.activation
+    );
+    let neighbour = result
+        .activation_vector
+        .iter()
+        .find(|e| e.node_id == id_b)
+        .expect("activation must spread along the causal edge to B");
+    assert!(
+        neighbour.activation > 0.0,
+        "a node reached by diffusion must report non-zero activation; got {}",
+        neighbour.activation
+    );
+    // Activation is a per-cycle quantity in (0,1]; it is not the persisted
+    // column, which sits at its schema default for every node today.
+    assert!(
+        result.activation_vector.iter().all(|e| e.activation > 0.0 && e.activation <= 1.0),
+        "activations stay in the protocol's stated range (0.0-1.0)"
+    );
+}
+
+#[tokio::test]
+async fn activation_vector_is_empty_only_when_there_is_nothing_to_seed() {
+    // The honest-empty case: no start nodes means nothing was seeded, so the
+    // vector is empty because that is the truth — not because a call is missing.
+    let storage = memory_storage().await;
+    let node = l2_node("unrelated", 0.9);
+    storage.write_node(node, WritePriority::Critical).await.unwrap();
+
+    let fake = FakeAdapter::new(); // maps nothing
+    let engine = RetrievalEngine::with_extractor(retrieval_config(), storage, Arc::new(fake));
+
+    let result = engine
+        .query("nothing matches", CognitiveMode::Anchor, &energy(), false, false, AutonomyLevel::Open)
+        .await
+        .unwrap();
+
+    assert!(result.nodes.is_empty(), "no start nodes -> no nodes");
+    assert!(
+        result.activation_vector.is_empty(),
+        "nothing seeded -> genuinely empty, and that is honest"
+    );
+}
