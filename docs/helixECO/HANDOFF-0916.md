@@ -96,6 +96,16 @@ FAIL  the naive legacy wiring is gone
 - Node 带 **`source`**（与 `lineNo` 并列）：turn 表头因此能写出该轮来自哪一段；
   `node === source + '#' + lineNo` 是断言，不是约定。
 
+## 本侧待办（不需要跨仓裁决）
+
+| # | 事项 | 为什么在本侧 | 判据 |
+|---|---|---|---|
+| **L1** | **合并两个启动脚本**：`Cellrix/web/src/bin/up.rs` 与 `Cellrix/web/tests/start-panel.sh` 各自知道「怎么起栈」 | 今天全天在治的病（一份事实两个来源）换到启动层又长一遍：`subscribers` vs `targets` 已治，**`up` vs `start-panel.sh` 未治**；这次排查为它付了十轮 | 只有一处知道「怎么起栈」；再加一个参数不会只落到一半 |
+| **L2** | **能力断言改运行期**：live 检查时断言 `list_tools() > 0` | 现在是文本断言，挡不住「插件目录空了 / 挂错路径 / manifest 坏了」 | 断言「能做」，不是「在听」 |
+
+**注**：`start-panel.sh` 已补 `--plugins-dir`（`3cb437e`），`ab_verify.sh` 已加文本守卫（含反向自检）。
+上面两条是把这件事做成**结构上不可能再犯**，而不是「这次补上了」。
+
 ## 下一步
 
 **批次 0–4 已完成**（4 见上）。**批次 5–7 见 `PLAN-targets.md`。**
