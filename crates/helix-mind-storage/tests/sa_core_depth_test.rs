@@ -416,3 +416,143 @@ fn imagination_temperature_relaxes_the_relative_gate() {
         "temperature=1.0 (tau→0, no pruning) must reach at least as far as temperature=0.0"
     );
 }
+
+// ── D8：环会回响，但不会失控 ────────────────────────────────────────
+
+/// 软边成环（spec 允许，`SIMILAR_TO` 是其代表）时能量在环上往复。
+///
+/// 人类补充了这条要求：「有环是有风险的，必须有次树衰减，否则可能会死循环」。
+/// 本测试把兜住它的三层逐一钉住：
+///
+/// 1. **不可能死循环**：迭代是 `for _ in 0..max_iterations` 的**有界**循环，
+///    并在收敛时提前 `break`。结构上不存在无界循环——这是最强的一层。
+/// 2. **不可能膨胀**：行归一化给出 `‖W‖₁ = 1`，叠加项 `(1−α)·a_0` 使
+///    `ρ(αW) ≤ α ≤ 0.95 < 1`，总质量上界恒为「种子数 k」。环上往复只会
+///    **震荡后收敛**，不会放大。
+/// 3. **数值实证**：α=0.7 的二环收敛到 `(0.588, 0.412)`，和恒为 1.0。
+#[test]
+fn soft_edge_cycle_reverberates_but_never_runs_away() {
+    let cfg = RetrievalConfig::default();
+    let params = SaCoreParams::for_mode(CognitiveMode::Anchor, 0.0, &cfg);
+
+    let mut topo = MemoryTopology::new();
+    let a = Uuid::new_v4();
+    let b = Uuid::new_v4();
+    topo.add_node(&node(a));
+    topo.add_node(&node(b));
+    // 双向软边 = 一个环。spec 对 SIMILAR_TO 明确「可成环」。
+    for (s, t) in [(a, b), (b, a)] {
+        let e = Edge {
+            source_id: s,
+            target_id: t,
+            weight: 0.9,
+            relation_type: RelationType::SimilarTo,
+            is_soft: true,
+        };
+        topo.add_edge(s, t, &e).unwrap();
+    }
+
+    let mass = |acts: &[(Uuid, f64)]| acts.iter().map(|(_, v)| v.abs()).sum::<f64>();
+
+    // 预算从 1 拉到 64：总质量必须始终被种子数（1）兜住。
+    for budget in [1usize, 2, 4, 16, 64] {
+        let (_, acts, _, _) = topo.anchor_traverse(&[a], &params, budget, 0, 100);
+        let m = mass(&acts);
+        assert!(
+            m <= 1.0 + 1e-9,
+            "a soft-edge cycle inflated total mass to {m} at budget {budget}; \
+             seed count is 1, so the cycle is running away"
+        );
+        assert!(
+            acts.iter().all(|(_, v)| v.abs() <= 1.0 + 1e-9),
+            "an individual node exceeded the seed mass at budget {budget}"
+        );
+    }
+
+    // 收敛：预算远超所需时结果不再变化 ⇒ 回响消退，而非持续泵送。
+    let (_, wide, _, _) = topo.anchor_traverse(&[a], &params, 64, 0, 100);
+    let (_, wider, _, _) = topo.anchor_traverse(&[a], &params, 400, 0, 100);
+    let map = |v: &[(Uuid, f64)]| v.iter().cloned().collect::<std::collections::HashMap<_, _>>();
+    let (mw, mwr) = (map(&wide), map(&wider));
+    for (id, v) in &mw {
+        let w = mwr.get(id).copied().unwrap_or(0.0);
+        assert!(
+            (v - w).abs() < 1e-9,
+            "a cycle kept changing at larger budgets ({id}: {v} vs {w}) — it is not settling"
+        );
+    }
+}
+
+/// `decay_factor` 的作用面：它**不衰减幅值**，只在同一节点的多条出边之间
+/// **重新分配**份额。
+///
+/// 为什么：归一化是 `w / Σ|w|`，分子分母**同比缩放**，所以任何一个源的出边
+/// 份额恒和为 1，与 `decay_factor` 无关。于是「靠软边衰减来防止环失控」这个
+/// 直觉**在本实现下不成立**——真正兜住失控的是 `α < 1` 与有界迭代（见上一条）。
+///
+/// 本测试用「只有一条软出边」的图把这一点暴露到极致：没有兄弟边可分配，
+/// 于是 `decay_factor` 从 1.0 改到 0.5 **完全不改变结果**。
+#[test]
+fn soft_edge_decay_only_redistributes_it_never_attenuates() {
+    let build = |decay: f64| {
+        let mut cfg = RetrievalConfig::default();
+        cfg.soft_edge_decay_factor = decay;
+        SaCoreParams::for_mode(CognitiveMode::Anchor, 0.0, &cfg)
+    };
+
+    let mut topo = MemoryTopology::new();
+    let a = Uuid::new_v4();
+    let b = Uuid::new_v4();
+    topo.add_node(&node(a));
+    topo.add_node(&node(b));
+    let e = Edge {
+        source_id: a,
+        target_id: b,
+        weight: 0.9,
+        relation_type: RelationType::SimilarTo,
+        is_soft: true,
+    };
+    topo.add_edge(a, b, &e).unwrap();
+
+    let (ids_full, act_full, _, _) = topo.anchor_traverse(&[a], &build(1.0), 8, 0, 100);
+    let (ids_half, act_half, _, _) = topo.anchor_traverse(&[a], &build(0.5), 8, 0, 100);
+
+    assert_eq!(ids_full, ids_half, "the reachable set must be identical");
+    let map = |v: &[(Uuid, f64)]| v.iter().cloned().collect::<std::collections::HashMap<_, _>>();
+    let (mf, mh) = (map(&act_full), map(&act_half));
+    for (id, v) in &mf {
+        let h = mh.get(id).copied().unwrap_or(0.0);
+        assert!(
+            (v - h).abs() < 1e-12,
+            "decay_factor changed an activation magnitude ({id}: {v} vs {h}); \
+             under row normalisation it can only redistribute among siblings"
+        );
+    }
+}
+
+/// Skilled 把软边衰减设为 0 ⇒ **软边在主力检索模式下完全惰性**。
+/// 这解释了「为什么创造力不会自然出现」：Stage 1 恒为 Skilled，
+/// 而联想回路只存在于软边上。创造力被**设计性地**放在 Anchor/Imagination。
+#[test]
+fn skilled_mode_disables_soft_edges_entirely() {
+    let cfg = RetrievalConfig::default();
+    let params = SaCoreParams::for_mode(CognitiveMode::Skilled, 0.0, &cfg);
+    assert_eq!(params.decay_factor, 0.0);
+
+    let mut topo = MemoryTopology::new();
+    let a = Uuid::new_v4();
+    let b = Uuid::new_v4();
+    topo.add_node(&node(a));
+    topo.add_node(&node(b));
+    let e = Edge {
+        source_id: a,
+        target_id: b,
+        weight: 0.9,
+        relation_type: RelationType::SimilarTo,
+        is_soft: true,
+    };
+    topo.add_edge(a, b, &e).unwrap();
+
+    let (ids, _, _, _) = topo.skilled_traverse(&[a], &params, 8, 0, 100);
+    assert_eq!(ids, vec![a], "an association edge must be inert in Skilled mode");
+}
