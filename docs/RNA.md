@@ -1,4 +1,5 @@
  Helix-Mind RNA — 加载协议 v1.1
+> © 2026 Jason Milk · Apache 2.0
 
 > **所属方法论**：phyt-DNA 方法论 v1.0（方法论锚点项目 https://github.com/Jasonmilk/phyt-DNA）
 > **对齐知识本体**：v4.1

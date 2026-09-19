@@ -1,4 +1,5 @@
 # Helix-Mind DNA — 项目自生长方法论 v2.0
+> © 2026 Jason Milk · Apache 2.0
 
 > **管理对象**：Helix-Mind 知识本体 v4.0+
 > **上一版本**：v1.0（2026-08-25）

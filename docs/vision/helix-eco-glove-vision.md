@@ -1,4 +1,5 @@
 # Helix ECO-Glove 生态手套架构愿景
+> © 2026 Jason Milk · Apache 2.0
 
 > **版本**：v1.0
 > **日期**：2026-08-30
