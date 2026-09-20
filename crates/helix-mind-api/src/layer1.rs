@@ -25,6 +25,11 @@ pub async fn handle_query(
         latency_ms: result.latency_ms,
         is_partial: result.is_partial,
         exhaustion_reason: result.exhaustion_reason.unwrap_or_default(),
+        // The mode Mind actually ran, and why — both were computed and then dropped at
+        // this boundary. A caller that cannot tell the mode it suggested from the mode
+        // that ran cannot audit its own reasoning (see the field comments in the proto).
+        effective_mode: result.effective_mode as i32,
+        mode_negotiation: result.mode_negotiation.unwrap_or_default(),
     };
 
     Ok(Response::new(response))
