@@ -2,6 +2,21 @@
 # Large-diff gate, driven by the commit message rather than an environment
 # variable.
 #
+# WHAT THIS IS, AND WHAT IT IS NOT.
+#
+# This hook is **"help me not make this mistake"**, not **"guarantee this mistake
+# never enters"**. It is bypassed by `git commit --no-verify`, it does not run on a
+# machine where hooks were never installed, and it does not run at all for a commit
+# made through a web interface. Anyone who reads it as a guarantee will stop looking
+# — and it guards *commit messages*, which are the thing most easily mistaken for
+# evidence. A guarantee mistaken for a mechanism is the fourth instance of
+# "declaration standing in for a check" that this file's own history records.
+#
+# The two things it does enforce, it enforces only where it runs:
+#   gate 0 — the message is not shell shrapnel (see below)
+#   gate 1 — a large guarded diff carries a `[large] <reason>` marker
+# Both are refusals with instructions, not silent fixes.
+#
 # An env var is invisible to `git log`: who skipped the gate and why becomes
 # unrecoverable, and habit makes people carry it permanently — at which point
 # the gate is decoration, which is exactly the failure it exists to prevent
@@ -20,6 +35,49 @@ set -u
 LARGE_DIFF_MAX="${LARGE_DIFF_MAX:-50}"
 MSG_FILE="${1:-}"
 [ -n "$MSG_FILE" ] && [ -f "$MSG_FILE" ] || exit 0
+
+# ---------------------------------------------------------- gate 0: no shrapnel
+#
+# A message written with `git commit -m "…"` lets the shell interpret backticks
+# and `$(…)` as command substitutions. When one fails, bash prints its complaint
+# into the message and the substituted text vanishes — so the record loses words
+# and gains error text, silently, and `git log` shows the result as if it were
+# what the author wrote. That happened here: four phrases of a commit body became
+# a lone backslash, and it was only noticed by reading the log afterwards.
+#
+# A content check is the right shape for this and not for the diff gate above,
+# because unlike "was the file replaced wholesale" there is no proxy for it: the
+# damage is only visible as the damage.
+#
+#   REJECT: 提交信息含 shell 误解析残渣
+#
+# The fix is to pass the message on stdin — `git commit -F -` with a quoted
+# heredoc — which is what the passages that survived were written with.
+shrapnel='command not found|^bash: |return: can only|syntax error: unexpected end of file|unexpected EOF while looking for|^\[\[[a-z_]*\]\]: '
+if grep -qE "$shrapnel" "$MSG_FILE" 2>/dev/null; then
+  echo "REJECT: 提交信息里有 shell 误解析的残渣 —— 说明这条消息是用 -m/\"…\" 传的，"
+  echo "        反引号或 \$(…) 被当成了命令替换，**原文已经有词被吃掉了**。"
+  grep -nE "$shrapnel" "$MSG_FILE" | head -3 | sed 's/^/        /'
+  echo "        改用：git commit -F - <<'MSG' … MSG   （带引号的分隔符，不做替换）"
+  exit 1
+fi
+
+# A lone backslash standing between whitespace is the specific residue a failed
+# substitution leaves in place of the text it swallowed. The first version of this
+# rule only matched a backslash on a line by itself, which is NOT the shape the
+# damage took: what actually happened was `CI-7 ran inside \ and mutates src/` —
+# an inline backslash where four words used to be. A control caught the misfire.
+#
+# Narrow on purpose: a backslash inside a word (a path, an escape) is normal prose
+# and is left alone. Thirty real historical messages are replayed against this gate
+# below to hold that line.
+if grep -qE '(^|[[:space:]])\\([[:space:]]|$)' "$MSG_FILE" 2>/dev/null; then
+  echo "REJECT: 提交信息里有孤立的反斜杠 —— 被吞掉的命令替换留下的残骸，"
+  echo "        通常在两个空格之间，那里原本是一段文字。"
+  grep -nE '(^|[[:space:]])\\([[:space:]]|$)' "$MSG_FILE" | head -3 | sed 's/^/        /'
+  echo "        用 git commit -F - <<'MSG' 重写，别用 -m。"
+  exit 1
+fi
 
 if grep -q '\[large\]' "$MSG_FILE" 2>/dev/null; then
   exit 0

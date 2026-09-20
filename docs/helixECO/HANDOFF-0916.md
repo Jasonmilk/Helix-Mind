@@ -19,9 +19,26 @@
 | FlowModus | `547b795` |
 | phyt-DNA | `f1331cf` |
 
-六仓**全部零未提交**。
+> ⚠️ 2026-09-16 下午起六仓有**未提交改动**（Human confirmation before commit，未 commit）：
+> anaphase-helix（rs 分支）6 改 + 1 新增；Cellrix（rs2）6 改；helix-tentacle（rs）2 改（README/PLAN 文档）。
+> 见文末「本轮待提交」。
 
 ## 一句话现状
+
+**2026-09-16 下午两条主线（用户临时插入 + 裁决后落地）**：
+
+1. **Tentacle web_search 可用性（anaphase 侧，已物理闭环）**：
+   - 三条猜测全部推翻：web_search.js 本体**完全可用**（Bing HTML 端点 + curl + 正则，**零 key**，不依赖 scraper feature）；真正卡点是 anaphase `Call.expect` 是**必需字段**，模型 6/6 漏写 ⇒ 解析期静默降级 NoToolNeeded ⇒ LLM 原始 JSON 透传成"泄漏"。
+   - **P0-G**（`expect: Option<Expect>` + `#[serde(default)]` + None→ok + diag 留痕事件）+ **P0-D-1**（`calls schema mismatch` → fail-closed `TransitionCondition::Failure`）已落；两验证支点补齐：①fence/structured 默认 ok 是代码事实（contract/mod.rs:196/254）；②事件库 30/30 tool/call 的 expect 全为 `"ok"`（Numbers/Rate/Text 从未使用）。
+   - 判据测试 `tentacle_live_web_search_p0g.rs`（真实二进制 + 缺 expect 计划，3 连）**3/3 通过**——修好 expect = 搜索恢复（此前预期"修好 expect ≠ 搜索恢复"被实测修正）。helper（free_port/spawn_real_tentacle/connect_tentacle）提升复用。
+   - 用户裁决：**双模否决**（不加 web_search_api——两个搜索工具重蹈 P0-B；key 模等真需求）；渐进式觅食**不接线**但已在 PLAN 标注"已实现、未接线、原因"；README 构建命令失真已修正；ProcessTool cfg `"{}"` 硬编码入 PLAN 待办。
+
+2. **Cellrix 4a 面板几何重构（panel-geometry-contract Q1/Q3/Q4/Q5）**：
+   - **1440×813 下 layout_test 13/13 全绿**（checker 第三栏常驻 x=1103 w=317、主区 779 不重叠；transcript gap 0；input 视口内；整页不滚）；全回归 55/0 + 59/0 + run_all 8 套。
+   - **800px 窄屏 8/5**（before 7/6；整页滚动已修；side 压缩 120px；判据 A 加 <1180px 模态守卫）；剩余窄屏 chat 单列 input 差 ~15px（Q5 退化带，已登记）。
+   - DOM 事实：`.e-insp` 是 `#s-main` 直接子级 ⇒ 第三栏做在 `#s-main` 上（grid 两列）；判据 A 从"打开让宽"改为"常驻不重叠"（对齐契约 Q1/Q3-③，含 ≥1180px 守卫 + aria-modal 校验）。
+
+## ⚠️ 未修的（**别被绿灯误导**）
 
 **用户报「第二问之后记录消失」→ 查出两个独立症状：**
 
@@ -158,3 +175,23 @@ FAIL  the naive legacy wiring is gone
   而永久假红会训练人忽略检查。现在它**拒收冻结快照并说明该喂哪个文件**。
 - **一条自己算不出来的断言毫无价值**：e2e 的判据「整条链」由**测试自己从 API 重算**，
   不向应用要数 —— 否则应用自己的计数只会与自己一致。
+
+## 本轮待提交（2026-09-16 下午，**Human confirmation before commit**）
+
+> 全部改动已验证（测试绿），但按 phyt-DNA「no auto-commits」未 commit，等用户拍板。
+
+**anaphase-helix**（分支 `rs`）——P0-G + P0-D-1 + 判据测试：
+- `src/contract/mod.rs`（Option&lt;Expect&gt; + serde default + 2 回归测试）、`src/pipeline/mod.rs`（None→ok + diag 留痕）、`src/run_cycle.rs`（fail-closed）
+- `tests/tentacle_live_web_search_p0g.rs`（新增，`#[ignore]` 手动跑）、`tests/common/mod.rs`（helper 提升）、`tests/tentacle_live.rs`（改复用）
+- 全量 cargo test 0 失败；判据 3/3
+
+**Cellrix**（分支 `rs2`）——4a 几何：
+- `web/assets/base.html`、`components.html`（高度链/chat flex/ses-side clamp/窄屏 120px）、`flows.html`（fl-body）、`prove_track.css`（#s-main 双列 grid 第三栏 + e-scroll/e-vp/e-traj 高度链）、`web/tests/layout_test.js`（判据 A 修正 + 守卫 + PROBE）
+- `.gitignore`（+node_modules/）；layout_test 13/13 + 55/0 + 59/0 + run_all 8 套
+
+**helix-tentacle**（分支 `rs`）——文档（顺手项）：
+- `README.md`（构建命令修正：主 bin 无 feature；tentacle-tools 才声明 bloom/wasm/js/runtime/scraper）、`docs/PLAN.md`（forager 未接线标注 + cfg "{}" 待办）
+
+**helix-mind**：无代码改动（本 HANDOFF 在 git 仓内，若 commit 一并带上）。
+
+**仍挂起（不阻塞提交）**：①800px 窄屏 chat 单列 input ~15px 出视口（Q5 退化带，登记）；②expect 30/30 全 ok ⇒ "从契约删除 Expect 字段"方向提出但**未批准**（现裁决 Option+默认+留痕）；③旧主线三裁决（ADR-0018 T5 / K11 metering / K13 D3 违约修复）。
