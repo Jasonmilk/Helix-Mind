@@ -3,8 +3,20 @@
 #
 # .git/hooks/ is not versioned, so hooks that matter have to live in a
 # directory that is. `core.hooksPath` points each repo at that directory.
-# With five repos, doing it by hand is a step that will be forgotten, so it is
-# a script.
+#
+# The list below is hand-maintained, and it fell behind: it said "five repos",
+# then held eight, while the workspace held thirteen plus one nested repo. Six
+# of them — Helix-MCP-Learner, lodestone-md, lodestone-spec, lumtract,
+# phyt-DNA, commonintents/.github — had no hooks at all, so neither the ADR
+# first-line gate nor the `[large]` marker gate ran there. They appeared to be
+# covered because this script exists; nothing said which repos it covered.
+#
+# K-104. The lesson is not "add the missing names" — it is that **a
+# hand-maintained list inside the script that was written to stop
+# hand-maintenance being forgotten is the same defect one level up.** A repo
+# with no `docs/decisions/` is a no-op for the ADR gate, so over-listing is
+# cheap and under-listing is silent; list every repo in the workspace, and
+# `--check` is the thing that makes an omission visible.
 #
 # Usage:  ./install-hooks.sh            install into all known repos
 #         ./install-hooks.sh --check    report status, change nothing
@@ -13,7 +25,7 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOKS="$HERE/hooks"
 WS="$(cd "$HERE/../.." && pwd)"
-REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle BIND-19 HelixECO-Glove"
+REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle BIND-19 HelixECO-Glove Helix-MCP-Learner lodestone-md lodestone-spec lumtract phyt-DNA commonintents/.github"
 MODE="${1:-install}"
 
 if [ ! -d "$HOOKS" ]; then
