@@ -96,13 +96,37 @@ impl RetrievalEngine {
         // Read current impasse depth
         let current_impasse = *self.impasse_depth.read().await;
 
+        // Decision before instrument: the negotiated mode selects WHICH SA-Core
+        // parameter set the retrieval runs with, so it must be resolved before
+        // retrieval begins. It used to be negotiated last while each stage
+        // hardcoded its own mode, so a query could report
+        // `effective_mode: Imagination` having actually diffused with Skilled's
+        // α (0.5, soft edges disabled). The reported mode and the executed mode
+        // disagreed, and the reported one was the lie.
+        //
+        // Pure reordering: `negotiate_mode` reads `current_impasse`, which is read
+        // on the line above from the *previous* cycle, so lifting the call leaves
+        // every existing result identical.
+        let (effective_mode, negotiation_note) = self.negotiate_mode(
+            suggested_mode,
+            energy_context,
+            allow_imagination,
+            autonomy_level,
+            current_impasse,
+        );
+
         // 1. Extract start nodes from query
         let start_ids = self.extract_start_nodes(query).await?;
         if start_ids.is_empty() {
-            // No start nodes — return empty with current impasse state
+            // No entry point at all. Report the mode that was really negotiated:
+            // this branch used to hardcode `Anchor`, telling the body "Mind chose
+            // Anchor" when Mind had chosen something else. A degenerate result
+            // must describe the real decision, not invent one.
             return Ok(HelixQueryResult {
-                effective_mode: CognitiveMode::Anchor,
-                mode_negotiation: Some("No start nodes found".into()),
+                effective_mode,
+                mode_negotiation: Some(format!(
+                    "{negotiation_note}; no start nodes found for this query"
+                )),
                 nodes: Vec::new(),
                 edges: Vec::new(),
                 trace_id,
@@ -132,17 +156,11 @@ impl RetrievalEngine {
         let (node_ids, activations, is_partial, exhaustion_reason) = self.stage_local_dominant(
             &start_ids,
             energy_context,
+            effective_mode,
         ).await?;
 
         // If satisfied (got enough results), return directly
         if !node_ids.is_empty() && !self.is_impasse_triggered(&node_ids, query).await? {
-            let (effective_mode, negotiation_note) = self.negotiate_mode(
-                suggested_mode,
-                energy_context,
-                allow_imagination,
-                autonomy_level,
-                current_impasse,
-            );
             let nodes = self.storage.get_nodes_by_ids(&node_ids).await?;
             let edges = self.storage.get_edges_between(&node_ids).await?;
             self.update_access_counts(&nodes).await?;
@@ -173,13 +191,6 @@ impl RetrievalEngine {
         if !shared_ids.is_empty() {
             all_node_ids.extend(shared_ids);
             if !self.is_impasse_triggered(&all_node_ids, query).await? {
-                let (effective_mode, negotiation_note) = self.negotiate_mode(
-                    suggested_mode,
-                    energy_context,
-                    allow_imagination,
-                    autonomy_level,
-                    current_impasse,
-                );
                 let nodes = self.storage.get_nodes_by_ids(&all_node_ids).await?;
                 let edges = self.storage.get_edges_between(&all_node_ids).await?;
                 self.update_access_counts(&nodes).await?;
@@ -256,13 +267,6 @@ impl RetrievalEngine {
             ImpasseLevel::None
         };
 
-        let (effective_mode, negotiation_note) = self.negotiate_mode(
-            suggested_mode,
-            energy_context,
-            allow_imagination,
-            autonomy_level,
-            current_impasse,
-        );
         let nodes = self.storage.get_nodes_by_ids(&all_node_ids).await?;
         let edges = self.storage.get_edges_between(&all_node_ids).await?;
         self.update_access_counts(&nodes).await?;
@@ -290,21 +294,66 @@ impl RetrievalEngine {
         &self,
         start_ids: &[Uuid],
         energy: &EnergyContext,
+        mode: CognitiveMode,
     ) -> Result<(Vec<Uuid>, Vec<(Uuid, f64)>, bool, Option<String>), helix_mind_core::error::MindError> {
-        // Skilled is the *semantically correct* parameter set here: this stage is
-        // the focused local pass, and `negotiate_mode` has not run yet (it is
-        // called after this stage). What changed with ADR-0042 D1 is only that
-        // α is no longer the hardcoded literal 0.5 — it is now the Skilled base
-        // modulated by `heliotropism`, which at the neutral 0.0 reproduces 0.5
-        // exactly.
-        let params = SaCoreParams::for_mode(CognitiveMode::Skilled, energy.heliotropism, &self.config);
-        self.storage.skilled_retrieve(
-            start_ids,
-            &params,
-            self.config.max_hops,
-            energy.token_budget,
-            self.config.max_nodes_per_query,
-        ).await
+        // The *negotiated* mode selects the parameter set — this is where the
+        // mode stops being a label and becomes an instrument:
+        //   Skilled     α 0.5, soft edges disabled (SOFT_EDGES_DISABLED = 0.0)
+        //               — only already-converged hard edges, no exploration
+        //   Anchor      α 0.7, soft edges × 0.8  — 接驳: bounded off-rail spread
+        //   Imagination α 0.9, soft edges × 0.95 — 漫游: wide, soft-edge-led
+        // `for_mode` always had all three arms (sa_core.rs §for_mode). The
+        // retrieval path only ever reached the Skilled one because the mode was
+        // negotiated *after* this stage, which left `alpha_anchor`,
+        // `alpha_imagination` and `decay_imagination` as config knobs with no
+        // consumer here — the same "declared but no entry point" defect the
+        // project keeps hitting. Now the mode that gets reported is the mode
+        // that runs.
+        let params = SaCoreParams::for_mode(mode, energy.heliotropism, &self.config);
+        // Dispatch to the mode's *own* instrument. This is the shape the whole
+        // seam was built for: storage exposes `skilled_retrieve` /
+        // `anchor_retrieve` / `imagination_retrieve`, each naming a traverse,
+        // and only `skilled_retrieve` was ever reachable from a query.
+        //
+        // `skilled_traverse` and `anchor_traverse` are byte-identical today
+        // (both are `sa_core_diffusion(.., None)`), so routing Anchor through
+        // `anchor_retrieve` is behaviour-preserving *today*. It is still the
+        // honest routing: it stops being a silent lie the day the two diverge,
+        // and it is what makes "the mode picks the instrument" a fact instead of
+        // an aspiration. `imagination_traverse` is the one that genuinely
+        // differs — it relaxes the relative gate by `temperature`.
+        let (ids, activations, partial, reason) = match mode {
+            CognitiveMode::Skilled => {
+                self.storage.skilled_retrieve(
+                    start_ids,
+                    &params,
+                    self.config.max_hops,
+                    energy.token_budget,
+                    self.config.max_nodes_per_query,
+                ).await?
+            }
+            CognitiveMode::Anchor => {
+                self.storage.anchor_retrieve(
+                    start_ids,
+                    None,
+                    &params,
+                    self.config.max_hops,
+                    energy.token_budget,
+                    self.config.max_nodes_per_query,
+                ).await?
+            }
+            CognitiveMode::Imagination => {
+                self.storage.imagination_retrieve(
+                    start_ids,
+                    energy.pulse,
+                    &params,
+                    self.config.max_hops,
+                    energy.token_budget,
+                    self.config.max_nodes_per_query,
+                ).await?
+            }
+        };
+        Ok((ids, activations, partial, reason))
     }
 
     // ── Stage 2: Shared Knowledge Tree ──────────────────────────────

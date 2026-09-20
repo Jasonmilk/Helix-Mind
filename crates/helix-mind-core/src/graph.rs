@@ -22,7 +22,11 @@ pub enum Sensitivity {
     Sensitive,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+/// Fieldless and trivially copyable: the negotiated mode now travels to the
+/// diffusion stage that consumes it, so it must not be consumed by the first
+/// reader. `Copy` is strictly additive here (no existing code relied on move
+/// semantics — that would not have compiled).
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum CognitiveMode {
     Skilled,
     Anchor,

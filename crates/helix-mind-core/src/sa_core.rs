@@ -265,7 +265,7 @@ mod tests {
             CognitiveMode::Imagination,
         ] {
             for h in [-1.0, -0.5, 0.0, 0.5, 1.0, 7.0, -7.0] {
-                let a = SaCoreParams::for_mode(mode.clone(), h, &c).alpha;
+                let a = SaCoreParams::for_mode(mode, h, &c).alpha;
                 assert!(a < 1.0, "alpha={a} mode={mode:?} h={h}");
                 assert!(a >= c.sa_core.alpha_floor, "alpha={a} below floor");
             }

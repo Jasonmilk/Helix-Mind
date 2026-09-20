@@ -139,6 +139,97 @@ async fn retrieval_traverses_causal_edge_to_neighbor() {
     );
 }
 
+// ── P0①: the reported mode must be the mode that diffuses ──────────────
+
+/// Run one query on a fixed graph and report `(effective_mode, node ids)`.
+///
+/// `allow_imagination` is `false` on purpose: it keeps `negotiate_mode` from
+/// rewriting the caller's request, so the only variable under test is the mode.
+async fn query_with_mode(
+    storage: Arc<StorageEngine>,
+    seed: Uuid,
+    mode: CognitiveMode,
+) -> (CognitiveMode, Vec<Uuid>) {
+    let mut fake = FakeAdapter::new();
+    fake.add("soft-linked", vec![seed]);
+    let engine = RetrievalEngine::with_extractor(retrieval_config(), storage, Arc::new(fake));
+    let result = engine
+        .query(
+            "soft-linked",
+            mode,
+            &energy(),
+            false, // include_recessive
+            false, // allow_imagination
+            AutonomyLevel::Open,
+        )
+        .await
+        .unwrap();
+    (
+        result.effective_mode,
+        result.nodes.iter().map(|n| n.id).collect(),
+    )
+}
+
+/// A soft edge is the lever that makes the mode observable: `decay_factor`
+/// multiplies soft-edge weight, and Skilled's decay is `SOFT_EDGES_DISABLED`
+/// (`0.0`) while Anchor's is `soft_edge_decay_factor` (`0.8`). Same graph, same
+/// seed, same query — only the mode differs, so only the mode can explain a
+/// different reachable set.
+///
+/// Before the fix this test could not pass. `negotiate_mode` ran *after*
+/// `stage_local_dominant`, which hardcoded `CognitiveMode::Skilled`, so both runs
+/// diffused with α = 0.5 and soft edges disabled: they returned the identical
+/// node set while reporting two *different* `effective_mode` values. The reported
+/// mode was the lie.
+///
+/// Mutation probe: put `SaCoreParams::for_mode(CognitiveMode::Skilled, ..)` back
+/// into `stage_local_dominant` and `anchor_reaches` flips to false.
+#[tokio::test]
+async fn the_reported_mode_is_the_mode_that_diffuses() {
+    let storage = memory_storage().await;
+    let seed = l2_node("soft-linked seed", 0.9);
+    let via_soft = l2_node("reachable only through a soft edge", 0.9);
+    let id_seed = seed.id;
+    let id_via_soft = via_soft.id;
+    storage.write_node(seed, WritePriority::Critical).await.unwrap();
+    storage
+        .write_node(via_soft, WritePriority::Critical)
+        .await
+        .unwrap();
+    storage
+        .add_edge(&Edge {
+            source_id: id_seed,
+            target_id: id_via_soft,
+            weight: 0.9,
+            relation_type: RelationType::SimilarTo,
+            is_soft: true,
+        })
+        .await
+        .unwrap();
+
+    let (skilled_mode, skilled) =
+        query_with_mode(Arc::clone(&storage), id_seed, CognitiveMode::Skilled).await;
+    let (anchor_mode, anchor) =
+        query_with_mode(Arc::clone(&storage), id_seed, CognitiveMode::Anchor).await;
+
+    // The negotiation must not have rewritten the request, or the test would be
+    // measuring the negotiator instead of the diffusion.
+    assert_eq!(skilled_mode, CognitiveMode::Skilled);
+    assert_eq!(anchor_mode, CognitiveMode::Anchor);
+
+    assert!(skilled.contains(&id_seed), "the seed is always reachable");
+    assert!(
+        !skilled.contains(&id_via_soft),
+        "Skilled disables soft edges (SOFT_EDGES_DISABLED = 0.0), so a node reachable \
+         only through a soft edge must stay unreachable; got {skilled:?}"
+    );
+    assert!(
+        anchor.contains(&id_via_soft),
+        "Anchor decays soft edges by 0.8 instead of zeroing them, so it must reach \
+         through; got {anchor:?}"
+    );
+}
+
 // ── P10 seed-floor regression (2026-09-07) ──────────────────────────────
 
 #[tokio::test]
