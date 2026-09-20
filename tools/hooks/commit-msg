@@ -98,10 +98,29 @@ numstat="$(git diff --cached --numstat 2>/dev/null || true)"
 # consecutive [large] markers is how a gate becomes a ritual, and a ritual is a
 # gate nobody reads.
 #
-# The three paths below are **the scenes of the four overwrites**, not a claim
-# about what "source" is. They are two Cellrix trees plus the ADRs, and nothing
-# else. Rewriting `src/` or `crates/` elsewhere is this workspace's normal work
-# and is deliberately NOT guarded: widening this would re-create the ritual the
+# WHAT THE PREFIXES BELOW DO AND DO NOT COVER (K-104c, corrected in place).
+#
+# The three prefixes are **the scenes of the four overwrites**, not a claim
+# about what "source" is. An earlier wording said they were "two Cellrix trees
+# plus the ADRs, and nothing else" — that was a *repository-scoped* claim, and
+# the mechanism is not repository-scoped: `git diff --cached --numstat` prints
+# paths **relative to the repo being committed**, so `docs/decisions/` matches
+# in *every* repo that has one (ten of them today), not only in Cellrix's ADRs,
+# and `web/src/` + `web/assets/` would match in any repo that had those trees.
+#
+# ⇒ Declared scope and actual scope are now stated in one machine-checked line:
+#
+# @scope: repo-agnostic prefixes: web/assets/ web/src/ docs/decisions/
+#
+# `commit-msg.scope.sh` asserts that this line's prefix set equals the GUARDED
+# alternation below, and that `guarded_paths.tsv`'s claimed-covered paths match
+# while its claimed-uncovered paths do not. The regex itself is **unchanged**
+# (that script also proves it byte-for-byte against HEAD): the mechanism was
+# never wrong, the *declaration* was. Correcting a declaration is not widening a
+# gate — widening is what the next paragraph refuses to do.
+#
+# Rewriting `src/` or `crates/` is this workspace's normal work and is
+# deliberately NOT guarded: widening this would re-create the ritual the
 # paragraph above retreats from.
 #
 # An earlier wording of this comment read "Source, assets and ADRs keep the
@@ -112,7 +131,11 @@ numstat="$(git diff --cached --numstat 2>/dev/null || true)"
 # measure size instead of that shape.
 #
 # If it should be wider, the honest form is a **ratio bound on any path**, not a
-# longer prefix list — that is a decision, not a cleanup.
+# longer prefix list — that is a decision, not a cleanup. That judgement now
+# exists as `diff-ratio.sh`: it measures `deleted/before` per path and reports
+# REPLACED / LOCAL / NEW / UNMEASURABLE. It is deliberately **not wired in
+# here**, so that this file's blocking behaviour stays bit-for-bit what it was;
+# adopting it remains the policy decision the previous paragraph left open.
 GUARDED='^(web/assets/|web/src/|docs/decisions/)'
 total=$(printf '%s\n' "$numstat" | awk -v re="$GUARDED" 'NF>=3 && $3 ~ re {a+=$1} NF>=3 && $3 ~ re && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
 skipped=$(printf '%s\n' "$numstat" | awk -v re="$GUARDED" 'NF>=3 && $3 !~ re {a+=$1} NF>=3 && $3 !~ re && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
