@@ -24,6 +24,23 @@
 #      must not change" is measured, not asserted.
 #   E. the declaration check (`commit-msg.scope.sh`) passes.
 #
+#   I5. the instrument's OWN declared scope is covered. `diff-ratio.sh` declares
+#      four verdicts and one rule about the fourth:
+#
+#        REPLACED      deleted/before >= RATIO_MAX and churn >= MIN_LINES
+#        NEW           absent at HEAD and churn >= MIN_LINES — "the two must not
+#                      be conflated: absence of a before-image is not evidence of
+#                      one"
+#        LOCAL         everything else
+#        UNMEASURABLE  binary files — "**never silently 0**"
+#
+#      Before this change A and C3 exercised only REPLACED and LOCAL. NEW and
+#      UNMEASURABLE — the two the comment goes out of its way to name, i.e. the
+#      two where a silent regression is most plausible — were **claimed and
+#      unobserved**: exactly the shape I5 is about (declared scope > actual
+#      coverage). Steps A2/A3 observe them. They constrain the *instrument*,
+#      which `commit-msg` does not call, so no gate decision moves.
+#
 # Exit: 0 = all green; 1 = a criterion is red; 2 = the probe itself is broken.
 set -u
 
@@ -99,7 +116,79 @@ else
   fi
 fi
 
+# ------------------------------------- A2. the declared NEW/LOCAL distinction
+#
+# The judgment under test: a file that was ABSENT at HEAD is `NEW`, not
+# `REPLACED` and not `LOCAL`, and "new" is not the same verdict as "local". The
+# comment's own warning is the criterion — absence of a before-image is not
+# evidence of one, so the two must not be conflated.
+#
+# A2/A3 build their **own** scratch repo: they must observe the instrument
+# without disturbing the stage `$TMP` carries into B. (An earlier draft reset the
+# shared fixture here, which silently emptied B's input — order-dependence
+# introduced by the very step meant to strengthen the probe.) A non-zero
+# instrument exit is the probe being broken, not a red criterion: it is reported
+# as such, matching A's handling above.
+scratch_ratio() { # $1 = shell snippet (cwd = scratch repo). Prints the report.
+  local d out rc
+  d="$(mktemp -d)"
+  git -C "$d" init -q >/dev/null 2>&1
+  git -C "$d" config user.email probe@example.invalid
+  git -C "$d" config user.name probe
+  mkdir -p "$d/src"
+  out="$(cd "$d" && eval "$1" && git add -A >/dev/null 2>&1 && bash "$RATIO" 2>&1)"
+  rc=$?
+  rm -rf "$d"
+  if [ "$rc" -ne 0 ]; then
+    printf 'CHECKER ERROR: diff-ratio.sh exited %s in the A2/A3 scratch repo:\n%s\n' "$rc" "$out" >&2
+    exit 2
+  fi
+  printf '%s\n' "$out"
+}
+
+printf '== A2. NEW is a distinct verdict, not LOCAL and not REPLACED (I5) ==\n'
+if [ -f "$RATIO" ]; then
+  r="$(scratch_ratio 'seq 1 400 | sed "s/^/brand-new-line-/" > src/large_new.rs
+                      seq 1 5 | sed "s/^/tiny-new-/" > src/small_new.rs')"
+  if printf '%s\n' "$r" | grep -q '^NEW[[:space:]]*deleted/before=n/a.*src/large_new.rs'; then
+    ok "I5 large file absent at HEAD ⇒ NEW (not REPLACED, not LOCAL)"
+  else
+    red "I5 a new file is no longer reported NEW — got: $(printf '%s\n' "$r" | grep large_new.rs)"
+  fi
+  if printf '%s\n' "$r" | grep -q '^LOCAL[[:space:]]*deleted/before=n/a.*src/small_new.rs'; then
+    ok "I5 small file absent at HEAD ⇒ LOCAL (NEW is churn-gated; the two are not conflated)"
+  else
+    red "I5 a below-threshold new file is no longer reported LOCAL — got: $(printf '%s\n' "$r" | grep small_new.rs)"
+  fi
+fi
+
+# ------------------------------------------ A3. UNMEASURABLE is never "0"
+#
+# The rule under test, verbatim from the comment: binary files ⇒ UNMEASURABLE,
+# "**never silently 0**". A checker can only hold that if a binary is actually
+# staged and observed. Note the summary line prints all five counters; an
+# anchored match would never see `UNMEASURABLE=1` in it.
+printf '== A3. a binary file is UNMEASURABLE, never silently dropped (I5) ==\n'
+if [ -f "$RATIO" ]; then
+  r="$(scratch_ratio 'printf "bin\0\0\0\0\0\0\0\0binary payload\0\0\1\2\3" > src/blob.bin
+                      seq 1 5 | sed "s/^/text-/" > src/text_control.rs')"
+  printf '%s\n' "$r" | grep -q '^UNMEASURABLE.*src/blob.bin' \
+    && ok "I5 binary staged ⇒ reported UNMEASURABLE (its churn is not invented)" \
+    || red "I5 binary staged but not reported UNMEASURABLE — got: $(printf '%s\n' "$r" | grep blob.bin)"
+  printf '%s\n' "$r" | grep -q 'UNMEASURABLE=1' \
+    && ok "I5 the summary counts it as UNMEASURABLE=1 (not folded into LOCAL=0)" \
+    || red "I5 the summary does not count the binary as UNMEASURABLE=1: $(printf '%s\n' "$r" | grep '^UNMEASURABLE=')"
+  printf '%s\n' "$r" | grep -q '^LOCAL.*src/text_control.rs' \
+    && ok "I5 control: a small text file in the same stage is still LOCAL" \
+    || red "I5 control failed — small text file not LOCAL: $(printf '%s\n' "$r" | grep text_control.rs)"
+fi
+
 # ------------------------------------------------- B. behaviour did not change
+#
+# A left the shared stage holding the wholesale rewrite of the UNGUARDED
+# `src/legacy.rs`. B observes exactly that, so it must NOT reset the fixture
+# first: the rewrite is uncommitted, and `restore_fixture` would restore the
+# file to HEAD — i.e. delete the very change B exists to judge.
 printf '== B. commit-msg still ignores that change (behaviour unchanged) ==\n'
 if [ -f "$RATIO" ]; then
   code_now="$(run_hook "$HOOK" "$TMP/msg.plain")"
