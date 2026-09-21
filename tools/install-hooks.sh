@@ -26,6 +26,39 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOKS="$HERE/hooks"
 WS="$(cd "$HERE/../.." && pwd)"
 REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle BIND-19 HelixECO-Glove Helix-MCP-Learner lodestone-md lodestone-spec lumtract phyt-DNA commonintents/.github"
+
+# The other half of the declaration: what is deliberately NOT hooked, and why.
+# Read by `anaphase-helix/tests/security_gate.rs`, which goes red for any git repo
+# that is in neither list, for an EXCLUDE name that is not a repo, for a row with no
+# reason, and for a row whose status is not in the checker's known set — so this
+# cannot decay into a list that follows reality instead of constraining it, and a
+# NEW repo still trips the gate.
+#
+# Pipe-separated: <repo> | <status> | <reason>.
+#   status is a STATE, not a reason. Two of them are known:
+#     pending-human — waiting on a human ruling; NOT endorsed by the author. The
+#                     reason must still say what would change if it were approved.
+#     decided       — a human ruled to keep it out; the reason must say on what basis.
+#   Keeping them apart matters: if every row says "pending", the list is a queue with
+#   no exit, and a queue that never drains is a permanent exemption.
+#
+# No calendar `due` here on purpose. A date would make the assertion go red for the
+# passage of time rather than for a false claim, which is the "ritual" failure the
+# project already rejects; a date that gets pushed forward each cycle IS a permanent
+# exemption wearing a deadline. The bound lives where it can be enforced — a row in
+# the ruling queue with an owner and a due (commonintents/.github/HANDOFF-0920.md).
+#
+# Declaration, not a switch: EXCLUDE is read by nothing but that assertion, so
+# adding a repo here does NOT stop the loop below from hooking it. To change the
+# policy, move the name into REPOS (which the loop consumes) and drop the row.
+EXCLUDE="
+commonintents/BIND-19 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
+commonintents/CAPABILITY-13 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
+commonintents/INTENT-7 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
+commonintents/INTENT-7-SECURE | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
+commonintents/PFP-xCF14 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
+commonintents/SAP-xCF14 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
+"
 MODE="${1:-install}"
 
 if [ ! -d "$HOOKS" ]; then
