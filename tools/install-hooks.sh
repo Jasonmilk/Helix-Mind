@@ -25,7 +25,29 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOKS="$HERE/hooks"
 WS="$(cd "$HERE/../.." && pwd)"
-REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle BIND-19 HelixECO-Glove Helix-MCP-Learner lodestone-md lodestone-spec lumtract phyt-DNA commonintents/.github"
+REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle BIND-19
+       HelixECO-Glove Helix-MCP-Learner lodestone-md lodestone-spec lumtract phyt-DNA
+       commonintents/.github
+       commonintents/BIND-19 commonintents/CAPABILITY-13 commonintents/INTENT-7
+       commonintents/INTENT-7-SECURE commonintents/PFP-xCF14 commonintents/SAP-xCF14"
+
+# ONE declaration, not a first line plus an append. The first attempt wrote
+# `REPOS="… existing …"` and then `REPOS="$REPOS commonintents/…"` with the
+# rationale in comments between them. That works when a shell runs it and reads as
+# completeness to a human — and the I5 checker went RED on it, because
+# `shell_declaration` reads the FIRST `REPOS="` to its closing quote and never sees
+# an append. The 6 repos were hooked and simultaneously undeclared: exactly the
+# declared-vs-actual gap this list exists to close. One literal list, split across
+# lines for width only.
+#
+# The six protocol repos are separate from commonintents/.github on purpose. An
+# earlier version held them in EXCLUDE as `pending-human`, reasoning that hooking
+# them would extend the protocol family to new ground. That was the wrong way
+# round, and the human corrected it (2026-09-22): commonintents/.github carries the
+# FAMILY protocol, and the projects under it are the protocol BODIES — material
+# parked only in `.github` is material nobody sees. They are ordinary repos and must
+# be committable as such. Named individually rather than by glob so that `--check`
+# and the I5 assertion can still name a repo that has gone missing.
 
 # The other half of the declaration: what is deliberately NOT hooked, and why.
 # Read by `anaphase-helix/tests/security_gate.rs`, which goes red for any git repo
@@ -52,12 +74,10 @@ REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle BIND-19 H
 # adding a repo here does NOT stop the loop below from hooking it. To change the
 # policy, move the name into REPOS (which the loop consumes) and drop the row.
 EXCLUDE="
-commonintents/BIND-19 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
-commonintents/CAPABILITY-13 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
-commonintents/INTENT-7 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
-commonintents/INTENT-7-SECURE | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
-commonintents/PFP-xCF14 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
-commonintents/SAP-xCF14 | pending-human | excluded 2026-09-21; not endorsed. Approving would add this repo to REPOS and the hooks would then install there
+# Currently empty, and that is a statement rather than an oversight: every git repo in
+# this workspace is now in REPOS. The declaration stays because the I5 assertion reads it
+# and refuses a script that has none — an empty list that is DECLARED is reviewable, an
+# absent one is not. A future exclusion belongs here with a status and a reason.
 "
 MODE="${1:-install}"
 
@@ -65,7 +85,16 @@ if [ ! -d "$HOOKS" ]; then
   echo "no hooks directory at $HOOKS" >&2
   exit 1
 fi
-chmod +x "$HOOKS"/* 2>/dev/null
+# Only the hooks themselves are executable, and only by suffix. `chmod +x ./*`
+# also caught the DATA beside them: `guarded_paths.tsv` came back as a mode change
+# (100644 -> 100755) on every install, so a data file was being published as a
+# program by the very script that exists to keep this directory honest. A mode is
+# part of what a file claims to be; `git diff --summary` showing a permission flip
+# is a real diff, not noise.
+for h in commit-msg pre-commit pre-push post-commit prepare-commit-msg; do
+  [ -f "$HOOKS/$h" ] && chmod +x "$HOOKS/$h" 2>/dev/null
+done
+for h in "$HOOKS"/*.sh; do [ -f "$h" ] && chmod +x "$h" 2>/dev/null; done
 
 for r in $REPOS; do
   d="$WS/$r"
