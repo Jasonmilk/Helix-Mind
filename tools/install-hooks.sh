@@ -25,11 +25,20 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOKS="$HERE/hooks"
 WS="$(cd "$HERE/../.." && pwd)"
-REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle BIND-19
+REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle
        HelixECO-Glove Helix-MCP-Learner lodestone-md lodestone-spec lumtract phyt-DNA
        commonintents/.github
        commonintents/BIND-19 commonintents/CAPABILITY-13 commonintents/INTENT-7
        commonintents/INTENT-7-SECURE commonintents/PFP-xCF14 commonintents/SAP-xCF14"
+
+# `BIND-19` used to appear here as a TOP-LEVEL repo, and `commonintents/BIND-19`
+# also appeared. They are two independent clones of the same origin
+# (CommonIntents/BIND-19): same HEAD, same branch — and the nested one was a strict
+# superset (local `main`, one more tag, two more remote refs). The top-level copy
+# was the only CommonIntents repo outside `commonintents/`, so the name was drift
+# rather than a second subject. The top-level clone was removed (2026-09-22) after
+# checking it held nothing unique: no stash, no extra worktree, no untracked files,
+# no local-only commits, and its tags/remotes were subsets. One family, one name.
 
 # ONE declaration, not a first line plus an append. The first attempt wrote
 # `REPOS="… existing …"` and then `REPOS="$REPOS commonintents/…"` with the
