@@ -28,9 +28,17 @@ fn alarm_node(job_id: &str, due_at: chrono::DateTime<Utc>, mode: &str, repeat_mi
 }
 
 async fn make_storage() -> Arc<StorageEngine> {
-    let mut config = Config::default();
-    config.storage.sqlite_path = ":memory:".to_string();
-    StorageEngine::new(&config.storage).await.unwrap()
+    // 临时**文件**库，不是 `:memory:` —— 存储层用 r2d2 连接池（`max_size(10)`），
+    // 而每条 `:memory:` 连接都是私有的空库：schema 只建在其中一条上，请求落到
+    // 池里另一条就报 `no such table: nodes`。偶发，取决于并发调度。
+    // 同仓既有处置见 `helix-mind-storage/src/sqlite_pool.rs:477`。
+    let db = std::env::temp_dir().join(format!("helix_wakeup_{}.db", uuid::Uuid::new_v4()));
+    let config = helix_mind_core::config::StorageConfig {
+        sqlite_path: db.to_string_lossy().to_string(),
+        wal_dir: db.with_extension("wal").to_string_lossy().to_string(), // 独立 WAL，避免共享
+        ..Config::default().storage
+    };
+    StorageEngine::new(&config).await.unwrap()
 }
 
 #[tokio::test]

@@ -22,9 +22,16 @@ fn l1_node(text: &str, minutes_ago: i64) -> Node {
 }
 
 async fn make_storage() -> Arc<StorageEngine> {
-    let mut config = Config::default();
-    config.storage.sqlite_path = ":memory:".to_string();
-    StorageEngine::new(&config.storage).await.unwrap()
+    // 临时**文件**库，不是 `:memory:` —— 见 `craft_integration.rs` 同处注释与
+    // `helix-mind-storage/src/sqlite_pool.rs:477`：r2d2 的每条 `:memory:` 连接
+    // 都是私有空库，schema 只在其中一条上，并发下会偶发 `no such table`。
+    let db = std::env::temp_dir().join(format!("helix_sleeprev_{}.db", uuid::Uuid::new_v4()));
+    let config = helix_mind_core::config::StorageConfig {
+        sqlite_path: db.to_string_lossy().to_string(),
+        wal_dir: db.with_extension("wal").to_string_lossy().to_string(), // 独立 WAL，避免共享
+        ..Config::default().storage
+    };
+    StorageEngine::new(&config).await.unwrap()
 }
 
 #[tokio::test]

@@ -19,9 +19,17 @@ use tonic::Request;
 use uuid::Uuid;
 
 async fn build() -> (HelixMindServiceImpl, Arc<StorageEngine>) {
-    let mut config = Config::default();
-    config.storage.sqlite_path = ":memory:".to_string();
-    let storage = StorageEngine::new(&config.storage).await.unwrap();
+    let config = Config::default();
+    // 临时**文件**库，不是 `:memory:` —— 见 `craft_integration.rs` 同处注释与
+    // `helix-mind-storage/src/sqlite_pool.rs:477`：r2d2 的每条 `:memory:` 连接
+    // 都是私有空库，schema 只在其中一条上，并发下会偶发 `no such table`。
+    let db = std::env::temp_dir().join(format!("helix_reparents_{}.db", uuid::Uuid::new_v4()));
+    let storage_config = helix_mind_core::config::StorageConfig {
+        sqlite_path: db.to_string_lossy().to_string(),
+        wal_dir: db.with_extension("wal").to_string_lossy().to_string(), // 独立 WAL，避免共享
+        ..config.storage.clone()
+    };
+    let storage = StorageEngine::new(&storage_config).await.unwrap();
     let retrieval = Arc::new(RetrievalEngine::new(
         config.retrieval.clone(),
         storage.clone(),

@@ -14,8 +14,13 @@ use helix_mind_storage::{StorageEngine, WritePriority};
 use uuid::Uuid;
 
 async fn memory_storage() -> Arc<StorageEngine> {
+    // 名字保留（历史），但库**不再是 `:memory:`** —— 存储层用 r2d2 池
+    // （`max_size(10)`），每条 `:memory:` 连接都是私有空库，schema 只在其中一条上，
+    // 并发下会偶发 `no such table`。见 `sqlite_pool.rs:477` 的既有处置。
+    let db = std::env::temp_dir().join(format!("hm_retr_{}.db", Uuid::new_v4()));
     let config = StorageConfig {
-        sqlite_path: ":memory:".to_string(),
+        sqlite_path: db.to_string_lossy().to_string(),
+        wal_dir: db.with_extension("wal").to_string_lossy().to_string(), // 独立 WAL，避免共享
         ..Default::default()
     };
     StorageEngine::new(&config).await.unwrap()

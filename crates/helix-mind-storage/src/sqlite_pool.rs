@@ -434,8 +434,13 @@ mod tests {
     async fn get_nodes_by_phase_filters_by_phase_state() {
         use helix_mind_core::graph::{Node, PhaseState, Sensitivity};
 
+        // 临时**文件**库，不是 `:memory:` —— 与本文件下方
+        // `bump_access_counts_is_atomic_batch` 同一处置：r2d2 池的每条 `:memory:`
+        // 连接都是私有空库，schema 只在其中一条上 ⇒ 并发下偶发 `no such table`。
+        let db = std::env::temp_dir().join(format!("helix_pool_{}.db", uuid::Uuid::new_v4()));
         let config = StorageConfig {
-            sqlite_path: ":memory:".to_string(),
+            sqlite_path: db.to_string_lossy().to_string(),
+            wal_dir: db.with_extension("wal").to_string_lossy().to_string(), // 独立 WAL，避免共享
             ..Default::default()
         };
         let engine = crate::StorageEngine::new(&config).await.unwrap();

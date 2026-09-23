@@ -11,19 +11,27 @@ use uuid::Uuid;
 use std::sync::Arc;
 
 async fn create_test_storage() -> Arc<StorageEngine> {
+    // 临时**文件**库，不是 `:memory:`（r2d2 池的每条 `:memory:` 连接都是私有空库，
+    // schema 只在其中一条上 ⇒ 并发偶发 `no such table`）。见 `sqlite_pool.rs:477`。
+    //
+    // 顺带修掉原先写死的共享目录：`/tmp/test_human_view`、`/tmp/test_parquet`、
+    // `/tmp/test_wal` 与本仓 `helix-mind-federation/tests/outbound_gate_test.rs`
+    // 是**同名字面量**，两个测试二进制并行跑时会互相踩。改为按 uuid 各自独立。
+    let db = std::env::temp_dir().join(format!("hm_cli_{}.db", Uuid::new_v4()));
+    let base = db.to_string_lossy().to_string();
     let config = StorageConfig {
-        sqlite_path: ":memory:".to_string(),
-        human_view_dir: "/tmp/test_human_view".to_string(),
+        sqlite_path: base.clone(),
+        human_view_dir: format!("{base}.human_view"),
         human_view_max_size_mb: 1,
         node_cache_capacity: 100,
-        deep_cold_dir: "/tmp/test_deep_cold".to_string(),
+        deep_cold_dir: format!("{base}.deep_cold"),
         deferred_write_interval_sec: 60,
         l3_merge_similarity_threshold: 0.85,
-        parquet_dir: "/tmp/test_parquet".to_string(),
+        parquet_dir: format!("{base}.parquet"),
         topology_max_nodes: 100000,
         vector_similarity_threshold: 0.7,
-        wal_enabled: false, // :memory: 不启用 WAL 事实来源
-        wal_dir: "/tmp/test_wal".to_string(),
+        wal_enabled: true, // 文件库：可用 WAL（`:memory:` 才需关闭）
+        wal_dir: format!("{base}.wal"),
     };
     StorageEngine::new(&config).await.unwrap()
 }

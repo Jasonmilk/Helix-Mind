@@ -21,9 +21,23 @@ use tonic::transport::Server;
 const TRACEPARENT: &str = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
 
 async fn build_service() -> HelixMindServiceImpl {
-    let mut config = Config::default();
-    config.storage.sqlite_path = ":memory:".to_string();
-    let storage = StorageEngine::new(&config.storage).await.unwrap();
+    let config = Config::default();
+
+    // 临时**文件**库，不是 `:memory:`。原因不是性能，是正确性：存储层用 r2d2
+    // 连接池，而**每条 `:memory:` 连接都是一个私有的空库** —— schema 只建在拿到
+    // 的那一条连接上，请求一旦落到池里另一条连接就会报 `no such table: nodes`。
+    // 症状是偶发：整个文件单独复跑会全过，混在整套测试里才红。
+    //
+    // 同仓已有两处同样的处置与说明（`helix-mind-storage/src/sqlite_pool.rs:477`
+    // 的 `bump_access_counts_is_atomic_batch`、`helix-mind-retrieval/tests/
+    // fts_extractor_test.rs:19` 的 `temp_engine`）。此处按同一形状修，不另立一套。
+    let db = std::env::temp_dir().join(format!("helix_craft_{}.db", uuid::Uuid::new_v4()));
+    let storage_config = helix_mind_core::config::StorageConfig {
+        sqlite_path: db.to_string_lossy().to_string(),
+        wal_dir: db.with_extension("wal").to_string_lossy().to_string(), // 独立 WAL，避免共享
+        ..config.storage.clone()
+    };
+    let storage = StorageEngine::new(&storage_config).await.unwrap();
     let retrieval = Arc::new(RetrievalEngine::new(
         config.retrieval.clone(),
         storage.clone(),
