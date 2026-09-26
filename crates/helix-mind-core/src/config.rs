@@ -445,7 +445,14 @@ fn default_scan_interval_sec() -> u64 { 60 }
 fn default_federation_enabled() -> bool { false }
 
 fn default_gene_lock_path() -> String { "./gene_lock.md".into() }
-fn default_listen_addr() -> String { "127.0.0.1:50051".into() }
+fn default_listen_addr() -> String {
+    // SSOT: helixECO/ports.json — mind = 50052. The old default was 50051, which is
+    // TENTACLE's port: the factory default collided with another component and nothing
+    // tested it (the ecosystem only worked because a local config.toml overrode it).
+    // A listening address that is MISSING must be fail-closed; this default exists only
+    // for the standalone case and now agrees with the table.
+    "127.0.0.1:50052".into()
+}
 fn default_transport() -> Transport { Transport::Tcp }
 fn default_trusted_uids() -> Vec<u32> { Vec::new() }
 fn default_max_system_load() -> f64 { 1.0 }

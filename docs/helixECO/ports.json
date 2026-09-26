@@ -1,0 +1,21 @@
+{
+  "_doc": "SSOT for Helix ecosystem ports. Every component's port lives HERE and nowhere else.",
+  "_rules": [
+    "A listening address that is MISSING is fail-closed: throw (the service must not start on a guessed port).",
+    "An OUTBOUND endpoint that is MISSING throws OR explicitly degrades to a declared 'absent' state (never a silent default).",
+    "scheme MUST match the real protocol (a scheme that lies is the same fault family as a configured value standing in for a measured one)."
+  ],
+  "components": {
+    "anaphase":  { "port": 50061, "host": "127.0.0.1", "protocol": "http",  "required": "listen" },
+    "mind":      { "port": 50052, "host": "127.0.0.1", "protocol": "http",  "required": "listen" },
+    "tentacle":  { "port": 50051, "host": "127.0.0.1", "protocol": "grpc",  "required": "listen" },
+    "tuck":      { "port": 60052, "host": "127.0.0.1", "protocol": "http",  "required": "listen" },
+    "flowmodus-serve":  { "port": 60053, "host": "127.0.0.1", "protocol": "http", "required": "listen" },
+    "flowmodus-reason": { "port": 60054, "host": "127.0.0.1", "protocol": "grpc", "required": "listen" },
+    "panel":     { "port": 50050, "host": "127.0.0.1", "protocol": "http",  "required": "listen" }
+  },
+  "not_ecosystem": {
+    "llama-server": 8080,
+    "mock-llm": 59099
+  }
+}
