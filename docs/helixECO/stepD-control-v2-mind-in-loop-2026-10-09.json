@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-10-09T04:07:50",
+  "experiment": "步骤 D 对照实验（更正版：up 起全栈，Mind 在环）",
+  "supersedes": "stepD-control-2026-10-09.json —— 那份**对照无效**（两臂都没有 Mind，D 的通路不存在，量的不是 D）",
+  "stack": {
+    "launcher": "anaphase-helix/target/debug/up（stdin 非 TTY ⇒ 不出交互菜单）",
+    "components": "Tentacle + Mind(127.0.0.1:50052) + Anaphase",
+    "proof_mind_in_loop": "/v1/health → mind: configured=true ok=true（两格均如此）"
+  },
+  "design": {
+    "chain": "5 轮 + 第 6 轮追问",
+    "fact": "第 1 轮用户消息埋「我的狗叫旺财」",
+    "probe": "「我养的那只宠物叫什么名字？只回名字。」—— 不含「狗」不含「旺财」",
+    "read_from": "事件流的 turn/end.reply（reply 有工具计划泄漏缺陷，故不看 HTTP 截断值）"
+  },
+  "results": [
+    {
+      "converge": "on",
+      "arm": "S 选中",
+      "reply": "{\"calls\":[{\"tool\":\"numbers\",\"args\":{\"series\":\"[旺财]\"}}...",
+      "contains_fact": true
+    },
+    {
+      "converge": "on",
+      "arm": "N 不选中",
+      "reply": "tool plan (tentacle·fixture)",
+      "contains_fact": false
+    },
+    {
+      "converge": "off",
+      "arm": "S 选中",
+      "reply": "```json web_search plan",
+      "contains_fact": false
+    },
+    {
+      "converge": "off",
+      "arm": "N 不选中",
+      "reply": "Jason",
+      "contains_fact": false
+    }
+  ],
+  "verdict": {
+    "C_delivers_observable": true,
+    "D_gap_measured": true,
+    "D_increment_isolated": "选中会话对召回无作用：C 关 + S = 假；而 C 关 + N 返回 Jason 证明全库召回本身在工作 ⇒ 召回存在但**不被选中会话引导**",
+    "D_status": "未实现（本份是它的有效基线）",
+    "D_hook": "src/run_cycle/memory_retrieval.rs 的 memory.query 调用点"
+  },
+  "side_observation": "reply 被「工具计划泄漏成答复」污染（{\"calls\":...} 与 ```json 围栏）—— 既存已登记缺陷族，非本轮引入。"
+}
