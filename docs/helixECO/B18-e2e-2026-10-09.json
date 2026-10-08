@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-10-09T01:29:17",
+  "experiment": "B18 端到端：同一用户输入的两次独立对话，三处 join 键必须各自不同",
+  "chain": "anaphase(reasoning_endpoint) → Tuck gateway :60057 → llama-swap :8080 · model coder-3b",
+  "tuck_audit_chain": [
+    {
+      "seq": 0,
+      "kind": "request",
+      "trace_id": "run-8bba24c5ee368a4a-p006ac7d2cf000000"
+    },
+    {
+      "seq": 1,
+      "kind": "request",
+      "trace_id": "run-c53f9b73b39adbfe-p006ac7d2d0000001"
+    },
+    {
+      "seq": 2,
+      "kind": "response",
+      "trace_id": "run-c53f9b73b39adbfe-p006ac7d2d0000001"
+    },
+    {
+      "seq": 3,
+      "kind": "response",
+      "trace_id": "run-8bba24c5ee368a4a-p006ac7d2cf000000"
+    },
+    {
+      "seq": 4,
+      "kind": "request",
+      "trace_id": "run-c53f9b73b39adbfe-p006ac7d2d3000002"
+    },
+    {
+      "seq": 5,
+      "kind": "response",
+      "trace_id": "run-c53f9b73b39adbfe-p006ac7d2d3000002"
+    }
+  ],
+  "anaphase_body_trace": [
+    {
+      "seq": 0,
+      "trace_id": "run-c53f9b73b39adbfe-p006ac7d2d0000001"
+    },
+    {
+      "seq": 0,
+      "trace_id": "run-8bba24c5ee368a4a-p006ac7d2cf000000"
+    },
+    {
+      "seq": 2,
+      "trace_id": "run-c53f9b73b39adbfe-p006ac7d2d3000002"
+    }
+  ],
+  "anaphase_periods": [
+    {
+      "period_id": "run-8bba24c5ee368a4a-p006ac7d2cf000000",
+      "inner_period_id_unique": true,
+      "input": "Calculate 2 to the power of 10"
+    },
+    {
+      "period_id": "run-8bba24c5ee368a4a-p006ac7d2e4000000",
+      "inner_period_id_unique": true,
+      "input": "Calculate 2 to the power of 10"
+    },
+    {
+      "period_id": "run-c53f9b73b39adbfe-p006ac7d2d0000001",
+      "inner_period_id_unique": true,
+      "input": "同一输入的两次独立对话"
+    },
+    {
+      "period_id": "run-c53f9b73b39adbfe-p006ac7d2d3000002",
+      "inner_period_id_unique": true,
+      "input": "同一输入的两次独立对话"
+    }
+  ],
+  "join_probe": {
+    "/v1/trace?trace_id=<run1 period>": 1,
+    "/v1/trace?trace_id=<run2 period>": 1,
+    "/v1/trace?trace_id=<OLD digest 相等前缀>": 0
+  },
+  "verdict": {
+    "tuck_chain_distinct": true,
+    "body_trace_distinct": true,
+    "same_input_two_runs_differ": true,
+    "old_digest_key_returns": 0
+  }
+}
