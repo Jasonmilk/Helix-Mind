@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-10-09T05:06:50",
+  "experiment": "中间洞测量（此前未测 —— 人类更正：驳回 ≠ 中间洞，不得记为已补）",
+  "setup": {
+    "chain": "21 轮",
+    "converge_skeleton_max_lines": 3,
+    "converge_gist_max_chars": 120,
+    "planted": {
+      "round_1": "最旧事实「红色灯塔」",
+      "round_10": "中间事实「蓝色风车」"
+    },
+    "probe": "第 21 轮问第 10 轮那条"
+  },
+  "measured": {
+    "gist_title": "gist of 17 earlier round(s) — bounded; originals intact",
+    "recent_lines": 3,
+    "middle_round_in_recent_lines": false,
+    "prompt_has_oldest_fact": true,
+    "prompt_has_middle_fact": false,
+    "prompt_has_named_remainder": true,
+    "prompt_chars": 657,
+    "reply": "红色灯塔",
+    "drilldown_body_retrieves_middle": true
+  },
+  "verdict": {
+    "hole_confirmed": true,
+    "character": "中间轮既不在最近 N 行、也不在 gist 前缀（gist 最旧优先 ⇒ 保护最旧、裁中间与较晚）",
+    "named": true,
+    "exit_exists": "!body <id>（需要人；模型要知道该问）",
+    "status": "**已测，未闭合** —— 不得记为已补",
+    "why_not_closed": "要闭合它需要 gist 覆盖中间（那会重新线性增长）或让模型自己发起下钻（3B 上不可靠 ⇒ 装饰性绿灯）。两条都未做。"
+  }
+}
