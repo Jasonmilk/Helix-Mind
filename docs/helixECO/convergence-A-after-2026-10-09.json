@@ -209,5 +209,19 @@
       "contains_secret": false
     }
   ],
-  "round1_period": "run-7e2a43434fcf3721-p006ac7edfb000001"
+  "round1_period": "run-7e2a43434fcf3721-p006ac7edfb000001",
+  "counter_proof": {
+    "claim": "退回旧实现 ⇒ 判据②红",
+    "mutation": "把 `if let Some(answer) = self.answer_read_instruction()` 改成 `if let Some(answer) = None::<String>`（读数指令分支失效 ⇒ `!body` 退回「当工具名」的旧行为）",
+    "observed_red": {
+      "reply": "",
+      "impasse": false,
+      "meaning": "第1轮的独有事实不可取回 ⇒ 判据②红"
+    },
+    "observed_green_after_restore": {
+      "reply_contains": "ZEPHYR-7421",
+      "runs": "5/5 稳定"
+    },
+    "also_proves": "人类第1项确认（撞名）为什么重要：`parse_structured_command` 把 `!` 后第一个词一律当工具名 —— 没有这道本地分支，`!body` 会被当工具发出去并静默失败（reply 为空），极难查。"
+  }
 }
