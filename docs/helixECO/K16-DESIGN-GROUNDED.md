@@ -64,3 +64,64 @@
 | **K22**（已修） | **pre 时刻的形状拦**（`rm -rf`/force push/权威卷）—— 那是**门内**的第一道；K16 是**门外**的兜底。**两者互补，不重复。** |
 | **K17** | 并发（含 `file_store.rs:210` 的 MutexGuard 跨 await）—— 与 K16 无关，但**都在"让系统更稳"这一族** |
 | **K19** | 改名（`verdict`/`GateVerdict`）—— 独立 |
+
+---
+
+## 六、人类对 RS 版的两个提问 —— 逐条答（**有产物为据**）
+
+> 人类 2026-10-09：*"Tuck 之前的 python 版本（Tuck-beta）可以接管 API 并把 LLM 与用户对话历史保存下来！
+> 现在 rs 版本也需要这个功能吗？还是可以不需要？！而且还有 personas 功能（让 Helix 随时呼叫救兵 agent）——
+> 这个暂时可能不需要了，应该交给 Anaphase-helix 更合理？！"*
+
+### ① 接管 API —— **RS 版已经有了，且做得对**
+
+```
+tuck-gateway/src/lib.rs:9-11  "POST /v1/chat/completions — accepts an OpenAI-style JSON body,
+                               forwards to the configured upstream, and streams back JSON / SSE chunks
+                               untouched. Headers are forwarded"
+:20   "物理事实优先: forwarding is byte-transparent — no buffering"
+:134  .route("/v1/chat/completions", post(chat_completions))
+proxy.rs  PFP 头解析（X-PFP）+ 框架无关拦截（"极致解耦"）
+⇒ **不需要新增。**
+```
+
+### ② 对话历史 —— **不该由 Tuck 保存**（与 anaphase 重叠 ⇒ 两份真相 A5）
+
+- **「对话历史」= 经历** ⇒ 归 `anaphase` 的 `session_events`（`turn/start`·`user/message`·`assistant/reply`…）。
+- **Tuck 再存一份 ⇒ 两份真相**（A5）。**Tuck 的定位是"门 + 可审查"，不是"第二本经历账"。**
+- **★ 但 Tuck 该记的是另一个量：**"**什么穿过了它**"**（审计行）** —— 见 ③。
+
+### ③ ★ 而 RS 版**真正缺的那一件**：chat 路径上**没有落审计**
+
+```
+chat_completions（gateway/src/lib.rs:144-168）：构造 upstream → post → 转发 headers → 流式回传
+   ⇒ 这条路径上【没有 audit / record / decide 的调用】
+而 gateway 有可选的 AuditChain（state.rs:77 `chain: Option<Arc<Mutex<AuditChain>>>`）
+   ⇒ 【有链，但没接在这条路上】
+```
+
+**⇒ 后果**：**"谁在误导和诱骗 Helix，有迹可循"目前不成立** ——
+**接管了 API 却不记谁走过**，那对"可审查"是**零**。
+
+**⇒ 而它与本文件的 M1 验收 ① 完全重合**：
+```
+M1 验收①  每一次判定落审计（含 args_json 的【脱敏】版本 + 判定 + 理由）⇒ 诱骗有迹可循
+```
+**⇒ 所以人类的提问补上了 K16 最易被忽略的一半。**
+
+### ④ personas —— **人类判断正确：归 anaphase**（且已被有意退役）
+
+- **`ADR-0001`（rust rebuild realignment）**：*"Python beta 的所有代码：`Tuck/`、**`personas/`**、`pyproject.toml`
+  全部移入 archive，**不复用**"* —— `docs/DEPRECATE.md:16` 同步登记。⇒ **RS 版有意不做。**
+- **定位上也更该归 anaphase**：**personas = "该派哪个救兵" = 判断/编排**，
+  而 **Tuck 的立场是"不判断，只呈现"**（VISION） ⇒ **冲突**。
+- **⇒ 交 anaphase-helix 合理。**
+
+### ⑤ 由此对 K16 的**顺序**有一处**增强**
+
+**M1 除了"端点"，还必须有"落审计"** —— 否则 M2/M3 装上去的是一个**看不见的门**。
+**⇒ M1 的验收因此写成两条**（缺一不可）：
+```
+① curl 直连：干净 ⇒ pass；脏 ⇒ 记录（观察态不拦）
+② 每次判定在审计里留下一行（含【脱敏】的 args、判定、理由）—— 否则"可审查"不成立
+```
