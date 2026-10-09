@@ -91,3 +91,55 @@ cargo test --test run_cycle_pipeline -- --test-threads=1    连跑三次
 **一个不确定的套件会让后面每一步都不可信** —— 包括 `route_trace` 的 ③④。
 而第 28 条给了它一个**机械判据**：**同命令连跑两次，失败集合必须一致**。
 **⇒ 在修好之前，本仓的读数只作"线索"，不作"证据"。**
+
+---
+
+## 十一、⚠️ 我的一次**无效测量**（必须记，因为同一类错误本会话犯过两次）
+
+我用 `cargo test --test run_cycle_pipeline <a> <b>` 跑了 14 组"配对"，
+得到 **14/14 全部 `exit=1`**，于是写下"配任何一条都红 ⇒ 每个测试都污染"。
+
+**⇒ 那是假的。**
+
+```
+error: unexpected argument 'time_anchor_injected_with_full_date' found
+Usage: cargo test [OPTIONS] [TESTNAME] [-- [ARGS]...]
+```
+
+**`cargo test` 只接受一个过滤词** ⇒ 那些 `exit=1` 是**cargo 的用法错误**，**不是测试失败**。
+**⇒ 「配任何一条都红」整个结论作废。**
+
+**⇒ 这与本会话更早那次同类**（`timeout` 在 macOS 上不存在 ⇒ `exit=127` 被我读成"测试不红"）：
+**退出码没有被归因** —— **用法错误的 `1` 与测试失败的 `1` 长得一模一样。**
+
+### 第 29 条（建议入册）· **退出码必须可归因**
+
+`exit=1` 至少有三种来源：测试失败、cargo/工具**用法错误**、环境错误。
+**⇒ 判据：任何"红/绿"的读数，必须同时给出"它来自哪个命令的哪种结局"**；
+否则 `1` 会被当成裁决。**（与"没有环境的计数不可比"同族：没有归因的退出码也不可比。）**
+
+## 十二、更正后的干净数据
+
+```
+# 正确跑法：过滤词是【子串】—— `cargo test --test X run_cycle_` 跑该前缀的全部
+run_cycle_ 子集（4 条）· --test-threads=1 · 连跑三次
+  第1次  2 passed / 2 failed  →  {full_chain_met, full_chain_unmet}
+  第2次  1 passed / 3 failed  →  + {deterministic_replay}
+  第3次  2 passed / 2 failed  →  {full_chain_met, full_chain_unmet}
+
+run_cycle_full_chain_met 单独跑三次： exit=0 · 0 · 0     ← 单独【稳定绿】
+```
+
+**⇒ 两个不同的病：**
+
+| 病 | 成员 | 性质 | 下一步 |
+|---|---|---|---|
+| **A** | `full_chain_met` · `full_chain_unmet` | **确定的顺序依赖**（单独稳绿、进子集三次全红） | **可复现 ⇒ 可二分**（用子串过滤跑子集） |
+| **B** | `run_cycle_deterministic_replay` | **不确定**（第2次才红） | 先抓失败正文 |
+
+## 十三、关于人类的一个猜测（SA-Core / helix-mind）
+
+人类猜：*"难道跟 helix-mind 的 sa-core 函数有关？"*
+**⇒ 部分可答**：这几条测试经 `base_agent` 构造，**用的是 `NoopMemoryAdapter`** ⇒ **不经过 mind**。
+**⇒ 但我尚未抓到失败正文**（`--nocapture` 那次跑的是无效命令）⇒ **不确认也不排除**，
+**下一步第一件事就是抓正文**（它会直接点名是哪个断言、哪一侧的值）。
