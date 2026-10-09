@@ -78,3 +78,37 @@ fixtures/                 ✗ 缺   ← 变异夹具（ADR-…/inject.sh）
 
 **未做**：`tools/validate.sh`（跑夹具的开关）· `ledger/` · 与 `run_all.js` 对接。
 **仍未落任何"没跑通"的工具**（纪律保持一致）。
+
+---
+
+## 九、`tools/validate.sh` + `ledger/` + 首份「闸门式」ADR 已落地并跑通
+
+**★ 本轮发现的真实差距**：Cellrix 的 **24 份 ADR 全是给人读的散文** ——
+`hard: true` / `applies-to:` / `check: |` **各 0 份**；
+而 phyt-DNA 模板的 ADR 是**给机器读的闸门**（front-matter + 可执行 `check` + `redtest` 反例命令）。
+**⇒ 这解释了为什么"移植 validate.sh"不是复制文件那么简单。**
+
+**落地内容**：
+1. `tools/validate.sh`（承模板，**仅路径适配** `decisions/` → `docs/decisions/`）+ **零闸门具名 BLOCK**（唯一行为补充）
+2. `ledger/{README.md,hits-2026.jsonl}`（append-only；未改写模板规则一字）
+3. `docs/decisions/ADR-0049-asset-parity.md` —— 首份模板格式的闸门 ADR
+4. `fixtures/ADR-0049-asset-parity/inject.sh`（目录按契约命名 `<gate-id>`；我先命名错了，已改）
+
+**实测**：
+```
+--probe ADR-0049-asset-parity  → 心跳 RED ✅（probe 约定：RED = 成功）
+正常扫描                        → {"verdict":"pass","scanned":1,"hits":0} ✅
+--override                      → 已写入 ledger/hits-2026.jsonl ✅
+assets 污染检查                  → dirty=0 ✅
+零闸门（被 BLOCK 挡住）           → exit=2 + 具名理由 ✅
+```
+
+**★ 第三个发现：两套契约冲突，且已证明可共存**
+Cellrix 的 **pre-commit 钩子**要求**首行是 ADR 头**（`helix-mind/tools/hooks/adr_head.py`），
+而 phyt-DNA 把元数据放在**文件开头的 YAML front-matter** ⇒ **首次提交被钩子拒绝**（`REJECT: 首行不是 ADR 头`）。
+**解**：`validate.sh` 用 `grep`/`awk` 读取，**不要求元数据在开头** ⇒
+**H1（含 ADR 号）放第一行、front-matter 紧随其后，两套契约同时成立**，且**不改动任何一方**。
+本文件自身就是这个判例（尾部有"两种契约如何共存"一节）。
+
+**未做**：`claim-check.sh` / `spec-lint.sh` / `check-baseline.sh`（未跑通的不入库）·
+旧 24 份 ADR 的格式迁移（**不动权威文本**）· ledger 与 `run_all.js` 对接（替换那张手写表）。
