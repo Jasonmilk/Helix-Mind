@@ -33,7 +33,37 @@ anaphase-helix/src/bin/up.rs     5.0MB（10-09）
 ```
 **⇒ 不是重复，是"各自能独立跑"。** 保留。判据见 D6。
 
-## D2 · 端口默认值必须与 SSOT **一致** `[ ] 待做`
+## D2 · ~~端口默认值必须与 SSOT 一致~~ → **⚠️ 假发现，已撤回；残差收窄为"扩展既有测试"** `[x] 判断已更正`
+
+**我原判**：`Cellrix/web/src` 有 13 处端口字面量，而 `ports.json` 自称唯一真源 ⇒ 需要一条闸门。
+**⇒ 撤回：一条闸门**已经存在**，而且比我提的更好：**
+
+```
+Cellrix/web/tests/port_table_test.js        实测 exit=0
+  ok  scope: 表格 ≥5 组件            ← 它【先断言扫描范围非空】："a check that scans nothing is green and says nothing"
+  ok  uniqueness: 无两组件共用端口
+  ok  mind: default_listen_addr 与表格一致（注释：this is the live conflict）
+  ok  mind: 不与其他组件撞
+  ok  scheme: 每个组件声明真实协议
+  ★ declared SKIP + exit 4（sibling 缺席时具名跳过，不是崩溃读成红）
+  ★ 它的注释还记着它自己第一版的 bug："a CRASH READ AS A RED, the very thing this repo's own rule forbids"
+  ★ 路径可配（PORTS_ROOT），不硬编码
+```
+
+**⇒ 我犯的错**：**在提出"需要一条闸门"之前，没有先 grep 是否已经有一条。**
+**⇒ 这正是人类警告的"重复的功能"**；与本会话前几次同类：**读到一个值就下判断，没查它旁边有没有已有的东西。**
+
+**★ 而残差是真的、且窄**：
+`port_table_test.js` 只覆盖**一处**代码点（`helix-mind` 的 `mind` 默认值），
+**而 `Cellrix/web/src/` 那 13 处字面量**没有**被覆盖**（`:355,374,375,378,379,382,391,392,394,398,403,408,412,417`，多为 `routes.rs`）。
+**⇒ 正解（极致复用）**：**扩展既有测试的 scope**（同一份 `ports.json`、同一套断言风格），**不新建闸门。**
+
+## D2-残 · 把面板自己的端口字面量纳入既有测试 `[ ] 待做`
+**判据（能红）**：把 `routes.rs` 某一处改成 `50099` ⇒ `port_table_test.js` 必须红。
+**注意**：改动要落在**既有测试**里（否则 D2 就变成"第二份清单"——我刚差点犯的那个错）。
+
+## D2-原（已废弃，保留以记经历链）
+## D2 · 端口默认值必须与 SSOT **一致** `[x] 判断已更正（见上）`
 
 ```
 ports.json 自述： "Every component's port lives HERE and nowhere else."
