@@ -1,78 +1,59 @@
-> 🔗 **当前交接点 = [`HANDOFF-0916.md`](./HANDOFF-0916.md)**（在 git 仓内）。
-> 本文件下述横幅声称「真相源 = 工作区根 `HANDOFF.md`」—— 那个文件**不在任何 git 仓**，
-> 链条不可靠。**以 `HANDOFF-0916.md` 为准。** 本文件其余内容不动。
+# HANDOFF · 入口（人或 agent 读的第一份）
 
-# HANDOFF — 生态交接点
+> **一句话入口**：*"读 `helix-mind/docs/helixECO/HANDOFF.md`"* —— 读完就能进入工作状态。
+> **为什么有这个文件**：人类说"我也需要笔记本，否则我会忘记"；agent 说"开工前不查就会重复发现已有物"。
+> **两者是同一件事**：**一个被指向的入口**。它不是 PLAN（阶段计划）、不是 GROWTH（年轮）、
+> 不是 KNOWN_ISSUES（缺陷册）、不是 decisions（规则）—— 它只回答五件事，**每次会话结束前由 agent 更新**。
+>
+> **⚠️ 它自己也会腐**：所以「下一件」与「等你」必须与 `KNOWN_ISSUES.md` 的 **待裁决** 行一致（那是唯一真源）。
 
-> ⚠️ **本文件是 2026-09-08 的历史快照，已过期，不再是交接真相源。**
-> **唯一交接真相源 = 工作区根目录 `/Users/jason/Doubao/chats/Jasonmilk/HANDOFF.md`**（会话级镜像），生态 SSOT = `ECOSYSTEM.md`（v1.91）。
-> 已更正的下述错误：本文件 §0 声称"服务全部 RUNNING"——**2026-09-14 13:00 实测 `:50061/:8080/:60052/:60053` 全部未监听（服务全灭）**；测试数 1558 已重校为 **1544**（见 ECOSYSTEM v1.91）；术语「印痕/Engram」已更名「**证轨/ProveTrack**」（ADR-0037）。
-> 保留本文件仅因其 §3「未完成事项」仍有参考价值；**新的交接请写根目录 HANDOFF.md，不要续写本文件**。
+---
 
-> 更新时间：2026-09-08（ADR-0034 空回复修复完成）
-> 用途：跨会话恢复上下文的权威快照。先读本文件 → ECOSYSTEM.md（SSOT）→ 目标项目 PLAN.md/GROWTH.md。
-> 维护：每次交接时更新本文件（覆盖式，保持单页、准确、不冗余）。
+## ① 现在在哪
 
-## 0. 当前物理状态（**已过期**——见上方横幅；此处保留 09-08 快照原文）
+| 仓 | 分支 | HEAD |
+|---|---|---|
+| anaphase-helix | `feature/convergence-M0M7` | `e26f24c` |
+| helix-mind | 同上 | `b2b25b7` |
+| Cellrix | 同上 | `b0df057` |
+| FlowModus | 同上 | `6600ccd` |
+| Tuck | 同上 | `812c966` |
+| phyt-DNA | `v2` | （见 `git -C phyt-DNA rev-parse --short HEAD`） |
 
-| 服务 | 端口 | 状态 | 进程 |
-|---|---|---|---|
-| anaphase-helix | 50061 | ~~✅ RUNNING~~（09-14 实测：未监听） | target/debug/anaphase |
-| cellrix-web | 8080 | ~~✅ RUNNING~~（09-14 实测：未监听） | target/debug/cellrix-web |
-| tuck | 60052 | ~~✅ RUNNING~~（09-14 实测：未监听） | target/debug/tuck |
-| helix-mind-cli | — | ~~✅ RUNNING~~（09-14 实测：未监听） | helix-mind-cli run |
+**生态 SSOT**：`ECOSYSTEM.md` · `ports.json` · **`KNOWN_ISSUES.md`（缺陷与裁决）** · 本文件。
 
-浏览器入口：`http://127.0.0.1:8080/`（WebUI + TUI 同构，TUI 经 `up` 选择 [2]）。
-白盒核对路径：`.helix/events/run-*.events.jsonl`（会话事件，权威）、`.helix/traces/reasoning.jsonl`（推理正文）、`Tuck/gateway-audit.jsonl`（审计链）。
+## ② 等你（**这一节就是你的待办**）
 
-## 1. 各仓库对齐状态（**2026-09-08 快照，已过期**——当前状态见根目录 HANDOFF.md）
+| id | 要你决定什么 | 在哪说明 |
+|---|---|---|
+| **K16** | **给「做」装门**（想/说/做）：Tuck 实现 `security/gate` + anaphase 装配 + 配置。**三项都改行为**，已设计分阶段 M0–M4 | `KNOWN_ISSUES.md` K16 · `THINK-SAY-DO.md` · `D8-PLAN.md` |
+| **K18** | CI-144 的 `vendored` 类型要不要加一致性判据（**通用向，先标记**） | `KNOWN_ISSUES.md` K18 |
+| **K19** | `verdict` 一族改名（一物两名 + 同 crate 两个 `GateVerdict`） | `KNOWN_ISSUES.md` K19 |
+| rail | rail 匹配门槛是否收紧（单字命中即得分）· rail 命中是否该 `calls.clear()` | `rail-bypass-findings-2026-10-09.md` |
 
-| 仓库 | 分支 | HEAD | 说明 |
-|---|---|---|---|
-| anaphase-helix | rs | e4adc88 | ADR-0030（SSE done 确定性）+ ADR-0034（空回复防护）；测试 240 全绿 |
-| Helix-Mind | rs-dev | d6787b5+ | ECOSYSTEM v1.88；P0-P10 全通 |
-| Cellrix | rs2 | b921f92 | ADR-0029：proxy EOF grace + fold primitive + think/check/outcome render |
-| Tuck | rs | （刚清理推送） | 移除 gateway-audit.jsonl 跟踪（运行时产物，*.jsonl 已 ignore） |
-| helix-tentacle | rs | a94584e | calc + web_search fixture |
-| HelixECO-Glove | main | 8901a4c | P4-T1 完成，45 测试 |
-| Helix-MCP-Learner | main | 3b98a67 | 核心完成 |
-| phyt-DNA | main | e7bfbbf | PROTECTION v1.3（IP 条款 + spec headers） |
+## ③ 已有什么（别重复发明）
 
-全生态测试：**1544**（2026-09-14 重校：Anaphase **245** / Cellrix **341** / Tuck **363**（须 `--features gateway`）/ Mind 118 / BIND-19 142 / Tentacle 153 / Glove 45 / MCP-Learner 50 / FlowModus **87**）。原 09-08 快照值 1558 已废弃。
+| 想做什么 | 先看这里 |
+|---|---|
+| 加一条闸门 | `bash tools/validate.sh --index`（**闸门清单，引擎生成**）+ `decisions/README.md` |
+| 改 phyt-DNA 的规矩 | `RNA.md` 的「先查再写」· `README.md` 的 Workflow 四步 |
+| 跨仓协作 | **`KNOWN_ISSUES.md`**（跨仓缺陷唯一登记处） |
+| 端口 | `ports.json`（SSOT）+ Cellrix 的 `web/tests/port_table_test.js`（**已覆盖面板端点**） |
 
-## 2. 最近完成（已推送，勿重复）
+## ④ 怎么验（**跑不了的东西不能声称**）
 
-1. **ADR-0030**：SSE 事件序运行时焊死——终态通道 oneshot→mpsc（oneshot 重复 poll panic 曾导致 done 行丢失 → 浏览器只见裸 JSON）。
-2. **ADR-0034**：回答被思考吞掉——reasoning 模型思考与回答共享 token 预算（deepseek-v4-flash 已知行为）。三层修：预算 2048→8192（config）+ `empty_reply_retries` 有界直答重试 + attempt `empty` 诚实标记。实测同问题回复落地（think 5816 + attempt 103，empty=false）。
+```bash
+cd phyt-DNA && bash tools/validate.sh --probe-all     # 12 条闸门的三态
+cd phyt-DNA && bash tools/ci-local.sh                 # 逐字复现 CI（推送前必跑）
+cd Cellrix  && node web/tests/run_all.js              # 面板套件（注意：同环境也可能 FLAKY）
+```
 
-## 3. 未完成事项（优先级排序）
+## ⑤ 下一件（agent 的建议，人可推翻）
 
-### P0 待实施（方向已认可，未动手）
-1. **判据拆分**：`exec_ok`（工具层 expect ok==true）拆出 `answer.delivered`（交付层 expect echo==true）——"工具成功 ≠ 任务完成：答案必须回传到人类"。当前判据声明与隐含检查不符（名实不符）。
-2. **参数名 schema 锁定**：`expr`→`expression` 漂移毁掉 outcome_sha 复演对合——`list_tools` 丢弃了 proto Manifest 的 `parameters_schema` 字段（补字段 6），参数名由 tool schema 锁定，模型不得自由发挥。
-3. **outcome_sha 只哈希业务产物**：现对 `{"ok":true,"result":"262144"}` 整体哈希，把协议字段 ok 也算入——协议层一变复演就误报漂移。只 hash `262144`。
-4. **CONTEXT 恢复分隔符 + resume 段**：上次 `L3·03b55c83 0.5 liquid · L1·0d0a73d4 0.5 liquid` 有分隔可读，这次 `L3·0.5 c59cbf6b liquidL3·0.5 71b29c32 liquid` 挤成一团且 resume 段消失（承接上文的对话更需要 resume）。
+**K16**（给「做」装门）—— 契约、布局、落点都已摸清（`D8-PLAN.md` 的 M0 已完成：基线 `gate=none` 已确认）。
+**但从它开始前请先读 `D8-PLAN.md` 的三个坑**（跨三处同时改 / 装门=改行为 / 门是 fail-closed）。
 
-### P1 待拍板
-5. **hard FAIL 补救策略**：当前 hard gate 拦下后 `done=true` 静默结束——拦住但没处理。候选：重试/转人工/僵局标记（impasse）。需用户拍板。
-6. **结晶闭环自动化**：同类 Unmet≥2 → 自动生成判据候选（胶体态）→ 人工确认 → 升 Tuck hard 规则（0-token 拦截）。当前只有手动 `POST /v1/crystallize`。
+---
 
-### P2 已裁定"记下以后再修"
-7. **自检四色语义化**：黄=启动未联通 / 绿=连通 / 红=错误 / 灰=未检出（cellrix 面板仍二元 ✅/❌）。
-8. **rails demo 导航词法误命中**：本地 config 已关闭 rails（不在路径上，不阻塞）。
-
-## 4. 下一步建议（按你的节奏）
-
-1. **优先 P0-1/2/3**（判据诚实三件套）：一次提交让 ProveTrack 账本自洽——"判据能解释自己、参数名被 schema 锁定、哈希只盖业务产物"。这是上次审查的核心结论，做完 run-1dc862 就成了最好的 demo。
-2. **P0-4**（CONTEXT 可读性）顺手同批修。
-3. **P1-6**（结晶）值得认真做——"审计是结晶的矿源"是 Helix 差异化（0-token 拦在前面），但需先定人机确认 UI（Cellrix 侧）。
-4. **P2** 按用户裁定暂缓。
-
-## 5. 约束提醒（每次开工必守）
-
-- 哲学八条：极致解耦/按需加载/按需驱动/极致复用/极致节能/物理事实优先/确定性优先/0硬编码。
-- 文档先子后父：ADR → PLAN → GROWTH → README → ECOSYSTEM，全部推 GitHub，commit 关联 ADR。
-- README 必更新（badge 测试数同步）；ECOSYSTEM 是 SSOT，项目状态变必须同步。
-- 零行业词汇（测试/字段只用 tool/args/expect/numbers/rate/text/fixture/mock/schema）；拒绝正则、拒绝补丁思维、第一性原理。
-- 外部实现只作灵感、不借名号（轨迹 = 证轨 ProveTrack）；内部命名简短准确省 tokens。
-- 运行时产物（*.jsonl 审计/事件）不进 git。
+**更新规则**：会话结束前更新 ①（hashes）与 ⑤（下一件）；② 只在 `KNOWN_ISSUES.md` 变更时同步
+（**它是唯一真源，本文件不另立一份**）。
