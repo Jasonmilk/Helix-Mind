@@ -143,3 +143,58 @@ run_cycle_full_chain_met 单独跑三次： exit=0 · 0 · 0     ← 单独【�
 **⇒ 部分可答**：这几条测试经 `base_agent` 构造，**用的是 `NoopMemoryAdapter`** ⇒ **不经过 mind**。
 **⇒ 但我尚未抓到失败正文**（`--nocapture` 那次跑的是无效命令）⇒ **不确认也不排除**，
 **下一步第一件事就是抓正文**（它会直接点名是哪个断言、哪一侧的值）。
+
+---
+
+## 十四、★ 失败正文（终于抓到）—— 形状很清楚
+
+```
+run_cycle_full_chain_met   :73   assert_eq!(records.len(), 1)   left: 0   right: 1
+run_cycle_full_chain_unmet :98   assert_eq!(records.len(), 1)   left: 0   right: 1
+run_cycle_deterministic_replay :143  left: "{…\"status\":\"MET\"…}"   right: ""   ← 第二次运行账本【空】
+```
+
+**而它前面的断言都通过了**（`:62-71`：`calls.len()==1` · `evidence.len()==1` · `evidence[0].ok`）。
+**⇒ 计划解析了、信封组装了、工具执行了、证据记了 —— 但「stage 5-6 写 verdict」没发生。**
+**⇒ 共同形状：同进程里**第二次** `run_cycle` **什么都不写**。**
+
+## 十五、人类猜测（Tuck）—— 部分成立，且发现一条真陷阱
+
+人类猜：*"也许问题在 tuck?!"* ⇒ **`run_cycle` 里**确实**有 Tuck 闸门**（`run_cycle/mod.rs`）：
+
+```
+:141  pub gate: crate::gate::Gate,
+:721  if let Err(reason) = self.gate.check() { … return Err("TUCK-GATE-REFUSED: {reason}") }
+```
+
+**⇒ 但我的"熔断器是共享全局"假设被**结构性排除**：**
+
+```
+gate.rs:55   impl Default for Gate { fn default() -> Self {
+gate.rs:145/159   inner: Mutex::new(Inner { state: GateState::Closed, opened_at: None, last_reason: None })
+```
+
+**⇒ 每次 `Gate::default()` 都造**新实例**，不是进程级全局。**
+**⇒ 且测试里 `run_cycle(...).await.unwrap()` **没有 panic** ⇒ 走的**不是** `TUCK-GATE-REFUSED` 那条路。**
+
+**⚠️ 顺手发现的真陷阱（入册）**：
+
+```
+gate.rs:165   self.inner.lock().map(|g| g.state).unwrap_or(GateState::Open)
+```
+
+**互斥锁一旦中毒（别的线程 panic 时正持锁），闸门就报「开」** —— fail-closed 的方向是对的，
+**但它报的是一个**错误的理由**（"下游不可用"与"我们的锁坏了"读起来一样）。**
+⇒ 与第 24 条同族：**一个量被当成另一个量。**
+
+## 十六、诚实的计数（我这轮猜了三次，全没中）
+
+| 我的假设 | 结果 |
+|---|---|
+| 由 `gene_lock_path`（身份块非空）造成 | ❌ **否证**（单独跑也绿…不，是单独跑**绿** ⇒ 与它无关） |
+| 是**并行**资源冲突 | ❌ **否证**（串行同样发生） |
+| 是 Tuck **熔断器**共享全局 | ❌ **结构性排除**（`Gate::default()` 造新实例；且未走 REFUSED 路） |
+
+**⇒ 剩下的 solid 事实：「证据写了、verdict 没写」、「单独跑绿、进子集红」。**
+**⇒ 下一步应该是**读 verdict 的写入路径**（stage 5-6），而不是继续猜共享物。**
+**⇒ 在查清之前，本仓读数只作线索（第 28/29 条）。**
