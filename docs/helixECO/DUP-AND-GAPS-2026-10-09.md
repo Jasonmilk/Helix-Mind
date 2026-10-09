@@ -1,88 +1,101 @@
-# 重复 / 疏漏登记册（2026-10-09）
+# 重复 / 疏漏登记册（2026-10-09）· **带任务标记**
 
-> 人类提醒：*"项目多次合拢和重构，所以可能会有重复的功能，或者疏漏，你需要严谨一点，有需要就使用 x-ray 协助。"*
-> **⇒ 本册 = 扫描结果 + 证据 + 状态。**（与 `BACKFLOW-phyt-DNA-v2.md` 同体例：发现时登记，不靠记忆。）
+> 人类提醒：*"项目多次合拢和重构 ⇒ 可能有重复功能或疏漏；严谨一点，需要就用 x-ray 协助。"*
+> 人类补充（**本条改变了两项判断**）：*"我的所有项目几乎都可以**单独运行**（可接入通用生态）——
+> 理论上所有项目都可以独立运行，只是**无法获得完整生态能力**而已。"*
+>
+> **状态标记**：`[ ]` 待办 · `[x]` 已完成 · `[?]` **等人类裁决** · `[~]` 已记录但暂不动
+> **每项都必须有：证据 → 处置 → 判据（能红）**
 
-## D1 · 两个 `up`（人类提过的老病，确认存在）
+---
+
+## ★ 先更正我两条判错的
+
+### 更正 1 · D1 **不是重复** —— 是"每项目可独立运行"（人类原则）
+
+我先判 `anaphase-helix/src/bin/up.rs` 与 `Cellrix/web/src/bin/up.rs` 是"两个 up ⇒ 重复"。
+**⇒ 按人类原则，这多半是**每个项目自己的独立启动器**（各自能单独跑，只是没有完整生态能力）。**
+**⇒ 处置从"谁权威"改为："各自独立可跑"这条性质要有判据"**（见 D6）。`[x] 已更正判断`
+
+### 更正 2 · D2 **框架改**：不是"删字面量"，是"字面量必须与 SSOT 一致"
+
+**独立运行**需要默认值（不能依赖 `ports.json` 在场）⇒ **字面量本身**是**合理的**。
+**⇒ 真正的问题是**它们会不会与 SSOT 漂移**（本会话已修过一处：`up.rs` 的 `8080 → 50050`）。**
+**⇒ 处置改为：一条**一致性闸门**（代码里的端口字面量必须在 SSOT 里，且值相同），**不删字面量**。`[x] 已更正框架`
+
+---
+
+## D1 · 两个 `up` → **改为 D6（独立可运行性）** `[x] 判断已更正`
 
 ```
-Cellrix/web/src/bin/up.rs          二进制 1.6MB（10-01）
-anaphase-helix/src/bin/up.rs       二进制 5.0MB（10-09）   ← 我一直在跑的是这个
+Cellrix/web/src/bin/up.rs        1.6MB（10-01）
+anaphase-helix/src/bin/up.rs     5.0MB（10-09）
 ```
+**⇒ 不是重复，是"各自能独立跑"。** 保留。判据见 D6。
 
-**⇒ 两份 launcher 实现。** **⚠️ 未判定**：哪一份是权威？另一份该退役还是该保留（例如一个只管面板、一个管全栈）？
-**⇒ 需人类一句话**（这属于"两个真相"⇒ 与 ports.json 同族）。
-
-## D2 · ★ `ports.json` 声称"唯一真源"，而代码里有 13 处端口字面量
+## D2 · 端口默认值必须与 SSOT **一致** `[ ] 待做`
 
 ```
-ports.json 自述： "SSOT for Helix ecosystem ports. Every component's port lives HERE and nowhere else."
-实测（在 Jasonmilk/ 下扫描 Cellrix/web/src）：
-  Cellrix/web/src/bin/up.rs:1011  60052
-  Cellrix/web/src/bin/up.rs:569   50051
-  Cellrix/web/src/bin/up.rs:582   50051
-  Cellrix/web/src/config.rs:17    60053
-  Cellrix/web/src/config.rs:9     50061
-  Cellrix/web/src/main.rs:34      50050
-  Cellrix/web/src/main.rs:111     50050
-  Cellrix/web/src/main.rs:206     60052
-  Cellrix/web/src/main.rs:213     60052
-  Cellrix/web/src/main.rs:296     60052
-  Cellrix/web/src/main.rs:299     60053
-  Cellrix/web/src/routes.rs:304   60053
-  …（共 13 处）
+ports.json 自述： "Every component's port lives HERE and nowhere else."
+实测（在 Jasonmilk/ 下扫 Cellrix/web/src）：13 处端口字面量
+  bin/up.rs:569,582(50051) · :1011(60052) · config.rs:9(50061),17(60053)
+  main.rs:34,111(50050) · :206,213,296(60052) · :299(60053) · routes.rs:304(60053)
 ```
+**处置**：**不删字面量**（独立运行需要默认值）· **加闸门**：每个字面量必须在 `ports.json` 里且值相同。
+**判据（能红）**：把某处字面量改成 `50099` ⇒ 闸门必须红。（可正反例夹具）
 
-**⇒ **SSOT 与代码直接矛盾**。** 本会话已修过其中一处（`up.rs` 的 `WEB_PORT_DEFAULT: 8080 → 50050`）——
-**⇒ 说明这条路确实会漂。** **⚠️ 未做**：把这 13 处改为从 SSOT 读（或至少加一条闸门：代码里的端口字面量必须在 SSOT 里）。
-
-**⚠️ 我的失误记录**：第二次扫描我从 `anaphase-helix/` 里跑、路径写成 `Cellrix/web/src`
-⇒ 路径错 ⇒ **空结果**。**⇒ 空结果不能当作"没有重复"**（第一次的 13 处是在正确目录下量的）。
-
-## D3 · 「verdict」一族：**5 处定义**，其中**两个同名不同物**
+## D3 · 「verdict」一族 5 处定义 · **其中两个 `GateVerdict` 同名不同物** `[?] 待裁决`
 
 | 位置 | 名字 | 是什么 |
 |---|---|---|
-| `ledger/mod.rs:14` | `VerdictStatus` | **账本裁定**（Met/Unmet） |
-| `run_cycle/verdict.rs:64` | `PeriodVerdict` | **周期结束**（HTTP 体那个） |
-| `run_cycle/verdict.rs:24` | `EndReason` | 结束原因（Completed/Impasse/UndefinedTransition/CycleCapExhausted） |
-| `security.rs:58` | **`GateVerdict`** | **安全闸门的决定**（策略层：Pass/Reject/HitlRequired/HardOverride） |
-| `run_cycle/safety_gate.rs:52` | **`GateVerdict`** | **工具执行前两道检查的结果**（Cleared/Refused(TransitionCondition)） |
+| `ledger/mod.rs:14` | `VerdictStatus` | 账本裁定（Met/Unmet） |
+| `run_cycle/verdict.rs:64` | `PeriodVerdict` | 周期结束（HTTP 体那个） |
+| `run_cycle/verdict.rs:24` | `EndReason` | 结束原因 |
+| `security.rs:58` | **`GateVerdict`** | **安全策略决定**（Pass/Reject/HitlRequired/HardOverride） |
+| `run_cycle/safety_gate.rs:52` | **`GateVerdict`** | **执行前检查结果**（Cleared/Refused） |
 
-**⇒ 两件事：**
-- **一物两名**：`LedgerRecord::Verdict` 与 `PeriodVerdict` 都叫"verdict"却指不同的量
-  ⇒ **查一条失败时必须先问"哪个 verdict"**（本会话已实际卡过此处）
-- **★ 一名两物**（本次新发现）：**同 crate 内两个 `GateVerdict`**，语义完全不同
-  （一个是安全策略决定，一个是执行前检查结果）⇒ **读者会误读**；Rust 模块系统能区分，**人会混淆**
+**两种病**：**一物两名**（`LedgerRecord::Verdict` vs `PeriodVerdict`）· **一名两物**（两个 `GateVerdict`）。
+**⇒ 处置建议**：把 `safety_gate` 那个改为 `ToolGateOutcome` 之类。**⇒ 属重构，等一句话。**
 
-**⚠️ 未做**：改名（属 `decisions/` 之外的代码重构）—— **建议：把 `safety_gate` 那个改为 `ToolGateOutcome` 之类**，
-但**这是重构决定，不擅动**。
-
-## D4 · CI 第 3 步**复制**了引擎的闸门发现逻辑（已修一半）
+## D4 · CI 第 3 步**复制**了引擎的闸门发现逻辑 `[ ] 待做`
 
 ```
-tools/validate.sh 的 gates()            ← 引擎的发现逻辑（我已加 ADR-*.md 限制）
-.github/workflows/phyt.yml step 3       ← ★ 自己又写了一遍 for id in $(ls decisions/*.md …)
+tools/validate.sh 的 gates()                    ← 引擎（我已加 ADR-*.md 限制）
+.github/workflows/phyt.yml step 3 的 for 循环   ← ★ 自己又写一遍 ⇒ 我修 gates() 它不受益
 ```
+**处置**：CI 第 3 步改用 `--probe-all`（**只剩一份发现逻辑**）。
+**⚠️ 前置**：先决定"**无夹具的闸门**"算不算失败 —— 按 P11，它是 `unproven`，**不该算通过**。
 
-**⇒ "第二份清单"（A5）**：我修 `gates()` 时，CI 那份**不经过它**。
-**⚠️ 未做**：让 CI 第 3 步直接用 `--probe-all`（那就只剩一份发现逻辑）。
-**⚠️ 但注意**：`--probe-all` 会**跳过**无夹具的闸门 ⇒ 需要先决定"无夹具算不算失败"（P11 说：算 `unproven`）。
-
-## D5 · 编排有两份（本会话早些发现，登记以免遗忘）
+## D5 · 编排两份 `[~] 已记录，暂不动`
 
 ```
-pipeline::run()                       六阶段
-run_cycle + Reflection                活路径（自己调 execute_calls/record_evidence）
+pipeline::run()                  六阶段
+run_cycle + Reflection           活路径（自己调 execute_calls / record_evidence）
 ```
+**⇒ 查"裁定为何没写"时读 `pipeline/mod.rs` 会读错文件**（本会话实证：连猜四次全错）。
+**处置**：合一属大重构；**⇒ 现在**只需在 `pipeline/mod.rs` 的 `run()` 上**加一行注释**指向活路径（低成本）。
 
-**⇒ 查"裁定为何没写"时，读 `pipeline/mod.rs` 会读错文件**（本会话实证：连猜四次全错）。
+## ★ D6 · 新：**「每个项目可独立运行」这条性质，目前没有判据** `[ ] 待做`
 
-## 优先级（我的判断）
+**人类给的原则**：所有项目几乎都能单独运行（可接入通用生态），只是没有完整生态能力。
+**⇒ 这是一条**可验证的性质**，而它现在**没有任何闸门**。
+**判据（能红）**：对每个仓，**在兄弟仓缺席时**启动它 ⇒ **必须能起来**（或**具名降级**，不得崩溃）。
+**⚠️ 已知反例（本会话）**：`up` 是**前台监督进程** ⇒ 调用被杀会把整个栈带走
+（第 26 条）⇒ 这正是"独立运行"的一个真实脆弱点。
 
-| # | 事项 | 为什么 |
-|---|---|---|
-| **1** | **D2**：端口 13 处 ⇒ 加一条闸门（代码里的端口必须在 SSOT 里）| **机械可查、可红**、且 SSOT 已被直接矛盾；本会话已修过一处 ⇒ 证明会漂 |
-| 2 | **D4**：CI 用 `--probe-all`（去掉第二份发现逻辑） | 同一类；且顺手决定"无夹具"的语义 |
-| 3 | **D1 / D3**：`up` 与 `GateVerdict` | **需人类裁决**（谁的权威 / 要不要改名） |
-| 4 | **D5**：编排合一 | 大重构，且**不紧急**（已有记录，查错时先看它即可） |
+---
+
+## 任务总表（按优先级）
+
+| # | 事项 | 状态 | 判据 |
+|---|---|---|---|
+| **1** | **D2** 端口默认值与 SSOT **一致性闸门** | `[ ]` | 改一处字面量 ⇒ 必须红 |
+| **2** | **D6** 独立可运行性闸门（兄弟缺席时可起） | `[ ]` | 移走兄弟仓 ⇒ 该项目仍能起（或具名降级） |
+| 3 | **D4** CI 用 `--probe-all`（去第二份发现逻辑） | `[ ]` | 先定"无夹具"语义 |
+| 4 | **D3** `GateVerdict` 改名 / `verdict` 一物两名 | `[?]` | 等裁决 |
+| 5 | **D5** 编排合一（先加指向注释） | `[~]` | 低成本那半可先做 |
+
+## 附：本册自身的诚实记录
+
+**我在本轮犯过一次**：第二次端口扫描从 `anaphase-helix/` 里跑、路径写 `Cellrix/web/src` ⇒ 空结果。
+**⇒ "空结果"不能当作"没有重复"。**（与第 31 条同族：观测缺失 ≠ 事件缺失。）
