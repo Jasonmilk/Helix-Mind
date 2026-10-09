@@ -198,3 +198,64 @@ gate.rs:165   self.inner.lock().map(|g| g.state).unwrap_or(GateState::Open)
 **⇒ 剩下的 solid 事实：「证据写了、verdict 没写」、「单独跑绿、进子集红」。**
 **⇒ 下一步应该是**读 verdict 的写入路径**（stage 5-6），而不是继续猜共享物。**
 **⇒ 在查清之前，本仓读数只作线索（第 28/29 条）。**
+
+---
+
+## 十七、★ 结构性发现（solid，证据是"grep 为空"）
+
+### A. `run_cycle` **不调** `pipeline.run()`，而是**自己重做编排**
+
+```rust
+// src/run_cycle/mod.rs:1149
+let Some(pipeline) = self.pipeline.as_mut() else { … };
+match pipeline.execute_calls(&job, &labels).await {       // ← 直接调 stage 3，不走 run()
+    Ok(records) => { … pipeline.record_evidence(records.clone()); … Ok(Success) }
+    Err(e) => { warn!("[Execution] Pipeline execution failed: {}", e);
+                Ok(TransitionCondition::Failure) }        // ← Err 被吞成状态
+}
+```
+
+**⇒ 两条必须保持一致的编排路径**（`pipeline::run()` 与 `run_cycle` 的手工编排）——
+本会话反复遇到的那个形态：**同一件事有两个实现，而只有一个被人读。**
+
+**⇒ 且 stage 3 的 `Err` 只进 `warn!`**：测试看到的是"什么都没写"，**不是"为什么"**（具名缺失）。
+
+### B. 那个 `Err` 分支**没有**被走到（有证据）
+
+失败那次的 `--nocapture` 日志里 **`[Execution]` 警告 0 条** ⇒ `execute_calls` **成功**了
+（这也与测试 `:68-70` 的 `evidence.len()==1` 通过一致）。
+**⇒ 所以"没写裁定"不是 stage 3 出错造成的。** 我这条假设也**排除**。
+
+### C. ★ 一个词指两个东西：**「verdict」**
+
+| 名字 | 在哪 | 含义 |
+|---|---|---|
+| `LedgerRecord::Verdict { status: Met\|Unmet }` | `pipeline/mod.rs` | **账本裁定**（测试读的是它） |
+| `PeriodVerdict` / `EndReason`（Completed/Impasse/UndefinedTransition/CycleCapExhausted） | `src/run_cycle/verdict.rs` | **周期结束原因**（HTTP 体里那个） |
+
+**⇒ 同一词汇两个语义** ⇒ 与"一物一名"（A5）冲突。查一条失败时，"verdict"指哪一个必须先问。
+
+### D. `run_cycle` 里**没有**写账本裁定的调用
+
+`grep -nE "build_verdict|ledger\.append\(verdict" src/run_cycle/mod.rs` → **空**。
+**⇒ 测试读到的 `LedgerRecord::Verdict` 来自别处 ⇒ 那就是下一步要读的那一行。**
+
+## 十八、诚实计数：我这轮**四个假设，全未中**
+
+| # | 假设 | 结果 |
+|---|---|---|
+| 1 | `gene_lock_path`（身份块非空） | ❌ 否证 |
+| 2 | 并行资源冲突 | ❌ 否证（串行同样发生） |
+| 3 | Tuck 熔断器共享全局 | ❌ 结构性排除（`Gate::default()` 造新实例） |
+| 4 | stage 3 `Err` 被吞 | ❌ 排除（0 条 `[Execution]` 警告） |
+
+**⇒ 共同教训**：我四次都是**从"形状"推断机制**（"第二次就不写" ⇒ 猜"全局"）。
+**⇒ 而每次真正推进的，都是"去读那条路径"**（读 `run()`、读 `execute_calls` 的调用点、读 `verdict.rs`）。
+**⇒ 这就是本会话反复出现的那条**：**不要从形状推机制，去读代码**；形状只用来**选择读哪里**。
+
+## 十九、下一步（**具体到行**）
+
+1. 找 `pipeline.ledger.append(LedgerRecord::Verdict…)` 的**全部**调用点，确认测试那条路径上**谁**写它
+2. 若只有 `pipeline::run()` 写 ⇒ 则 `run_cycle` 的测试**本不该有裁定** ⇒
+   **"单独跑绿"这一观察本身需要复核**（它可能绿在别处，例如 `PipelineOutcome` 被忽略）
+3. 顺带：C 项（「verdict」一词两义）应作为命名债务登记
