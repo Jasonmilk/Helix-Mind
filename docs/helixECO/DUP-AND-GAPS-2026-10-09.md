@@ -99,3 +99,55 @@ run_cycle + Reflection           活路径（自己调 execute_calls / record_ev
 
 **我在本轮犯过一次**：第二次端口扫描从 `anaphase-helix/` 里跑、路径写 `Cellrix/web/src` ⇒ 空结果。
 **⇒ "空结果"不能当作"没有重复"。**（与第 31 条同族：观测缺失 ≠ 事件缺失。）
+
+---
+
+# 附：思路整理 —— **生态 / 通用 的边界**（人类指示：生态优先，通用后做；先标记 + 留接口）
+
+## 工作区真实结构（我先前只看见 6 个仓）
+
+```
+生态（先做） anaphase-helix · helix-mind · Cellrix · FlowModus · Tuck
+             helix-tentacle(rs) · HelixECO-Glove(main) · Helix-MCP-Learner(main)
+               ↑ 它们之间的共同契约 = CI-144
+通用（后做） commonintents/ ← CI-144 协议家族：
+             INTENT-7 · BIND-19 · CAPABILITY-13 · INTENT-7-SECURE · PFP-xCF14 · SAP-xCF14
+               ↑ 上游协议家族；**生态只是第一个消费者**（与 FlowModus 自述"Helix 只是第一个消费者"同形）
+方法/其它    phyt-DNA(v2) · lodestone-md · lodestone-spec · lumtract
+```
+
+## 从 `ECOSYSTEM.md` 读到的事实（非猜测）
+
+| 事实 | 原文要点 |
+|---|---|
+| **Cellrix 是 CI-144 的「法定参考实现」** | `INTENT-7 §15 法定参考实现` + `CAPABILITY-13 PC-2 可视化共识层`；"生态内的 `Cellrix:ADR-0021` 仍以 CI-144 协议为设计源" |
+| **anaphase 有 CI-144 传输层** | `ADR-0017`：`--stdio` 换成 **CIB/1.0 MessagePack 握手 + LE u32 长度前缀帧 + Manifest 首帧 + 1s Snapshot 推流 + ActionRequest/Response** |
+| **★ 类型是 `vendored`** | `anaphase/src/ci144/`：**"vendored 类型 … serde 逐字段对齐 Cellrix"** |
+| CI-144 动词映射 | `FETCH / WRITE_NODE / TENTACLE / FINISH / CANCEL`（5/5 一致） |
+| traceparent | W3C **透传不生成** |
+
+## 因此这条指示如何改变我的优先级
+
+| 我先前的项 | 按"生态优先"重新定位 |
+|---|---|
+| **D2** 端口默认值与 SSOT 一致 | ✅ **生态内** ⇒ 照做 |
+| **D4** CI 去第二份发现逻辑 | ✅ **生态内**（phyt-DNA 侧）⇒ 照做 |
+| **D3** `GateVerdict` 改名 | ⚠️ 生态内代码整洁 ⇒ 低优先，等裁决 |
+| **D5** 编排合一 | ⚠️ 生态内 ⇒ 已记录，暂不动 |
+| **D6** 「每项目可独立运行」 | 🔶 **通用向**（"可接入通用生态"）⇒ **按人类指示：先标记，不现在做** |
+
+## ★ 新增 D7（CI-144 边界上的会漂点）`[?] 待裁决`
+
+```
+anaphase-helix/src/ci144/    ← "vendored 类型 … serde 逐字段对齐 Cellrix"
+```
+
+**⇒ 这是**手抄对齐**：上游（CI-144/Cellrix）一改，此处必须有人记得同步。**
+**⇒ 与 D2（端口字面量）**同一形状**：不是"有第二份"，而是"**第二份会不会漂**"。**
+**⇒ 处置方向（按"通用后做"）**：**现在只标记** —— 加一条**一致性判据**（vendored 字段集 CIB 协议定义一致），
+**不重构**。等通用层真的开始被别的项目接入时再动。
+
+## 一句话（我此刻的理解，供人类校正）
+
+> **生态先闭环（我把 identity/tools/会话卡/rail 做完），通用层先**标记边界 + 留接口**（CI-144 vendored 类型、
+> 每项目独立可运行），等生态稳了再谈通用化 —— 否则会像人类担心的那样"混淆和复杂化"。**
