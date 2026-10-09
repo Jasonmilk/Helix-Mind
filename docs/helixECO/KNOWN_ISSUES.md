@@ -43,7 +43,7 @@
 
 | **K23** | ★ **跨仓"一物两名"**：anaphase 的 `GateVerdict::HitlRequired(String)` 与 Tuck 的 `DecisionConfig::NeedHumanConfirm` 是**同一件事的两个名字**（其余三档同名同义：Pass/Reject/HardOverride）。⇒ 接线时必须写映射表，而**最容易漏的那一档恰是"需要人工确认"= 最该守的一档** | `anaphase-helix/src/security.rs:63` · `Tuck/crates/tuck-core/src/policy.rs:78` | ⏳ **待裁决**（统一名字 = 改跨仓契约；或先只登记 + 在 M1 的映射处写明这一档）。**已登记在 `K16-DESIGN-GROUNDED.md` §八** | `K16` · `K19`（同族：本仓内的一物两名/一名两物） |
 
-| **K24** | ★ **单 crate 构建失败，workspace 构建通过**（实测 2026-10-09）：`cargo build -p tuck-gateway --all-features` ⇒ `error[E0425]: cannot find type \`Arc\` in this scope`（在 `tuck-audit`）；而 `cargo build --workspace --all-features` ⇒ **0 error**，`tools/verify.sh` 也全绿。⇒ **任何单独构建该 crate 的人/工具**（IDE 索引、`cargo build -p …`、下游消费者）**都会撞上它**，而自证入口**看不见**（它用 workspace） | `Tuck/crates/tuck-audit/src/`（`Arc` 的 `use` 未按所有 feature 组合覆盖） | **没人做**（低优先，但**它会浪费别人的时间**）。⇒ 修法方向：让每个 crate 在 `--all-features` 下**各自**可编译（或把该组合加入自证入口）。**⚠️ 与 K21 同族：`--all-features` 的语义在"单包"与"工作区"下不同**（同 D9 的 `--all-features` 教训） | `K21` · `D9` |
+| **K24** | 单 crate 构建失败而 workspace 通过（`cargo build -p tuck-gateway --all-features` ⇒ E0425 `cannot find type Arc`；workspace ⇒ 0 error） | 2026-10-09 | **回归判据：`Tuck/tools/verify.sh` 的「每个 crate 各自 --all-features 可编译」步**（先造判据看它红 ⇒ 再修 ⇒ 现在 OK(4 crate)）。**根因是我自己的改动**：K21 里抽的 `pub type Signer` 漏了 `#[cfg(feature = "anchor")]`（那个 `use std::sync::Arc` 被门住）⇒ anchor 关闭时 Arc 不在作用域。**为何以前看不见：feature 统一**（工作区从别处打开 anchor）。⇒ 与 K21/D9 同族但更锋利：**"工作区全绿"可以掩盖"某个 crate 根本编不过"** |
 
 
 ## 2. 已修
