@@ -259,3 +259,52 @@ match pipeline.execute_calls(&job, &labels).await {       // ← 直接调 stage
 2. 若只有 `pipeline::run()` 写 ⇒ 则 `run_cycle` 的测试**本不该有裁定** ⇒
    **"单独跑绿"这一观察本身需要复核**（它可能绿在别处，例如 `PipelineOutcome` 被忽略）
 3. 顺带：C 项（「verdict」一词两义）应作为命名债务登记
+
+---
+
+## 二十、★ 对人类「居然没有遵守极致复用?!」的回答：**复用是有的，编排有两个**
+
+**先说公道话**：`reflection.rs:48` **调用了** `pipeline.build_verdict(...)` —— **没有重新实现判据/裁定的逻辑**。
+**⇒ 所以"没复用"这个判断不准确。**
+
+**但"编排"确实有两份：**
+
+| 路径 | stage 3-4 | stage 5-6 |
+|---|---|---|
+| `pipeline::run()` | `execute_calls` + `record_evidence` | `check_results` + `build_verdict` + `ledger.append` |
+| **活路径** `run_cycle` + `Reflection` | `run_cycle/mod.rs:1149` **自己调** `execute_calls` + `record_evidence` | `reflection.rs:24` → `build_verdict` + `append` |
+
+**⇒ 「六个阶段由谁串」有两份实现，而只有一份被人读** ⇒ 这正是人类感觉到的那个东西，
+**也是本会话第三次遇到同一形态**（面板的窗口、`loadScreen`、以及这里的编排）。
+
+**⇒ 而且这解释了为什么失败查起来那么难**：读 `pipeline/mod.rs` 会以为裁定的写入条件是
+"stage 5-6 全部通过"，而**活的那条路根本不走它** —— **读错了文件，就会一直猜。**
+
+## 二十一、写入点已定位（含两道守卫）
+
+```rust
+src/run_cycle/reflection.rs
+:24  pub(super) async fn arm_reflection(...)            // HelixState::Reflection 时被调（mod.rs:1056）
+:28      if !self.context.evidence.is_empty() {         // 守卫一：证据非空
+:29          if let Some(pipeline) = self.pipeline.as_mut() {   // 守卫二：pipeline 已接线
+:48              let verdict = pipeline.build_verdict(&job_id, evidence_ids, &reports, None);
+:55              pipeline.ledger.append(verdict);        // ← 写入
+```
+
+**而测试的 `evidence.len()==1` 断言**通过**了 ⇒ **守卫一满足**。
+**⇒ 所以"没写"要么是**状态机没走到 Reflection**，要么是**写入之后被覆盖**——但**这两条我都没验证**。
+
+**⚠️ 顺手一个可疑形状**：`arm_reflection` 的函数体**缩进得像被包在一个不存在的块里**
+（首句 12 空格、函数头 8 空格）⇒ 像是某次编辑拿掉了一层 `if` 留下的。**未改动、仅登记。**
+
+## 二十二、本轮的净收益（虽然没找到根因）
+
+| 得到 | 价值 |
+|---|---|
+| 失败正文（证据写了、裁定没写） | 形状，不再是"玄学抖动" |
+| **四个假设全部否证**（含两个结构性排除） | 省下后来人四次白走 |
+| **编排有两份**、活的是 `run_cycle`+`Reflection` | **查错必须先确认走的是哪条路**（否则读错文件就一直猜） |
+| 写入点与两道守卫具名 | 下一步只需验两条：是否走到 Reflection / 是否被覆盖 |
+| **「verdict」一词两义**、`gate.rs:165` 中毒报 Open | 两条命名/归因债务，可各自立 ADR |
+
+**⇒ 在修好之前，本仓读数只作线索（第 28/29 条）。**
