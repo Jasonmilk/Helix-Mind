@@ -177,3 +177,49 @@ observe_only = false
 
 **⇒ 处置（按"通用后做"）**：**先登记 + 在 M1 的映射处写明这一档**；
 **要不要把名字统一（改哪个仓）属**改行为/跨仓契约**，等人类裁决。**
+
+---
+
+## 九、M1b 的行级设计（**含一个必须先拆的连锁点**）
+
+### 已经有的（**极致复用**：`access.rs` 就是为这一步设计的）
+
+```rust
+// crates/tuck-gateway/src/access.rs
+pub struct Admission { pub effect: Effect, pub rule_id: Option<String>, pub observe_only: bool }
+/// Carried so the caller can log without enforcing (H-6).     ← ★ 正是"落审计 + 观察态"
+pub fn allowed(&self) -> bool { self.observe_only || self.effect == Effect::Allow }
+pub fn admit(&self, scope: &str, capability: &str) -> Admission      // ← 判定入口（:133）
+
+// crates/tuck-gateway/src/state.rs —— 两个可选件（都已存在，只是【Gateway 不持有它们】）
+#[cfg(feature = "audit")] pub chain:  Option<Arc<Mutex<tuck_audit::AuditChain>>>
+#[cfg(feature = "access")] pub access: Option<AccessTable>
+```
+
+**⇒ M1b = 把这两件接到 `Gateway` 上，并在 handler 里：**
+1. `access.admit(scope, tool)` ⇒ `Admission`
+2. `reason` 带上 `effect` / `rule_id` / `observe_only`（**具名**，不是"被拦了"）
+3. `chain.append(decision, …)` ⇒ **每次判定落一行**（M1 验收②）
+4. `args_json` 经 `redact`（`redact.rs:166 redact(text, hits)`；`hits` 来自 policy ⇒**依赖 policy feature**）
+
+### ★★ 必须先拆的连锁点（**"修完这边坏了那边"的教科书形态**）
+
+```
+GatewayConfig 现在是 `pub struct GatewayConfig { pub upstream: String }` —— 【没有 Default】
+而 tests/proxy.rs 用【裸结构体字面量】构造：GatewayConfig { upstream: "…" }
+⇒ 给它加【任何】字段（access/chain）⇒ 所有裸字面量【立刻编译不过】⇒ 连带弄坏 proxy.rs 的既有测试
+★ 与本会话早先的 proto `system=5` **完全同形**（第 27 条：加字段会打破既有字面量）。
+⇒ **M1b 的第一步是独立的、可单独验证的一步**：先给 `GatewayConfig` 加 `Default`
+   并把既有构造点改为 `..Default::default()` ⇒ **回归网 = `proxy.rs` 仍绿**（以及 `verify.sh`）。
+   做完那一步，再加字段才是安全的。
+```
+
+### 所以 M1b 应拆成两小步（**一步一测试**）
+
+| 步 | 内容 | 验收 |
+|---|---|---|
+| **M1b-1** | `GatewayConfig` 加 `Default` + 既有构造点改 `..Default::default()` | `cargo test -p tuck-gateway --all-features` 全绿（`proxy.rs` 不受影响） |
+| **M1b-2** | 加 `access`/`chain` 字段（cfg 门）⇒ handler 接 `admit()` + `chain.append()` | 新测试：装了表 ⇒ `reason` 带 `rule_id`；**审计里出现一行**；未装表 ⇒ 仍 `gate=none` |
+
+**⚠️ 本轮未动代码**：M1b-2 要改 `GatewayConfig` 的字段集 ⇒ 必须**先做 M1b-1**（否则一次改动同时动"加字段"与"接策略"，
+出问题就分不清是谁坏的 —— 那正是人类说的"修完这边、那边坏了"）。
