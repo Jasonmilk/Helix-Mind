@@ -1,6 +1,8 @@
 # Helix 生态既有缺陷登记表（KNOWN_ISSUES）
 
-> **性质**：跨仓缺陷的**唯一**登记处。不是待办清单，不是 ADR，不是 DEPRECATE。
+> **性质**：跨仓缺陷的**唯一**登记处。**⚠️ 它同时是人类与 agent 的"笔记本"** ——
+> **`为什么还没修` 那一列区分【待裁决】（要你）与【没人做】（要我）**，这就是两者的分工。
+> **读它的地方**：`RNA.md` 的"必读"表与各仓入口（本会话教训：它一直存在，而**没人被指向它**）。不是待办清单，不是 ADR，不是 DEPRECATE。
 > **为什么单独一份**：这些缺陷跨仓（涉及 anaphase / Cellrix / helix-mind），
 > 塞进任一单仓都会变成"归属错误的文档"；放在工作区根又不在任何 git 仓里 —— **等于可丢失**。
 > 故紧邻生态 SSOT（`helix-mind/docs/helixECO/ECOSYSTEM.md`）存放。
@@ -25,6 +27,12 @@
 | **K14** | **`/api/sessions` 的 `limit` 会静默截断**：磁盘有 **91** 个 period，API 只返回 **50** ⇒ **41 个不进 DOM**。两个后果：① **跨边界的链其 `+N` 只是下界**（老链会被再次报低，形态与 F16 同）；② **对话累积后老记录持续掉出窗口** ⇒ 将来会以「又消失了」的形式复发 | `anaphase-helix/src/main.rs:169`（`unwrap_or(50)`）／`Cellrix/web/src/routes.rs:118`（`?limit=50`） | **未修。已核对（91 vs 50）**。留痕两处：跨边界链的 `+N` 标注为**下界**；考虑改为不受 limit 影响的算法或分页加载 |
 
 ---
+| **K16** | **「想 / 说 / 做」之间没有门**：`main.rs` **从不装配** security gate（grep `with_security_gate` 为空）；`config.toml` 无该配置；**Tuck 也没有 `security/gate` 端点**（grep 为空）⇒ 提示注入让 LLM「想」出 `rm -rf` 时，**「做」这一步没有门**。**契约与纪律其实都在**（`security.rs` 的 `SecurityGate`/`GateVerdict`、`adapters/security_gate.rs` 的 `HttpSecurityGate`、`pipeline/mod.rs:171` 的 I7「没装门 ≠ 门通过了」、`run_cycle/mod.rs:722`「拒绝是具名的行」）—— **缺的只是三处接线** | `anaphase-helix/src/main.rs`（无装配）／`anaphase-helix/config.toml`（无配置）／`Tuck/crates/`（无端点） | ⏳ **待人类批准**（三项都改行为面）：① Tuck 实现 `security/gate` ② `main.rs` 装配 ③ 配置项。**已设计分阶段（M0 只读 ✅ / M1 Tuck 端点 / M2 装配观察态 / M3 翻转执行态 / M4 判据）**，见 `helix-mind/docs/helixECO/THINK-SAY-DO.md` 与 `D8-PLAN.md`。**⚠️ 门是 fail-closed ⇒ 装了它 "Tuck 挂了 = Helix 不思考"**（`run_cycle/mod.rs:671` 自己写着） | `I7` · `THINK-SAY-DO.md` |
+| **K17** | **并发三处坑**（异步/高并发/队列是人类的长期目标）：① **每请求都跑一遍 `build_agent`**（内含 `build_identity_block`：读文件 + 连 Tentacle 取工具清单，`main.rs:902`）⇒ 高并发下的延迟/资源放大器；② **`tokio::mpsc::unbounded_channel` ×2**（`main.rs:593/608`）⇒ **无背压**；③ **无 `semaphore`/`rate_limit`/`concurrency_limit`** ⇒ 无减速阀，且"打满"没人具名 | `anaphase-helix/src/main.rs` | **没人做**（不急）。**形状是对的**：每请求一份全新 `AgentLoop`（`main.rs:512/548/692`）⇒ 无共享可变 agent、无状态串扰，且 47 处 `lock().unwrap()` 的爆炸半径被限制在单请求。⇒ 要做的是给它**加背压 + 上限（具名）**，不是重设计 | `D11` |
+| **K18** | **CI-144 边界上的 `vendored` 类型会漂**：`anaphase-helix/src/ci144/` 是"serde 逐字段对齐 Cellrix"的**手抄** ⇒ 上游一改，此处须有人记得同步（与端口字面量同形：问题不是"有第二份"，是"第二份会不会漂"） | `anaphase-helix/src/ci144/` | ⏳ **待裁决**（通用向，按"生态优先、通用后做"先标记）：现在只该加**一致性判据**，**不重构**；等通用层真被别的项目接入时再动 | `D7` · `ECOSYSTEM.md` |
+| **K19** | **同一个名字指两个东西**：`verdict` 一族 5 处定义 —— 一物两名（`LedgerRecord::Verdict` 账本裁定 vs `PeriodVerdict` 周期结束），且 **同一 crate 内两个 `GateVerdict`**（`security.rs:58` 安全策略决定 vs `run_cycle/safety_gate.rs:52` 执行前检查结果，语义完全不同）⇒ 读者会误读 | `anaphase-helix/src/{security.rs,run_cycle/verdict.rs,run_cycle/safety_gate.rs,ledger/mod.rs}` | ⏳ **待裁决**（改名属重构）：建议把 `safety_gate` 那个改为 `ToolGateOutcome` 之类 | `D3` |
+| **K20** | **编排有两份**：`pipeline::run()` 串六阶段，而**活路径**是 `run_cycle` + `Reflection` 自己调 `execute_calls`/`record_evidence`。⇒ 查"裁定为何没写"时读 `pipeline/mod.rs` 会**读错文件**（本会话实证：连猜四次全错，因为活路径根本不走它） | `anaphase-helix/src/pipeline/mod.rs` vs `src/run_cycle/{mod.rs,reflection.rs}` | **没人做**（大重构）。**低成本那一半可先做**：在 `pipeline::run()` 上**加一行注释指向活路径** | `D5` |
+
 
 ## 2. 已修
 
