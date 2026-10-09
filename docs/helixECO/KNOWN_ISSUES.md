@@ -41,6 +41,8 @@
 
 | **K22** | PreToolUse 执行闸对真危险动作 fail-open（写 DNA.md / rm -rf 均放行） | 2026-10-09 | **回归判据：`phyt-DNA/examples/claude-code/hooks/hook_test.sh`**（9 例，含 3 条 ★回归：rm -rf ⇒ 2 · git push --force ⇒ 2 · 写 DNA.md ⇒ 2；以及 1 条 safety：`--force-with-lease` ⇒ 0）。**修法二分（诚实）**：**路径型**（权威卷 `DNA.md`/`VISION.md`/`decisions/**`）由 `ADR-20261009-dangerous-action-shapes-must-be-blocked`（`timing: pre`）拦；**字符串型**（命令形状）由 hook 自身的 **L0.5** 判 —— 因为 **glob 模型是路径型的，表达不了命令**。**⚠️ 第一版教训（已记入该 ADR）：用 `applies-to:["**"]` 想兼管命令 ⇒ 撞上引擎既有的"路径不存在 ⇒ fail-closed" ⇒ `**` 匹配一切 ⇒ **写任何新文件都被拦**（全拦，不是形状判据）；是 `hook_test` 在推送前抓住的。 |
 
+| **K23** | ★ **跨仓"一物两名"**：anaphase 的 `GateVerdict::HitlRequired(String)` 与 Tuck 的 `DecisionConfig::NeedHumanConfirm` 是**同一件事的两个名字**（其余三档同名同义：Pass/Reject/HardOverride）。⇒ 接线时必须写映射表，而**最容易漏的那一档恰是"需要人工确认"= 最该守的一档** | `anaphase-helix/src/security.rs:63` · `Tuck/crates/tuck-core/src/policy.rs:78` | ⏳ **待裁决**（统一名字 = 改跨仓契约；或先只登记 + 在 M1 的映射处写明这一档）。**已登记在 `K16-DESIGN-GROUNDED.md` §八** | `K16` · `K19`（同族：本仓内的一物两名/一名两物） |
+
 
 ## 2. 已修
 

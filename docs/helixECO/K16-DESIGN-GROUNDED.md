@@ -125,3 +125,55 @@ M1 验收①  每一次判定落审计（含 args_json 的【脱敏】版本 + �
 ① curl 直连：干净 ⇒ pass；脏 ⇒ 记录（观察态不拦）
 ② 每次判定在审计里留下一行（含【脱敏】的 args、判定、理由）—— 否则"可审查"不成立
 ```
+
+---
+
+## 七、M1 的**行级设计**（已读到确切锚点；下一轮可直接落，不必再考古）
+
+### 要动的四处（行号为 2026-10-09 实测）
+
+| # | 位置 | 现状 | 要做什么 |
+|---|---|---|---|
+| 1 | `crates/tuck-gateway/src/lib.rs:133-137` | `Router::new().route("/v1/chat/completions", post(chat_completions)).with_state(state)` | 加 `.route("/v1/security/gate", post(security_gate))` |
+| 2 | `crates/tuck-gateway/src/state.rs:77/83` | `chain: Option<Arc<Mutex<AuditChain>>>`（`feature="audit"`）· `access: Option<AccessTable>`（`feature="access"`） | 两者**都可能为 None** ⇒ handler 必须**按 cfg 与 None 分支具名处理**（"没装门"≠"门通过了"，与本仓 I7 同源） |
+| 3 | `crates/tuck-core/src/audit.rs:149` | `append(decision, risk_level, modality, override_flag, source, identity_label) -> &AuditEntry` | **每次判定落一行**（M1 验收②）；`args_json` **先经 `redact` 再入库** |
+| 4 | `crates/tuck-core/src/policy.rs:78` | `DecisionConfig { Pass, Reject, NeedHumanConfirm, HardOverridePass }` → `Decision` | **直接复用**；不新造枚举 |
+
+### 请求/响应（照既有契约，逐字对齐 anaphase `src/security.rs:46` / `adapters/security_gate.rs:57`）
+
+```rust
+#[derive(Deserialize)] struct GateCheckIn { job_id: String, index: u32, tool: String,
+                                            args_json: String, identity_labels: BTreeMap<String,String> }
+#[derive(Serialize)]   struct GateResponseOut { decision: String, reason: String }
+```
+
+### 观察态（默认，无害侧 —— 第 17 条）
+
+```
+observe_only = true（配置项，**不硬编码**）
+  ⇒ 记录【将要判定的结果】到审计，但**返回 `pass`** ⇒ 行为不变（M2 才接线，M2 也因此不改行为）
+observe_only = false
+  ⇒ 返回真实判定（pass | reject | hitl_required | hard_override）
+```
+
+### M1 的两条验收（缺一不可）
+
+```
+① curl 直连 Tuck（不经生态）：干净 ⇒ pass；脏 ⇒ **记录**（此时仍不拦）
+② **每次判定在审计里留下一行**（脱敏 args + 判定 + 理由）—— 否则"可审查"不成立
+```
+
+## 八、★ 新登记 K23：**两个仓用不同的名字表达同一件事**（跨仓的"一物两名"）
+
+| anaphase 的 `GateVerdict` | Tuck 的 `DecisionConfig` | 语义 |
+|---|---|---|
+| `Pass` | `Pass` | ✅ 同名同义 |
+| `Reject(String)` | `Reject` | ✅ |
+| **`HitlRequired(String)`** | **`NeedHumanConfirm`** | ★ **一物两名** |
+| `HardOverride` | `HardOverridePass` | ✅ |
+
+**⇒ 为什么它危险**：**接线时要写一张映射表；而**最容易漏的那一档，恰好是"需要人工确认"** ——
+**最该守的那一档。**（本仓已有同族判例：`verdict` 一族的一物两名/一名两物，K19。）
+
+**⇒ 处置（按"通用后做"）**：**先登记 + 在 M1 的映射处写明这一档**；
+**要不要把名字统一（改哪个仓）属**改行为/跨仓契约**，等人类裁决。**
