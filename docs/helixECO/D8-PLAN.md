@@ -84,3 +84,37 @@ Tuck/docs/PLAN.md:96  H-1..H-8 准入闸门全部交付（… 观察模式 …�
 | M4 | **需要**（改判据语义） |
 
 **⇒ 我的建议：先做 M0（只读、0 风险），把基线读数拿到手；然后你批准 M1。**
+
+---
+
+## 六、M0 已完成（只读）· 结果与一个真发现
+
+**命令与读数（物理事实优先：读真实产物，不读配置）**
+```
+grep -rl "gate=none\|gate=" .helix/events/*.jsonl        → gate_presence 的输出【无命中】
+grep -rh '"gate"' .helix/events/*.jsonl                  → 只有 check/status 的 "gate":"hard"（判据的 gate）
+src/pipeline/mod.rs:173  emit_event(&job.job_id, 3, "gate", &presence)
+src/pipeline/mod.rs:135  self.events.lock().unwrap().emit(...)      ← 内存事件环
+```
+
+### 基线结论
+**① 生产现在是 `gate=none`**（`security_gate: None` ⇒ `main.rs` 未装配 ⇒ 与代码事实一致）✅
+**② ★ 但"没有门"这个事实只进了【内存事件环】，没有落盘** ❌
+
+**⇒ 而对照鲜明**：`check/status`（**判据**的裁定）**是落盘的**；**安全门的在场与否不是**。
+
+### 这是 `I7` 对着自己的反面
+> `I7`: *"no gate installed must not look like a gate that passed"* —— **记录确实发生了**（好）
+> **⇒ 但它只活在内存环里 ⇒ **事后读的人无法核实"当时有没有门"**。**
+> **⇒ "被记录了" ≠ "可被读到"** —— 正是本会话第 33 条（**产出 ≠ 被读取**）在生态层的同形。
+
+### 因此 D8-4 的形态更正
+~~`gate=none` 时"做"不得记为成功~~
+**⇒ 改为：`gate=none` 这个事实必须**① 持久（落盘）② 具名 ③ 可被消费**（能被判据/面板读到）。**
+（同源：P8「被委派的产物必须存在于仓库」· P11「信号必须有具名消费者」。）
+
+**⇒ 而它顺带解释了 `tests/stage_events.rs` 为什么要读 `pipeline.events.lock()`** —— 那个"活的 Mutex 环"
+（本会话早先登记为同类危险）**就是阶段事件的唯一去处**；M4 要做的正是把它的一部分**落盘**。
+
+### M0 风险
+**0**（全只读）· **未改任何文件**（本册仅追加记录）
