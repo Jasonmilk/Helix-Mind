@@ -39,10 +39,13 @@
 
 | **K21** | **Tuck 存量 clippy 警告**（实测 2026-10-09：`cargo clippy --workspace --all-features` 有若干条，主要是**测试模块里的 `unused import`**）。**`-D warnings` 不是本仓标准**（其 PLAN 写的是"clippy **新文件**零警告"）⇒ 整仓 `-D warnings` 会把既有的测试模块 lint 判成 error（假红） | `Tuck/crates/tuck-core/src/{config.rs,file_store.rs,audit_query.rs,credential.rs}` 等 | **没人做**（低优先）。**已落地处置**：`Tuck/tools/verify.sh` 的自证入口按**本仓标准**判：报告存量（具名）+ **只对真正的 `error` 判红** ⇒ 它仍然**能红**（不为装饰）。⚠️ 计数必须排除 cargo 的汇总行（"generated N warnings"），否则会报出不可归因的数（本步第一版就把 10 说成 40） | `Tuck/tools/verify.sh` |
 
-| **K22** | ★ **PreToolUse 执行闸对【真危险动作】是 fail-open**：`examples/claude-code/hooks/pretooluse-gate.sh` 自述"三层 fail-closed"，实测它对**解析/依赖错误**确实 fail-closed（非法 JSON / 缺 python3 / 引擎异常 ⇒ exit 2），但对**真正的危险动作**放行：**写 `DNA.md` ⇒ exit 0**（DNA 守卫是 `timing: post`，pre 时刻无人拦）· **`rm -rf` 形状的命令 ⇒ exit 0**（本仓闸门**全是内容型** —— PLAN 行数 / DNA 在基线里……**没有一条管"命令形状"**）。⇒ **AITL 的"做"那一侧，纸面上有三道闸，实际上对危险是开着的。** | `phyt-DNA/examples/claude-code/hooks/pretooluse-gate.sh`；判据在 `phyt-DNA/decisions/ADR-*.md` 的 `applies-to`/`timing` | **没人做**（缺一条判据：**"危险动作形状"** —— `rm -rf` / force push / **权威卷路径**；这正是人类 AITL 契约里"必须上报"的那一类）。**已有测试**：`phyt-DNA/examples/claude-code/hooks/hook_test.sh`（首个，7 例，**断言的是真相**并点名本条） | `THINK-SAY-DO.md` · `AITL-CONTRACT.md` · `K16` |
+| **K22** | PreToolUse 执行闸对真危险动作 fail-open（写 DNA.md / rm -rf 均放行） | 2026-10-09 | **回归判据：`phyt-DNA/examples/claude-code/hooks/hook_test.sh`**（9 例，含 3 条 ★回归：rm -rf ⇒ 2 · git push --force ⇒ 2 · 写 DNA.md ⇒ 2；以及 1 条 safety：`--force-with-lease` ⇒ 0）。**修法二分（诚实）**：**路径型**（权威卷 `DNA.md`/`VISION.md`/`decisions/**`）由 `ADR-20261009-dangerous-action-shapes-must-be-blocked`（`timing: pre`）拦；**字符串型**（命令形状）由 hook 自身的 **L0.5** 判 —— 因为 **glob 模型是路径型的，表达不了命令**。**⚠️ 第一版教训（已记入该 ADR）：用 `applies-to:["**"]` 想兼管命令 ⇒ 撞上引擎既有的"路径不存在 ⇒ fail-closed" ⇒ `**` 匹配一切 ⇒ **写任何新文件都被拦**（全拦，不是形状判据）；是 `hook_test` 在推送前抓住的。 |
 
 
 ## 2. 已修
+
+> **规则第 5 条**：每行必须注明【回归判据】——没有回归判据的"已修"是纸面富贵。
+
 
 | # | 缺陷 | 修于 | 出处 |
 |---|---|---|---|
