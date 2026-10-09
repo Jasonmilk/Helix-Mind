@@ -112,3 +112,20 @@ Cellrix 的 **pre-commit 钩子**要求**首行是 ADR 头**（`helix-mind/tools
 
 **未做**：`claim-check.sh` / `spec-lint.sh` / `check-baseline.sh`（未跑通的不入库）·
 旧 24 份 ADR 的格式迁移（**不动权威文本**）· ledger 与 `run_all.js` 对接（替换那张手写表）。
+
+---
+
+## 十、P6+P7 已落地并验证（`run_all.js` 账本结构化）
+
+```json
+{"counts":{"proven":80,"red":6,"held":1,"unregistered":0,"aborted":1,"envMissing":1},
+ "env":{"cdp":"up","panel":"up","jsdom":"yes","siblings":{"present":3,"of":3}}}
+```
+
+**同一环境下的两行可比**：`{proven:78,red:7}` 与 `{proven:80,red:6}`，`env` 完全相同
+⇒ **78→80 是真实变化**，不是环境假象。
+**⇒ 同时反证前几轮的观测漂移**（`55→77→80`、`held 31→1`）**确由 `cdp/panel` 由 down 变 up 造成** ——
+那几行环境不同，**本来就不可比**。这正是 P6 要治的。
+
+**P6 的要点**：**环境由脚本探测，绝不手写** —— 手写环境与手写 `note` 同病
+（它会照样写 `panel=up` 而面板是关的）。用的是裁决行**已经在用的同一组探测**。
