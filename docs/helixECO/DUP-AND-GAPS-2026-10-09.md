@@ -151,3 +151,41 @@ anaphase-helix/src/ci144/    ← "vendored 类型 … serde 逐字段对齐 Cell
 
 > **生态先闭环（我把 identity/tools/会话卡/rail 做完），通用层先**标记边界 + 留接口**（CI-144 vendored 类型、
 > 每项目独立可运行），等生态稳了再谈通用化 —— 否则会像人类担心的那样"混淆和复杂化"。**
+
+---
+
+## D9 · ★ Tuck 的自证入口**静默跳过整个 crate** `[x] 已修（3 份文档）`
+
+**坑：**
+```
+crates/tuck/Cargo.toml:13  default = []                                ← gateway 不在默认 feature
+:15  gateway = [dep:tuck-gateway, dep:tuck-audit, dep:axum, …]
+:14  # Content-governance gateway service (按需加载: only built when needed)   ← ★ 人类的哲学，已实现
+tuck-gateway = { path = "…", optional = true }
+⇒ `cargo test --workspace` ⇒ tuck-gateway 整个 crate【不参与编译】⇒ 它的全部测试【静默跳过】
+```
+
+**而 3 份文档在教人跑它：**
+```
+README.md:176, :214        cargo test --workspace
+README.zh-CN.md:91, :129   同上
+docs/RNA.md:89             测试通过（`cargo test --workspace` 全绿 + 0 warning）   ← ★ 这是【验收判据】
+```
+
+**⇒ 已修（只改文档 · 可逆 · 不改行为）**：三处改为 `--all-features`，**并在 README 补一句【为什么】**
+—— 否则下一个人会改回去（第 34 条：不许只靠提醒）。
+
+**⇒ 同形于主线**：**「不带 feature 的全绿」≠「全绿」**（与 `--probe-all` 只报一个世界 /
+`I7` 的"没装门不得看起来像门通过了"**同一条**）。
+
+**★ 而它同时确认了一件好事**：`# 按需加载: only built when needed` —— **人类的「按需加载」哲学在 Tuck 已经实现** ✅
+
+## D10 · **Tuck 没有 CI** `[?] 待裁决`
+
+```
+.github/workflows/  → 不存在
+```
+**⇒ D9 那个坑**本来有机会被 CI 抓到**（跑一次带 gateway 的测试就知道），但它**没有 CI** ⇒ **没人跑。**
+**⇒ 与 phyt-DNA 的教训同源**（本会话在 phyt-DNA 上刚补了 `tools/ci-local.sh`）。
+**⇒ 建议（不擅动）**：Tuck 加一个最小 CI，或至少让它有"一条命令全量自证"的入口（x-ray），
+**且该入口必须带 `--all-features`**（否则又是 D9）。
