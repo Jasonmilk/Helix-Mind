@@ -118,3 +118,53 @@ src/pipeline/mod.rs:135  self.events.lock().unwrap().emit(...)      ← 内存�
 
 ### M0 风险
 **0**（全只读）· **未改任何文件**（本册仅追加记录）
+
+---
+
+## 七、M1 recon 完成 · **解决了那处文档矛盾**（并产出一个真发现）
+
+**契约已读准（极致复用的前提，**不新造接口**）**
+```
+请求  GateCheck   { job_id, index, tool, args_json, identity_labels }
+响应  GateResponse{ decision: "pass"|"reject"|"hitl_required"|"hard_override", reason }
+★ anaphase 的兜底很干净：unreachable_verdict → HitlRequired("security gate unreachable: …")
+   ⇒ "问不到的门"【没有批准任何东西】（fail-closed 且具名）
+```
+
+**Tuck 真实布局（我之前猜 `Tuck/src/` 是错的）**
+```
+Tuck/crates/{tuck-core, tuck-audit, tuck-gateway, tuck}
+  tuck-core: policy.rs · catastrophic.rs · hitl.rs · audit.rs · injection.rs · metrics.rs …
+  tuck/main.rs:157 TcpListener + :181 axum::serve(listener, router)
+  tuck-gateway/tests/proxy.rs（axum，POST /v1/chat/completions）
+```
+**⇒ `security/gate` 应当是既有 `policy`/`hitl` 之上的一层**薄适配**（极致复用），不是新机制。**
+
+### ★ 发现：`observe_only` **不存在** ⇒ 文档矛盾判定为「**PLAN.md 错**」
+
+```
+ADR-0005:187   T6 | 观察模式（… observe_only 开关，只记不拦）| ⬜   ← 标未做
+PLAN.md:96     H-1..H-8 准入闸门全部交付（… 观察模式 …）| ✅        ← 标已做
+实测 crates/   grep observe_only → 【无】
+               grep observe      → 只有 metrics.rs 的 observe_decision()（原子计数，不是开关）
+```
+**⇒ 结论：`observe_only` 开关**没有实现**；`PLAN.md` 的 ✅ **是错的**。**
+**⚠️ 这属于 A5（第二份真相）：同一个事实在两份文档里相反，而**代码是唯一事实**。**（与 D2/D7 同形。）**
+
+### 因此 M1 的设计（用你的哲学定：确定性 · 0 硬编码 · 按需）
+
+**观察态**只能是**配置项**，不是硬编码、也不是我现造的隐式行为：
+```toml
+[gate]
+observe_only = true      # 默认 true（无害那一侧：第 17 条 —— 不可逆的不对称错误默认从无害侧开始）
+```
+**⇒ 端点行为**：
+- **`observe_only = true`** ⇒ **记录**将要判定的结果（落到**可读**的地方），**返回 `pass`** ⇒ 行为不变
+- **`observe_only = false`** ⇒ 返回真实判定（`pass|reject|hitl_required`）
+
+**⇒ 而"记录到哪里"必须回答 M0 那个发现**：**不能只进内存环**（`gate=none` 就是那样丢的）
+⇒ **落 `ledger/`（既有 append-only 账）**，与 `hits-*.jsonl` 同源（极致复用）。
+
+### 本轮状态（诚实）
+- **M1 的 recon 完成**；**端点本身未写**（预算用尽，且要先定 `observe_only` 的落点：配置项 + 写在哪个账本）
+- **未改 Tuck 任何文件** · 六仓 dirty=0
