@@ -78,3 +78,34 @@ message Candidate { string supplier_id = 1; string model_id = 2; double score = 
 
 - **未动任何代码**：跨两仓 proto + FlowModus 填充 + anaphase 落账 + 装盘模板，**四步都要验证**；
   预算用尽时**留半成品比留设计更危险**（本会话已两次因此付出代价：一次把栈带走、一次污染对照）。
+
+---
+
+## 九、`route_trace` 已落地（①+②），并抓到我自己一个缺口
+
+**已做**（`FlowModus`）：`RouteTrace`/`RouteCandidate` + `ReasonResponse.route_trace = 5`；
+handler 填充 **只取作用域内的真值**：`chosen_supplier` / `chosen_model` / `chosen_tier` /
+`reason`(`auto`|`declared-model`) / `candidates`。
+**刻意不建**：候选分数与 `estimated_cost_usd` —— router 在此处未暴露，填 0 会被读成测量（ADR-0038 同规则）。
+
+### ⚠️ 我自己的缺口（新陷阱第 27 条）
+
+**`cargo build` 通过 ≠ `cargo test` 通过。** proto 加字段后，**测试目标里的结构体字面量会编译失败**，
+而 `cargo build` **不编译测试目标**。我上一轮（身份通道 `6364a7d`）只跑了 build ⇒
+**提交了使测试目标编译不过的改动**。已修（2 处字面量补 `system`），FlowModus **109 个测试全绿**。
+
+**⇒ 第 27 条：proto 加字段后必须 `cargo test`，不是只 `cargo build`。**
+
+### ⚠️ 未归属（不掩盖）
+
+`anaphase run_cycle_pipeline` 有 2 条失败：
+- `run_cycle_deterministic_replay` — *"byte-identical ledger, **identity normalised out**"*
+- `run_config_soft_reflex_threshold_blocks` — *"threshold raised -> executes"*
+
+**大概率由更早的 `gene_lock_path`（身份块不再为空）造成**（那条 replay 判据的措辞正好涉及 identity），
+**不是本次 proto 改动** —— **但我没有证明**，故记为**未归属**，待查。
+
+### 未做（③④）
+
+- anaphase 消费 `route_trace` 并落事件行（经 `event_family.js` 声明一次 wire→canonical 映射）
+- 装盘：`prove_track.render.js` 的 `SUMMARY` 加模板（新 kind 不画又不在 NOT_DRAWN 会**拒绝加载** ⇒ 强制不漏）
