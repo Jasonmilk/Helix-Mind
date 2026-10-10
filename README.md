@@ -12,6 +12,20 @@
 
 ---
 
+
+## ▸ 从这里开始（**按需指针**：先看你要回答的**问题**，只取那一份）
+
+> 本仓是**生态的枢纽与登记册所在**。**状态是【量出来】的，不是存在这里的**（指针不是容器）。
+
+| 我要回答的问题 | 读这一份 |
+|---|---|
+| **生态现在在哪？**（各仓 HEAD / 待裁决项） | `docs/helixECO/HANDOFF.md` —— ≤40 行指针，内含**量测命令** |
+| **有那些已知问题？还没修的原因？** | `docs/helixECO/KNOWN_ISSUES.md` —— **唯一**跨仓登记册；§1 未修（含**债务审计**：待裁决 2 条 · 没人做 3 条）· §2 已修（**每行带回归判据与收据**） |
+| **生态的组件与边界？** | `docs/helixECO/ECOSYSTEM.md` |
+| **某条决定/判据的正文？** | 各仓 `docs/decisions/`（anaphase 最新：ADR-0050 快照 golden 与判据诚实 · ADR-0051 被 drop 的 shutdown 发送端 · ADR-0052 执行期失败必须留下具名的行） |
+| **各仓怎么自证？** | anaphase `cargo test --all-features --no-fail-fast` · Cellrix `node web/tests/run_all.js` · Tuck `bash tools/verify.sh` · phyt-DNA `bash tools/ci-local.sh` · FlowModus `cargo test --all-features` |
+| **裁决简报（需人点头的）？** | `docs/helixECO/RULING-BRIEF-K19-K23-2026-10-09.md`（四问齐：名字/出现面/波及面/建议+授权需求） |
+
 ## Governance
 
 This project is managed by the **phyt-DNA Methodology v1.0** (methodology anchor project: https://github.com/Jasonmilk/phyt-DNA).
