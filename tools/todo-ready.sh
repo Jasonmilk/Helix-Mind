@@ -27,6 +27,22 @@ case "${1:-}" in
     #   它把三件拼在一起：① 读数（本脚本）② CI 矩阵（引擎工具）③ D/R 表的桩（从登记册现取）。
     echo "════════ 报告头（生成，非手写）· $(date -u +%Y-%m-%dT%H:%M:%SZ) ════════"
     bash "$ROOT/tools/todo-ready.sh" 2>/dev/null || true
+    # ★ 小件①（reviewer 2026-10-10）：**光的哈希**一行 —— 口径声明为 `git hash-object` 前 7 位
+    #   （**不碰 VISION.md 内容**）；光变了，报告第一屏就能看见。
+    if [ -f "$ROOT/../phyt-DNA/VISION.md" ]; then
+      vh=$(cd "$ROOT/../phyt-DNA" && git hash-object VISION.md 2>/dev/null | cut -c1-7)
+      printf '\n▸ 光：vision@%s（git hash-object 前 7 位 · phyt-DNA/VISION.md；内容一字不改是它的价值）\n' "${vh:-unknown}"
+    fi
+    # ★ 小件②：**评审倒计时**（冻结期自 2026-10-10 起算两周）—— 读数回归，不靠记
+    if [ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ]; then
+      n=$(grep -c '^| 2026-' "$ROOT/docs/helixECO/USAGE-candidate-tools.md" 2>/dev/null || echo 0)
+      act=$(grep -c '有\*\*' "$ROOT/docs/helixECO/USAGE-candidate-tools.md" 2>/dev/null || echo 0)
+      read -r end left <<< "$(python3 -c "
+import datetime
+d=datetime.date(2026,10,10)+datetime.timedelta(days=14)
+print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
+      printf '▸ 候选工具评审：截止 %s（还剩 %s 天）· 使用日志 %s 条 · 行动变化=有 %s 条\n' "${end:-?}" "${left:-?}" "$n" "$act"
+    fi
     if [ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ]; then
       echo; bash "$ROOT/../phyt-DNA/tools/ci-matrix.sh"
     fi

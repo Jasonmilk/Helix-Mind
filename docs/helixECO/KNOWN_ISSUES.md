@@ -112,6 +112,8 @@
 **⇒ 扫描范围（mechanized）**：`grep -rl 'phyt-DNA/VISION.md' <各仓>` ⇒
 **实测只有 `phyt-DNA/**` 引用它**（RNA/PROTECTION/ADR/README）⇒ **光的变更只影响朝向它的叶子**（按需加载用在愿景上）。
 
+| **D11** | **声明与收据必须可对账**：我写"**五仓全部落地**"而只有**四份收据** ⇒ 按自家纪律：**声明与收据不符，声明不成立** | ✅ **已修补** | **补 Tuck 的第五份收据**（`Tuck/fe1ba1a`，它也把失败尾部写进 job summary）⇒ "五仓"成立。**长期纪律**：**"全部/五仓/皆已"类声明逐项配收据**（与 D5"CI 对 HEAD"同族：这次绑的是**声明数字与收据数**）。★ 同刀应收两件：**自捕①的修复收据 = `helix-mind/ba34893`**；**SYNC 行的口径须写明**（"本轮有变的仓"） |
+
 ## 1. 未修
 
 | **K29** | ⚠️ **与 K28 同一凭据阻塞**（不是"没做"，是"**读不到**"）—— **FlowModus 的 CI 红，根因未确立**：R4 新建 CI 后首个 run 失败于 **Rust 硬门**（`cargo test --all-features`）—— 而**本地全 ok**。**已读事实**：`flowmodus-rs/Cargo.toml` 有 `prost-build`/`tonic-build` 且 `build.rs` 调 `tonic_build::configure()` ⇒ 构建期需 `protoc`；本地有 `protoc 36.2`，而 ubuntu runner 默认没有 ⇒ **已加 `apt-get install protobuf-compiler` 且该步成功**。**但 Rust 门仍红** ⇒ **假设是必要但不充分**。**读不到日志**（CI logs 需 admin 403；artifact 下载亦 401 ⇒ **需凭据**）⇒ 已把失败输出改为 **artifact 上传 + 末尾 120 行打印**（**让下一轮能读**）。 | `FlowModus/.github/workflows/ci.yml` | ⏳ **待查**（下一步：下一轮 run 后**读 artifact**，而不是继续猜；候选：apt 的 protoc **版本过旧** ⇒ 需装新版 protoc）。**判据**：FlowModus CI 转绿（`ci-matrix.sh` 一屏可见）。 | `R4`（CI 的第一次回本）· `K28`（同族：CI 揭出的潜伏问题） |
