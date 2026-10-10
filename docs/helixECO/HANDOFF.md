@@ -15,7 +15,7 @@ git -C phyt-DNA rev-parse --short HEAD
 # ② 等你 —— 唯一真源：KNOWN_ISSUES.md 的「为什么还没修」列里标【待裁决】的行
 grep -n '待裁决' helix-mind/docs/helixECO/KNOWN_ISSUES.md
 
-# ③ 已有什么（别重复发明）—— ①引擎生成的闸门清单 ②【判据与决定的正文】在各仓 docs/decisions/
+# ③ 已有什么（别重复发明）—— ①引擎生成的闸门清单 ②【判据与决定的正文】在各仓 docs/decisions/ ③【诊断法】docs/helixECO/DIAGNOSIS-METHODS.md
 #    （anaphase 最新两条：ADR-0050 快照 golden 与判据诚实 · ADR-0051 被 drop 的 shutdown 发送端；索引见各仓 docs/decisions/README.md）
 cd phyt-DNA && bash tools/validate.sh --index
 
