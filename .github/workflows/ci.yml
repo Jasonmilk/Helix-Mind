@@ -28,5 +28,12 @@ jobs:
           if [ "$rc" != 0 ]; then
             echo "--- 末尾 150 行 ---"; tail -150 /tmp/test.log
             { echo '## 失败尾部'; echo '```'; tail -120 /tmp/test.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
+            # ★ 失败必须【在机器读得到的地方具名】(2026-10-10)：
+            #   logs 端点需 admin(403) · artifacts 需凭据(401) · job summary 的 API output.summary 为 null
+            #   而 **annotations 公开可读** ⇒ 把失败行写成 ::error ⇒ 读数不再依赖人肉粘贴。
+            grep -aE "^test .* FAILED|^failures:$|panicked at|^error(\[|:)|No such file|NotFound" /tmp/test.log \
+              | head -12 | while IFS= read -r _l; do
+                  echo "::error title=失败具名::$(printf %s "$_l" | tr -d "\r" | cut -c1-400)"
+                done
           fi
           exit $rc
