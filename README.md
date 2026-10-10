@@ -24,7 +24,7 @@
 | **生态的组件与边界？** | `docs/helixECO/ECOSYSTEM.md` |
 | **某条决定/判据的正文？** | 各仓 `docs/decisions/`（anaphase 最新：ADR-0050 快照 golden 与判据诚实 · ADR-0051 被 drop 的 shutdown 发送端 · ADR-0052 执行期失败必须留下具名的行） |
 | **各仓怎么自证？** | anaphase `cargo test --all-features --no-fail-fast` · Cellrix `node web/tests/run_all.js` · Tuck `bash tools/verify.sh` · phyt-DNA `bash tools/ci-local.sh` · FlowModus `cargo test --all-features` |
-| **判据在骗我吗？（假绿 / 静音仪器 / 零 / 孤证 / 误差分叉）** | `docs/helixECO/DIAGNOSIS-METHODS.md` —— **诊断法**（按 slug 锚点，8 条） |
+| **判据在骗我吗？（假绿 / 静音仪器 / 零 / 孤证 / 误差分叉）** | `docs/helixECO/DIAGNOSIS-METHODS.md` —— **诊断法**（按 slug 锚点，7 条；`red-lifecycle` 由第 6 条与两个新标本合并而来） |
 | **裁决简报（需人点头的）？** | `docs/helixECO/RULING-BRIEF-K19-K23-2026-10-09.md`（四问齐：名字/出现面/波及面/建议+授权需求） |
 
 ## Governance
