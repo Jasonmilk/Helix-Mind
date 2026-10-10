@@ -20,15 +20,40 @@ pub struct Config {
     pub mind: MindSystemConfig,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            retrieval: RetrievalConfig::default(),
+            storage: StorageConfig::default(),
+            metabolism: MetabolismConfig::default(),
+            lifecycle: LifecycleConfig::default(),
+            federation: FederationConfig::default(),
+            gene_lock: GeneLockConfig::default(),
+            api: ApiConfig::default(),
+            mind: MindSystemConfig::default(),
+        }
+    }
+}
+
 // ---------- RetrievalConfig ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct RetrievalConfig {
+    /// 幂迭代上限。**同步幂迭代下一次迭代 = 一跳**，所以这既是跳数上限也是
+    /// 算力预算；二者是同一个量，不存在第二个 `max_iterations` 旋钮（ADR-0042 D2）。
+    /// 循环的实际停止规则是**收敛判据**（`sa_core.convergence_epsilon`）；
+    /// 本字段只是预算上限，超出即为显式记录的截断。
+    ///
+    /// 在 ADR-0042 D0 之前这个旋钮是**被架空的**：绝对闸门 `0.8` 高于第 1 跳
+    /// 的激活上界 `α`，所有非种子节点在第 1 轮就被清零，调 3 和调 12 结果相同。
     #[serde(default = "default_max_hops")]
     pub max_hops: usize,
     #[serde(default = "default_beam_width")]
     pub beam_width: usize,
-    #[serde(default = "default_weight_threshold")]
-    pub weight_threshold: f64,
+    /// **`weight_threshold` 已删除（ADR-0042 D0）**：绝对闸门阈值曾是 `0.8`，
+    /// 但它不是尺度不变量——`a_0` 对**每个**种子注入 `1.0`，故激活总质量的
+    /// 量纲是「种子个数 k」。绝对阈值对单种子查询恒为致命（第 1 跳激活上界
+    /// `α ≤ 0.7 < 0.8`，非种子全被清零 ⇒ 扩散退化成关键词命中）。
+    /// 取代者是 [`SaCoreConfig::gate_relative_tau`]：阈值相对**当前激活总质量**。
     #[serde(default = "default_soft_edge_decay")]
     pub soft_edge_decay_factor: f64,
     #[serde(default = "default_soft_edge_min_weight")]
@@ -39,10 +64,52 @@ pub struct RetrievalConfig {
     pub dead_end_penalty_factor: f64,
     #[serde(default = "default_tentative_edge_weight")]
     pub tentative_edge_weight: f64,
+    /// System load above which mode negotiation forces Skilled (energy guard).
+    /// Thresholds live here, not inline - zero hardcoding.
+    #[serde(default = "default_high_system_load")]
+    pub high_system_load: f64,
+    /// Latency budget (ms) below which mode negotiation forces Skilled.
+    #[serde(default = "default_min_latency_limit_ms")]
+    pub min_latency_limit_ms: u64,
+    /// Token budget below which mode negotiation forces Skilled.
+    #[serde(default = "default_min_token_budget")]
+    pub min_token_budget: u64,
+    /// Query tokens dropped before FTS retrieval (P10 recall, 2026-09-07).
+    /// A natural-language question as one phrase almost never matches
+    /// stored text; tokenized retrieval strips function words first. Protocol
+    /// defaults cover common Chinese/English stopwords — overridable in
+    /// config `[retrieval] stopwords`, zero hardcoding.
+    #[serde(default = "default_stopwords")]
+    pub stopwords: Vec<String>,
+    /// SA-Core 的参数层（ADR-0042）：α / 软边衰减 / 相对闸门 / 迭代预算。
+    /// 放在 `[retrieval.sa_core]` 下，是这些量的**单一来源**。
+    #[serde(default)]
+    pub sa_core: crate::sa_core::SaCoreConfig,
+}
+
+// Manual Default (P0 debt fix): derive(Default) ignored serde default fns and
+// produced empty/zero values when a whole section (e.g. `[api]`) was absent.
+impl Default for RetrievalConfig {
+    fn default() -> Self {
+        Self {
+            max_hops: default_max_hops(),
+            beam_width: default_beam_width(),
+            soft_edge_decay_factor: default_soft_edge_decay(),
+            soft_edge_min_weight: default_soft_edge_min_weight(),
+            max_nodes_per_query: default_max_nodes_per_query(),
+            dead_end_penalty_factor: default_dead_end_penalty(),
+            tentative_edge_weight: default_tentative_edge_weight(),
+            high_system_load: default_high_system_load(),
+            min_latency_limit_ms: default_min_latency_limit_ms(),
+            min_token_budget: default_min_token_budget(),
+            stopwords: default_stopwords(),
+            sa_core: crate::sa_core::SaCoreConfig::default(),
+        }
+    }
 }
 
 // ---------- StorageConfig ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct StorageConfig {
     #[serde(default = "default_sqlite_path")]
     pub sqlite_path: String,
@@ -64,10 +131,36 @@ pub struct StorageConfig {
     pub node_cache_capacity: u64,
     #[serde(default = "default_deferred_write_interval_sec")]
     pub deferred_write_interval_sec: u64,
+    /// P6 (ADR-0015): 是否启用 WAL 事实来源（默认 true）。
+    /// `:memory:` 数据库自动禁用（内存库无持久伙伴）。
+    #[serde(default = "default_wal_enabled")]
+    pub wal_enabled: bool,
+    /// P6 (ADR-0015): WAL 段文件目录（默认 ./data/wal）。
+    #[serde(default = "default_wal_dir")]
+    pub wal_dir: String,
+}
+
+impl Default for StorageConfig {
+    fn default() -> Self {
+        Self {
+            sqlite_path: default_sqlite_path(),
+            parquet_dir: default_parquet_dir(),
+            deep_cold_dir: default_deep_cold_dir(),
+            human_view_dir: default_human_view_dir(),
+            human_view_max_size_mb: default_human_view_max_size_mb(),
+            topology_max_nodes: default_topology_max_nodes(),
+            l3_merge_similarity_threshold: default_l3_merge_similarity(),
+            vector_similarity_threshold: default_vector_similarity(),
+            node_cache_capacity: default_node_cache_capacity(),
+            deferred_write_interval_sec: default_deferred_write_interval_sec(),
+            wal_enabled: default_wal_enabled(),
+            wal_dir: default_wal_dir(),
+        }
+    }
 }
 
 // ---------- MetabolismConfig ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct MetabolismConfig {
     #[serde(default = "default_deep_cold_dir")]
     pub deep_cold_dir: String,
@@ -79,8 +172,16 @@ pub struct MetabolismConfig {
     pub crystallize_idle_timeout_sec: u64,
     #[serde(default = "default_resurrection_window")]
     pub resurrection_window_days: i64,
+    /// How old a Conflicts edge must be before it becomes eligible for
+    /// deterministic arbitration (cooling window). Digest calls
+    /// `get_unresolved_dissonance` with this window.
+    #[serde(default = "default_dissonance_window")]
+    pub dissonance_window_hours: u64,
     #[serde(default = "default_llm_gateway_url")]
     pub llm_gateway_url: String,
+    /// LLM access mode: "disabled" (production, locked) | "debug_direct" (test/debug only).
+    #[serde(default = "default_llm_mode")]
+    pub llm_mode: String,
     #[serde(default = "default_ner_mode")]
     pub ner_mode: String,
     #[serde(default = "default_ner_gateway_url")]
@@ -93,8 +194,28 @@ pub struct MetabolismConfig {
     pub semantic_model_path: String,
 }
 
+impl Default for MetabolismConfig {
+    fn default() -> Self {
+        Self {
+            deep_cold_dir: default_deep_cold_dir(),
+            digest_interval_sec: default_micro_sleep_interval(),
+            merge_similarity_threshold: default_merge_similarity(),
+            crystallize_idle_timeout_sec: default_crystallize_idle_timeout(),
+            resurrection_window_days: default_resurrection_window(),
+            dissonance_window_hours: default_dissonance_window(),
+            llm_gateway_url: default_llm_gateway_url(),
+            llm_mode: default_llm_mode(),
+            ner_mode: default_ner_mode(),
+            ner_gateway_url: default_ner_gateway_url(),
+            ner_model_path: default_ner_model_path(),
+            dedup_mode: default_dedup_mode(),
+            semantic_model_path: default_semantic_model_path(),
+        }
+    }
+}
+
 // ---------- LifecycleConfig ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct LifecycleConfig {
     #[serde(default = "default_lifecycle_enabled")]
     pub enabled: bool,
@@ -118,41 +239,108 @@ pub struct LifecycleConfig {
     pub emergency_dusk_min_tokens: u64,
 }
 
+impl Default for LifecycleConfig {
+    fn default() -> Self {
+        Self {
+            enabled: default_lifecycle_enabled(),
+            max_nodes: default_max_nodes(),
+            max_interactions: default_max_interactions(),
+            max_wall_clock_days: default_max_wall_clock_days(),
+            countdown_minutes: default_countdown_minutes(),
+            inheritance_crystal: default_inheritance_crystal(),
+            archive_past_life: default_archive_past_life(),
+            emergency_dusk_min_memory_mb: default_emergency_dusk_min_memory_mb(),
+            emergency_dusk_min_tokens: default_emergency_dusk_min_tokens(),
+        }
+    }
+}
+
 // ---------- FederationConfig ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct FederationConfig {
+    /// 出站门控（ADR-0018 P3a）：能力未就绪 = 功能不存在。
+    /// 默认 false，联邦出站/入站处理在未显式启用时一律拒绝。
+    #[serde(default = "default_federation_enabled")]
+    pub enabled: bool,
     #[serde(default = "default_outgoing_dir")]
     pub outgoing_dir: String,
     #[serde(default = "default_sandbox_dir")]
     pub sandbox_dir: String,
-    #[serde(default = "default_flowmodus_socket")]
-    pub flowmodus_ipc_socket: String,
     #[serde(default = "default_cremation_years")]
     pub cremation_years: u64,
     #[serde(default = "default_scan_interval_sec")]
     pub scan_interval_sec: u64,
 }
 
+impl Default for FederationConfig {
+    fn default() -> Self {
+        Self {
+            enabled: default_federation_enabled(),
+            outgoing_dir: default_outgoing_dir(),
+            sandbox_dir: default_sandbox_dir(),
+            cremation_years: default_cremation_years(),
+            scan_interval_sec: default_scan_interval_sec(),
+        }
+    }
+}
+
 // ---------- GeneLockConfig ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct GeneLockConfig {
     #[serde(default = "default_gene_lock_path")]
     pub file_path: String,
 }
 
+impl Default for GeneLockConfig {
+    fn default() -> Self {
+        Self { file_path: default_gene_lock_path() }
+    }
+}
+
 // ---------- ApiConfig ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+/// gRPC 传输模式（ADR-0019 P3b）
+/// - `Tcp`：远程部署，mTLS 预留（P3 后实现）
+/// - `Unix`：本地 UDS，SO_PEERCRED 白名单鉴权（fail-closed）
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Transport {
+    Tcp,
+    Unix,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct ApiConfig {
     #[serde(default = "default_listen_addr")]
     pub listen_addr: String,
+    #[serde(default = "default_transport")]
+    pub transport: Transport,
+    #[serde(default = "default_trusted_uids")]
+    pub trusted_uids: Vec<u32>,
+    /// 负载检查阈值（ValidationLayer，ADR-0019 P3b 收尾）。
+    /// 超过该值返回 Unavailable；默认 1.0 表示无负载源时不拒绝。
+    #[serde(default = "default_max_system_load")]
+    pub max_system_load: f64,
     #[serde(default = "default_layer1_enabled")]
     pub layer1_enabled: bool,
     #[serde(default = "default_layer2_enabled")]
     pub layer2_enabled: bool,
 }
 
+impl Default for ApiConfig {
+    fn default() -> Self {
+        Self {
+            listen_addr: default_listen_addr(),
+            transport: default_transport(),
+            trusted_uids: default_trusted_uids(),
+            max_system_load: default_max_system_load(),
+            layer1_enabled: default_layer1_enabled(),
+            layer2_enabled: default_layer2_enabled(),
+        }
+    }
+}
+
 // ---------- MindSystemConfig (v3.3 New Core Config) ----------
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct MindSystemConfig {
     /// Dominance threshold for node priority (架构师指定默认值 0.8)
     #[serde(default = "default_dominance_threshold")]
@@ -171,17 +359,54 @@ pub struct MindSystemConfig {
     pub impasse_retry_limit: u8,
 }
 
+impl Default for MindSystemConfig {
+    fn default() -> Self {
+        Self {
+            dominance_threshold: default_dominance_threshold(),
+            utility_threshold: default_utility_threshold(),
+            corroboration_min_required: default_corroboration_min(),
+            high_risk_validation_enabled: default_high_risk_validation(),
+            impasse_retry_limit: default_impasse_retry_limit(),
+        }
+    }
+}
+
 // ---------- Default Functions ----------
 fn default_max_hops() -> usize { 3 }
 fn default_beam_width() -> usize { 3 }
-fn default_weight_threshold() -> f64 { 0.8 }
+// `default_weight_threshold` was removed with the field itself (ADR-0042 D0):
+// an absolute gate is not scale-invariant. See `sa_core::gate_relative_tau`.
 fn default_soft_edge_decay() -> f64 { 0.8 }
 fn default_soft_edge_min_weight() -> f64 { 0.1 }
 fn default_max_nodes_per_query() -> usize { 20 }
+fn default_high_system_load() -> f64 { 0.9 }
+fn default_min_latency_limit_ms() -> u64 { 100 }
+fn default_min_token_budget() -> u64 { 100 }
+
+/// Protocol-default stopword list (P10 recall). Deterministic, config-overridable.
+fn default_stopwords() -> Vec<String> {
+    [
+        // Pure function words / auxiliary particles only. Single-char
+        // pronouns (我/你/他…) and single-char verbs (说/聊/问…) are
+        // deliberately absent: they appear inside content words
+        // ("你好", "聊过") and would split them.
+        "的", "了", "吗", "呢", "吧", "啊", "哦", "嗯", "是", "在", "有", "和",
+        "与", "或", "及", "我们", "你们", "他们", "她们", "它们", "什么", "怎么",
+        "为什么", "如何", "记得", "知道", "之前", "现在", "这个", "那个", "这样",
+        "那样", "the", "a", "an", "is", "are", "do", "does", "what", "how",
+        "why", "you", "me", "i", "we", "they", "it", "of", "and", "or", "to",
+        "in", "on", "for",
+    ]
+    .iter()
+    .map(|s| s.to_string())
+    .collect()
+}
 fn default_dead_end_penalty() -> f64 { 0.8 }
 fn default_tentative_edge_weight() -> f64 { 0.3 }
 
 fn default_sqlite_path() -> String { "./data/helix_mind.db".into() }
+fn default_wal_enabled() -> bool { true }
+fn default_wal_dir() -> String { "./data/wal".into() }
 fn default_parquet_dir() -> String { "./data/parquet".into() }
 fn default_deep_cold_dir() -> String { "./data/deep_cold".into() }
 fn default_human_view_dir() -> String { "./data/human_views".into() }
@@ -196,7 +421,9 @@ fn default_micro_sleep_interval() -> u64 { 300 }
 fn default_merge_similarity() -> f64 { 0.95 }
 fn default_crystallize_idle_timeout() -> u64 { 600 }
 fn default_resurrection_window() -> i64 { 30 }
+fn default_dissonance_window() -> u64 { 24 }
 fn default_llm_gateway_url() -> String { "http://localhost:11434/api/generate".into() }
+fn default_llm_mode() -> String { "disabled".into() }
 fn default_ner_mode() -> String { "local".into() }
 fn default_ner_gateway_url() -> String { String::new() }
 fn default_ner_model_path() -> String { "./models/ner.onnx".into() }
@@ -213,12 +440,22 @@ fn default_archive_past_life() -> bool { true }
 
 fn default_outgoing_dir() -> String { "./federation/outgoing".into() }
 fn default_sandbox_dir() -> String { "./federation/sandbox".into() }
-fn default_flowmodus_socket() -> String { "/tmp/flowmodus.sock".into() }
 fn default_cremation_years() -> u64 { 100 }
 fn default_scan_interval_sec() -> u64 { 60 }
+fn default_federation_enabled() -> bool { false }
 
 fn default_gene_lock_path() -> String { "./gene_lock.md".into() }
-fn default_listen_addr() -> String { "127.0.0.1:50051".into() }
+fn default_listen_addr() -> String {
+    // SSOT: helixECO/ports.json — mind = 50052. The old default was 50051, which is
+    // TENTACLE's port: the factory default collided with another component and nothing
+    // tested it (the ecosystem only worked because a local config.toml overrode it).
+    // A listening address that is MISSING must be fail-closed; this default exists only
+    // for the standalone case and now agrees with the table.
+    "127.0.0.1:50052".into()
+}
+fn default_transport() -> Transport { Transport::Tcp }
+fn default_trusted_uids() -> Vec<u32> { Vec::new() }
+fn default_max_system_load() -> f64 { 1.0 }
 fn default_layer1_enabled() -> bool { true }
 fn default_layer2_enabled() -> bool { true }
 
@@ -259,5 +496,46 @@ impl Config {
         let mut hasher = Sha256::new();
         hasher.update(core_data.as_bytes());
         format!("{:x}", hasher.finalize())
+    }
+
+    /// P0 debt fix: create all declared parent directories at startup so the
+    /// process does not fail with ENOENT on first run (e.g. `./data` missing).
+    /// Never touches the SQLite file itself — only parent directories.
+    pub fn ensure_dirs(&self) -> std::io::Result<()> {
+        let mut dirs = Vec::new();
+
+        // Storage parents.
+        push_parent(&mut dirs, &self.storage.sqlite_path);
+        dirs.push(std::path::Path::new(&self.storage.parquet_dir).to_path_buf());
+        dirs.push(std::path::Path::new(&self.storage.deep_cold_dir).to_path_buf());
+        dirs.push(std::path::Path::new(&self.storage.human_view_dir).to_path_buf());
+
+        // Federation parents.
+        dirs.push(std::path::Path::new(&self.federation.outgoing_dir).to_path_buf());
+        dirs.push(std::path::Path::new(&self.federation.sandbox_dir).to_path_buf());
+
+        // Model file parents.
+        push_parent(&mut dirs, &self.metabolism.ner_model_path);
+        push_parent(&mut dirs, &self.metabolism.semantic_model_path);
+
+        // Gene lock parent (usually cwd — skip empty).
+        push_parent(&mut dirs, &self.gene_lock.file_path);
+
+        for dir in dirs {
+            std::fs::create_dir_all(&dir)?;
+        }
+        Ok(())
+    }
+}
+
+/// Push the parent directory of `p` onto `dirs` unless it is empty.
+fn push_parent(dirs: &mut Vec<std::path::PathBuf>, p: &str) {
+    use std::path::Path;
+    if !p.is_empty() {
+        if let Some(parent) = Path::new(p).parent() {
+            if !parent.as_os_str().is_empty() {
+                dirs.push(parent.to_path_buf());
+            }
+        }
     }
 }

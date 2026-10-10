@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-10-09T04:54:27",
+  "experiment": "具名驳回（settle / reject）—— 端到端四点判据",
+  "why_not_model_judgement": "AGM 1985：冲突时该放弃哪一条，逻辑本身决定不了，需要外部标准。让模型自任裁判的方法（ToT/LATS/MemGPT）都假定强模型；我们是 3B ⇒ 必须由人的具名动作落点，否则会通过简单测试、在真实使用里才崩（装饰性绿灯）。",
+  "action": "!reject <period_id> [理由] 写 <id>.rejected（空理由写具名默认）；!settle <id> 显式写 converged（ADR-0049 §6.2.2 一直留着的入口）",
+  "chain": {
+    "P1": "A 段：主线事实「北极星是紫的」",
+    "P2": "B 段：支线事实「沼泽里有月亮井」（被驳回）",
+    "P3": "继续主线",
+    "P4": "P3 之后继续"
+  },
+  "results": {
+    "0_action": {
+      "cmd": "!reject P2 方向不对，另开一支",
+      "reply": "已驳回 …—— 理由：方向不对，另开一支 / 字节未动 / 后续注入不再包含它 / 仍可取回：!body …"
+    },
+    "1_B_still_there": {
+      "cmd": "!lodes P3",
+      "observed": "[1 rejected branch(es) — kept, not injected] 列出 P2，带 [rejected]、标签、理由与 !body 路径；A 与 P3 仍在注入视图里"
+    },
+    "2_A_injection_excludes_B": {
+      "measured": {
+        "P4_prompt_has_B_id": false,
+        "P4_prompt_has_B_fact": false,
+        "P4_prompt_has_A_fact": true
+      }
+    },
+    "3_B_retrievable": {
+      "cmd": "!body P2",
+      "observed": "取回该轮全文"
+    }
+  },
+  "verdict": {
+    "all_four_pass": true,
+    "rejected_bytes_untouched": true,
+    "no_delete_path": true,
+    "note": "驳回的唯一效果是退出注入视图；字节、血缘、取回路径全部保留。"
+  }
+}

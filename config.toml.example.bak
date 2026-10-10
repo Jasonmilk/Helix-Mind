@@ -1,0 +1,57 @@
+[retrieval]
+max_hops = 3
+beam_width = 3
+weight_threshold = 0.8
+soft_edge_decay_factor = 0.8
+soft_edge_min_weight = 0.1
+max_nodes_per_query = 20
+dead_end_penalty_factor = 0.8
+tentative_edge_weight = 0.3
+
+[storage]
+sqlite_path = "./data/helix_mind.db"
+parquet_dir = "./data/parquet"
+deep_cold_dir = "./data/deep_cold"
+human_view_dir = "./data/human_views"
+human_view_max_size_mb = 10
+topology_max_nodes = 500000
+l3_merge_similarity_threshold = 0.95
+vector_similarity_threshold = 0.85
+node_cache_capacity = 10000
+deferred_write_interval_sec = 5
+
+[metabolism]
+digest_interval_sec = 300
+merge_similarity_threshold = 0.95
+crystallize_idle_timeout_sec = 600
+resurrection_window_days = 30
+llm_gateway_url = "http://localhost:11434/api/generate"
+llm_mode = "disabled"
+ner_mode = "local"
+ner_gateway_url = ""
+ner_model_path = "./models/ner.onnx"
+dedup_mode = "lexical"
+semantic_model_path = "./models/all-MiniLM-L6-v2.onnx"
+
+[lifecycle]
+enabled = false
+max_nodes = 100000
+max_interactions = 50000
+max_wall_clock_days = 3650
+countdown_minutes = 15
+inheritance_crystal = true
+archive_past_life = true
+
+[federation]
+outgoing_dir = "./federation/outgoing"
+sandbox_dir = "./federation/sandbox"
+cremation_years = 100
+scan_interval_sec = 60
+
+[gene_lock]
+file_path = "./gene_lock.md"
+
+[api]
+listen_addr = "127.0.0.1:50051"
+layer1_enabled = true
+layer2_enabled = true

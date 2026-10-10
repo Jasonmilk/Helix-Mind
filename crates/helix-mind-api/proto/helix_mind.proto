@@ -17,6 +17,14 @@ enum AutonomyLevel {
   SURVIVAL = 2;
 }
 
+// P0 (ADR-0010): cognitive budget routing class, decided by the body before calling Mind.
+enum BudgetTier {
+  AUGMENTABLE = 0;         // default: normal deep query (liquid + colloid)
+  ENDOGENOUS = 1;          // 0-token emergency — crystals + high-relevance colloids
+  EXOGENOUS_REQUIRED = 2;  // exploration — may touch gas traces
+  VOID = 3;                // no cognition — metadata only
+}
+
 // ---------- Layer 1 Messages ----------
 message QueryRequest {
   string query = 1;
@@ -29,10 +37,27 @@ message QueryResponse {
   uint64 latency_ms = 4;
   bool is_partial = 5;
   string exhaustion_reason = 6;
+  // Append-Only (ADR-0012), fields 7-8. Mind *negotiates* the mode: the caller suggests
+  // and Mind may override on impasse depth / energy / autonomy (see `negotiate_mode`).
+  // It computes the effective mode plus its reason internally in `HelixQueryResult`, but
+  // until now neither reached the wire — so a caller could not tell the mode it asked for
+  // from the one that ran, and the ProveTrack could not say which mode a loop used.
+  // **A fact Mind computes and does not send is indistinguishable from one it never had.**
+  CognitiveMode effective_mode = 7;
+  string mode_negotiation = 8;  // why this mode; empty = no negotiation happened
 }
 
 message RememberRequest {
   string content = 1;
+  // Node layer: 0=L0, 1=L1, 2=L2, 3=L3. Absent or -1 = protocol default (L3
+  // episodic). L2 is the knowledge layer — law-text rails and scientific
+  // facts live here, writable by the orchestrator.
+  int32 node_type = 2;
+  // INTENT-7 §3.2 `WRITE_NODE` declares `parent_ids`: the nodes this one derives
+  // from, appended into a directed acyclic graph. Field number appended per
+  // ADR-0012 (never reused, never renumbered). Absent = no parents = no edges,
+  // which is exactly the pre-ADR-0043 behaviour (tolerant degradation).
+  repeated string parent_ids = 3;
 }
 
 message RememberResponse {
@@ -66,6 +91,7 @@ message EnergyContext {
   double system_load = 6;
   double familiarity = 7;      // v3.3: task familiarity [0.0, 1.0]
   uint32 impasse_depth = 8;    // v3.3: impasse depth (0-5)
+  BudgetTier budget_tier = 9;  // P0 (ADR-0010): cognitive budget routing class
 }
 
 // v3.3: tool action suggestion returned by Mind
@@ -82,6 +108,16 @@ message HelixQueryRequest {
   bool include_recessive = 4;
   bool allow_imagination = 5;
   AutonomyLevel autonomy_level = 6;
+  // P3c (ADR-0020): W3C traceparent, pass-through — Mind never generates it,
+  // Anaphase creates the root trace_id at the entry (ECOSYSTEM §3.1).
+  string traceparent = 7;
+  reserved 8 to max;  // Append-Only Schema Evolution (ADR-0012)
+}
+
+// P4 (M-10): SA-Core energy-diffusion activation entry (frozen-contract payoff).
+message ActivationEntry {
+  string node_id = 1;
+  double activation = 2;  // 0.0-1.0 activation in this cognitive cycle
 }
 
 message HelixQueryResult {
@@ -97,12 +133,83 @@ message HelixQueryResult {
   int32 impasse_level = 10;                  // v3.3
   int32 stages_attempted = 11;               // v3.3
   repeated SuggestedAction suggested_actions = 12;  // v3.3
+  // P4 (M-10): activation_vector — reserved 13 now payed off (Append-Only,
+  // ADR-0012). Diffusion algorithm fills it later; empty by default (honest).
+  repeated ActivationEntry activation_vector = 13;
+  // P3c (ADR-0020): W3C traceparent, pass-through (echo of the request).
+  string traceparent = 14;
+  reserved 15 to max;  // Append-Only Schema Evolution (ADR-0012)
 }
 
 message HelixConsolidateRequest {
   string type = 1; // "digest" | "crystallize" | "hibernate"
 }
 message HelixConsolidateResult {
+  bool success = 1;
+  string message = 2;
+}
+
+// P10 (ADR-0031): cognitive craft — Anaphase-triggered orchestration.
+// Retrieval (HelixQuery) and orchestration (HelixCraft) stay decoupled.
+message ProcessStep {
+  string process = 1;  // structural | critical | creative | situational | meta_critical
+  string mode = 2;     // skilled | anchored | imaginative
+}
+
+message StepOutput {
+  string process = 1;
+  string content = 2;
+}
+
+message HelixCraftRequest {
+  string query = 1;              // raw input (fact anchor, uncropped in MSC)
+  repeated ProcessStep steps = 2; // process+mode pairs, 1..=max_steps
+  string global_constraints = 3;  // MSC global constraints schema
+  string job_id = 4;              // caller job id → deterministic trace_id (craft#{job_id})
+  EnergyContext energy_context = 5;
+  AutonomyLevel autonomy_level = 6;
+  string traceparent = 7;         // pass-through (echo, never generate — P3c rule)
+  reserved 8 to max;             // Append-Only Schema Evolution (ADR-0012)
+}
+
+message HelixCraftResult {
+  string trace_id = 1;           // deterministic craft#{job_id}
+  repeated StepOutput steps = 2;
+  string synthesis = 3;          // Hegelian convergence
+  string value_grade = 4;        // P10b populates (ValueAssessor); empty until then
+  int64 tokens_consumed = 5;
+  string traceparent = 6;        // echo of request
+  reserved 7 to max;             // Append-Only Schema Evolution (ADR-0012)
+}
+
+
+// P10d (ADR-0032): ana_wakeup — Anaphase wake-up channel + peak congestion guard.
+// Mind never self-wakes (no heartbeat rule): it registers alarms (data) and
+// answers passively. Anaphase holds the physical clock and calls ana_wakeup
+// at its own cadence (config default 08:00 + interaction gaps).
+message AlarmDue {
+  string job_id = 1;       // deterministic alarm#{job_id} provenance
+  string action = 2;       // semantic action Anaphase will execute (e.g. "hibernate")
+  string due_at = 3;       // ISO timestamp (original due)
+  string mode = 4;         // "punctual" | "jittered"
+  string claim_id = 5;     // deterministic claim#{job_id}#{seq} — ack handle
+}
+
+message AnaWakeupRequest {
+  uint32 jitter_minutes = 1; // peak-congestion window (config default 60, 0 = off)
+}
+
+message AnaWakeupResult {
+  repeated AlarmDue alarms = 1; // due alarms, atomically claimed
+  uint32 claimed = 2;
+}
+
+message AnaWakeupAckRequest {
+  string claim_id = 1; // from AlarmDue.claim_id
+  string status = 2;   // "done" | "renewed"
+}
+
+message AnaWakeupAckResult {
   bool success = 1;
   string message = 2;
 }
@@ -153,6 +260,11 @@ message Node {
   string corrected_by = 13;
   string notes = 14;
   repeated string derived_from = 15;
+  // P0 (ADR-0011): phase-state & subject-dependency (Append-Only, fields 16-19)
+  string phase_state = 16;          // "gas" | "liquid" | "crystal"
+  string subject_dependency = 17;   // "high" | "low"
+  string concentration = 18;        // "dissolved" | "colloidal" (liquid meta)
+  double tension = 19;              // liquid meta tension
 }
 
 message Edge {
@@ -176,6 +288,9 @@ service HelixMind {
   // Layer 3
   rpc HelixQuery(HelixQueryRequest) returns (HelixQueryResult);
   rpc HelixConsolidate(HelixConsolidateRequest) returns (HelixConsolidateResult);
+  rpc HelixCraft(HelixCraftRequest) returns (HelixCraftResult); // P10 (ADR-0031)
+  rpc AnaWakeup(AnaWakeupRequest) returns (AnaWakeupResult); // P10d (ADR-0032)
+  rpc AnaWakeupAck(AnaWakeupAckRequest) returns (AnaWakeupAckResult); // P10d (ADR-0032)
   rpc FederatedDAGShare(FederatedDAGShareRequest) returns (FederatedDAGShareResponse);
   rpc TriggerReincarnation(TriggerReincarnationRequest) returns (TriggerReincarnationResponse);
   rpc ReloadGeneLock(ReloadGeneLockRequest) returns (ReloadGeneLockResponse);

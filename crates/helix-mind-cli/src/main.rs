@@ -39,6 +39,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load configuration
     std::env::set_var("HELIX_MIND_CONFIG", cli.config.to_string_lossy().as_ref());
     let config = Config::load()?;
+    // P0 debt fix: create all declared parent directories so first run
+    // (with an absent `./data`) does not fail with ENOENT.
+    config.ensure_dirs()?;
     tracing::info!("Configuration loaded. Core hash: {}", config.compute_core_hash());
 
     // Initialize storage (returns Arc)
@@ -82,6 +85,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 storage.clone(),
             ));
 
+            // ── Cognitive craft (P10, ADR-0031) ────────────────────
+            // Production default: DeterministicAdapter (0-token orchestration).
+            // B1 kept: Mind orchestrates, execution goes through
+            // CognitiveService injection — never a direct LLM call here.
+            let cognitive = std::sync::Arc::new(
+                helix_mind_cognitive::CognitiveCraft::new(
+                    std::sync::Arc::new(
+                        helix_mind_metabolism::DeterministicAdapter::new(
+                            helix_mind_core::config::MetabolismConfig::default(),
+                        ),
+                    ),
+                    helix_mind_cognitive::CraftConfig::default(),
+                ),
+            );
+
             // ── Assemble service ─────────────────────────────────
             let service = helix_mind_api::HelixMindServiceImpl::new(
                 config.clone(),
@@ -90,11 +108,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 metabolism,
                 federation,
                 reincarnation,
+                cognitive,
             );
 
-            let addr = config.api.listen_addr.parse()?;
-            tracing::info!("Starting gRPC server on {}", addr);
-            helix_mind_api::serve(addr, service).await?;
+            // 传输模式由 ApiConfig.transport 决定（TCP / UDS，ADR-0019 P3b）
+            helix_mind_api::serve(&config.api, service).await?;
         }
         Commands::View { format: _, phase: _ } => {
             let stats = storage.get_stats().await?;

@@ -1,0 +1,41 @@
+# helix-mind · 真判据 CI（R12；2026-10-10 重写）
+#
+# ★ 重写理由（实测）：上一版把 python 直接嵌进 YAML 的 run 块 ⇒ **YAML 少一个缩进就整份非法**
+#   ⇒ 症状是 **workflow 有 0 个 job**、run 的 name 显示成文件路径（查不到，看起来像"跑失败了"）。
+#   ⇒ **换一种不再需要小心的组织方式**：YAML 只调用脚本，脚本自己管缩进与引号。
+# ★ 平台钉住：ubuntu-latest 将于 2026-10-19 迁到 Ubuntu 26 ⇒ 钉 24.04（**不让外部变更决定我们的红绿**）
+name: ci
+on: [push, pull_request]
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: ⓪ 系统依赖（prost-build 需要 protoc —— 与 FlowModus 同一病同一修法）
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq protobuf-compiler
+      - name: ① ADR 头解析（每份都要 ok）
+        run: bash tools/check-adr-heads.sh
+      - name: ②·5 文档不得落后于代码（分支地图生成物比对）
+        run: bash tools/branch-map.sh --check
+      - name: ② 脚本语法自检
+        run: for f in tools/*.sh tools/hooks/*; do [ -f "$f" ] && bash -n "$f" || true; done
+      - name: ③ Rust workspace 测试（本仓 20+ crates ⇒ 比 ADR 头强得多的真门）
+        run: |
+          set +e
+          cargo test --all-features --no-fail-fast 2>&1 | tee /tmp/test.log
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" != 0 ]; then
+            echo "--- 末尾 150 行 ---"; tail -150 /tmp/test.log
+            { echo '## 失败尾部'; echo '```'; tail -120 /tmp/test.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
+            # ★ 失败必须【在机器读得到的地方具名】(2026-10-10)：
+            #   logs 端点需 admin(403) · artifacts 需凭据(401) · job summary 的 API output.summary 为 null
+            #   而 **annotations 公开可读** ⇒ 把失败行写成 ::error ⇒ 读数不再依赖人肉粘贴。
+            grep -aE "^test .* FAILED|^failures:$|panicked at|^error(\[|:)|No such file|NotFound" /tmp/test.log \
+              | head -12 | while IFS= read -r _l; do
+                  echo "::error title=失败具名::$(printf %s "$_l" | tr -d "\r" | cut -c1-400)"
+                done
+          fi
+          exit $rc

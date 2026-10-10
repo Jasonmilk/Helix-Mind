@@ -4,6 +4,7 @@ use std::sync::Arc;
 use tracing::info;
 
 pub struct Hibernate {
+    #[allow(dead_code)]
     config: MetabolismConfig,
     storage: Arc<StorageEngine>,
 }

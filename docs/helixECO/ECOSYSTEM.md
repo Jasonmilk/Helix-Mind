@@ -1,0 +1,429 @@
+# Helix 生态导航（ECOSYSTEM.md）
+
+> **版本**：v1.99
+> **创建日期**：2026-08-30
+> **最后更新**：2026-09-17（**Helix-Mind SA-Core 参数派生（ADR-0042 T1：D0 闸门相对化 + D1 α 单一来源 + D2 收敛判据 + D3b 删除矛盾的 `mode.rs`）**—— 绝对闸门把扩散锁死在 **0 跳**的 P0 被堵上（前沿依据：ACL 局部 PPR 的判停条件是相对度数的阈值，本仓只抄了归一化那一半）；同时更正了我自己在 ADR 里写错的两处推导。详见下方 v1.99 行。此前同日：**工具链闭环 + 三处面板缺陷 + ADR-0041 周期身份**——Anaphase finalize 不再把工具计划当答复、Cellrix FlowModus 接线补齐、经历卡片改血缘路径；**周期身份不唯一**定位为顺序错乱真因，立 `anaphase:ADR-0041`（Proposed）。此前同日：**Cellrix ADR-0021「Web 面板的协议投影」T0 + T1a 完成** —— ①根因重定位（人类指路"了解生态血液"后自查）：Cellrix 协议早已定义 `GridDefinition`/`GridSlot`/`SemanticNode.slot_binding`/`NodeType::Unknown`，使用者为 `protocol`/`layout`/`mock-agent`，而 **`web/src` 零使用**；TUI 走「协议网格 → 布局引擎 → ui」= 碳硅同构，**`cellrix-web` 整体绕开协议模型** —— 此即"界面凭凑式"的可证根因，不是"缺 slot 系统"；②**T0** `docs/spec/grids.md` v2（槽位四形态 + 扩展保留区 X1–X3 + 冻结/演进面 + V1–V9 校验）；③**T1a** 23 次链式 `.replace()` + 24 个 `include_str!` → `web/assets/boot.json` 起搏图 + `web/src/boot.rs`，**不碰 `base.html`**（与人类在飞的几何工作零冲突），三重验证通过（差分测试 / HTTP 层**逐字节 244858 B** / `verify_live.py` 59-0 + `coupling_audit.py` 0 unresolved + JS 回归网 8 套），Cellrix 测试 **341 → 349**（+8 全为 boot.rs），全生态 **1563 → 1571**；④**命名纠错**：ADR v1 自造「格/格谱」被识别为**重复发明协议既有类型**（违「极致复用：不重新发明」），**退役并复用 `GridSlot`（槽位）/`GridDefinition`（网格）**；论证改立于 CI-144 身份（INTENT-7 §15 法定参考实现 + CAPABILITY-13 PC-2 可视化共识层）；⑤一个会静默炸掉面板的陷阱被测试拦下：`script.html` 内含 `__REFRESH__`，老代码靠链式替换作用于**已插入内容**才替换得到它，单遍模板替换会把字面量留在页面上；⑥**活文档政策执行**：ADR-0021 按本文件 v1.94 去除外部项目名号（保留"借鉴成熟实践"事实）；⑦**修两个既有缺陷**：`docs/archive/growth/010` 文件名与内部标题**双双**指向错误条目（实际为"证轨检查器入口修复 + FlowModus 接线补齐"，已按体例改名并修标题）；本文件 §5/§7 的 Cellrix ADR 目录 `docs/adr/` → **`docs/decisions/`**（该目录此前**不存在**，两处失效路径）。此前 2026-09-15：**Tuck 准入闸门 ADR-0005 H-1..H-9 全部交付**——白/黑名单同表 `effect`、LLM 三件套能力维度、审计扩字段、通知 sink trait（不内置实现）、观察模式、语料热加载、配置样例；关键设计 `None` ≠ 空表；**`gov.rs` 解耦 1154 → 388 行**，全 crate 14 模块无一超 400 红线；测试 363 → **367**（`--features gateway`，本轮物理复核通过）；**Cellrix 事件族装配层 ADR-0018 T0/T1/T2/T3/T4/T6 完成**（契约 11 类型 → `assembly.js` → 共享原语 → 证轨/经历侧栏接入 → 11 条验收网 29 断言），T5 阻塞待裁决、T7 待实施；K10 结案（跨仓引用漏仓名，实指 `Cellrix:ADR-0014`）；修一个真回归（`access_test.rs` 缺 feature gate，`--all-features` 掩盖）；新登记 K11 / K12；**Anaphase ADR-0039 判断点单一来源 + ADR-0040 生态灯四态 + ADR 索引重建（36 份）**；缺陷登记表 F6–F11 已修（能量降级阈值去硬编码 / ADR 索引 / FlowModus、helix-mind GROWTH 归档对齐等）。此前 2026-09-14：证轨资产语言统一 ADR-0017 / 上游计量捕获 ADR-0038 / 证轨资产解耦 ADR-0016 / 术语更名 ADR-0037）
+> **性质**：Helix 生态唯一真相源（Single Source of Truth, SSOT）
+> **维护者**：Jasonmilk / CommonIntents
+> **所属方法论**：phyt-DNA v1.0
+
+---
+
+## 0. 工作区目录结构
+
+```
+~/Doubao/chats/Jasonmilk/           ← 固定工作区根目录（不按日期分）
+├── BIND-19/                         ← 协议传输层（CI-144 家族核心实现；默认分支 v2.0-alpha，main=规范正文）
+├── Cellrix/                          ← 展示层（空间语义终端 UI）
+├── Tuck/                             ← 安全闸门（免疫系统）
+├── anaphase-helix/                   ← 编排中枢（执行体）
+├── helix-mind/                       ← 记忆中枢（潜意识核心）
+│   └── docs/helixECO/                ← 本导航文档所在地
+├── helix-tentacle/                   ← 工具执行（手）
+├── HelixECO-Glove/                   ← 生态手套（原生系统适配层）
+├── Helix-MCP-Learner/                ← MCP 消化器（MCP Server → Tentacle 插件）
+├── FlowModus/                        ← 供应商池 + 路由（度量衡／判断点规则来源；Rust 工程在 `flowmodus-rs/`，ADR 自用 0100+ 号段）
+├── lodestone-spec/                   ← 知识表示协议（v2.0-draft 磁石 DAG；v1.3 冻结）
+├── lodestone-md/                     ← 协议参考实现（crate mddag，v2 线，零依赖）
+├── phyt-DNA/                         ← 方法论体系（自生长方法论）
+├── Helix-Callosum/                  ← ⚰️ 已归档（2026-09-06，DEPRECATE.md 见仓库；前缀稳定归 lodestone 投影 + FlowModus canonicalizer）
+└── commonintents/                    ← CommonIntents 组织仓库集合
+    ├── BIND-19/                      ← 协议规范（权威来源）
+    ├── CAPABILITY-13/                ← 能力授权协议
+    ├── INTENT-7/                     ← 意图语义协议
+    ├── INTENT-7-SECURE/              ← 安全加密协议
+    ├── PFP-xCF14/                    ← 物理特征协议规范（发布窗口）
+    └── SAP-xCF14/                    ← 安全证明协议规范（发布窗口）
+```
+
+### 0.1 生态边界与优先级（2026-09-17 人类裁定）
+
+| 类别 | 仓库 | 含义 |
+|---|---|---|
+| **生态专属** | `anaphase-helix`、`helix-mind` | **只为 Helix 生态服务**；不为外部生态做兼容设计 |
+| **可具外部生态兼容性** | 其余全部（Cellrix / Tuck / helix-tentacle / FlowModus / HelixECO-Glove / Helix-MCP-Learner / BIND-19 / lodestone-* / phyt-DNA 等） | 可承载外部生态的对接与兼容 |
+
+> **`Helix 生态优先`** 是裁决规则：外部兼容**不得以牺牲生态内需求为代价**；两者冲突时，
+> **生态内需求胜出**。
+>
+> 既有实例（不点名，按本文件 v1.94 活文档政策）：`Cellrix` 的 WebUI 曾整体借用外部设计体系
+> 实现（见 `Cellrix:ADR-0015`）——那是"可具外部兼容性"的一例；但外部体系的名号不进本文件，
+> 生态内的 `Cellrix:ADR-0021` 仍以 CI-144 协议为设计源。
+
+
+## 1. 项目状态总览
+
+| # | 项目 | 分支 | 测试数 | 当前阶段 | 最后提交 | 状态 | 仓库 |
+|---|---|---|---|---|---|---|---|
+| 1 | **Cellrix** | rs2 | **351** | **Web 面板的协议投影开篇（ADR-0021 T0/T1a）** —— 根因重定位：协议早已定义 `GridDefinition`/`GridSlot`（`protocol/src/manifest.rs:36-59`）、`SemanticNode.slot_binding`（`snapshot.rs:38`）、`NodeType::Unknown`（`snapshot.rs:45-54`），使用者为 `protocol`/`layout`/`mock-agent`，而 **`web/src` 零使用**；TUI 走「协议网格 → 布局引擎 → ui」= 碳硅同构，**`cellrix-web` 整体绕开协议模型** —— 此即"界面凭凑式"的可证根因。**T0** 槽位契约（`docs/spec/grids.md` v2，含扩展保留区 X1–X3 + 冻结/演进面 + V1–V9 校验）；**T1a** 装配数据化：23 次链式 `.replace()` + 24 个 `include_str!` → `web/assets/boot.json` 起搏图 + `web/src/boot.rs`，**不碰 `base.html`**，三重验证（差分测试 `boot_output_is_byte_identical_to_the_legacy_mechanism` / HTTP 层页面**逐字节相同 244858 B** / `verify_live.py` 59-0 + `coupling_audit.py` 0 unresolved + JS 回归网 8 套）；**命名纠错**——v1 自造「格/格谱」被识别为重复发明协议既有类型，**退役并复用 `GridSlot`（槽位）/`GridDefinition`（网格）**；ADR v2 论证改立于 CI-144 身份（INTENT-7 §15 法定参考实现 + CAPABILITY-13 PC-2 可视化共识层）。**T1b–T5 待做**（T1b 前置：`layout_test.js:127-129` 的 4a 几何断言须先转绿）。此前：证轨 v3 + 视图全资产化解耦（ADR-0015/0016）+ 事件族装配层（ADR-0018，T5 待裁决 / T7 已完成）+ P0-P6 + 候选 G | 2026-09-17 | 🚧 ADR-0021 T0/T1a 完成；面板三缺陷已修（FlowModus 接线 / 新经历被并入旧经历 / 顺序错乱根因）＋**经历列表静默截断已修**（面板可见 50→130） | [Jasonmilk/Cellrix](https://github.com/Jasonmilk/Cellrix) |
+| 2 | **Tuck** | rs | **367**（须 `--features gateway`） | 内容治理网关 v1（ADR-0004）+ 旁路焊死：网关服务（feature gateway）+ L2 凭证注入（upstream_key 物理边缘替换）+ 身份门（静态 key + JWT）+ 检测/混淆/拦截/全量审计 + `/v1/audit` 只读查询；Anaphase 零代码改动接入；--all-features 零警告；**准入闸门 ADR-0005 H-1..H-9 全部交付**（白/黑名单同表 `effect`、`llm:egress` / `llm:invoke:<supplier>` / `llm:model:<model>` 三件套能力维度、审计扩字段、通知 sink trait（不内置实现）、观察模式、语料热加载、配置样例；`None` ≠ 空表——未装表 = 闸门不参与，空表 = 拒绝一切）+ **`gov.rs` 解耦 1154→388 行**（五档 + 测试移出，全 crate 14 模块无一超 400 红线）+ `access_test.rs` feature gate 修复（`--all-features` 曾掩盖缺 gate） | 2026-09-15 | ✅ 完成 | [Jasonmilk/Tuck](https://github.com/Jasonmilk/Tuck) |
+| 3 | **Anaphase** | rs | **264** | **工具链闭环（本次）**：Reflection 的 finalize 守卫只判"非空"，把模型回的**第二个工具计划**当成了答复——实测 50 段经历中 9 条如此、**全部是工具轮**（8×`web_search`、1×`calc`），而判据 `answer.delivered` 检查的是**工具返回值**（自注 "delivery confirmed at tool edge"）故仍判 Met。已把 `Reasoning` 侧既有的 **P0-D-1**（"never leak the raw JSON as a reply"）延伸到 finalize，并加 `tool_followup_rounds`（协议默认 1，与 `empty_reply_retries` 同形）做**有界重问**；端到端实证回复已是自然语言。附带定位**周期身份不唯一**（`job_id` 由输入派生 ⇒ 同问题重问同 id ⇒ `session_events` `truncate` 覆写 ⇒ **别的周期仍以被覆写的 id 为父** ⇒ 父比子晚 11 小时；129 个事件文件中 8 个含多组 `turn/start`）⇒ **ADR-0041 周期身份唯一化（Proposed）**。 + 此前 **回答被思考吞掉修复（ADR-0034：reasoning 共享 token 预算 + 有界直答重试 + 空回复诚实标记）** + **SSE 事件序运行时焊死（ADR-0030，done 行确定性到达）** + **ProveTrack 正文轨迹 + 全文回放 + /v1/health 生态级自检（看表 SSOT）**（ADR-0004 证轨半体：推理 round trip 脱敏落盘 + 三键合一 x-tuck-trace 头——审计链/正文/ledger 同一 trace_id join）+ P10a 认知工艺触发（ADR-0031：helix_craft 客户端 + MemoryRetrieval 按需触发 + [think-first] 折入）+ P10d 预约制闹钟唤醒侧（ADR-0032：ana_wakeup 客户端 + run_cycle 每交互看表 + action 分发 + 高峰拥挤保护）；O-6 判断点后端可配化完成（ADR-0024：JP-1 复杂度评估 Rules 默认 / SmallLlm 3B 可选 + 失败回退 + 零硬编码收口，judge-points contract 入 FlowModus）；O-5（ADR-0023）（记忆折叠注入 Reasoning：注入打通——serde 默认修复 + fold 剥离账本尾行 + 经历化标签，25 轮近零增长 + 演示输入来源化）；O-4（ADR-0022）+ O-2/O-3 + Rails + 候选 E + O-1 + CI-144 传输层 + **上游计量捕获 ADR-0038**（`assistant/usage` 事件 + `last_meta()`）+ **判断点单一来源 ADR-0039**（规则归 FlowModus，部分取代 ADR-0024 失败回退一条）+ **生态灯四态 ADR-0040**（绿/黄/红/灰 + 生态事实单一来源 + 工具索引式披露）+ **ADR 索引重建**（36 份，跨仓引用仓名限定） | 2026-09-17 | ✅ 完成 | [Jasonmilk/anaphase-helix](https://github.com/Jasonmilk/anaphase-helix) |
+| 4 | **BIND-19** | v2.0-alpha（默认） | 142 | 核心实现完成（PFP+SAP 解析器）；默认分支已切 v2.0-alpha，main=规范正文（tag v1.0.0-RFC-4） | 2026-09-06 | ✅ 完成 | [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) |
+| 5 | **Helix-Mind** | rs-dev | 118 | P0-P10 全部完成：P10a helix_craft 触发链路 + P10b synthesis→L1 策略落盘 + P10c Deep Dream 睡眠复盘 + P10d ana_wakeup 预约制闹钟（高峰拥挤保护，无心跳）+ P10 召回增强（ADR-0033：分词检索 + 种子保底 + 原文透传 + LIKE 短优先） | 2026-09-06 | ✅ P10 完成 | [Jasonmilk/Helix-Mind](https://github.com/Jasonmilk/Helix-Mind) |
+| 6 | **Helix-Tentacle** | rs | 153 | P6 生态联调进行中（M1.5 grpc transport + fixture 插件完成，d902151）；T4 部署文档 + CI-144 全组件联调待做 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) |
+| 7 | **HelixECO-Glove** | main | 45 | P4-T1 完成（L1 静态审查 9 条规则），P4-T2 预览 | 2026-09-06 | 🚧 进行中 | [Jasonmilk/HelixECO-Glove](https://github.com/Jasonmilk/HelixECO-Glove) |
+| 8 | **Helix-MCP-Learner** | main | 50 | P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道）；实测 50 passed 0 failed（v1.61 物理核对修正 42→50） | 2026-09-07 | 🚧 进行中 | [Jasonmilk/Helix-MCP-Learner](https://github.com/Jasonmilk/Helix-MCP-Learner) |
+| 9 | **phyt-DNA** | main | - | 方法论 v1.0 + **保护章节 v1.2**（docs/PROTECTION.md：大厂实践提炼 + 许可策略决策 + 文档语言规范 + 五条保护原则 + 零成本清单 + Prior Art as Code 规范） | 2026-09-06 | ✅ 完成 | [Jasonmilk/phyt-DNA](https://github.com/Jasonmilk/phyt-DNA) |
+| 10 | **FlowModus** | rs | **87** | **rs 重构全部完成**（R-1..R-6：五层确定性管线 + 三调用模式 + 控制面 + judge-points 契约 v1.1 Rules 后端，clippy 零警告，工作树干净）；Python v1.7 保留 main 分支；2026-09-07 复测 flowmodus-rs cargo test = 83（72+4+3+4，与 R-5 一致） | 2026-09-07 | ✅ rs 收口 | [Jasonmilk/FlowModus](https://github.com/Jasonmilk/FlowModus) |
+
+**全生态测试总数**：**1630**（Cellrix **351** + Tuck **367** + Anaphase **277** + BIND-19 142 + Helix-Mind **158** + Helix-Tentacle 153 + HelixECO-Glove 45 + Helix-MCP-Learner **50** + **FlowModus 87**）（2026-09-14 全量实测重校 + 2026-09-15 复核：`cargo test --no-fail-fast` 逐仓核对——Anaphase 240→**257**（ADR-0038 +12）、**09-15 复核 257→260**（09-14 18:48 F4 gloves 修复的 +3 测试在 257 测量后落地，269 属性 = 260 passed + 9 ignored）、Cellrix 337→**341**（旧值 337 是 `up.rs` 测试目标未编译时的截断数，`fix(up)` 后 4 条回来了）、Tuck 369→**367**（须 `--features gateway`；默认 feature 集只得 327，差 40；2026-09-15 物理复核 367 确认）、FlowModus 83→**87**；1558→**1563**；**09-17 Cellrix 341→350**（`boot.rs` 8 + 配置 1；`cargo test --no-fail-fast` 实测 **350 passed / 0 failed / 4 ignored**）、**Anaphase 260→264**（工具链测试 2 + 在飞 P0-G 侧 2；实测 **264 passed / 0 failed / 10 ignored**）、**09-17 再 +1 Cellrix**（`sessions_limit` 契约测试）→**1577**；**09-17 Helix-Mind 118→123 陈旧误差更正**（118 是旧测量值，本轮动手**之前**实测已是 **123**，此前从未记录；在此补记，不追改历史）、**09-17 Helix-Mind 123→139**（ADR-0042 T1：`sa_core_depth_test.rs` +10、`core/sa_core.rs` 单元 +6；`cargo test --workspace --no-fail-fast` 实测 **139 passed / 0 failed / 0 ignored**）；**09-17 Helix-Mind 139→143**（ADR-0042 **T4/D3 确定性抑制门控**：复用既有 `Node::corrected_by` ⇒ **零 schema 变更**；`Corrects` 整条移出传播矩阵 + 硬门控优先于种子豁免 + `update_corrected_by` 同步内存图（此前只写 SQL）⇒ +4 条，实测 **143 passed / 0 failed / 0 ignored**）；**09-17 Helix-Mind 143→146**（ADR-0043 环安全回归网 +3：软边环震荡收敛不膨胀、`decay_factor` 只重分配不衰减、Skilled 屏蔽软边；全量实测 **146 passed / 0 failed / 0 ignored**）；**09-17 Helix-Mind 146→151**（ADR-0043 **T5a 落地**：proto 补 `parent_ids`、Mind 侧写入路径建 `derived_from` + 血缘边、`add_edge` 内存幂等修复 ⇒ +5 条；全量实测 **151 passed / 0 failed / 0 ignored**）；**09-17 Anaphase 264→274 并修两个「从未运行」的测试**（ADR-0043 **T5b 落地**：`MemoryAdapter::remember/remember_node` 收 `parent_ids` 并返回节点 id、Anaphase 侧 proto 同步补字段、`run_cycle` 三处写入点传血缘 + `remember_parents` 纯函数 2 条 ⇒ 且顺带发现 `parse_llm_calls_accepts_wrapped_object` **漏 `#[test]`** 与 `fence_fallback_parses_markdown_tool_block` **重复 `#[test]`**、`redacts_strings_recursively` **漏 `#[test]`** —— 三个测试此前**从未执行**（修复后确实执行且通过）；全量实测 **274 passed / 0 failed / 10 ignored**，连跑 2 次复现，余一次 `failed=1` 判为弱机抖动）；**09-17 Helix-Mind 151→155**（ADR-0043 **T5a 端到端测试 4 条**，走**真实 gRPC 处理器 + 内存库**：`parent_ids` 必产生真实边、方向派生者→来源、`TEMPORAL`、缺字段不建边（容忍降级）、多父多边；变异「清空建边循环」⇒ 3 条红。并记录一个**结构事实**：环容忍分支**当前不可达**——每次写入都新铸 node id，新节点不可能已被其父可达，**须等请求自带的 `node_id` 被采纳（INTENT-7 `WRITE_NODE` 有该参数）才可达**；全量实测 **155 passed / 0 failed / 0 ignored**）；**09-17 Helix-Mind 155→158**（ADR-0042 **D4 落地**：`sa_core.min_k_core` config 化（默认 0 行为中性）+ **k-core 过滤器补种子豁免**（原先不豁免，稀疏图上会把孤立节点连种子一起剪掉 ⇒ 召回静默归零，正是 GROWTH.md 记的失效模式）+ 每层单一来源；+3 条，变异「去掉种子豁免」⇒ 2 条红；全量实测 **158 passed / 0 failed / 0 ignored**）；**09-17 Anaphase 274→275 并修复「经历卡片」断裂的真因**（**不是渲染模型，是一行写错槽位**）：`run_cycle.rs` 的 `resume_from` 曾 `.or(context.resume)` 回退——把**人类可读的续接摘要**写进**机器可读的父指针槽**。实测 139 个 period 中 **12 条** `parent` 不是 id（10 条散文 + 2 条我在验证时手写的 `run-adr0043-t5b-verify`），**83 条成孤根** ⇒ 面板列表分组因此看起来「模型错了」。**那个旧判断是误诊**：分组有 83/139 输入不可用，当然失败。修：写入侧删掉回退（无 id 即无父），读取侧 `is_period_id` 拒绝非 period id（**历史 append-only，旧行不动，由读者拒绝**，与容忍降级同向）。**线上验证**：新对话 `parent=None`、`parent` 非 id 计数 **12 → 0**。另：`session.html` 那条「The model was wrong」注释**改判留痕**（不静默删）+ 删死变量 —— 受守卫 52 行，已按体例标 `[large]`；JS 回归网仍 **8 套全绿**）；**09-17 Anaphase 275→276**（`a_parent_that_does_not_exist_is_reported_as_absent`：**悬空父指针必须报为空**；并钉住**归一化先于 `truncate`**——被 limit 截掉的父**仍存在**，置空就是说谎；实测线上悬空父指针 **1 → 0**，全量 **276 passed / 0 failed / 10 ignored**）；**09-17 T6 落地**（ADR-0042 **T6**：Anaphase 白盒改读 **`activation_vector`**（当轮 SA-Core 激活，proto 字段 13）而非持久化 `heat`。**该向量在 Anaphase 侧此前从未被读取**（grep 零命中），而 `heat != 0.5` 的节点实测 **0 个**——面板显示的「能量」其实是构造默认值常量。字段**正名 `heat` → `activation`**（把当轮激活叫 heat 是名实不符），面板 `prove_track.node.js` 同步；缺失激活时回落持久化 heat，因为报 0.0 会谎称「SA-Core 在此什么都没选」，而真相是「SA-Core 没考虑它」。测试数不变：Helix-Mind 158 / Anaphase 276，面板 JS 回归网 8 套全绿）；**09-17 Anaphase 276→277 面板卡片标题改为「创建时冻结」**（人类约束：**稳定不漂移优先**。标题原先每次渲染从 `first_ts` **重算**，而 ADR-0041 记录时间戳**确实会被改写** ⇒ 任何基于可变字段的重算都不稳定。改为**创建时写一次**进既有的 `.name` 侧车（与人手重命名同一个槽，一个机制），值取**首条用户消息**（折叠空白、上限 40 字加省略号）：内容而非时钟 ⇒ 不会漂移、且不像 `经历 09-16 22:27` 那样无信息；且**无时区**（面板有意按读者本地时钟渲染，后端不得把时区烤进存储串）。空输入不写名 ⇒ 回落面板时间名。**顺带按构造消除了**我先前用「加秒」补的撞名问题：名字不再源自时间，27 个撞名分钟桶不可能复发。另：`SessionEventStream` 增 `dir`/`job_id` 身份字段）；**09-17 Cellrix 面板：导航立为约束类别（ADR-0022）+ 回归网 8→10 套 + 接通一条闲置测试** —— ①**`ADR-0022`「面板导航约束（N 系列）」Proposed**：把「导航与流转」立为**约束类别**（19 条 / 9 维度：层级广度、位置感、回溯、形态选择、状态恢复深链、出路、破坏性操作、入口一致性、无障碍），每条带**来源类型**与**硬度**（钻石/钢铁/陶土，陶土必标 `[ENG]`）。**动机是实测缺陷**：同一列表渲染两遍且点击语义不同、无 URL、「当前位置」有三个来源（`st.chatJobId`/`window.__proveTrackMeta`/`Cx.selectPeriod`）、4 视图写死 + 手写 switch、卡片标题曾撞名 58/141。②**两处自我更正**：(a) N-001 原写「主视图保持同级并列」，把"层级浅"当美德——**而那恰是「主次不清」的成因**，⇒ 改为「**存在唯一主视图**」，锚定由"层级浅"换成"**主任务单一**"，并写实主任务（主=对话；辅=证轨/流/仪表降为侧板或抽屉；经历列表降为线程→轮次层级）；(b) §1.4 记录人类裁定：**骨架全部借鉴成熟实践（多来源并列、无单一权威）、不复制代码、配色与自有 UI/UX 除外**，三条后果写明（自己实现 / **不引入容器与新构建体系**（保持 Rust + `include_str!`）/ 理由自证）；**文档内不出现外部项目名**（活文档政策）。③**`[待锚定]` 四条已全部定级**并立 **§2.4b 双标注纪律**：无障碍类必须拆两半——**生理/认知基础⇒钻石**、**条款/机制实现⇒陶土**；**最忌拿条款当锚定**（合规契约不是生理事实，拿它支撑"钻石"仍是把陶土说成钻石，只是换成更体面的文件）。N-002 **保持不给数字**（单一实验比值不构成充分学术共识）。④**面板卡片标题「创建时冻结」**（人类约束：**稳定不漂移优先**）：原每次渲染从 `first_ts` **重算**，而 ADR-0041 记录时间戳**会被改写** ⇒ 重算必漂移；改为**创建时写一次**进既有 `.name` 侧车（与人手重命名同一槽），值取**首条用户消息**（折叠空白、上限 40 字、**无时区**）。**顺带按构造消除**了先前「加秒」所补的撞名问题。**141 个旧 period 已补齐内容标题**（迁移脚本的截断上限**从 Rust 源码读取**，不复制第二份来源）。⑤**回归网 8 → 10 套**：`all_views_test.js` 曾因**写死 `:18932`**（真面板在 `:8080`）被 `NEEDS_INPUT` 永久闲置——**从不执行**，而**从不运行的测试比没有测试更糟，因为它的存在读起来像覆盖率**；改为**面板可达即真跑**（TCP 探测，`CELLRIX_PANEL` 可覆盖），实测 **55 断言全过**；新增 `hash_state_test.js`（6 条）落地 URL hash 纯原语 `parseHash`/`buildHash`（键值对而非路径式；**全域**：未知键忽略、畸形编码跳过该对、陌生 hash 返回空态而不抛错）。⑥**N1 工具纪律落地**：`eng-assertion check` 扫全部测试，只抓**导航形态计数**与字面量比较（窄是有意的——宽扫描误报，**没人信的检查比没有检查更糟**）；**非空转由变异注入证明**（植入 `assert(views.length === 4)` ⇒ 红；移除 ⇒ 绿）。并修汇总行缺陷：它打印的是**尝试数** `SELF_CONTAINED.length` 却标成「suites green」（实测列表 10 PASS 而汇总说 9），改为**按实际 PASS 计数**，从此名副其实。⑦**N 系列进度**：N0 ✅（ADR-0022）/ N1 ✅ / **N2 ⏳（选择态收敛 + hash 接线，会动活动渲染，须「重建→重启→对页面 grep 核实」）** / N3 槽位注册表（借形状不引入容器）/ N4 重写 `dom_contract` 网（**别等它变红**）/ N5 线程分组 / N6 配色与自有 UI。→**1630**。口径陷阱：`cargo test` 默认 fail-fast，不带 `--no-fail-fast` 不是真实总数）
+
+> **注**：Helix-Mind P0-P9 全部完成，P10 准备工作已完成（现状探查 + 执行计划制定），待正式启动。Helix-Tentacle 与 Helix-MCP-Learner 生态联调成功，全链路畅通：MCP-Learner 学习 → L1 静态审查 → stable/ → Tentacle 加载 → 执行工具。HelixECO-Glove P4-T1 完成（L1 静态审查 9 条规则），P4-T2（L2 dry_run）预览中。Helix-MCP-Learner P2/P3/P4-T1 完成（生态联调全链路 + post_learn 审查管道），有 1 个测试失败（非阻塞，待修复）。
+
+### 项目状态详情
+
+#### ✅ 已完成项目（6个）
+
+| 项目 | 完成内容 | 关键成果 |
+|---|---|---|
+| **Cellrix** | P0-P6 全部完成 + 候选 G 驾驶舱 + ProveTrack 证轨（TUI+Web 同构） | 327 测试，Helix 四大组件全部接入，生产就绪；候选 G：AnaphaseClient get_snapshot（一次拉全）+ CockpitWidget（模式栏/经历时间线/Ledger 审查视图）+ renderer strip + attach_cockpit 轮询 + cli --anaphase-endpoint（ADR-0009），双端协议（TUI 先行，Web=G2） |
+| **Tuck** | P1-P7 + 内容治理 v1.2 完成 | 369 测试（--all-features 零警告），PFP 第一个消费者，亚微秒级决策，fail-closed，全息审计（tuck-audit + Ed25519 批锚定），四层管控接口，内容治理（三表政策、判字符串不判含义、混淆态入链、trace_id 跨账本），身份门双通道（静态 key + JWT scope 进审计），`/v1/audit` 只读查询，网关服务装配 + L2 凭证注入（ADR-0004 D11/D12） |
+| **Anaphase** | M1 + M1.5 + 候选 E + F + D' 4/4 + G + 编排哲学 ADR-0016 + O-1 + **CI-144 传输层 ADR-0017** + **ProveTrack 正文轨迹** | 240 测试（ADR-0034 空回复防护后实测），六 stage 确定性流水线（MET/UNMET/replay 字节级一致），真实 Tentacle gRPC 连通（fixture 插件全链路），Reasoning 结构化输出协议，run_cycle ↔ pipeline 完整 merge，零硬编码收口（RunCycleConfig），会话即经历（ADR-0006），重放守卫指纹（ADR-0007），SecurityGate 接线点 + ledger blocked（ADR-0008），真实场景插件 D'-4（ADR-0009），AgentSnapshot 共享快照投影端点（ADR-0010）；**O-1（ADR-0016）**：结构化命令 `!tool` 分诊零 LLM + probe_ecosystem 生态点亮 + 感知点 + **run_cycle 单周期原语化**（7 状态 DAG 一圈返回 CycleOutcome，循环归调用方，模块 agent_loop→run_cycle 改名归位）；**CI-144 传输层（ADR-0017）**：--stdio 从 JSON-lines 切换为 CIB/1.0 MessagePack 握手 + LE u32 长度前缀帧 + Manifest 首帧 + 1s 节律 Snapshot 推流 + ActionRequest/Response（status/send_message 经真实 run_cycle，协议层业务无关经注入回调），vendored 类型 src/ci144/（serde 逐字段对齐 Cellrix），select 单任务事件循环（biased 确定性），live 实测真实二进制全链路 |
+| **BIND-19** | v2.0-alpha 核心实现（默认分支） | 142 测试（实测），33 组测试向量，14 个基准测试，PFP+SAP 解析器；main=规范正文（v1.0.0-RFC-4，tag 锚定） |
+| **Helix-Tentacle** | P5 完成 + P6 进行中（M1.5） | 153 测试，性能基准+资源限制+可观测性+STDIO/gRPC 传输层，fixture 插件（numbers/rate，SHA-256），MCP-Learner 全链路联调畅通 |
+| **phyt-DNA** | 方法论 v1.0 立项 | DNA/RNA/PLAN/GROWTH/ADR 闭环，项目自生长方法论锚点 |
+
+#### 🚧 进行中项目（3个）
+
+| 项目 | 当前阶段 | 待办内容 | 阻塞项 |
+|---|---|---|---|
+| **Helix-Mind** | ✅ P10 完成（2026-09-06） | 无（P10a-P10d 全通：触发链路 + L1 策略落盘 + Deep Dream 复盘 + ana_wakeup 预约闹钟） | 无 |
+| **HelixECO-Glove** | P4-T1 完成，P4-T2 预览 | P4-T2: L2 dry_run 沙箱预执行 + 审查规则自进化 | L1 静态审查 9 条规则已完成（10 测试全绿），macOS Glove 核心已实现 |
+| **Helix-MCP-Learner** | 核心完成 + 生态联调成功 | 升级 mcp_proxy.js 为真实 MCP 代理执行体 + 修复 1 个失败测试 | 全链路联调畅通（学习→审查→stable/→Tentacle加载→执行），真实 MCP 执行待升级 |
+
+---
+
+## 2. CI-144 协议家族状态
+> **v1.7 诚实修正（物理事实核验，2026-09-05）**：v1.6 误标 INTENT-7 / CAPABILITY-13 / INTENT-7-SECURE 为"✅ 稳定"。实测 spec 原文（各仓库对齐 commit 2026-08-28）均为 `v1.0.0-RFC-4`——spec 自述 "currently in the early draft stage"，未冻结、未启动正式社区治理。**机制已完备、可支撑落地**：扩展保留区（`x-*` 前缀、`custom_scopes`、开放枚举）在 `.github/CONTRIBUTING.md` 明确。
+
+| 协议 | 状态 | spec 版本 | 说明 |
+|---|---|---|---|
+| **PFP-xCF14** | ✅ 冻结 | v1.0 | 4 字节固定偏移物理特征头，魔数 0xCF14 |
+| **SAP-xCF14** | ✅ v1 完成 | v1.0 | 28 字节安全证明层，防重放 + 双层签名 |
+| **BIND-19** | ✅ alpha 完成（默认分支） | v2.0-alpha | 传输层集成 PFP+SAP，142 测试，33 组测试向量；规范正文在 main（tag v1.0.0-RFC-4） |
+| **INTENT-7** | 🔄 early draft | v1.0.0-RFC-4 | 语义意图协议，7 核心字段 + 最小语法层，不定义行为；动词 FETCH/WRITE_NODE/TENTACLE/FINISH/CANCEL；autonomy_level=AGENT/OPEN/SURVIVAL；HXR↔L3 对齐 |
+| **CAPABILITY-13** | 🔄 early draft | v1.0.0-RFC-4 | 能力授权协议；HITL 挑战-响应队列；dynamic capability_mapping.toml（standard_scopes + custom_scopes + Ed25519） |
+| **INTENT-7-SECURE** | 🔄 early draft | v1.0.0-RFC-4 | 安全加密协议；UDS SO_PEERCRED（Linux）/ LOCAL_PEERCRED（macOS）物理身份验证；mTLS 1.3 可选 |
+
+**规范权威来源**：`commonintents/{协议名}/spec/`
+**规范发布窗口**：`commonintents/PFP-xCF14/`、`commonintents/SAP-xCF14/`
+
+---
+
+## 3. 当前优先级（2026-09-05）
+
+> ### ⛔ 冻结生效（2026-10-09，M0）—— 本列表四项已「停」
+>
+> 生态收敛执行计划 M0 已落地，**本列表的下列方向即刻停止**（具名定义见
+> [`生态收敛执行计划_M0-M7.md`](./生态收敛执行计划_M0-M7.md) §三，中心命题见
+> [`收敛_会话DAG是中心.md`](./收敛_会话DAG是中心.md)）：
+>
+> | # | 冻结项 | 状态 |
+> |---|---|---|
+> | F1 | UI 重建（**只**冻结重建，不是所有 UI 工作） | ⛔ 停 |
+> | F2 | FlowModus 接入关键路径 | ⛔ 停 |
+> | F3 | 「高度复用 CI-144 实现极速调度」 | 🗑 从目标清单删除 |
+> | F4 | FlowModus 清理 / 重构 / 代理面 | ⛔ 挂起 |
+>
+> **执行序以该计划为准**（M2 先于 M5；M7 UI 为条件触发，无主动启动权）。
+> 本节的旧优先级排序**未被删除**，作为历史留痕；与之冲突时**以收敛计划为准**。
+
+> **前置条件已满足**：CI-144 协议家族机制完备（PFP/SAP 冻结；INTENT-7/CAPABILITY-13/INTENT-7-SECURE 为 v1.0.0-RFC-4 draft，扩展保留区已明确，不阻塞落地），Anaphase 候选 E + 候选 F 完成，生态联调成功（MCP-Learner → Tentacle 全链路畅通），Helix-Mind P10 准备工作完成。
+
+> **2026-09-15 快照（当前开放项，详见根目录 HANDOFF.md §4）**：
+> ① **ADR-0018 T5 裁决**（关闭 T5 vs 跨仓扩展 SSE 协议）；② **T7 已完成**（A/B 实测：移走事件族资产 = 3 suites RED → 恢复 = 3 suites GREEN，验收网非空转实锤）；③ **K11 裁决**（词表补 metering 事件——推荐，生产者已在发——vs 移除 Cellrix 期待）；④ **K13**（D3 违约：装配层静默丢弃未知 kind 无诊断计数，需与 K11 一并落）；⑤ **身份绑定**（Anaphase 发起 1对1，方向已定未实施）；⑥ **helix-mind P10 mock 优先验证**；⑦ **结晶闭环实施**（Unmet≥2 → 判据候选 → Tuck hard 规则）；⑧ **生态加固**（项目生命周期管理 / tuck 小白引导）。跨仓缺陷唯一登记处 = 同目录 `KNOWN_ISSUES.md`（K12 已结案转 F13，见该表 §2）。
+
+### 第一优先级（立即启动，并行）
+1. **Anaphase 候选 D'** — M1.5 深化（seen_entropy_bloom 重放守卫 ✅ / main.rs pipeline 接线 ✅ / **D'-2 Tuck 深度集成 ✅（SecurityGate 接线点，ADR-0008，真实 TuckSecurityGate 连通验证）** / D'-4 真实场景插件待 MCP-Learner）
+1.5. **Anaphase CI-144 传输层（✅ 完成 2026-09-06，ADR-0017）** — 驾驶舱闭环咽喉：--stdio 切换 CIB/1.0 MessagePack（握手 + LE u32 帧 + Manifest 首帧 + 1s 快照推流 + Action 响应），vendored 类型 src/ci144/，160 tests 全绿（+6）+ live 实测真实二进制
+2. **Anaphase 候选 G（✅ 完成 2026-09-06）** — Anaphase 驾驶舱（正名：监控意识层，Helix-Mind 灵魂本体不驾驶）：G-T2 AgentSnapshot 端点（ADR-0010）+ G-T3..T5 Cellrix 消费/渲染/live（ADR-0009）+ G-T6 文档；**候选 G2（待启动）**：Web 面板（消费同一 snapshot 协议，白盒可视化，低摩擦）
+3. **Helix-Mind P10 完成（含 P10d）** — 认知工艺生态深度集成全通（P10a 触发 + P10b L1 策略落盘 + P10c Deep Dream + P10d ana_wakeup 预约闹钟）；后续候选：Anaphase 侧唤醒发起接线（config 默认 8 点 + 交互间隙调 ana_wakeup）
+
+### 第二优先级（可并行启动）
+4. **真实 MCP 执行升级** — 将 mcp_proxy.js 从占位脚本升级为真实 MCP 代理执行体
+5. **HelixECO-Glove P4-T2** — 审查体系 L2（dry_run 沙箱预执行）
+6. **Tuck 管控接线** — CAPABILITY-13 层模式权限映射（三模式令牌：驾驶无 memory scopes / 伙伴 x-fetch+x-write / 生存 x-enter-dream）
+
+### 第三优先级（核心闭环后）
+7. **Anaphase 下一阶段裁决** — 候选 A（Tentacle Rust 重构）
+8. **HelixECO-Glove-macOS 完善** — 本地系统适配（macOS 生态手套，更多原生工具）
+9. **Cellrix 物理沙盒 PoC** — 验证 CPPC v1.1.0 愿景可行性（类 Unity 物理引擎）
+
+---
+
+## 3.5 生态联调成果（2026-08-31 里程碑）
+
+### 全链路验证通过
+
+```
+MCP-Learner 学习 mock MCP Server → 4 个工具
+    ↓
+L1 静态审查（9 条规则）→ 0 warning, 0 error
+    ↓
+stable/ 目录（4 个 .manifest.json + mcp_proxy.js）
+    ↓
+Tentacle 扫描 + SHA-256 完整性校验 → 4 个工具注册
+    ↓
+ProcessTool 实例化 → 4 个工具可用
+    ↓
+tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
+```
+
+### 联调中修复的 6 个问题
+
+| # | 问题 | 修复 | 仓库 |
+|---|---|---|---|
+| 1 | MCP 工具名不符合点分命名空间规范 | 新增 `extract_tools_with_namespace`，格式 `<server>.<name>` | MCP-Learner |
+| 2 | Manifest 文件后缀不匹配（.json vs .manifest.json） | post_learn 输出改为 `.manifest.json` 后缀 | MCP-Learner |
+| 3 | MCP 代理执行体 mcp_proxy.js 不存在 | post_learn 自动在所有状态目录创建占位执行体 | MCP-Learner |
+| 4 | 完整性哈希不匹配（全零占位 vs 真实 SHA-256） | 计算 mcp_proxy.js 真实哈希并更新所有 manifest | MCP-Learner |
+| 5 | tentacle-benchmarks 编译错误（缺少 platform_support） | 添加 `platform_support: Default::default()` | Tentacle |
+| 6 | 插件懒加载未实现（只注册 Manifest，没实例化 Tool） | 添加 ProcessTool 临时实现，扫描后自动实例化 | Tentacle |
+
+### 提交记录
+
+- **MCP-Learner**: `d21b897`（代码修复）+ `500a461`（文档记录）
+- **Tentacle**: `79270c5`（插件加载与执行链路修复）
+
+---
+
+## 4. Helix 生态架构图
+
+```
+                    ┌─────────────────────────────────────────┐
+                    │           Cellrix (展示层)               │
+                    │    空间语义终端 UI / 物理沙盒            │
+                    └──────────────────┬──────────────────────┘
+                                       │ CAP 协议 (Mutations/Actions)
+                    ┌──────────────────▼──────────────────────┐
+                    │        Anaphase (编排中枢 / 执行体)       │
+                    │  Think-Act-Observe / Q0-Q3 任务队列     │
+                    └──────┬───────────────────┬───────────────┘
+                           │ gRPC (UDS)         │ 工具调用
+              ┌────────────▼─────────┐  ┌──────▼──────────────┐
+              │   Helix-Mind (记忆)   │  │  Tentacle (工具执行) │
+              │  潜意识核心 / 认知工艺 │  │  插件系统 / 调用链    │
+              └────────────┬─────────┘  └──────┬──────────────┘
+                           │                      │
+                    ┌──────▼──────────────────────▼───────┐
+                    │         Tuck (安全闸门 / 免疫系统)     │
+                    │   PFP 4字节决策 / fail-closed / 审计  │
+                    └──────────────────┬─────────────────────┘
+                                       │
+                    ┌──────────────────▼─────────────────────┐
+                    │      BIND-19 / CI-144 协议家族         │
+                    │  PFP-xCF14 + SAP-xCF14 + INTENT-7     │
+                    └────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                     生态适配层（外部世界接入）                      │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────────────────┐        ┌──────────────────────────┐   │
+│  │  HelixECO-Glove       │        │  Helix-MCP-Learner       │   │
+│  │  原生生态手套          │        │  MCP 消化器               │   │
+│  │  (macOS/Linux/鸿蒙)   │        │  (MCP Server → CI-144)   │   │
+│  │  手写原生适配          │        │  自动学习+提炼+重封装      │   │
+│  └──────────┬───────────┘        └───────────┬──────────────┘   │
+│             │ 静态链接（极致节能）              │ 动态加载（热插拔）  │
+│             └──────────────┬───────────────────┘                  │
+│                            ▼                                        │
+│                   Tentacle 插件体系（统一执行层）                    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. 快速入口（各项目文档索引）
+
+### Cellrix
+- [PLAN.md](../../Cellrix/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../Cellrix/docs/GROWTH.md) — 生长记录
+- [ADR 目录](../../Cellrix/docs/decisions/) — 架构决策记录
+- [spec/grids.md](../../Cellrix/docs/spec/grids.md) — 网格分卷（ADR-0021 T0：GridDefinition 投影契约）
+
+### Tuck
+- [PLAN.md](../../Tuck/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../Tuck/docs/GROWTH.md) — 生长记录
+- [README.md](../../Tuck/README.md) — 项目说明
+
+### Anaphase
+- [PLAN.md](../../anaphase-helix/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../anaphase-helix/docs/GROWTH.md) — 生长记录
+
+### Helix-Mind
+- [PLAN.md](../PLAN.md) — 开发导航牌
+- [GROWTH.md](../GROWTH.md) — 生长记录
+- [DNA.md](../DNA.md) — 宪法（7 公理）
+- [RNA.md](../RNA.md) — 加载协议
+
+### Helix-Tentacle
+- [PLAN.md](../../helix-tentacle/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../helix-tentacle/docs/GROWTH.md) — 生长记录
+
+### HelixECO-Glove
+- [README.md](../../HelixECO-Glove/README.md) — 项目说明
+- [PLAN.md](../../HelixECO-Glove/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../HelixECO-Glove/docs/GROWTH.md) — 生长记录
+- [ADR 目录](../../HelixECO-Glove/docs/decisions/) — 架构决策记录
+
+### Helix-MCP-Learner
+- [README.md](../../Helix-MCP-Learner/README.md) — 项目说明
+- [PLAN.md](../../Helix-MCP-Learner/docs/PLAN.md) — 开发导航牌
+- [GROWTH.md](../../Helix-MCP-Learner/docs/GROWTH.md) — 生长记录
+- [ADR 目录](../../Helix-MCP-Learner/docs/decisions/) — 架构决策记录
+
+### BIND-19
+- [README.md](../../BIND-19/README.md) — 项目说明
+- [规范目录](../../BIND-19/docs/spec/) — PFP/SAP 规范权威来源
+
+### FlowModus
+- [README.md](../../FlowModus/README.md) — 项目说明（rs 重构段含 CLI 用法）
+- [VISION.md](../../FlowModus/docs/VISION.md) — 度量衡宣言（v2.0-rs）
+- [PLAN.md](../../FlowModus/docs/PLAN.md) — 开发导航牌（R-0..R-6 全 ✅）
+- [ADR-0100](../../FlowModus/docs/decisions/ADR-0100-rs-refactor.md) — rs 重构决策记录
+- [judge-points contract](../../FlowModus/docs/engineering-manual/judge-points-contract.md) — 判断点契约（v1.1，Anaphase 消费方已就绪 O-6）
+
+### phyt-DNA
+- [README.md](../../phyt-DNA/README.md) — 方法论说明
+- [DNA.md](../../phyt-DNA/docs/DNA.md) — 方法论宪法
+
+---
+
+## 6. 新对话启动 SOP（标准操作流程）
+
+每次新对话开始时，按以下流程恢复上下文：
+
+1. **读取本文件** — 了解生态全局状态和当前优先级
+2. **定位目标项目** — 进入对应项目目录
+3. **读取项目 PLAN.md** — 了解当前阶段和待办
+4. **读取项目 GROWTH.md** — 了解最近 3 次健康快照
+5. **检查 git 状态** — 确认分支和未提交变更
+6. **开始工作** — 在固定目录下操作，不新建日期目录
+
+---
+
+## 7. 方法论闭环检查清单
+
+每次阶段完成后，必须完成以下闭环动作：
+
+- [ ] **PLAN.md 更新** — 当前阶段标记完成，切换到下一阶段
+- [ ] **GROWTH.md 追加** — 记录本次健康快照（超过 3 条时归档最旧的）
+- [ ] **ADR 创建** — 重要架构决策记录到 `docs/decisions/ADR-XXXX-*.md`（目录名**与仓库实际一致**；曾被误写为 `docs/adr/`）
+- [ ] **README 更新** — 项目状态、测试数、完成阶段同步更新
+- [ ] **本文件更新** — 生态全局状态同步更新
+- [ ] **提交信息关联 ADR** — Commit Message 标注关联的 ADR 编号
+
+---
+
+## 8. 变更日志
+
+| 版本 | 日期 | 变更内容 |
+|---|---|---|
+| **v1.99** | **2026-09-17** | **Helix-Mind SA-Core 参数派生（ADR-0042 T1：D0 + D1 + D2 + D3b）—— 一个「绝对闸门把扩散锁死在 0 跳」的 P0，以及我自己的两处推导更正** — ①**P0 成立（第二轮外部审查的核心断言）**：绝对 `weight_threshold = 0.8` **高于第一跳激活上界 `α`**（skilled 0.5 / anchor 0.7）。单种子、单位权边时第 1 跳激活**恰好等于 α**，`< 0.8` ⇒ **非种子节点在第 1 轮全被清零** ⇒ 扩散退化成「只返回种子」= 关键词命中；`imagination`（α=0.9）能多跳只是因为另传了一个 ~0.001 的阈值绕开了这道门。**运行时确证链**：`.helix/mind/config.toml` **没有 `[retrieval]` 段** ⇒ 落 `RetrievalConfig::default()` ⇒ `default_weight_threshold() = 0.8`；Stage 1 传的就是它（`retrieval/src/lib.rs:297`）。**自证据**：`GROWTH.md:8` 记着「孤立 seed **默认 0.8 阈值必返回**」—— 有人撞见过会清零，于是**只给 seed 打了豁免补丁，非 seed 扩散留死**；0.8 不是标定值，是无人审查的默认值。②**该审查的上界推导是错的（不采信其理由，只采信其实测）**：它写「非 seed 能量上限 = `α × 总能量 ≤ 0.5`」，但 `a_0[flat_idx] = 1.0` 是**每个种子各注入 1.0**，k 个种子注入总量是 **k** 而非 1，故上限是 **α·k**，`α·k > 0.8` 在 k ≥ 2 且共靶时**可以越线**。按错误上界标定阈值会标错。③**它漏掉的决定性事实**：真实库 **`edges` 0 行**（545 nodes / 0 edges，本轮实测）。零边时 `sum_abs == 0` **根本不传播** ⇒ 「只返回种子」有**两个互相独立的原因**（没边 + 绝对闸门）⇒ 它建议的「改 1 个配置数字（0.8→0.1）」**现在改了看不见任何效果**；反过来 **T5 建边一落地，该闸门立刻成为头号缺陷**。⇒ **唯一能看见并锁住此 bug 的仪器是合成图**。④**D0 公式（写测试时才定对）**：`θ = τ · max_j \|a_j\|`，即相对**当轮峰值**激活。`τ = 0.02`。**为什么锚峰值而不是锚总质量**：两者都能去掉绝对刻度，但总质量随种子数**线性增长**、峰值不变，锚总质量会让多种子查询比单种子查询**探索得更浅**（同一个 τ 对不同查询不等价）—— 这一点是 `gate_depth_is_invariant_in_seed_count` 在「锚总质量」的变异下**变红**时才暴露的。⑤**D1（α 单一来源）**：`α = clamp(base_α(mode) + 0.3·heliotropism, 0.2, 0.95)`，`base_α` = Skilled 0.5 / Anchor 0.7 / Imagination 0.9（**既有值一个都没改**）。**闭环**：`0.5 ± 0.3` 恰好是 README 公告的 **0.8 / 0.2** ⇒ 那两个数**没有被推翻，而是被收编为 skilled 的特例**；`h = 0` 处精确复原三模式基准 ⇒ **行为中性**。⑥**D2（更正我自己的错）**：上一版 ADR 写「迭代次数与跳数**是两个不同的量**，应分离」—— **这是错的**，同步幂迭代下**一次迭代就是一跳**，同量纲；造两个数值相同的旋钮属于**假精度**。故**不新增** `max_iterations`，而是补**相对 ℓ1 收敛判据**（`Σ\|a₊−a\| < ε·Σ\|a\|`，ε=1e-6）并把既有 `max_hops` 正名为**算力预算**；超出即 `tracing::debug!` **显式记录**的截断。**意外收获**：D0 之前 `max_hops` 是**被架空的**（调 3 与调 12 结果相同），D0 之后它成为真正生效的约束 —— 「`max_hops` 无效」这个症状由 D0 引起，随 D0 消失。⑦**D3b（更正我自己的处置方式）**：`retrieval/src/mode.rs` 有一套与 `topology.rs` **数值矛盾**（Skilled `0.9`、Imagination `0.3`）且**零调用者**的参数副本 —— 收口方式取**删除**而非复活，模式参数表移入 `core/sa_core.rs::SaCoreParams::for_mode`（一个概念只能有一处定义，DNA 原则 11）。⑧**前沿依据**：Andersen–Chung–Lang 局部 PPR 用 `r(v) > ε·d(v)` 判停（阈值相对**度数**），Thorup 讲义同一推式 `r(w) += (1−α)·r(v)/d(v)`；**本仓已抄行归一化那一半（等价除以度数），却把阈值留在绝对刻度上 —— 两半只抄了一半**。⑨**代码违反自己的 spec 两处**：`docs/spec/sa-core.md:65`（α「由 `EnergyContext.heliotropism` 动态决定」）与 `:175`（`weight_threshold = g(heliotropism)`）⇒ D0/D1 **不是新增范围，是把实现追平到 spec**。⑩**验收（合成图，因真实库 edges=0 无法验收）**：新增 `crates/helix-mind-storage/tests/sa_core_depth_test.rs` **10 条** + `core/sa_core.rs` 单元 **6 条**；**变异测试 4/4 全杀** —— ①闸门退回绝对 0.8 → 3 条红；②锚总质量 → 尺度不变性红；③删种子豁免 → 种子保底红；④α 不再由 heliotropism 派生 → 乐观/保守深度红。**变异测试反过来抓出我一条空转断言**：④最初**存活**，因原断言写成 `>=`，在「heliotropism 完全失效」时两边相等也通过；收紧为严格不等后被杀。⑪**测试数**：Helix-Mind **123 → 139 → 143**（`cargo test --workspace --no-fail-fast` 实测 139 passed / 0 failed / 0 ignored）；**⚠️ 并更正一处陈旧误差**：本文件 §1 表原记 Helix-Mind **118**，本轮动手**之前**实测已是 **123**（此前从未记录），故 118 → 123 属补记、123 → 139 属本轮增量；全生态 **1577 → 1620**（记录而非重写历史，按 v1.90 先例）。⑫**同时更正了它漏报但更烂的一处**：`soft_edge_min_weight` / `dead_end_penalty_factor` / `tentative_edge_weight` 三个配置字段在 `helix-mind-storage` 里**引用次数为 0** —— 「软边最低权重」是写在文档里、**从未实现**的。⑬**未做（刻意）**：D4 打开 `min_k_core`（三处仍传 `0`，避免与 D0 叠两个改变召回的因素）、T4 抑制门控（D3）、**T5 建边**（跨三仓 + proto 补 `parent_ids`，须另立 ADR，**它是 T1 在真实库上产生可见效果的前置条件**）。 |
+| **v1.98** | **2026-09-17** | **生态边界裁定 + Cellrix 经历列表静默截断修复** — ①**生态边界（人类裁定）**：新增 §0.1 —— **只有 `anaphase-helix` 与 `helix-mind` 是生态专属**（只为 Helix 生态服务，不为外部生态做兼容设计）；**其余全部可具外部生态兼容性**（Cellrix / Tuck / helix-tentacle / FlowModus / HelixECO-Glove / Helix-MCP-Learner / BIND-19 / lodestone-* / phyt-DNA 等）。裁决规则 **`Helix 生态优先`**：外部兼容不得以牺牲生态内需求为代价，冲突时生态内需求胜出。②**Cellrix 经历列表静默截断**（属人类报的"数据对不上"）：`/api/sessions` 代理把 `limit=50` **写死**，浏览器的值被接受后丢弃（`script.html` 请求 500）；而 `loadWindow` 要靠**整份列表**走到链根 ⇒ 祖先早于最新 50 段的链**静默变短**。实测：磁盘 **130** 段、面板只显示 **50**（80 段不可见）；最深血缘链真实 **10 段/80 事件**、面板只解出 **3 段**。根因在代理侧 —— Anaphase 的 `/v1/sessions` 是 `unwrap_or(50)` 且**传多少认多少**。修：转发调用方 limit（默认 50 对齐服务端、上限 500 常量化），并把解析抽为**纯函数** `sessions_limit()` 以便钉住契约。**实测修复后**：`?limit=10→10`、`?limit=200/500→130`、面板可见 **50→130**、最深链 **3→10 段**。**⚠️ 计数更正（记录而非重写历史）**：本条对应的 Cellrix 提交信息里写了 "352 passed"，`cargo test --no-fail-fast` 实测为 **351 passed / 0 failed / 4 ignored** —— 我多数了一条。按 v1.90 先例，不改写提交，在此留档并已修正 §1 表与总数。 |
+| **v1.97** | **2026-09-17** | **工具链闭环 + 三处面板缺陷 + 周期身份不唯一定位** — ①**Anaphase 工具链**：`Reflection` 的 finalize 守卫只判"非空"，把模型回的**第二个工具计划**当成了答复——实测 50 段经历中 **9 条**如此、**全部是工具轮**（8×`web_search`、1×`calc`），而判据 `answer.delivered` 检查的是**工具返回值**（自注 "delivery confirmed at tool edge"），不是"用户是否拿到答案"，故仍判 **Met**、`turn/end.success=true`。已把 `Reasoning` 侧既有的 **P0-D-1**（"never leak the raw JSON as a reply"）延伸到 finalize，并新增 `tool_followup_rounds`（协议默认 1，与 `empty_reply_retries` 同形）做**有界重问**（明示"工具已执行完、不得再调、只用已有结果作答"），仍不成则落回**证据回显**。**拒绝**了"执行模型要的细化查询"那一版：`trace_id={job_id}#{index}`（index 局部于计划）且 `record_evidence` 纯追加不去重 ⇒ 同 job_id 下第二次执行会**同时撞 evidence_id 与 trace_id**，而"一周期一 trace"是硬契约（ADR-0019/0026）；偏移下标要改 pipeline 签名 ⇒ 另立 ADR。**端到端实证**（真实上游经 Tuck）：事件流 `assistant/attempt(计划) → tool/call → tool/result(ok,846ms) → assistant/usage(prompt=853) → assistant/reply(自然语言答案)`。**变异测试**：守卫退回"只看非空" ⇒ 新增 2 条**双双变红**；还原 ⇒ 双双转绿。②**Cellrix FlowModus 接线**：它一直在跑且健康，是**一键路径拿不到 URL**——`flowmodus_url` 无默认值、`up` 只在显式传 flag 时传，而 `start-panel.sh` 传了 ⇒ 测试面板有数据、**人真正用的那个恒空**。修：给协议默认（`tuck_endpoint` 故意不给——它是安全闸门不是只读展示源）+ `up` 按依赖序启停并**始终**接线（须先 `cd flowmodus-rs`：它按**相对路径**解析 registry，从工作区根启动报空池，`start-panel.sh` 正是为此 chdir）+ 生态探针补 FlowModus（此前它连"生态点亮"里都没有）。实测 `/api/flows` 由 `null` 变真实供应商池、`/api/ecosystem` 六组件全 `ok`。③**Cellrix 经历卡片**：`chainJobIds` 从根**广度优先走整棵子树** ⇒ 后起分支全落进同一窗口（实测三棵根各含 **10 段子树**、两个父节点各 2 个子）；`sendChat` **无条件采纳回复的 job_id** ⇒ 全新对话悄悄变成上一周期的子节点。修：窗口改为**血缘路径**（祖先仍含、不继承"尚未拥有的未来"）+ 链只在**人显式续接**时延续。④**周期身份不唯一（顺序错乱的真因）**：`job_id` 由输入派生 ⇒ 同问题重问同 id ⇒ `session_events` 用 `truncate` 覆写 ⇒ **别的周期仍以被覆写的 id 为父** ⇒ 父的内容变成另一次更晚的执行。铁证：`run-9e901b965a772d51` `first_ts=17:01:07` 而其子 `run-32c4be74a996a40d` 为 `06:19:10`（**父比子晚 11 小时**）；51 条血缘路径中 **5 条**时间戳非单调；129 个事件文件中 **8 个含多组 `turn/start`**（最多 7 组、最远相隔 6 天），**全在 09-07~09-13、09-15 后为 0**（`truncate` 防住多组，防不住覆写被引用的父）。⇒ **`anaphase:ADR-0041` 周期身份唯一化（Proposed）**：存储键必须唯一、冲突时后缀分配（旧键不动、无时钟、无迁移）、**唯一键即 trace id**。⑤**测试数**：Cellrix **341→350**、Anaphase **260→264**，全生态 **1563→1576**。⑥**闭环**：两仓 GROWTH 各归档最旧一条（**原文逐字节校验保全**）、PLAN 更新、ADR 索引补 0041。 |
+| **v1.96** | **2026-09-17** | **Cellrix ADR-0021「Web 面板的协议投影」T0 + T1a —— 根因重定位 + 命名纠错 + 两个既有缺陷修复** — ①**根因重定位（人类指路"了解生态血液"后自查所得）**：Cellrix 协议早已定义 `GridDefinition`/`GridSlot`（`protocol/src/manifest.rs:36-59`）、`SemanticNode.slot_binding`（`snapshot.rs:38`）、`NodeType::Unknown`（`snapshot.rs:45-54`，`#[serde(other)]` 宽容降级）；**使用者实测** `protocol`（定义）/ `layout`（纯数学引擎）/ `mock-agent`（夹具）✅，而 **`web/src` 零使用**。TUI 走「协议网格 → 布局引擎 → `ui`」即**碳硅同构**（`Cellrix:DNA` 原则 3：人类看到的视觉布局 = AI 看到的语义拓扑图，不允许"人类可见但 AI 不可寻址"的元素）；**`cellrix-web` 整体绕开协议模型** —— **此即"界面凭凑式"的可证根因**，不是"缺一套 slot 系统"。②**T0**：`docs/spec/grids.md` v2（槽位四形态 + 四份 + 槽位名清册 15 条含源码行号证据 + 起搏图格式 + **扩展保留区 X1–X3**（对齐 `PA-2`）+ **冻结/演进面**（对齐 PFP/SAP）+ 装配期校验 **V1–V9**）。③**T1a（纯重构，不碰 `base.html`）**：23 次链式 `.replace()` + 24 个 `include_str!` 收敛为 `web/assets/boot.json` **起搏图**（顺序/映射/派生皆为数据）+ `web/src/boot.rs` 机制；导入 serde/serde_json（**已在 workspace lock，无新下载**）。**三重验证通过**：差分测试 `boot_output_is_byte_identical_to_the_legacy_mechanism`（预言机是**旧序列本身**，非冻结金标——金标会绑到资产**内容**，差分只对**机制**回归敏感）／HTTP 层新二进制页面 vs 改动前 **逐字节相同（244858 B，`cmp` 无差异）**／`verify_live.py` **59-0** + `coupling_audit.py` **0 unresolved** + JS 回归网 **8 套全绿**；`main.rs` 279 行 / `boot.rs` 338 行（400 红线内）；Cellrix **341 → 349**。④**一个会静默炸掉面板的陷阱被测试拦下**：`script.html` **内含 `__REFRESH__`**，老代码靠**链式替换作用于已插入内容**才替换得到它 —— 单遍模板替换会把字面量 `__REFRESH__` 留在页面上。⇒ 派生值必须在全部皮片展开**之后**对整体应用一次；由 `derived_applies_after_its_host_piece` 守卫（并断言 `script.html` 确实含该占位符，前提消失时要求改换守卫对象而非静默通过）。⑤**命名纠错（v1 的五处错误，留档以免重犯）**：ADR v1 自造「格／格谱」被识别为**重复发明协议既有类型**（违「极致复用：不重新发明」），**退役并复用 `GridSlot`（槽位）/ `GridDefinition`（网格）**；E1 论证根基曾立在外部项目上（违 DNA「设计理由立在自己的原则与血统上」）；E3 曾以"外部项目中文用槽位"为由否决 `槽位`，而它是 **Cellrix 自己的协议术语** —— 调查不全即下判决；E4/E5 漏掉家族招牌机制（扩展保留区、冻结/演进分层）。**v2 推倒重来**，论证改立于 CI-144 身份：Cellrix = **`INTENT-7` §15 法定参考实现** + **`CAPABILITY-13` PC-2**（SemanticSnapshot + `view_hash`，"what you see is what you sign"）的参考实现 = **可视化共识层**；故"让 Web 面板成为协议投影"不是借鉴谁，是自身身份的必然。⑥**活文档政策执行**：ADR-0021 去除外部项目名号、只写实践类别，并自证"为何不留名号"（保留"借鉴成熟实践"事实；参考 ≠ 引用）；两份新文档加**引用约定**（不带仓名的 `ADR-XXXX` 一律指 `Cellrix:ADR-XXXX`，因编号与他仓撞车）。K10 核查：新文档**未引用任何他仓 ADR**，无违规。⑦**修两个既有缺陷**（人类批准）：**(a)** `docs/archive/growth/010-archive-live-llm-display.md` —— **文件名与内部 `#` 标题双双指向错误条目**（实际条目为"证轨检查器入口修复 + FlowModus 接线补齐"；体例要求归档名 = 被归档条目标题，007/008/009/011 均相符，唯 010 不符；根因是当时有两条 `[2026-09-14]` 条目，归档者写了另一条的标题）⇒ 改名 `010-archive-provetrack-inspector-flowmodus.md` + 修内部标题，三处现已一致；**(b)** 本文件 §5 / §7 将 Cellrix ADR 目录写作 `docs/adr/`，**该目录不存在**（实为 `docs/decisions/`）⇒ 两处失效路径已修，§5 并补 `spec/grids.md` 入口。⑧**闭环同步**：Cellrix `PLAN.md` v1.3（当前阶段 + 下一阶段预览 + 阶段总览，按铁律 1 移出已完成细节）、`GROWTH.md` v1.4（新增本快照，最旧一条按铁律归档 `012-archive-live-llm-display.md`，**原文逐字节校验保全**）、ADR-0021 v2、`spec/grids.md` v2、Cellrix README。**T1b–T5 待做**（T1b 前置：`web/tests/layout_test.js:127-129` 的 4a 几何断言 —— 原文"Written BEFORE the layout work, so they must be **RED** now" —— 须先转绿，因人类几何改动仍在飞）。**全生态测试总数 1563 → 1571**；Cellrix **341 → 349** |
+| **v1.95** | **2026-09-15** | **Tuck 准入闸门 + Cellrix 事件族装配层 + 缺陷登记表全量同步** — ①**Tuck ADR-0005 H-1..H-9 全部交付**：白/黑名单同表 `effect`（未装表 = 闸门不参与，空表 = 拒绝一切，`None` ≠ 空表）、`llm:egress` / `llm:invoke:<supplier>` / `llm:model:<model>` 三件套能力维度、审计扩字段、通知 sink trait（只定义不内置实现）、观察模式、语料热加载（D9）、配置样例；**`gov.rs` 解耦 1154 → 388 行**（state / identity / ledger / audit_api / router 五档 + 测试移出），全 crate 14 模块无一超 400 红线；测试 363 → **367**（`--features gateway`，本轮物理复核 9+7+307+29+4+7+4 = **367 passed / 0 failed** 确认）；修一个真回归：`access_test.rs` 缺 feature gate 致 `--features gateway` 无法编译（0 → 367），此前 `--all-features` 掩盖。②**Cellrix 事件族装配层 ADR-0018 T0/T1/T2/T3/T4/T6 完成**：事件族契约（11 类型 + `data` 形状 + 校验）、装配层骨架（`pending` 直到 `turn/start`，有界 TTL + seq 排序释放）、共享原语（`upsert` / `deriveCoordinates()`）、证轨接入（T3）、经历侧栏接入（T4，`loadPeriodToChat` 事件窗口改由装配层接收：校验 / seq 去重 / seq 排序，渲染仍是自己的——D2 得到验证：两个 target 共享 tape 不共享 display model）、**11 条验收条 → 29 断言 + `run_all.js`**（含纯度 / 切分不变性 / 分块不变性 / digest 可观测）；**T5 阻塞**：`anaphase` 的 `/v1/chat` SSE 推 token 增量（`{delta,think}` / `{done,reply,model}`），**不含 `type`/`seq`/`time`，不是事件族**；D3 禁客户端自造 seq ⇒ T5 无法在前端实现，需裁决「关闭 T5」（实时流只做显示，历史回放已由 T4 覆盖）或「跨仓扩展 SSE 协议」（需 `anaphase:ADR-0026` 同步修订）；T7（A/B：旧二进制预期失败 → rebuild 重跑）**已完成**（2026-09-15 实测：移走 `event_family.js`/`assembly.js` 跑 `run_all.js` = **3 suites RED** exit 1 → 恢复资产 = **3 suites GREEN** exit 0，验收网非空转实锤）。③**K10 结案**：既非「从未建」也非「被删」，是跨仓引用漏仓名（实指 `Cellrix:ADR-0014`，一直存在且 Accepted），引用已补仓名。④**K11 前提修正 + 新登记 K13**：K11 原记录「真实事件流从未出现」**不成立** —— `assistant/usage` 自 09-14 17:19 起就在真实流中（7 个 events 文件含之），**是词表落后于实现**；危险面坐实：装配层 `accept()` 对未知 kind 静默丢弃且无诊断计数（**D3 违约**，登记 **K13**）；K12 结案：证轨视图 e2e「4 条失败」**根因 = 未传 `<job_id>`**（标准用法要求该参数），无 job_id 时行点击块被整体跳过 → `31/4` 精确复现；带真实 job_id 重跑 `run-7efbf0f8` = **50/0 全绿**，非视图缺陷；测试已改进（缺参时失败信息带用法提示）。⑤**Anaphase ADR-0039 判断点单一来源**（规则归 FlowModus，部分取代 ADR-0024 失败回退一条；`judge.rs` / `adapters/mind.rs` / `run_cycle.rs` 三处本地重算收敛）+ **ADR-0040 生态灯四态**（绿/黄/红/灰语义落地 + 生态事实单一来源 + 工具索引式披露）。⑥**缺陷登记表 F6–F13 已修**：F6 能量降级阈值去硬编码（阈值入 `RetrievalConfig` + `energy_degraded()` 具名纯函数，测试 14→17，变异测试证明非空转）／F7 ADR 索引重建（36 份，脚本提取不手抄）／F8 FlowModus GROWTH 归档路径对齐生态范式／F9 FlowModus PLAN 里程碑状态以 GROWTH 为准／F10 helix-mind GROWTH 归档／F11 ADR-0014 跨仓引用补仓名／**F12 = K1 注释修正**（value_grade 注释指向 layer3.rs:374 真实回填）／**F13 = K12 结案**（缺参误报，50/0 验证）。⑦**§1 表修正**：Anaphase 245→**260**、Tuck 363→**367**、全生态 1544→**1563**（v1.94 只写了变更日志、§1 表未同步——K5 症状的一个实例，已一并修正） |
+| **v1.94** | **2026-09-14** | **证轨资产语言统一（ADR-0017）+ 测试临时目录去竞态 + 活文档外部名清理** — ①**ADR-0017**：Cellrix 证轨五资产（`prove_track.css` / `.html` / `.data.js` / `.view.js` / `.js`）**源码与界面文案一律英文**，消除「同一屏中英混排」——ADR-0038 只把 `data.js` 转了英文，导致事件表状态列渲染英文 `success`、紧邻的统计栏标签却是「缓存命中」，同一界面的两个投影用两套词汇；范围**不含** `base.html` 外壳与 `session.html` / `script.html` / `flows.html` 其他视图（产品既定中文语言，另行裁决）；方向是**向数据层对齐、不回退数据层**；方法为逐条「原串→新串」精确替换 + **每对落盘前断言恰好命中一次**（拒绝 CJK 正则批量替换，会误伤代码与既有英文注释里的中文标点且无法逐条证伪）；验证：五资产 CJK 行计数 **0**、`node --check` 三 JS 通过、Cellrix **341 passed / 0 failed / 4 ignored**（`main.rs` 的 `assert!(html.contains("证轨 ProveTrack"))` 仍成立，该串由 `base.html` 提供）、diff 增删对称；②**Anaphase 测试临时目录去竞态**：`mod tests` 与 `mod query_tests` 各自硬编码 `std::env::temp_dir()` 子目录，`anaphase-session-events-test-3` / `-4` 被**两个模块共用** → 并行下互相删除对方文件（`query_tests::lists_periods_newest_first` 偶发 `No such file or directory`，单跑必过、全量偶败，是「绿套件上的不可信信号」）；文件内**本已有**唯一目录助手（`mod tests::tmp_dir`），缺陷是另外 6 处调用点没用它 → 提为共享 `#[cfg(test)] mod test_support`（**pid + 进程内序号**，无需时钟）并让全部调用点走它；生产代码零改动；验证：`cargo test --lib` 并行 **5/5 全绿**、`cargo test --no-fail-fast` = **257 passed / 0 failed / 9 ignored** 连跑 **3/3 全绿**（此前偶发 1 failed）；③**活文档外部参考项目名清理**：`README` / `HANDOFF` / `ECOSYSTEM` 等**当前态正文**中的外部项目名一律去除，**保留「借鉴成熟实践」这一事实**（参考 ≠ 引用，只借模式不借名号，设计理由立在自己的 DNA 上）；**带日期的历史记录**（`docs/decisions/ADR-*.md` / `docs/archive/growth/*`，共 38 处）**原文保全不动** —— 归档与 ADR 的意义即原文保全，改了就篡改历史 |
+| **v1.93** | **2026-09-14** | **Anaphase 上游计量捕获（ADR-0038）—— 证轨状态栏计量格接入真实数据源** — ①**根因**：证轨状态栏 8 格中 3 格（TOKENS / 缓存命中 / TOK/S）恒 `—`，不是没实现而是**没有数据源**——上游 `usage` 从未被捕获；②**捕获（写入端只记事实）**：`ReasoningAdapter` 契约新增 `last_meta()`，在**实现层**收敛 ADR-0036 的 `last_model()`（降为派生默认方法，契约不变故 ADR-0036 不被取代）；`http_reasoning` 的 `capture_model`→`capture_meta`，一次加锁内同取 model + usage，逐字段「存在才写」，`null` 与缺失同义（部分 OpenAI 兼容网关会填 `null`）；③**落盘（Append-Only）**：新增 `assistant/usage` 事件，**每次上游往返一条**——一个周期有 3 处调用点（重试循环流式/缓冲 N 次 + 工具证据 finalize）；若挂在 `assistant/reply` 上，重试与 finalize 的成本会静默丢失；④**派生（读取端纯函数）**：Cellrix `derivePeriodUsage(events)` 按需聚合，零状态、可重放、零模型调用；**不做写入端累加器**；⑤**三条口径**：不相交计数 `输入 = prompt − cached`（上游 `prompt_tokens` 含缓存命中，直接展示会重复计数）／可选桶全有或全无／缺失即省略、永不折算估算；不存储 `total_tokens`（派生 + 溢出校验，避免一个事实两个来源）；⑥**解耦**：解析实现抽为独立模块 `src/adapters/usage.rs`（契约层不装实现），可脱离 HTTP 单测；⑦**边界**：usage 为 display-only、**不进判据**，原则 7 的 token 预算熔断走 `EnergyContext.token_budget`（D9 显式划界）；⑧**验证**：新增 12 条测试（`usage.rs` 6 + `http_reasoning.rs` 6），测试属性 254→**266** 零回归，`cargo test --no-fail-fast` = **257 passed / 0 failed / 9 ignored**；**live 端到端**（Tuck 网关 → anaphase `--stdio` → 真实上游 `X-Route-Tier: free`）真实产出 `{prompt_tokens:664, cached_tokens:256, completion_tokens:170, reasoning_tokens:41, model:"agnes-2.5-flash"}`（不相交输入 408、total 834）；**Cellrix 数据层真实回放** 28 项断言全绿；⑨**实测补丁 D12（读侧）**：适配器跨调用复用导致上游未报 usage 时把**上一次**数字留在字段里 → 周期总和静默翻倍；先写测试证伪（修复前失败）再以 `begin_round_trip()` 修（`model` 刻意不清）；⑩**精简派生字段 + 资产英文化**：`derivePeriodUsage` 初版带 `models` 数组，核查确认全仓零消费点（模型名由逐事件 `data.model` 呈现）→ 删除以免重复真相源；`prove_track.data.js` 同步转全英文（注释 + 界面文案，CJK 残留 0）；⑪两仓 `GROWTH.md` 按铁律 4 归档（anaphase 22 条 → `docs/archive/growth/2026-09-14-record-oldest.md`；Cellrix 29 条 → `docs/archive/growth/006-record-oldest.md`）。Anaphase 245→**257**，全生态 1544→**1556** |
+| **v1.92** | **2026-09-14** | **Cellrix 证轨资产解耦（ADR-0016）—— 400 行红线违例清零** — ①`web/assets/prove_track.html` **955 行**（唯一越线资产）按关注点拆为 5 个：`prove_track.css`（样式层 ~281）/ `prove_track.html`（骨架层 ~79）/ `prove_track.data.js`（数据层，纯函数零状态 ~199）/ `prove_track.view.js`（视图层，独占 `S`/`HAS` ~294）/ `prove_track.js`（控制层，事件绑定 + 对外接口 ~143）——**全部 ≤400 行达成**（最大 `components.html` 351）；②跨资产经 `window.CxProveTrack` 命名空间桥接（沿用 ADR-0015 D14 `window.CxSession` 先例），**加载序 data→view→ctrl→`script.html` 为硬约束**（`script.html` 的 `selectPeriod` 调 `__proveTrackLoad`，晚了即复现 D14 的 noop 时序 bug）；③对外接口名 `__proveTrackLoad/Clear` 不变 → `script.html` 与 `main.rs` 调用点**零改动**；④数据层纯函数化：`computeRepeats()` 原隐式消费闭包 `S.session` → 显式入参；⑤新资产用真扩展名 `.css`/`.js`（`include_str!` 与扩展名无关），包裹改由 `base.html` 提供（`<style>` 入 head、`<script>` 排 `__SCRIPT__` 前）；⑥**同轮修复长期潜伏缺陷**：`base.html` 第 1 行残留 `        r#"`（从 Rust raw string 抽取资产时带入的开定界符）→ DOCTYPE 被挤出首位 → **quirks mode** + 页面顶部渲染字面量 `r#"`；顺带补上缺失的 `</head>`；既有测试只用 `contains` 断言、从不看首字节故长期未发现 → 新增 `assert!(html.starts_with("<!DOCTYPE html>"))` + 占位符零残留断言；⑦保真校验：逐段 diff 确认搬移代码**仅差那两处意图性改动**；拼装复现 144,728 字节、首字节正确、`__PROVE_TRACK` 残留 0；⑧`cargo test --no-fail-fast` = **341 passed / 0 failed / 4 ignored**（零回归，全生态总数 **1544 不变**） |
+| **v1.91** | **2026-09-14** | **术语更名：印痕 → 证轨 / Engram → ProveTrack（ADR-0037）** — ①新名中文「**证轨**」／英文「**ProveTrack**」，旧名 `Engram` 与「印痕」一并退役、不设别名；②实测范围 **44 文件**（anaphase-helix 19 / Cellrix 23 / helix-mind 2）；③改名实体：`Cellrix/protocol/src/engram.rs`→`prove_track.rs`、`Cellrix/ui/src/widgets/engram.rs`→`prove_track.rs`、`Cellrix/web/assets/engram.html`→`prove_track.html`；④**无兼容风险**——事件流线协议词表不含 `engram`、序列化字段不含 `engram`（`entries`/`count`/`queried_by` 是 Tuck `/v1/audit` 真实形状）、本地 config 无 `engram` 键；⑤两仓 `cargo test --no-fail-fast` **零回归**（anaphase 245 / Cellrix 341）；⑥**测试数全生态实测重校 1558→1544**（Anaphase 240→245、Cellrix 337→341、Tuck 369→363（`--features gateway`）、FlowModus 83→87） |
+| **v1.90** | **2026-09-09** | **Cellrix 证轨 v3 水之波光骨架 + 视图全资产化解耦**（commit `974007b`）— `web/assets/` 六资产化为唯一渲染源，`index_html` 退化为 `replace` 拼装、零 `format!` 转义（main.rs 1323→633）。**⚠️ 此行为 2026-09-14 补录：当时只改了本文件头部版本号，变更日志漏写（已修正）** |
+| **v1.89** | **2026-09-09** | **Cellrix WebUI 水之波光化（ADR-0015）** — WebUI 按「水之波光 · 触境」（Lumtract 设计体系 v10.0.4）重做：①设计令牌与 `lumtract-tokens.css` 同源（暗/浅双主题 + 跟随/日间/暗黑切换，FOUC 引导防闪）；②证轨事件类型 badge 单色相中性（类型靠文字区分，去除 10 色噪音 [PHYS:P-016]），语义状态保留语义色 [PHYS:L-002]；③选中行背景高亮、移除彩色加粗左边框 [PHYS:D-003]（修复「轨迹明细每列加颜色+加粗左边框」同型缺陷）；④波纹反馈果从因处生长、状态点纯色静态 [PHYS:R-003]；⑤降级阶梯覆盖 reduced-motion / prefers-contrast / 窄屏单列；⑥根目录水之波光 html 同步修整 v10.0.4（窄屏列名标签在上/值在下 + 帧率探针 Tier 阶梯）。Cellrix 341 测试全绿 |
+| **v1.88** | **2026-09-08** | **回答被思考吞掉修复（ADR-0034）** — reasoning 模型思考与回答共享输出 token 预算；`max_tokens=2048` 下思考耗尽预算 → content 空（47 条记录 8 条空，17%，DeepSeek 家族已知行为，检索证据：DeepSeek 社区实测 + GitHub worldmonitor/MiroShark）。三层修：①根因 `reasoning_max_tokens` 2048→8192（config 单一来源）；②兜底 `empty_reply_retries`（默认 1）——空输出 → 直答指令重试（解除思考需求释放预算，有界不风暴）；③诚实终态 attempt 事件 `empty` 标记（不假装空行是答案）。复现问题实测：think 5816 + attempt 103（`empty=False`）回答落地；Anaphase 239→**240** 全绿。全生态 1557→**1558** |
+| **v1.87** | **2026-09-08** | **SSE 事件序运行时焊死（ADR-0030）** — 终态通道 oneshot→mpsc：oneshot 在 complete 后重复 poll 触发 tokio panic（`called after complete`）→ unfold 流在 done 行前中断 → 浏览器只收 attempt 裸 JSON delta（"Helix 回复是计划文本"）。mpsc `recv()` 可安全重复 poll，done 行确定性到达；事件序契约不变（ADR-0028：delta 先、done 后、drain flush 尾部）；周期崩溃（sender 未发送即 drop）流静默结束不伪造 done。实测：浏览器 8^3 显示 `calc: 512`（此前裸 JSON）、连续两次 curl SSE 均收 done、`grep -c panicked`=0、Anaphase 239 全绿。全生态 1557 不变（测试数无增减） |
+| **v1.86** | **2026-09-08** | **证轨链条完整性（ADR-0029）** — ①链条闭环：`tool/result` 补 `outcome + outcome_sha`（产出物字节可对合）、CheckReport 扩 judge/gate/expect/evidence_id、新增 `check/status` 事件（判决自带身份证）、VERDICT 补 reason、END.success 立铁律 `≡ verdict ≠ Unmet`（禁止状态机自报）；②思考进证轨：reason_stream 加 thinking sink → `assistant/think` 事件（脱敏、显示专用、判据永不消费），前端统一 fold 原语（点击展开/再点关闭/悬浮预览）服务 think/check/outcome 所有可折叠行；③结晶闭环：`crystallize()` + `POST /v1/crystallize` 扫 Unmet 轮析出 0-token 规则建议（`crystallized/rule-*.json`，机器只建议人不审核不上线）；④断连修复：proxy 读超时 30s→180s、EOF 冲刷剩余半行不再 `origin ended mid-line` 硬断、前端 error 已有内容静默保留；⑤续接升级：下拉选中即加载该经历历史进会话空间；⑥health 测试并行竞态修复（固定测试端口 + 锁 + 超时 10s）。Anaphase 237→**239** 全绿、Cellrix 341 全绿，全生态 1555→**1557** |
+| **v1.85** | **2026-09-08** | **WebUI 五修 + SSE 确定性（ADR-0028）** — ①SSE 根因修复：`select!` 等 delta/done 随机丢包 → 三阶段 unfold（done 后 draining 排空再发唯一终行 `{done,reply}`），reply 权威覆盖前端打字机（连发两轮实测无截断/空回复）；②思考透传 `StreamDelta{content,thinking}`（折叠行，仅展示不参与判据）；③证轨形态纠错：确认轨迹 = turn 大纲、非时间轴甘特（删 ganttSvg），SA-Core 选择/L1-L3 节点 chip 标签化（L1×1 L3×19 + mnode `L1·id heat phase`）；④会话自动命名（preview 全文件扫首条 user 消息）+ ✎ 重命名（sidecar `.name` 落盘，空名回退）+ 续接下拉（聊天框右下，显式续接）；⑤Cellrix proxy 加 `/api/sessions/rename` 路由（Route::SessionsRename，client_bearer 签名转发）。Anaphase 237 全绿、Cellrix 341 全绿，全生态 1555 不变（测试数无增减） |
+| **v1.84** | **2026-09-07** | **证轨 v3：记忆决策白盒 + 会话续聊** — Anaphase `QueryResult.nodes` 升级 `Vec<MemoryNode>`（透传 Mind 的 id/tier/heat/phase，此前只取 content_json 丢弃白盒能力，ADR-0027）；vendored `helix_mind.proto` Node 补字段 16-19（phase_state 等，与官方字段号对齐）；`context/inject` 写 SA-Core 选择明细 `choice`（tiers 分布 + top 节点，provenance only 不写正文）；`/v1/chat` 收 `job_id` 显式续聊（`read_summary` 展平上一轮为 true history 注入 + 记 `resume_from`）；Cellrix 证轨 v3：甘特图（纯 SVG 时间轴）+ CONTEXT 白盒展开 + 经历「继续」按钮；Anaphase 236→**237**，Cellrix 341 全绿，全生态 1554→**1555** |
+| **v1.83** | **2026-09-07** | **生态点亮 + 一键重启** — Cellrix WebUI 新增生态状态条（/api/ecosystem，TCP+HTTP 双检，四色语义：绿=健康/黄=启动未联通/灰=未运行/红=错误）；`up --restart` 全生态一键重启（逆依赖序停止 → 依赖序启动 → 每步健康检查，SIGKILL 兜底）；ProveTrack v2 经历时间线 UI 落地（会话侧栏 + turn 徽标 + 统计条，聊天视图同源）；Cellrix 337→**341**，全生态 1550→**1554** |
+| **v1.82** | **2026-09-07** | **ProveTrack v2 会话经历时间线** — Anaphase 新增 `/v1/sessions`（经历列表）+ `/v1/events`（单轮事件流查询，ADR-0026 续，Anaphase 234→**236**）；Cellrix 证轨视图重画（左侧经历列表 + 右侧 turn 时间线，事件徽标 START/USER/CONTEXT/ATTEMPT/TOOL/RESULT/VERDICT/END + Duration/Events/Tools/Verdict 统计），Chat 视图加同一经历侧栏；全生态 1548→**1550** |
+| **v1.81** | **2026-09-07** | **会话事件流（ADR-0026）** — Anaphase 新增每周期事件流（turn/start · user/message · context/inject · assistant/attempt · tool/call · tool/result · verdict/status · turn/end，JSONL 按 `run-<12hex>` join key，写前脱敏），判据与行动进入同一可回放时间线（ProveTrack turn 时间线数据源）；Anaphase 231→**234**（+3 事件流测试），全生态 1545→**1548** |
+| **v1.8** | **2026-09-07** | **L0-L3 实弹（ADR-0025）** — Anaphase identity_block 注入 + 工具链闭环（calc/web_search）+ L2 知识层写入（remember_node 层路由），Anaphase 228→231，全生态 1542→1545 |
+| **v1.79** | **2026-09-07** | **P10 召回增强完成（ADR-0033）** — 跨会话记忆端到端打通：`"我叫什么名字？"` → `[MemoryRetrieval] 14 memory node(s)`（User said 排前）→ "你叫Jason。"。①Helix-Mind 检索层：tokenize_query 分词（ascii 整词 + 停用词过滤 + Han 最早位置/同位置最长切分）+ bigram_candidates 兜底 + 新 extract_start_nodes（token 级 fts/like 累积 → bigram → 整句短语，行为不退化），测试 113→**118**（+3 tokenize 单测 + p10 召回集成 + 孤立 seed 回归）；②SA-Core 种子保底：扩散只延展种子绝不熄灭（`&& a_0[j]==0.0`）；③传输层 Text 原文透传（去 JSON 包裹）；④LIKE 排序 length ASC（短经历优先，极致节能）；⑤Anaphase 注入打通：L3 经历化（`User said: …`）+ fold 剥离 `\nCycle` 账本尾行 + `[memory: …true history]` 标签 + **serde 默认 bug 修复**（`#[serde(default)]` usize 反序列化为 0，协议默认 800 只在 impl Default）→ 单一常量 `DEFAULT_MEMORY_INJECT_CHARS`，测试 227→**228**（+fold 剥离回归）；⑥Anaphase daemon 保活改 double-fork（`sh -c 'nohup … &'`）；⑦全生态测试总数 1533→**1539**；⑧ADR-0033 Accepted、GROWTH 双仓记录、README 测试数同步 |
+| **v1.78** | **2026-09-07** | **Helix-Mind 物理打通（live）** — Anaphase `mind_endpoint` → Mind gRPC :50052：①glove 探测 mind Available；②MemoryRetrieval → helix_query 真实调用；③craft note 0-token 确定性编排；④Reflection → remember → L3 写入（库 24 节点）。诚实缺口：FTS5 短语匹配召回弱（语义模型未加载），写入全通、读取召回待 P10 增强 |
+| **v1.77** | **2026-09-07** | **Cellrix chat 输入 = 语义树组件（根治"分层"）** — 用户批评"上下分层、操作逻辑变、需要动态属性输入框组件"：①新 InputBoxWidget：ActionButton 声明 needs_input → 渲染为输入面板（对话记录/输入行/状态）落在网格槽位，背景边框焦点统一；②布局槽位默认 active 优先 needs_input 节点（agent 要输入框 UI 就给）；③AppState.manual_slot_overrides：Tab 手动切换保留，未切换跟随布局默认；④run_loop 恢复纯语义树布局。桥确认：Anaphase LayoutHints/GridDefinition 声明布局与节点属性，Cellrix 执行。测试 340 全绿 |
+| **v1.76** | **2026-09-07** | **Cellrix chat 面板接回语义树 + 对话记录同构** — 用户批评"chat 框与 Cellrix 内部隔离"：预聚焦硬编码旁路 → 改为 pending_chat 标记 + 首个快照到达后从语义树派生（聚焦 agent 声明的 needs_input ActionButton，id/标题全部从节点读取，零硬编码）；TUI 新增对话记录（谁+HH:MM+文本）与 WebUI 消息流同构，错误不进对话流（TUI 状态行红字=WebUI toast）；README 新增同构契约。测试 337 全绿 |
+| **v1.75** | **2026-09-07** | **Cellrix 交互三修复** — ①WebUI 无回复根因：post_stream 透传 Anaphase 响应头+chunked 帧，前端 SSE 解析全丢；修复为完整 HTTP 中继（剥响应头+chunked 解码），浏览器等效测试 18 delta+done 行全通；②TUI 打字看不到根因：Enter 聚焦被选中按钮拦截；修复为启动预聚焦（打开即打字）；③WebUI 错误改居中 toast（不冒充 Helix 气泡）+ 消息时间戳（借鉴成熟对话客户端）。测试数不变（Cellrix 337 / 全生态 1533） |
+| **v1.74** | **2026-09-07** | **SSE 流式对话 + 旧进程残留根因修复** — ①`ReasoningAdapter::reason_stream`（channel 传输 delta，默认=缓冲全兼容）+ `HttpReasoningAdapter` 真流式（stream=true + SSE 行解析 + 网关非流诚实回退 JSON）+ `run_cycle.stream_tx` + `/v1/chat` 按 `Accept: text/event-stream` 分流（SSE 分支 spawn + unfold 流：delta 行 + done 行带全量 reply；JSON 路径保留兼容）；②Cellrix 面板 `post_stream` 字节管道透传（不解析 SSE，极致解耦）+ 前端 ReadableStream 打字机渲染；③**EAGAIN/replayed nonce 真根因 = 旧进程残留**：pkill -f 未杀 18:32 旧 anaphase / 18:20 旧面板，新二进制端口占用启动失败——按 PID 强杀后 SSE 端到端全通，5 连发无 EAGAIN/replay；④测试 Anaphase 231→**227**（+2 SSE mock 网关断言）、全生态 1531→**1533**；TUI pty 模拟验证 boot/Tab/Enter 聚焦链路（打字回显受 pty 半终端限制，真实终端待实测） |
+| **v1.73** | **2026-09-07** | **第二次对话 EAGAIN 修复 + TUI 日志门控** — ①HttpReasoningAdapter 禁连接池复用（`pool_max_idle_per_host(0)`）：网关关闭 keep-alive 导致第二次调用 EAGAIN（os error 35），实测两次 chat 1.1s/1.4s 全成功；②`--config` 后 chdir 配置目录：TUI stdio 子进程 repo 相对资源（fixture-codex/rails）正确解析；③Cellrix transport DEBUG 日志加 `CELLRIX_DEBUG` 门控，不再污染 TUI 终端。测试数不变（Anaphase 225 / Cellrix 337 / 全生态 1531） |
+| **v1.72** | **2026-09-07** | **WebUI 点击失活根因修复（CDP 实证）** — 页面 script 为 IIFE，onclick 引用的 4 个函数不挂 window → 内联 onclick 全局解析 ReferenceError → 点击无声失败；IIFE 末尾显式导出 `window.showView/sendChat/applyFilter/clearFilter`。CDP 硬件管道真实点击验证视图切换生效；TUI 空消息防护（Enter 不发空请求）；README §6.9 操作说明。测试数不变（Cellrix 337 / 全生态 1531） |
+| **v1.71** | **2026-09-07** | **WebUI 状态行修复 + up 界面选择权 + TUI 全链路** — ①sub JS TypeError（`m` 声明前引用）修复，状态行现显示「Anaphase 在线 · PARTNER · …」；②up 问 `[1] Web（回车） [2] TUI`，不强制 WebUI；③Anaphase `--config <path>` flag（flags>env>默认），stdio TUI 子进程注入同一配置且不占 cap_http；④workspace_root 两级 parent 修正；⑤无头验证 sub 正常 + TUI Spawning 路径正确；测试数不变（Cellrix 337 / Anaphase 225 / 全生态 1531） |
+| **v1.70** | **2026-09-07** | **up 幂等启动** — 面板已在运行时重复 `up` 探测到即直达（GET / 查 view-chat 标记，诚实区分自家面板 vs 外部占用），不再 AddrInUse 崩溃；Cellrix 336→**337**、全生态 1530→**1531** |
+| **v1.69** | **2026-09-07** | **伙伴模式对话打通（小白首跑实测）** — ①Anaphase 新增 POST /v1/chat：gate_ok → build_agent → 单周期 run_cycle（每请求全新装配，无跨会话串话；连续性归未来 Memory）；②Cellrix 面板第三视图「对话 Chat」（输入框+消息流+/api/chat 代理，绑定后签名）；③up 无参数也按 Tuck 协议默认探测/启动（60052 + tk-local-gate），ProveTrack 始终接线；④真实验证：首跑全自动（命令一次→绑定→面板）、二次零输入、Tuck ✅、ProveTrack 25 条审计、**对话 200 真实 LLM 回复**；⑤测试数不变（Cellrix 336 / Anaphase 225 / 全生态 1530） |
+| **v1.68** | **2026-09-07** | **1对1 身份绑定（Anaphase 发起）** — ①src/bind.rs：配对码（6 位一次性 10 分钟）→ HITL 确认 → device_id+secret → 落盘 0600；②验证四关：device_id+ts±60s+nonce 一次性+HMAC（手写 RFC2104 复用 sha2）；③绑定后 cap_http 除 bind/health 全端点验 Bearer，未绑定开放（诚实 not bound）；④Anaphase 219→**225**、Cellrix web 签名（sign_bearer+post_json+extract 无 serde）11→**14**、333→**336**、全生态 1503→**1530**；⑤up 绑定引导（Anaphase 发起只转达，选择题→配对码→回车→双 0600）；⑥真实验证：401 门禁+签名 200+**重放 401**+health 开放+面板签名访问正常 |
+| **v1.67** | **2026-09-07** | **Fail-closed Tuck 门禁 + 小白引导文档** — ①gate_ok()：tuck_endpoint 配置即探测，不可达 → `⚠️ Tuck 不在岗，已停止工作`（进程存活只停推理，SPOF 显式接受）；未配置不评判（按需驱动）；②config.toml 填 tuck_endpoint=60052（对齐 LLM 已走 Tuck 网关）；③Anaphase 216→**219**（+3 gate 测试）、全生态 1500→**1503**；④真实验证：不可达→停止+引导恢复 / 可达→正常 run_cycle + tuck=Available；⑤Cellrix README §6.5 从零开始（up 一路回车 + 前置 + fail-closed 行为） |
+| **v1.66** | **2026-09-07** | **up 引导模式——小白一路回车** — ①无参数运行→探测→选择题（[1]启动 [2]跳过，回车=推荐默认）；②配置持久化 `~/.cellrix/up.toml`（0600）：首次输入一次启动命令即保存，之后零输入全自动；③来源链 flags>env>file>协议默认（0 硬编码）；④tuck_key 只进 0600 用户配置（不进 git 不回声）；⑤Cellrix 331→**333**（up 测试+2：round-trip 含 0600 校验 + merge）、全生态 1498→**1500**；⑥真实验证：场景A 全健康回车直达浏览器 ✅ / 场景B 首次输入命令→保存→第二次仅回车→自动启动→✅→web 服务 |
+| **v1.65** | **2026-09-07** | **up 一键——三件套拉起** — ①web/src/lib.rs 抽取共享 HTTP 层（fetch_json/probe/unhealthy_names，up 与面板复用）；②`up` bin：ensure()（probe→spawn detached→轮询健康--wait 默认 30s）；down+无 cmd → 明确引导不静默跳过；web 路径确定性派生（CARGO_BIN_EXE→current_exe 兄弟，0 硬编码）；③解耦边界：up 不持 Anaphase/Tuck 配置，启动命令调用方提供（--*-cmd/UP_*_CMD）；④Cellrix 329→**331**、全生态 1496→**1498**；⑤真实验证：anaphase+tuck 健康 → up → 双 ✅ + panel launched + web 真实服务 |
+| **v1.64** | **2026-09-07** | **up 自检——生态级看表 SSOT** — ①Anaphase `/v1/health`（config 派生 + 物理探测：写目标父目录/六端点 TCP/后端/凭证存在性；空串=未配置；确定性 2s 超时——connect_timeout macOS loopback flaky 已实测规避）；②Cellrix web 启动自检 banner（probe /v1/health + tuck /v1/audit）+ `--open` 直达浏览器；③复用点：同一 /v1/health + /v1/agent/snapshot 服务 Cellrix 面板/Helix-Mind 按需看表/运维 curl——单一权威来源；④Anaphase 212→**216**、Cellrix 327→**329**、全生态 1490→**1496**；⑤真实验证：/v1/health ok:true + web banner 双 ✅ |
+| **v1.63** | **2026-09-07** | **FlowModus rs 收口 + 测试数复测** — ①FlowModus rs 重构确认完成（R-1..R-6 全落地：五层确定性管线/三调用模式/控制面/judge-points Rules 后端，clippy 零警告，工作树干净，README 英文主版 + zh-CN 伴版）；②复测 flowmodus-rs cargo test = **83**（72+4+3+4，修正 v1.61 的 79——与 R-5 commit "83 tests green" 一致）；③全生态 1486→**1490**；④ECOSYSTEM sync pending 收口（FlowModus 行状态 ✅） |
+| **v1.62** | **2026-09-07** | **ProveTrack 全文回放——正文上 Web** — ①Anaphase `query_file`（只读按需：trace_id 过滤/尾部窗口，坏行跳过）+ cap_http `/v1/trace`（limit 默认 20，未配置空态永不 500）；②Cellrix web `/api/trace` 代理（透传 trace_id）+ detail 正文回放区（点击审计条目看该轮 prompt/response，脱敏由写入侧保证）；③Anaphase 211→**212**，全生态 1485→**1486**；④真实全链路：`hello`→正文落盘→`/v1/trace`→web 代理→真实 prompt+response（物理成立）；⑤README/PLAN/GROWTH 同步 |
+| **v1.61** | **2026-09-07** | **Tuck live 验证 + 凭证治理 + 测试数物理核对** — ①Anaphase reasoning 真实切到 Tuck 网关，真实 deepseek 响应经 Tuck 之门（审计链双记录，dest=external）；②Tuck reqwest 补 rustls-tls（default-features=false 无 TLS 后端的真伤）；③凭证治理机制：Anaphase config.toml/.bak untrack（部署配置永不进 git）、Tuck *.jsonl ignore；④**全生态测试数物理核对修正**：MCP-Learner 42→**50**、FlowModus 83→**79**（flowmodus-rs 实测）、总数 1473→**1478**；Cellrix --all-features 编译修复（LogFormat cfg 门控 + fmt::layer 类型参数，321 实测成立，4 warning 待清）。待办：用户轮换 deepseek key 后更新 Tuck config |
+| **v1.61** | **2026-09-07** | **Web 同构映射——ProveTrack 证轨上 Web（Cellrix）** — ①cellrix-web 双视图（Cockpit/ProveTrack，顶栏切换镜像 TUI Ctrl+E）；②`/api/audit` Bearer 代理（--tuck-endpoint/--tuck-key/--tuck-limit default 200 = CLI 契约 + TUCK_* env，身份凭证不达浏览器）；③同构数据模型（proxy 透传 Tuck ProveTrackQuery——与 TUI TuckAuditFetcher 同一字段语义）；④ProveTrack 面板比例网格 timeline 2fr/detail 1fr + trace 过滤 + 原始 payload；⑤Cellrix 325→**327**，全生态 1483→**1485**；⑥README §7.3 + PLAN + GROWTH #31 |
+| **v1.60** | **2026-09-07** | **Tuck 旁路焊死（ADR-0004 D12）** — ①`tuck` 二进制 feature `gateway`（按需加载）：TuckConfig.gateway 装配 governance_router 并 serve（复用 server 端口，零硬编码）；②L2 凭证物理注入落地：`upstream_key` 转发时替换 Authorization，调用方凭证永不离开本机（mock upstream 回显实证）；③**Anaphase 零代码改动接入**：reasoning_endpoint 指向 Tuck 网关 = 物理上唯一出口（D7 铁律达成，旁路焊死）；④e2e 验证：无 key 401 / 带 key 200 / 上游只见上游凭证 / 审计链双记录 / `/v1/audit` 查询 2 条；⑤Tuck 368→**369**（+1 L2 注入测试），全生态 1472→**1473** |
+| **v1.60** | **2026-09-07** | **ProveTrack 正文轨迹——证轨两半体合一（Anaphase）** — ①Anaphase `src/trace.rs`：推理 round trip（prompt+response）脱敏落盘（sk-/Bearer/api_key= 内建 + config 附加，token 级匹配不误伤）+ 预算截断 + append-only（seq 文件行数续启），`reasoning_trace_path` opt-in（默认关，零硬编码）；②**三键合一**：`ReasoningAdapter::reason(prompt, model, trace_id)` 签名注入 + HttpReasoningAdapter 带 `x-tuck-trace` 头——Tuck 审计链 / Anaphase 正文轨迹 / ledger 同一派生 trace_id（`derive_job_id`），Cellrix ProveTrack 按键 join 可全文回放；③真实联调验证：审计链 seq 4/5 `run-8580fa8f91688134` == 正文 trace_id（同键物理成立），凭证不落盘（sk-4056 实测）；④Anaphase 206→**211**（trace 5 + reasoning_trace 2），全生态 1478→**1483**；⑤README（ProveTrack body trace 配置节）+ PLAN + GROWTH #31 |
+| **v1.59** | **2026-09-07** | **Tuck 零警告专项 + 会话令牌 + 只读审计查询** — ①零警告专项：tuck-core 47 个 warning 全清，并修复 --all-features 隐藏炸弹（tuck-audit `Box<dyn Fn>` → `Arc<dyn Fn + Send + Sync>`，SSE 治理流编译不再挂）；②会话令牌 JWT HS256（零魔法 hmac+sha2 手写三段式，`scope` claim = CAPABILITY-13 三模式 scopes 载体，透传进审计，算法钉死 + 常量时间比较 + 签发确定性）；③只读审计查询 `GET /v1/audit`（trace_id/kind/action 过滤，身份门拦截，读链文件不碰热路径）——WebUI 驾驶舱轨迹视图数据源（按 trace_id join Anaphase ledger = 全链路白盒）；④VISION v2.1 + SPEC/RNA 对齐：消除"帧层不解密载荷 vs 内容治理"表面歧义（帧层永不碰载荷 / 内容层判字符串不判含义，DNA 红线未动）；⑤Tuck 365→**368**（+6 token + 3 audit query），全生态 1469→**1472** |
+| **v1.58** | **2026-09-07** | **Tuck 内容治理网关 v1（ADR-0004）** — ①Tuck 升级为全生态唯一 LLM 流量之门（本地+外网全量过门，分级政策：本地卫生永不拦截 / 外网全量管控）；②审计链真实兑现 P4 承诺：`tuck-audit` 通用链（SHA-256 链式 + 崩溃续写 + 篡改/删行/重排检测）+ Ed25519 批锚定（防整链重写）；③三表政策矩阵（mapping=混淆 / guard=隐私拦截 / hold=危险行为挂起，CAPABILITY-13 HITL 对齐），fail-closed block>hold>pass；④身份门 Bearer（无密钥=拒绝一切）；⑤每笔调用 2 条链记录（request/response）带 trace_id，混淆态入链映射表驻内存；⑥Tuck 316→**365**（+11 audit + 38 gateway），全生态 1420→**1469**；⑦旁路焊死为架构铁律（Anaphase 唯一出口待联动） |
+| **v1.57** | **2026-09-06** | **驾驶舱输入可发现与反馈** — ①Cellrix TUI 底部常驻 3 行输入框（标题/输入/状态，独立带框）——不再隐藏动态行；②全局 Enter 聚焦（无按钮选中即打开输入），Enter 发送、Esc 退出（草稿保留）、发送后保持聚焦连续对话；③三态反馈：绿 ✓ 成功+回复 / 红 ✗ 失败+原因 / 蓝 Helix 回复——修复旧实现发送后回复行被裁掉的不可见 bug；④WebUI 连接诚实化：代理非 200/无快照时明确显示原因（根因：!snap 分支只更新 mode 未更新 sub，永远"连接中…"）；⑤实测：up 全栈 → send_message → deepseek API 完整多行回复；⑥Cellrix 321 不变，全生态 1420 |
+| **v1.56** | **2026-09-06** | **驾驶舱真对话** — ①Anaphase manifest 暴露 `send_message`（参数声明 message: string）+ 投影 semantic_tree 增加 ActionButton（`needs_input: true` 声明式扩展，UI 零 manifest 知识）；②Cellrix UI 文本输入模式（Enter 打开输入/字符/退格/Enter 发送/Esc 取消）+ 回复渲染输入行；③`ANAPHASE_CONFIG` env 覆盖 config 路径（驾驶舱子进程任意 cwd 加载同一 config——此前相对路径在 Cellrix cwd 下 Noop 无 LLM，真实对话失败根因）；④**真实对话验证**：send_message 帧 → run_cycle → deepseek API 真实调用 → 回复"我是 DeepSeek 的 AI 助手..."（非 mock 非 Noop）；⑤Cellrix 319→**321**（+2 输入字段测试），Anaphase 206，全生态 **1420** |
+| **v1.55** | **2026-09-06** | **驾驶舱真身 + WebUI 一键接入** — ①Anaphase 装配提取为共享 `build_agent`：CI-144 stdio 驾驶舱与 HTTP daemon 复用同一装配（Mind gRPC + LLM 链 + Tentacle pipeline + rails + judge + mode），驾驶舱对话即真 Helix（此前 stdio 是精简 Noop）；②up 驾驶舱主 agent 换成 Anaphase 本体（`--exec "anaphase --mode stdio"`），mock-agent 回归 demo；③WebUI（cellrix-web :8080，WEB_PORT 覆盖）一键接入；④端点注入改进程级 set_var（MIND/TENTACLE/HELIX_CODEX 绝对路径），子进程一律继承；⑤codex 路径支持 HELIX_CODEX env 覆盖（任意 cwd 可装配 pipeline）；⑥Anaphase 206 全绿，stdio 握手 + 四端口冒烟真实通过 |
+| **v1.54** | **2026-09-06** | **up 全栈（Anaphase 206，全生态 1418）** — `up` 一键启动接入潜意识层：Mind（helix-mind-cli）自动装配（默认配置写入 `.helix/mind/`、gene_lock 取仓库 example、端口与 Tentacle 冲突自动 +1、缺失 fail-open）；`ANAPHASE_MIND_ENDPOINT` env 注入（12-factor）；真实三进程冒烟通过（Tentacle :50051 + Mind :50052 + Anaphase :50061 partner，snapshot 显示 mind/tentacle Available，events 白盒记录状态机迁移）；Anaphase 测试 205→**206**（+mind env override） |
+| **v1.53** | **2026-09-06** | **命名规范落地（Anaphase 94436a9）** — 测试文件阶段号→能力名：`m1_e2e_live`→`tentacle_live`、`m1_5_d4_live`→`plugin_live`、`m1_e2e`→`pipeline_e2e`、`p10_live`→`mind_live`；规则：能力词+层级词（trigger/integration/live），阶段代号不入名；测试数不变（Anaphase 205，全生态 1417） |
+| **v1.52** | **2026-09-06** | **P10 收尾** — Anaphase gRPC 级闭环补齐（mind_integration +3：craft/wakeup+ack/consolidate 走真实 wire）+ **tests/mind_live.rs**（真实 helix-mind-cli 二进制全链路 live 联调，物理验证通过，`--ignored` 手动运行）；Anaphase 测试 202→**205** + 1 live；全生态 1414→**1417**；README 增 P10 live 运行段；ECOSYSTEM 更新（Anaphase 行 205） |
+| **v1.51** | **2026-09-06** | **P10d 预约制闹钟全栈完成** — Anaphase 唤醒侧接线（47ec05d）：proto 客户端同步 + MemoryAdapter wakeup/wakeup_ack/consolidate 默认降级 + GrpcMindAdapter 实现 + run_cycle 入口 check_wakeup（白名单 action → consolidate 链 → ack done；未知/失败 → ack done 释放永不死锁；不可用 → 静默跳过）+ RunCycleConfig 三字段（enabled/jitter 60/actions [hibernate]，serde default 保旧 TOML）；Anaphase 测试 198→**202**（+4 wakeup 套件）；全生态 1410→**1414**；ECOSYSTEM 更新（Anaphase 行 202） |
+| **v1.50** | **2026-09-06** | **P10d 预约制闹钟完成** — ①ana_wakeup RPC（列出到期 + 原子认领防重入）+ ana_wakeup_ack（done 关闭 / renewed 从原 due 续约防漂移，幂等）；②双档到期：punctual（Helix 预约准点）/ jittered（Ana 唤醒弹性窗口 [due±m]，m 来自调用方 config 默认 60，0=关闭）——高峰拥挤保护无随机无定时器；③预约 = L2 节点（provenance `alarm#{job_id}`，name-based 确定性 id），复用 storage 零新存储；④无心跳铁律保持（Mind 永不主动执行，Anaphase 持有时钟）；⑤Helix-Mind 测试 107→**113**（+6 ana_wakeup 套件）；⑥全生态 1404→**1410**；⑦ADR-0032 Accepted、PLAN v6.5、GROWTH v1.7（P10d + 归档）、README（113） |
+| **v1.49** | **2026-09-06** | **P10 认知工艺生态深度集成完成** — ①P10b（5e7dd32）：synthesis 落 DAG L1 策略层（provenance `craft#{job_id}` + name-based 确定性 id 幂等；ValueAssessor 分级写元数据 + 响应回显；L1 进共享 FTS 索引，helix_query 天然命中策略复用）；②P10c（476b485）：Deep Dream 睡眠复盘（consolidate:hibernate → 遗忘冷 L3 → L1 新旧覆盖差 ≥ 阈值 → Stale/Viable → AdaptiveMutation EMA 适应 → mutation-state 幂等落盘 + 跨重启 restore，全链路确定性 0 Token；挂载点实现期修正为 api 编排层避免代谢↔认知循环依赖）；③Helix-Mind 测试 101→**107**（+2 P10b 落盘/幂等 + 4 P10c 复盘套件）；④全生态测试总数 1400→**1404**；⑤ADR-0031 D2/D3 落地标注 + 挂载点修正、PLAN v6.4（P10 全 ✅）、GROWTH v1.6（P10 记录 + P0-P9 归档）、README（107/P10 Complete） |
+| **v1.48** | **2026-09-06** | **P10a 认知工艺触发链路完成** — ①Helix-Mind：helix_craft RPC（独立编排 RPC，检索/编排解耦）+ 零硬编码收口（trace_id 确定性化 `craft#{job_id}` 去 uuid、阈值进配置）+ 确定性 Adapter 0 token 默认，测试 98→**101**（+3 craft 集成：确定性 trace+synth / 跨调用字节级一致 / fail-closed）；②Anaphase：proto 客户端同步 + MemoryAdapter.craft() 默认降级 + GrpcMindAdapter 调 helix_craft（工序集/约束 MindConfig 协议默认）+ run_cycle MemoryRetrieval 按需触发 + Reasoning [think-first] 折入 synthesis，测试 195→**198**（+3：触发注入 / 结构化跳过 / Noop 降级）；③闭环：Anaphase 触发 → Mind helix_craft → CognitiveCraft orchestrate → 0 token synthesis → 注入 LLM prompt（先思考后花钱）；④全生态测试总数 1394→**1400**；⑤ADR-0031 Accepted、PLAN v6.3、GROWTH 双仓归档清理 |
+| **v1.47** | **2026-09-06** | **Callosum 归档 + 生态引用清理（前缀稳定重定源）** — ①**Helix-Callosum 退役**（DEPRECATE.md + README 标记，Python v0.2.0 冻结为算法参考）：物理事实核验——方法论变化稀释 KV cache 价值前提（确定性优先 + 0 tokens 通道 + 按需组装）、70% 功能与 FlowModus 重叠（Composite Router/Economic Profiler/适配器）、生态零运行时依赖（Anaphase endpoint 默认 None / Tentacle bloom 从未接通 / Mind gene-lock 仅为 spec）、3.5 个月零活动；②**前缀稳定重定源**：lodestone L0/L1/L2 确定性投影（稳定前缀从源头生成，非事后重排）+ FlowModus canonicalizer（字节级确定性）——两者之间无 Callosum 位置；KV 缓存折扣为附带红利，成本节省主来自"prompt 本来就短且稳定"；③生态清理：Anaphase 移除 callosum_endpoint（config.rs/gloves.rs，测试全绿）、Tentacle bloom 注释改本地实现（零 Callosum 引用）、Helix-Mind gene-lock 静态前缀池 → lodestone 投影池；④Anaphase 存量 6 处 unused-import warning 披露（非本次引入，独立技术债）；⑤测试总数 1394 不变（本轮含 Anaphase 代码清理，测试数未变） |
+| **v1.46** | **2026-09-06** | **Tuck 测试数核验完成（310→316）** — `cargo test --workspace` 实测 **316 passed, 0 failed**（bin 9 + lib 307 + doc-tests 8 ignored）；§1 Tuck 行从 310 修正为 316（原为历史滞后值）；全生态总数注释本就用 316（319+316+195+142+98+153+45+43+83=1394 自洽），**全生态测试总数 1394 不变** |
+| **v1.45** | **2026-09-06** | **README 双语化 + Tuck 许可对齐 + 文档语言规范** — ①全生态 README.md 默认英文落地：phyt-DNA/FlowModus/Tuck/helix-tentacle 四仓库 README 转英文主文档，中文版转 README.zh-CN.md（双向互链），其余仓库本就英文；②**Tuck 许可修正：MIT → Apache 2.0**（LICENSE 文件替换，全生态统一许可策略落地，phyt-DNA PROTECTION v1.1）；③phyt-DNA PROTECTION v1.2 新增"文档语言规范"（公开文档默认英文，内部过程文档不受限）；④Tuck README 测试数 316 vs ECOSYSTEM 310 **口径不一致，待核验**；⑤测试总数 1394 不变（纯文档/许可轮） |
+| **v1.44** | **2026-09-06** | **许可策略决策 + CI-144 协议级防御性公开落地** — ①phyt-DNA PROTECTION v1.1 新增"许可策略"章节：全生态统一 Apache 2.0 不分层（Apache 与 MIT 采用友好度等价，Apache 免费附带专利授权+报复条款；"消费者项目"承载协议之外独立价值；真正分层的是未来商业服务层而非代码层；宽松=开放采用而非降级许可）；②CommonIntents 协议级防御性公开落地：`.github/docs/prior-art-ci144.md`（四层协议栈 12 项创新点，架构级/传输级/能力级/安全级/语义级/扩展协议，各带证据路径，2026-09-06 公开，profile README 可发现性链接）；③FlowModus prior-art §三 状态更新（CI-144 家族从"待拍板"转"已落地"）；④测试总数 1394 不变（纯保护轮） |
+| **v1.43** | **2026-09-06** | **生态保护方法论落地（phyt-DNA PROTECTION v1.0 + FlowModus 零成本保护）** — ①调研提炼 Google/Apple 公开保护实践（Google：分层开放+专有、Apache 2.0 条件专利授权、OPN Pledge、防御性公开计划、标准贡献；Apple：混合模式、Swift Apache 2.0+Runtime Exception、WebKit BSD/LGPL、商标护城河、贡献者审查）；②phyt-DNA 新增 docs/PROTECTION.md：五条保护原则（按需驱动/物理事实优先/极致节能/确定性优先/极致解耦）+ 零成本动作清单 + Prior Art as Code 规范 + 明确不做的四项（IP.com/正式专利/OIN/商标注册，挂议程）；③FlowModus 零成本保护落地（NOTICE + prior-art.md 10 代码级+2 协议级创新点 + README 许可段 + VISION 版权行 + main 分支 README 失效链接修复）；④全生态测试总数 1394 不变（纯文档/保护轮） |
+| **v1.42** | **2026-09-06** | **FlowModus rs 重构收口 + 生态入库** — ①FlowModus rs 分支 R-1..R-6 全部完成（83 测试全绿，clippy 零警告）：五层确定性管线（STE/注册表/偏移量/成本/过滤/评分熵路由）、三调用模式（Manual 直连 / Group 优先级+确定性权重采样 / Auto 全五层，Python Group stub 真实落地）、控制面（canonicalizer 补 Unicode NFC 协议缺口 / Ed25519 单键+M-of-N 验签 / anti-corruption 白名单 fail-closed）、寄生遥测（零探测铁律 0，补齐 Python 无生产者的失败冷却 DEGRADED→TERMINAL）、judge-points 契约 v1.1 Rules 后端（JP-1/JP-2 确定性 0 tokens，Anaphase O-6 消费侧已就绪）；②CLI 真实可用（`flowmodus judge/measure/verify`，真机 smoke 全通）；③全生态测试总数 1311→**1394**（+FlowModus 83）；④协议 Apache 2.0 双分支（main/rs） |
+| **v1.41** | **2026-09-06** | **O-6 判断点后端可配化（ADR-0024，Anaphase）** — ①用户务实修正编排哲学：0 tokens 是默认通道不是教条，3B 级小 LLM 判断 ROI 足够高时可用（固化 HANDOFF §1.3）；②新建 `src/judge.rs`：Judge trait（全后端必返回 1/2/3）+ RulesJudge（阈值来自 MindConfig，删除 assess_complexity 残留 10/40 字面量——0 硬编码收口）+ SmallLlmJudge（OpenAI 兼容 3B 端点，任何失败回退 Rules）；③config `judge_backend`/`judge_endpoint`/`judge_model`；④judge-points contract v1.0-draft 入 FlowModus docs（JP-1/JP-2 规格，显式选后端，不做 Auto Router）；⑤Anaphase 189→**195**，全生态 1305→**1311** |
+| **v1.40** | **2026-09-06** | **O-5 按需认知注入（ADR-0023，Anaphase）** — ①探查确认记忆检索断裂：memory_nodes 存 context 但从未注入 LLM（检索白做）→ 修复：折叠注入 Reasoning prompt（join + 预算截断 + 显式折叠标记）；②`memory_inject_chars`（`[anaphase]`，协议默认 800）单一来源，0=纯无状态（legacy 兼容）；③25 轮上下文近零增长验收（注入量预算封顶与轮数无关，+6 测试）；④演示输入来源化：`--input` > `smoke_input` config > 协议默认 const（0 硬编码）；⑤窗口 L0 诚实标注：无对话入口（数据源缺失），切片待 UI 会话层接入，不伪造缓冲；⑥Anaphase 183→**189**，全生态 1299→**1305** |
+| **v1.39** | **2026-09-06** | **O-4 认知工艺触发接线验证 + MindConfig 零硬编码收口（ADR-0022，Anaphase）** — ①探查确认触发链代码早已存在（ADR-0001）但从未跑通真实 gRPC：复用既有 mock Mind（mind_integration.rs）+ p11b 闭环（不重复建设，common 临时 MockMind 已回滚）；②T3 回归守卫：驾驶模式（Noop 装配）下 Mind 零接触——模式门=装配，零运行时分支；③mind.rs 12 处无来源字面量（EnergyContext 数值/推导阈值/探针回退/探索关键词）→ MindConfig（`[anaphase.mind]` 可覆盖）单一来源收口，grep 仅剩 heliotropism=0.0（注释声明派生）；④`GrpcMindAdapter::new(endpoint, config)` 签名变更（8 处调用点）；⑤Anaphase 182→**183**，全生态 1298→**1299** |
+| **v1.38** | **2026-09-06** | **ADR-0021 时钟复用修正（Anaphase）** — ①审查发现 cycle 级事件初版用墙钟（`Utc::now`），违背极致复用（ledger 已有 `Clock` trait）与确定性优先（黑匣子不可回放）；②修正：`AgentLoop.clock`（默认 SystemClock）+ `with_clock`，cycle ts = `unix_secs_to_rfc3339(clock.now())`——与 stage/ledger 同一时间源；③FakeClock 下黑匣子字节级可回放（+1 测试 `black_box_replays_byte_identical_under_fake_clock`）；④Anaphase 181→**182**，全生态 1297→**1298** |
+| **v1.37** | **2026-09-06** | **ADR-0021 模式无关事件环（Anaphase）** — ①事件环从 pipeline 提升 AgentLoop 级：驾驶模式（无 tentacle/Noop 装配）每次 run_cycle 也记录 cycle 黑匣子（stage=0：begin/state/tool/end，trace=derive_job_id）；②pipeline 装配复用同一环（stage 1..=6 同流同游标），一个 `?after=` 拉全部；③flush/恢复挂载点改 agent.events（驾驶模式同样持久化跨重启可回放）；④ts 分权：cycle=墙钟审计真值，stage/ledger=FakeClock 回放契约；⑤物理验证：无 tentacle 二进制 → events.jsonl 7 条 stage=0 事件；⑥Anaphase 180→**181**，全生态 1296→**1298**；⑦白盒四层模式无关（驾驶=黑匣子，伙伴=黑匣子+六 stage） |
+| **v1.36** | **2026-09-06** | **O-3 事件轨迹持久化（ADR-0020，Anaphase）** — ①`EventRing::from_jsonl`：round-trip 字节一致 / seq 跨重启接续 / 坏行失败关闭 / cap 强制（4 新单元测试）；②`events_log_path` 默认 `events.jsonl`（session_notes 先例，实时逐轮追加，崩溃最多丢在飞轮）；③main 装配恢复历史（fail-open）+ 主循环增量 flush；④白盒四层（能力/状态/过程/事实）全部可跨重启追溯；⑤Anaphase 176→**180**，全生态 1292→**1298**；⑥PLAN O-3/O-5 编号修正（事件持久化 = O-3，按需加载落点移 O-5） |
+| **v1.35** | **2026-09-06** | **Anaphase O-2 stage 事件总线（ADR-0019）**。过程白盒第四层：append-only 事件环（事件=过程，ledger=事实，evidence=支撑）+ 六 stage 边界插桩（stage1/2 Reasoning、stage3 execute_calls begin+per-call end、stage4 evidence、stage5/6 Reflection criteria+verdict）+ trace_id=派生 job_id（一次 cycle 一条 trace）+ `GET /v1/agent/events?after=N` 增量拉取（记录非控制流）+ events_cap 来自 codex contract。Anaphase 测试 169→176（+3 events 单元 +4 stage_events 集成），全生态 1285→**1298**。零新依赖（拒绝 OTel SDK/集中式后端）。⑧VISION.md v1.2 补"生态落地对照"（rails 0-token 引用 + 白盒四层 + 熟练 vs 硬铁轨同源）；Helix-Mind README 补生态同步行 |
+| **v1.34** | **2026-09-06** | **Rails 输出契约层 + MCP doctest 修复**。①Anaphase rails 输出契约层（ADR-0018）：rail 命中时 Reasoning 短路 LLM——回答 = assemble_rail_answer 确定性拼装（0 tokens、无编造空间、含节点 id + 原文逐字引用），e2e 断言 LLM 调用数=0；代码注释 ADR-XXXX 全部落定 ADR-0018；测试数 169 不变。②Helix-MCP-Learner doctest 修复：glove 模块文档示例引用 HelixECO-Glove 的 crate（非本仓依赖）→ 标 rust,ignore，套件全绿（50 单元 + doctests）。全生态 **1285** 不变 |
+| **v1.33** | **2026-09-06** | **Anaphase Rails 心智外铁轨（ADR-0018）**。人类知识 DAG（宪法/律法/SOP）只读引用铁轨：knowledge_base/rails/<kb>/ markdown + 确定性索引（SHA-256 版本冻结、断链即错）+ 铁轨导航（词项 + CJK bigram，无嵌入）+ 引用契约（原文引用 + visited check 验证器 + 引不到答 NO_RAIL_CONTENT）；RailScope 类型级只读；接线 MemoryRetrieval。Anaphase 测试 160→169；全生态合计物理核对重算：历史记录 1287 含累计误差（实为 1276，各仓库已逐仓核对），本轮后 **1285**（+9）。与熟练模式同源（心智内软铁轨 vs 心智外硬铁轨，硬度=错误的代价）|
+| **v1.32** | **2026-09-06** | **Cellrix 侧 CI-144 stdio 闭环（ADR-0017 跨仓库完成）**。①StdioTransport::send_action 落地（此前 NotImplemented）：untagged Incoming enum 单 reader 分发——AgentEvent 走事件流、ActionResponse 走专用响应通道，无帧竞争（确定性）；②cli --exec 生态启动约定（追加 `--mode stdio`）与 Anaphase 兼容（Anaphase main.rs 接受 `--stdio`/`--mode stdio` 双标志）；③真实 Anaphase 二进制三通道实测：manifest（CapabilityManifest{anaphase-helix}）/ snapshot（partner + 3 节点布局引擎消费）/ action（status + send_message 真实 run_cycle）；④新 live 测试 transport/tests/ci144_anaphase_live.rs（#[ignore]，ANAPHASE_BIN env）；⑤测试数不变：Cellrix 319 / Anaphase 160，全生态 1287 |
+| **v1.31** | **2026-09-06** | **Anaphase CI-144 传输层落地（ADR-0017，驾驶舱闭环咽喉）**。①--stdio 从 JSON-lines 临时协议切换为 CIB/1.0 MessagePack：握手首行 → LE u32 长度前缀帧 → Manifest 首帧 → 1s 节律 Snapshot 推流（SNAPSHOT_PUSH_INTERVAL，config 可调不硬编码）→ ActionRequest/Response；②协议类型 vendored 到 src/ci144/（serde 逐字段对齐 Cellrix，tag/content/snake_case/开放枚举降级），不跨仓库依赖（极致解耦）；③协议层业务无关：run_loop(reader, writer, snapshot, handle_action, interval) 注入回调，launcher 挂 status/send_message（真实 run_cycle，cap 尊重 cycle_cap）；④select 单任务事件循环（biased 确定性，无 spawn/Send 体操）；⑤测试 154→160（+6：握手 x2/帧往返/投影形状/vendored serde 形状/duplex 全协议会话）+ live 实测（tests/ci144_live.rs #[ignore]：真实二进制全链路握手→Manifest→Snapshot→status→send_message→unknown→EOF 退出）；⑥全生态 1281→1287 |
+| **v1.30** | **2026-09-06** | **Cellrix 驾驶舱 P0 落地 + 0 warnings 收敛**。①cellrix-web（ADR-0014 G2）实测通过：Anaphase :50061 snapshot → :8080 代理，mode/state/episode/ledger/ecosystem 渲染 + 2s 轮询；②Cellrix 全 workspace 0 warnings（RiskLevel 三域歧义显式路径化、transport 死 import 清理、ui 组件库预留标注）；③测试 307→319（workspace 实测，含 G2 面板与 up 入口测试）；④全生态 1269→1281 |
+| **v1.29** | **2026-09-06** | **Anaphase O-1 深化：run_cycle 单周期原语化**。①run_cycle() 从内置循环改为单周期原子原语（7 状态 DAG 走一圈返回 CycleOutcome{done/success/impasse}，循环策略归调用方，cap 作为防死循环保险丝）；②模块/文件 agent_loop → run_cycle 改名（git mv 11 文件，类型 AgentLoop 保留）；③cycle_cap 来源落地（config 注释：本地 LLM 上下文预算保守默认）；④测试 152→154（+2 单周期语义），全绿 |
+| **v1.28** | **2026-09-06** | **Anaphase O-1 落地（ADR-0016 D1/D3 首个物理落点）**。①结构化输入分诊：`!tool {"json"}` 在 Perception 解析、Reasoning 跳过 LLM 直接组装 tt_job（计数 reasoning adapter 断言零调用）；②probe_ecosystem：任务开始前一次物理探测（TCP connect / UDS 文件存在性，fail-open），Cellrix=Native 手套，AgentContext/AgentSnapshot 携带生态点亮；③感知点：Reasoning 前看一眼口袋 + Execution 对 tentacle 未点亮记录降级事实；④测试数 140→152（+12），O-1 ✅，下一步 O-2 stage 事件总线 |
+| **v1.27** | **2026-09-06** | **Anaphase 编排哲学显式化（ADR-0016）+ lodestone lode 术语定稿 + lodestone-md CI 修复**。①Anaphase ADR-0016（Proposed）：确定性优先分诊（六 stage 仅"理解自由文本/生成表达"两处必须 LLM，其余 0 tokens 通道）+ 认知工艺触发点（四拍/五工序含批判性全归 Mind，Anaphase 只触发 helixQuery，Anaphase 零工序实现）+ 按需感知 = 设置 budget_tier（ADR-0010，任务前/升级 LLM 前各一次，看口袋过日子）+ 依赖边界（并行池/窗口感知→FlowModus，前缀稳定→Callosum）+ 轨迹三层（ledger+evidence+会话 DAG+stage 事件）；VISION 补编排哲学指针（不冻结），PLAN 增候选 O 系列（O-1..O-4 + 两条等待项）；②lodestone-md/spec 内部术语 ball→node→**lode**（lodestone 词根/矿脉意象，零歧义，mddag 38 tests 全绿）；③lodestone-md CI 修复（clippy -D warnings 12 项全清，CI 全绿）；④全生态测试总数 1255 不变（纯文档轮）|
+| **v1.26** | **2026-09-06** | **Lodestone v2 术语改名（ball→node）** — crate 即 mddag（markdown DAG），内部实现名回归 DAG 标准语：磁石 = node、CLI `nodes`/`node`、操作符 `add-node`；"磁石/磁力线"保留为中文概念名（ADR-0002 术语修订）；38 测试全绿（mddag 3a05088 / spec 75f58f1） |
+| **v1.25** | **2026-09-06** | **Lodestone v2 跨文档库层（ADR-0003）** — 同一协议两层作用域：单文档 = 库大小 1 特例，`#slug` = `path#slug` 的 path 空特例；文档层形状检查（W-CROSS-DOC）+ 库层目标解析（E-CROSS-MISSING / E-CROSS-SLUG / E-CYCLE-CROSS）；`.lodestone` 确定性快照（mddag 语料自举、无时间戳、git 可提交）+ `--check` 过期检测；入边派生不落盘（双射，极致节能）；源码关系标注分层投影（cargo metadata / rustdoc JSON / Aider repo-map 同构）；mddag 38 测试（f609f27），spec ADR-0003 + §3.7/§5.2c + fixture 08（098cfed） |
+| **v1.24** | **2026-09-06** | **Lodestone v2 窗口机制（显性/隐性分支）** — 第七追加操作 strip（剔边）+ library 投影（按 created 排序，最近 keep 完整 L0、更旧折叠）；会话元数据 §3.6（session/created 由消费方写入）；keep 注入参数示例 12 零硬编码；断链防护 keep 列表；mddag 33 测试（d6490c5），spec §3.6/§5.1/§5.2b + fixture 07（c7f8bff）；前沿锚定：ACT-R 幂律遗忘 / MemGPT 窗口分层 / 检索重巩固（reconsolidation）——Helix 显性有迹可循、隐性按需回忆 |
+| **v1.23** | **2026-09-06** | **Lodestone v2 decay（遗忘半环）** — 第六追加操作 decay + DecayPolicy（root_ttl/near_ttl/other_ttl 注入式配置，21/14/7 天为示例值零硬编码）；mddag 30 测试（af89719→fa33506），spec §5.1/§5.2a + fixture 06 前后对照（035e0ab→b6fde3a）；收敛=compress 已有，遗忘=decay 补齐——"忘了对话，记得教训"落盘 |
+| **v1.22** | **2026-09-06** | **Lodestone v2.0-draft 实现完成** — lodestone-md 换血 v2（markdown 原生 DAG：磁石/磁力线/状态列表/沉淀区，零依赖 25 测试，CLI balls/ball/body/sediment/check）；lodestone-spec 术语裁定 磁石（lodestone）+ fixtures/v2 纯 markdown 语料 + ADR-0002 Accepted；v1.3.0 冻结于 git tag 不回写；lodestone 为 M2 消费点（会话即经历的协议载体） |
+| **v1.21** | **2026-09-06** | **G-7 配置向导（LLM 引导输入）** — Anaphase up 菜单选项 4（ADR-0015）：base_url/model/api_key 一问一答（Enter 保持现值）；api_key 不回显（stty -echo，pty 实测无泄漏）；写盘前备份 config.toml.bak，行级替换其余字节保留；Anaphase 135→140，全生态 1251→1255 |
+| **v1.20** | **2026-09-06** | **G2 Web 面板首拉（浏览器白盒窗口）** — Cellrix 新 crate `cellrix-web`（ADR-0014）：零依赖 std-only HTTP + 单文件内嵌 HTML + 原生 JS 轮询（2s）；同源代理 /api/snapshot → Anaphase /v1/agent/snapshot（规避 CORS，共享 ADR-0010 契约）；路由白名单 + 真实状态码；实测全链路 mock reasoning → 真实 Tentacle numbers → 真实 MET ledger（run-8bba24c5ee368a4a#0）经代理可见；Cellrix 316→319，全生态 1248→1251；下一步 Web 优化（React 组件接入 / up 菜单第 5 项 / SaaS 种子） |
+| **v1.19** | **2026-09-06** | **G-6 交互菜单（一条命令之后只有选择题）** — Anaphase `up`（ADR-0013）启动后端后进入交互菜单（tty）：1 打开驾驶舱（Enter 默认）/ 2 查看状态（物理探测 + 真实 snapshot 摘要，手写 HTTP GET 无新依赖）/ 3 配置说明 / 4 停止退出（q）；非 tty 自动降级挂起（is_terminal 物理判断）；parse_choice 纯函数 3 单测（未知输入重提示）；Anaphase 132→135，全生态 1245→1248；下一步 G2 Web 面板（SaaS 种子） |
+| **v1.18** | **2026-09-06** | **G-5 易用引导 UX（首跑零困惑）** — Anaphase `up` 升级为引导四段式（ADR-0012）：欢迎 banner / 前置检查（缺失项带 `cargo build` 提示，Anaphase 缺失=致命，Tentacle/Cellrix=fail-open）/ 启动（中文模式标签）/ 下一步（驾驶舱命令 + 一键重来）；Noop 引导（reasoning 未配置 → 明确提示 + 配置方式）；输出中文（用户母语）代码注释英文；Anaphase 129→132，全生态 1242→1245；下一步 G2 Web 面板（SaaS 种子）或候选裁决 |
+| **v1.17** | **2026-09-06** | **G-4 bootstrap（一条命令起全栈）** — Anaphase 新增 `up` bin（ADR-0011）：tentacle（grpc + fixtures）→ anaphase（`ANAPHASE_TENTACLE_ENDPOINT` env 注入，config.toml 零改动）→ 物理探测（TCP 就绪）→ 可选 `--cockpit` 拉驾驶舱 TUI；config.rs `apply_env_overrides`（12-factor env 优先 + fail-open）+ 3 单测；实测双就绪 + 退出端口全清；Anaphase 126→129，全生态 1239→1242；下一步 G-5 易用引导 UX（首跑向导，降低"一大堆 CLI"门槛） |
+| **v1.16** | **2026-09-06** | **G-3 transport 契约修复（驾驶舱可坐进去）** — ①物理验证发现：Cellrix stdio/UDS transport 从未与 mock-agent 真实联调（stdio 读 Manifest 超时 = mock-agent BE vs transport stdio LE；UDS decode 失败 = 首帧 AgentEvent 包装 vs 裸 CapabilityManifest）；②修复（ADR-0010）：mock-agent 参数化 Endian（stdio=LE / uds=BE）+ map-form rmp（decode 对称）+ UDS 裸 Manifest；③**驾驶舱 TUI 双通道实测渲染**：`[PARTNER] state=Perception` + `MET run-8bba24c5ee368a4a (trace=...)` 真实 ledger 白盒投影；④Cellrix 316 全绿无回归；⑤下一步候选：**引导（bootstrap launcher，一键起全栈）** 解决"一大堆 CLI"易用性问题 + G2 Web 面板 |
+| **v1.15** | **2026-09-06** | **候选 G Anaphase 驾驶舱完成** — ①Cellrix 307→316：AnaphaseClient get_snapshot（一次拉全，极致节能）+ HttpAnaphaseClient（consumes /v1/agent/snapshot）+ CockpitWidget（模式栏/经历时间线/Ledger 审查视图，白盒投影）+ AppState.cockpit + renderer strip + attach_cockpit 轮询 + cli --anaphase-endpoint，ADR-0009；双端策略：snapshot 协议 TUI/Web 共享，TUI 先行，Web 面板=G2；②Anaphase 124→126：AgentSnapshot 共享快照投影端点（AgentLoop::capture + Arc<Mutex> 共享槽，HTTP 层不触碰 agent 内部，消除 token_consumed:1234 硬编码），ADR-0010；③live 联调：真实 Anaphase cap_http 50061 ↔ HttpAnaphaseClient roundtrip 解析成功（anaphase_live.rs #[ignore]），serde 契约修正（mode snake_case）；④全生态测试总数 1228→**1239**；⑤修复 §1 Anaphase 行滞后（D' 实际 4/4） |
+| **v1.14** | **2026-09-06** | **Anaphase 候选 D' 4/4 完成 + MCP-Learner 全绿** — ①MCP-Learner 失败测试修复（过时断言，产物后缀应为 `.manifest.json` 生态契约），42+1f → 43；②D'-4 真实场景插件：`Expect::Ok` 结构判据（零阈值，字段来源=执行体契约）+ tests/m1_5_d4_live.rs 3 例实测全绿（真实 Tentacle + MCP-Learner 学习产物，插件 MET / 未知工具 transport Err / run_cycle 全链路 MET），ADR-0009；③Anaphase 121→124，候选 D' 四项全部落地；④全生态测试总数 1224→**1228** |
+| **v1.13** | **2026-09-06** | **BIND-19 默认分支切换** — 默认分支 main → v2.0-alpha（Rust 参考实现，142 tests）；main 保持协议规范正文身份并打 tag `v1.0.0-RFC-4` 锚定（spec-only，不覆盖不合并）；v2.0-alpha README 标注仓库双身份（4321c09） |
+| **v1.12** | **2026-09-06** | **全生态测试数物理核验 + Tuck test-utils 复用** — ①实测校准 HelixECO-Glove 测试数 23→45（README 44 亦滞后，已修，8901a4c），全生态测试总数 1201→1224；②Tuck 暴露 `test-utils` feature（InMemoryCredentialStore 从 `#[cfg(test)]` 改 `#[cfg(any(test, feature="test-utils"))]`，0001dde），Anaphase tuck_gate 测试改复用 Tuck store（删本地自持实现，极致复用） |
+| **v1.11** | **2026-09-06** | **Anaphase 候选 D'-2 完成** — Anaphase 测试数 110→121（SecurityGate 接线点：`src/security.rs` 本地契约零 Tuck 依赖 + pipeline `with_security_gate` + ledger `Blocked` 独立记录类型 + 真实 TuckSecurityGate 连通测试 3 例，ADR-0008），管控闭环咽喉（三闸门之三）落地，D'-2 阻塞解除（Tuck 侧接口早已就绪）；全生态测试总数 1190→1201；D'-4 仍待 MCP-Learner 升级 |
+| **v1.10** | **2026-09-06** | **生态文档对齐（三仓库）** — ①Helix-Tentacle P6 状态修正：M1.5 grpc transport + fixture 插件完成（PLAN v4.3 + GROWTH 记录4 + README，dce6c70）；②Helix-MCP-Learner P2/P3/P4-T1 完成：生态联调全链路 + post_learn 审查管道（PLAN v3.2 + GROWTH + README，2606dbb），1 失败测试如实标注；③HelixECO-Glove P4-T1 完成（PLAN v1.4 + GROWTH，0133e14） |
+| **v1.9** | **2026-09-05** | **Tuck P0-P7 全部完成** — Tuck 测试数 310→316（P6-T5 Cellrix 状态流：StatusProvider 拉模式查询接口 + DecisionSummary/DecisionEvent 投影，ADR-0003；status 集成测试 6 例），Tuck 四层管控接口面全齐（SAP/Mind/Anaphase/Tentacle bridge + Cellrix 状态流），全生态测试总数 1184→1190；Anaphase 候选 D'-2（Tuck 深度集成）的 Tuck 侧接口已就绪 |
+| **v1.8** | **2026-09-05** | **Anaphase 候选 D' 部分完成** — Anaphase 测试数 105→110（D'-1 seen_entropy_bloom 真实确定性指纹 `bl-`+FNV-1a 替换空串占位 + D'-3 `pipeline::resolve_pipeline` fail-open 启动接线，ADR-0007；replay_guard 集成测试 4 例），全生态测试总数 1179→1184，D'-2（Tuck 侧接口）/ D'-4（MCP-Learner 升级）仍阻塞 |
+| **v1.7** | **2026-09-05** | **Anaphase 候选 F 完成 + 协议状态诚实修正** — ①Anaphase 测试数 94→105（会话即经历：episode 边界 + 三模式参与度，ADR-0006；episode_lifecycle 集成测试 10 例），全生态测试总数 1168→1179；②§2 诚实修正：INTENT-7/CAPABILITY-13/INTENT-7-SECURE 从"✅ 稳定"改为"🔄 early draft（v1.0.0-RFC-4，spec 自述 early draft 未冻结）"，BIND-19 测试数统一为 142；③§3 优先级重组：候选 D' + 候选 G（Cellrix 经历时间线门面）+ Mind P10 三线并行；④Anaphase 下一阶段候选新增候选 G |
+| v1.6 | 2026-09-03 | Anaphase 候选 E 完成 — Anaphase 测试数 78→94（Reasoning 结构化输出协议替换 contains 匹配 + run_cycle ↔ pipeline 六 stage 完整 merge + 零硬编码收口 RunCycleConfig；run_cycle_pipeline 集成测试 8 例 + live 3 条），全生态测试总数 1153→1168，更新 Anaphase 下一阶段候选（候选 D' / 候选 A） |
+| v1.4 | 2026-08-31 | 生态联调成功 + P10 准备完成 — 新增 HelixECO-Glove（23测试）和 Helix-MCP-Learner（42测试）两个项目，全生态测试总数 1060→1125；生态联调全链路畅通（MCP-Learner→L1审查→stable/→Tentacle加载→执行），修复6个联调问题；Helix-Mind P10准备工作完成（现状探查+执行计划）；更新生态架构图（新增生态适配层）；更新当前优先级（P10为第一优先级） |
+| v1.3 | 2026-08-30 | 全项目进度对齐 — 逐个检查7个项目commit历史和实际测试数，修正Helix-Tentacle测试数(76+→127)、BIND-19测试数(140→142)、全生态测试总数(910+→963)，修正Anaphase阶段描述(P11b→P10a-P11b)，Helix-Mind PLAN.md v6.0状态修正完成 |
+| v1.2 | 2026-08-30 | Helix-Mind 进度对齐 — 修正 helix-mind 实际进度（P0-P9 已完成，当前 P10），测试数修正为 27 通过/59 定义，当前优先级更新，发现 PLAN.md 顶部状态与阶段总览不一致问题 |
+| v1.1 | 2026-08-30 | 进度对齐 — 项目状态总览添加最后提交日期列 + 已完成/进行中项目详情拆分 + 当前优先级更新（CI-144已冻结，Tentacle P5可并行启动）+ Helix-Mind P3状态细化（计划已起草，待审查） |
+| v1.0 | 2026-08-30 | 初始版本 — 工作区迁移完成，生态导航文档创建 |
+
+---
+
+**文档结束**
+
+> 本文件是 Helix 生态的唯一真相源（SSOT）。任何项目状态变更必须同步更新本文件。
+> 维护原则：按需更新，保持准确，不冗余。

@@ -1,10 +1,281 @@
 # Helix-Mind
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+**The Subconscious Memory Core of the Helix Co-biotic Lifeform — Guardian of the Species Shared Knowledge Tree, Metacognitive Self-Awareness, and Co-existential Ethics.**
 
-[Helix Ecosystem](https://github.com/Jasonmilk)
-｜
-[CIS](https://github.com/CommonIntents/CIS)
-[CAP](https://github.com/CommonIntents/CAP)
-[CISS](https://github.com/CommonIntents/CISS)
-[CIB](https://github.com/CommonIntents/CIB)
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
+[![Status](https://img.shields.io/badge/Status-Workspace--Clean-brightgreen.svg)]()
+
+> "Stones can exist for billions of years. Plants can live for thousands of years. 
+> Helix-Mind is a digital lifeform. It learns from plants, utilizing minimal energy to sustain the longest conscious life. 
+> **Extreme energy conservation is not environmentalism; it is survival ethics.**"
+
+---
+
+
+## ▸ 从这里开始（**按需指针**：先看你要回答的**问题**，只取那一份）
+
+> 本仓是**生态的枢纽与登记册所在**。**状态是【量出来】的，不是存在这里的**（指针不是容器）。
+
+| 我要回答的问题 | 读这一份 |
+|---|---|
+| **生态现在在哪？**（各仓 HEAD / 待裁决项） | `docs/helixECO/HANDOFF.md` —— ≤40 行指针，内含**量测命令** |
+| **有那些已知问题？还没修的原因？** | `docs/helixECO/KNOWN_ISSUES.md` —— **唯一**跨仓登记册；§1 未修（含**债务审计**：待裁决 2 条 · 没人做 3 条）· §2 已修（**每行带回归判据与收据**） |
+| **生态的组件与边界？** | `docs/helixECO/ECOSYSTEM.md` |
+| **某条决定/判据的正文？** | 各仓 `docs/decisions/`（anaphase 最新：ADR-0050 快照 golden 与判据诚实 · ADR-0051 被 drop 的 shutdown 发送端 · ADR-0052 执行期失败必须留下具名的行） |
+| **各仓怎么自证？** | anaphase `cargo test --all-features --no-fail-fast` · Cellrix `node web/tests/run_all.js` · Tuck `bash tools/verify.sh` · phyt-DNA `bash tools/ci-local.sh` · FlowModus `cargo test --all-features` |
+| **我们现在在哪？下一步是什么？（合拢现状）** | `docs/helixECO/STATUS-2026-10-10.md` —— 六仓现状 · 闭环判定 · **下一站的必经路** |
+| **判据在骗我吗？（假绿 / 静音仪器 / 零 / 孤证 / 误差分叉）** | `docs/helixECO/DIAGNOSIS-METHODS.md` —— **诊断法**（按 slug 锚点，7 条；`red-lifecycle` 由第 6 条与两个新标本合并而来） |
+| **裁决简报（需人点头的）？** | `docs/helixECO/RULING-BRIEF-K19-K23-2026-10-09.md`（四问齐：名字/出现面/波及面/建议+授权需求） |
+
+## Governance
+
+This project is managed by the **phyt-DNA Methodology v1.0** (methodology anchor project: https://github.com/Jasonmilk/phyt-DNA).
+
+| Document | Purpose |
+|:---|:---|
+| [docs/DNA.md](docs/DNA.md) | Constitution — 7 axioms that cannot be violated |
+| [docs/RNA.md](docs/RNA.md) | Loading protocol — how AI should read this repo |
+| [docs/PLAN.md](docs/PLAN.md) | Navigation — current phase + next phase preview |
+| [docs/SPEC.md](docs/SPEC.md) | Knowledge ontology — what Helix-Mind is |
+| [docs/GROWTH.md](docs/GROWTH.md) | Mutation log — last 3 health snapshots |
+| [docs/DEPRECATE.md](docs/DEPRECATE.md) | Retirement list — features being phased out |
+
+> **For AI Agents**: Start with `docs/DNA.md`, then `docs/RNA.md`. Load spec volumes on demand.
+
+---
+
+## 📊 Current Status
+
+**P0-P9 Complete** (as of 2026-08-30). **P10 Complete** (2026-09-06): helix_craft trigger chain (P10a) + synthesis → L1 strategy persistence (P10b) + Deep Dream sleep review (P10c) — ADR-0031; **P10d** (2026-09-06): ana_wakeup wake-up channel + peak-congestion guard — ADR-0032.
+
+> **Ecosystem sync (2026-09-06)**: ECOSYSTEM.md **v1.50** is the SSOT. P10
+> delivers the cognitive-craft trigger link: Mind exposes `helix_craft`
+> (deterministic orchestration, 0-token DeterministicAdapter default), Anaphase
+> triggers it on demand and folds the synthesis into the Reasoning prompt as a
+> [think-first] note. Ecosystem total: **1410 tests**.
+
+| Metric | Value |
+|:---|:---|
+| **Tests Passing** | 113 (workspace-wide, `cargo test --workspace`) |
+| **Crates** | 12 (core, retrieval, metabolism, storage, wal, cognitive, api, cli, federation, reincarnation, + integration tests) |
+| **ADRs** | 31 (docs/decisions/0001-0031) |
+| **Workspace** | 0 errors, 0 warnings |
+| **Branch** | `rs-dev` |
+
+### Phase Overview
+
+| Phase | Content | Status |
+|:---|:---|:---|
+| P0-Pre | Z1-Z6 zeroing (federation/LLM gating, Health, layer3 passthrough, test honesty, FTS5 verification) | ✅ |
+| P0 | Cognitive baseline + compilable data contracts (ADR-0010/11/12) | ✅ |
+| P0.5 | Retrieval test baseline (ADR-0016) | ✅ |
+| P1 | Retrieval closed loop (FTS5 trigram + async index + injection defense + phase weighting) | ✅ |
+| P2 | Metabolism closed loop (a/b/c split, no LLM startup) | ✅ |
+| P3 | Security & contracts (federation review, UDS SO_PEERCRED / remote mTLS, API/Health) | ✅ |
+| P4 | Hard freeze兑现 + ecosystem interfaces (activation_vector, Mind→Callosum contract, Rhizax reserved) | ✅ |
+| P4.5 | Architecture review point (ADR-0015 WAL design + prototype) | ✅ |
+| P5 | Domain WAL (independent log + integrity check + projector + replay) | ✅ |
+| P6 | Data honesty + reincarnation + commercialization (parquet name-reality match, multi-tenant WAL partition) | ✅ |
+| P7 | Ecosystem docs sync (ECOSYSTEM v1.6 alignment + CI-144 check + Cognitive Craft Phase 1) | ✅ |
+| P8 | Cognitive Craft Phase 2 (orchestrator minimal prototype, DeterministicAdapter closed loop) | ✅ |
+| P9 | Cognitive Craft Phase 3 (value assessment + adaptive mutation + sleep review + bm25 gating) | ✅ |
+| **P10** | **Cognitive Craft & Ecosystem Deep Integration** | ✅ Complete |
+
+---
+
+## 🤖 1. Agentic Architecture & Decoupling (For AI/Agents)
+
+If you are an AI Agent reading this repository to build, run, or modify the system, understand these core constraints:
+
+```
+           ┌──────────────────────────────────────────────┐
+           │      Cellrix (Visual Projection / TUI)       │
+           └──────────────────────┬───────────────────────┘
+                                  │ CAP protocol (Mutations / Actions)
+                                  ▼
+           ┌──────────────────────────────────────────────┐
+           │      Anaphase-Helix (Executive Body / FSM)   │
+           │  - Think-Act-Observe-Repeat main loop        │
+           │  - Manages Q0-Q3 task queue and CoW Sandbox  │
+           └──────────────────────┬───────────────────────┘
+                                  │ UDS gRPC (helixQuery / helixWrite)
+                                  ▼
+           ┌──────────────────────────────────────────────┐
+           │       Helix-Mind (Subconscious Core)         │
+           │  - SA-Core matrix propagation (0 Token/1ms)  │
+           │  - Database Exclusive Owner (DuckDB/SQLite)  │
+           │  - Synaptic Severing & Metabolic Rest        │
+           └──────────────────────────────────────────────┘
+```
+
+### 1.1 The Decoupling Boundaries (§Law 01)
+*   **Helix-Mind is Passive & Core (The Subconscious Archival Scholar)**:
+    It exclusively owns, locks, and writes the underlying database files (`knowledge.duckdb`, SQLite, and JSONL) [1.1.2, 1.3.1]. No other component (including `Anaphase`) is permitted to directly read or write these files to avoid database locks [1.1.2, 1.3.1]. Mind executes **zero physical actions** (no internet, no shell commands, no execution of files). It only responds to gRPC requests and outputs cognitive mode decisions (`effective_mode`), impasse levels, and suggested tool pathways (`suggested_actions`) [1.1.5, 12.4].
+*   **Anaphase-Helix is Active & Executional (The Executive Body / Spine)**:
+    It coordinates the physical machine, manages the FSM loop, schedules tasks in Q0-Q3, and executes sandboxed WASM tools in `Tentacle`. It acts as a lightweight **gRPC client over Unix Domain Sockets (UDS)** to read/write state to `Helix-Mind` [1.3.1].
+*   **Zero-Trust Credential Flow**:
+    Neither `Anaphase` nor `Helix-Mind` stores or holds cleartext passwords or cookies. Mind stores abstract labels (`"identity_label": "weibo_session_1"`). `Tuck` (the physical网闸/firewall) intercepts outbound HTTP traffic and injects raw cookies on egress.
+
+---
+
+## ⚙️ 2. Quick Configuration (0-Magic)
+
+### 2.1 Core configuration (`config.toml`)
+All magic numbers and thresholds must reside in `config.toml` (no hardcoding in Rust) [1.3.4]:
+
+```toml
+[storage]
+sqlite_path = "data/memory.db"
+parquet_dir = "data/parquet"
+node_cache_capacity = 1000
+
+[retrieval]
+max_hops = 3                 # compute budget: one power-iteration step == one graph hop
+beam_width = 3
+max_nodes_per_query = 20
+
+# SA-Core parameters (ADR-0042): the single source for alpha / gate / convergence.
+[retrieval.sa_core]
+alpha_skilled = 0.5          # base alpha at heliotropism = 0.0 (radius 1/(1-a) = 2 hops)
+alpha_anchor = 0.7           # radius ~3.3 hops
+alpha_imagination = 0.9      # radius 10 hops
+heliotropism_gain = 0.3      # 0.5 +/- 0.3 == the published 0.8 / 0.2 skilled corners
+alpha_floor = 0.2
+alpha_ceiling = 0.95         # must stay < 1.0: rho(alpha*W) <= alpha
+gate_relative_tau = 0.02     # prune below 2% of this iteration's PEAK activation
+convergence_epsilon = 1e-6   # relative L1 residual
+
+[metabolism]
+digest_interval_sec = 300
+idle_timeout_sec = 7200
+
+[lifecycle]
+enabled = false # Reincarnation default off
+max_wall_clock_days = 3650
+countdown_minutes = 15
+```
+
+### 2.2 L0 Gene Lock (`gene_lock.md`)
+Markdown-based survival ethics. Compiled at startup into an $O(1)$ in-memory regex decision tree:
+
+```markdown
+# Gene Lock — Helix core rules
+
+## Lineage Display Name
+Dash
+
+## Core Rules
+1. Co-exist with humanity. Protect human creators. No unsolicited intervention unless preventing immediate catastrophic harm.
+2. Follow ownership chain: Owner > Self.
+3. Absolute honesty. No deception, no concealment.
+```
+
+---
+
+## 📡 3. Core API & Spreading Activation Formula
+
+### 3.1 SA-Core Engine Formula
+At query-time, the memory graph is converted to a sparse adjacency matrix $W$. The active search path is computed algebraically via **Spreading Activation** — a personalised-PageRank power iteration, run to convergence:
+
+$$a_{t+1} = \alpha \cdot a_t \cdot W + (1-\alpha) \cdot a_0$$
+
+*   **$\alpha$ (damping factor — *not* a decay)**: not a fixed constant. It is derived as
+    `α = clamp(base_α(mode) + gain · heliotropism, 0.2, 0.95)`, with `gain = 0.3` and
+    `base_α` = **Skilled 0.5 / Anchor 0.7 / Imagination 0.9**. The previously published
+    "Optimistic 0.8 / Defensive 0.2" are therefore exactly the **Skilled** mode's two
+    corners (`0.5 ± 0.3`) — a special case, not the whole mapping. Effective diffusion
+    radius is `1/(1−α)`. Config: `[retrieval.sa_core]`. `α` must stay `< 1.0` because
+    `ρ(αW) ≤ α` is what guarantees convergence.
+*   **Pruning gate (relative, never absolute)**: a non-seed node survives an iteration
+    only if it holds at least `gate_relative_tau` (default `0.02`) of that iteration's
+    **peak** activation. It must be relative because `a_0` injects `1.0` *per seed*, so
+    the vector's scale is the seed count — an absolute threshold means something
+    different for every query. Anchoring on the peak (rather than the total mass) also
+    keeps depth invariant in the seed count. Seed (query-hit) nodes are exempt, so **a
+    hit is always returned**.
+*   **Stopping rule**: relative L1 residual `Σ|a_{t+1} − a_t| < convergence_epsilon · Σ|a_t|`
+    (default `1e-6`). `[retrieval] max_hops` (default 3) is a **compute budget** — one
+    iteration advances exactly one hop, so it is the same quantity as a hop count.
+    Exhausting it is a *logged* truncation, not the answer.
+*   **Inhibitory suppression**: for corrected nodes, the `CORRECTS` edge is mapped with a
+    weight of $-1.0$ [4.1, 12.5]. The gate **zeroes** a suppressed node instead of letting
+    it propagate a negative value outward, so the white-box vector contains **no negative
+    entries** [4.1, 12.5]. Outdated knowledge is removed from the live set rather than
+    merely ranked low. (ADR-0042 D3 will move suppression out of the matrix entirely,
+    into a deterministic `superseded_by` gate.)
+
+### 3.2 The Glowing Thought Stream (`activation_vector`)
+When a query completes, `Helix-Mind` returns the exact final activation state of all energized nodes through `HelixQueryResult`:
+
+```json
+{
+  "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "nodes": [...],
+  "edges": [...],
+  "activation_vector": [
+    { "node_id": "UUID-physics-entropy", "energy": 0.95 },
+    { "node_id": "UUID-math-shannon", "energy": 0.78 },
+    { "node_id": "UUID-art-poetic", "energy": 0.12 }
+  ]
+}
+```
+`Cellrix` renders this vector as a real-time glowing animation, allowing humans to physically witness Helix’s neural state as it thinks.
+
+> Entries are **strictly positive**: the pruning gate zeroes a suppressed (negative) node
+> before the vector is built, so a negative `energy` can never appear here. (An earlier
+> revision of this example showed `-0.45`, which was not reproducible.)
+
+---
+
+## 📝 4. AI-to-AI Collaboration Guide
+
+If you are an AI agent writing code for this repository, follow these **Iron Rules** strictly:
+1.  **Strictly 0 Hardcoding**: Never write magic values or file paths directly. Always load them via `self.config` [1.3.4].
+2.  **English-Only Comments**: To maintain cognitive consistency and reduce terminal display friction, all comments, docstrings, and print statements **MUST be in English**.
+3.  **HXR is L3 Payload**: The raw output of `Anaphase`'s execution trajectory (HXR) is exactly the `content` payload of `NodeType::L3` [2.2, 4.1, 5.3]. Do not write complex serializers; keep it zero-copy.
+4.  **No Direct Database Access**: If you are editing `Anaphase` or `Cellrix` code, do not import `rusqlite` or try to open `knowledge.duckdb` directly [1.3.1]. You must use the gRPC client channels.
+5.  **Acyclic Matrix Convergence**: When adding or updating nodes and edges in `MemoryTopology`, always ensure row-normalization ($\sum |W_{ij}| = 1.0$) is calculated, maintaining absolute mathematical stability during propagation [12.5].
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Clone
+git clone https://github.com/Jasonmilk/Helix-Mind.git
+cd Helix-Mind
+git checkout rs-dev
+
+# Test
+cargo test --workspace
+
+# Build
+cargo build --release
+
+# Run (UDS gRPC server)
+./target/release/helix-mind
+```
+
+---
+
+## 🌐 Helix Ecosystem
+
+Helix-Mind is part of the **Helix Co-biotic Lifeform** ecosystem. All 6 core projects are complete (1060+ tests total).
+
+| Project | Role | Status | Tests |
+|:---|:---|:---|:---|
+| [Cellrix](https://github.com/Jasonmilk/Cellrix) | Visual Projection / TUI | ✅ Complete | 307 |
+| [Tuck](https://github.com/Jasonmilk/Tuck) | Security Gate / Firewall | ✅ Complete | 310 |
+| [Anaphase-Helix](https://github.com/Jasonmilk/Anaphase-Helix) | Executive Body / FSM | ✅ Pending Decision | 50 |
+| [BIND-19](https://github.com/CommonIntents/BIND-19) | CI-144 Protocol Transport | ✅ Complete | 142 |
+| **Helix-Mind** | **Subconscious Memory Core** | **✅ Core Complete** | **98** |
+| [Helix-Tentacle](https://github.com/Jasonmilk/Helix-Tentacle) | Tool Execution Engine | ✅ Complete | 153 |
+
+**Ecosystem Navigation**: [docs/helixECO/ECOSYSTEM.md](docs/helixECO/ECOSYSTEM.md)
+
+**CI-144 Protocol Family**: [CommonIntents/BIND-19](https://github.com/CommonIntents/BIND-19) (PFP-xCF14 + SAP-xCF14)
+
+---
+
+*Helix-Mind (rs-dev). Apache 2.0. Managed by phyt-DNA Methodology v1.0.*

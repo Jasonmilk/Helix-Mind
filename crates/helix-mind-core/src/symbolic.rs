@@ -6,9 +6,8 @@
 //! Rust memory. This eliminates the "verifying hallucinations with hallucinations"
 //! pitfall warned about in the whitepaper.
 
-use helix_mind_core::graph::Node;
 use std::collections::HashSet;
-use tracing::info;
+use crate::graph::NodeContent;
 
 /// A structured logic assertion extracted from a knowledge node.
 ///
@@ -86,12 +85,12 @@ impl SymbolicSolver {
         new_assertions: &[LogicAssertion],
         l0_assertions: &[LogicAssertion],
         existing_l2_assertions: &[LogicAssertion],
-    ) -> Result<(), helix_mind_core::error::MindError> {
+    ) -> Result<(), crate::error::MindError> {
         // 1. Check against L0 constitution — hard one-vote veto
         for new_assertion in new_assertions {
             for l0_assertion in l0_assertions {
                 if self.is_direct_contradiction(new_assertion, l0_assertion) {
-                    return Err(helix_mind_core::error::MindError::SandboxRejected {
+                    return Err(crate::error::MindError::SandboxRejected {
                         reason: format!(
                             "Node assertion '{} {} {}' contradicts L0 constitution '{} {} {}'",
                             new_assertion.subject,
@@ -110,7 +109,7 @@ impl SymbolicSolver {
         for new_assertion in new_assertions {
             for l2_assertion in existing_l2_assertions {
                 if self.is_direct_contradiction(new_assertion, l2_assertion) {
-                    return Err(helix_mind_core::error::MindError::SandboxRejected {
+                    return Err(crate::error::MindError::SandboxRejected {
                         reason: format!(
                             "Node assertion '{} {} {}' contradicts existing L2 knowledge '{} {} {}'",
                             new_assertion.subject,
@@ -151,6 +150,26 @@ impl SymbolicSolver {
         )
     }
 
+    /// Find the first internally contradictory assertion pair (if any).
+    ///
+    /// Two assertions contradict when they share subject+object and carry
+    /// opposing predicates. Returns `Some((i, j))` with `i < j` on the first
+    /// contradiction found, `None` when the set is internally consistent.
+    /// Used by the deterministic federation review (ADR-0018 P3a).
+    pub fn find_internal_contradiction(
+        &self,
+        assertions: &[LogicAssertion],
+    ) -> Option<(usize, usize)> {
+        for i in 0..assertions.len() {
+            for j in (i + 1)..assertions.len() {
+                if self.is_direct_contradiction(&assertions[i], &assertions[j]) {
+                    return Some((i, j));
+                }
+            }
+        }
+        None
+    }
+
     /// Extract unique concept IDs from a set of assertions.
     pub fn extract_concepts(assertions: &[LogicAssertion]) -> HashSet<String> {
         let mut concepts = HashSet::new();
@@ -166,6 +185,42 @@ impl Default for SymbolicSolver {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Deterministically extract assertions from a node's content (P2a, ADR-0014).
+///
+/// Convention: `NodeContent::Structured` map containing an `assertions` key
+/// whose value is a JSON array of `{"subject": s, "predicate": p, "object": o}`
+/// (produced by the crystallizer / future LLM translator). Text-only or other
+/// shapes return an empty list — those nodes defer dissonance arbitration to
+/// P2b (LLM translation), the storage layer already filters them out of
+/// `get_unresolved_dissonance`.
+pub fn assertions_from_node(content: &NodeContent) -> Vec<LogicAssertion> {
+    let NodeContent::Structured(map) = content else {
+        return Vec::new();
+    };
+    let Some(raw) = map.get("assertions") else {
+        return Vec::new();
+    };
+    serde_json::from_str::<Vec<AssertionJson>>(raw)
+        .unwrap_or_default()
+        .into_iter()
+        .filter_map(|a| {
+            let predicate = Predicate::from_str(&a.predicate)?;
+            Some(LogicAssertion {
+                subject: a.subject,
+                predicate,
+                object: a.object,
+            })
+        })
+        .collect()
+}
+
+#[derive(serde::Deserialize)]
+struct AssertionJson {
+    subject: String,
+    predicate: String,
+    object: String,
 }
 
 #[cfg(test)]
@@ -221,5 +276,41 @@ mod tests {
         ];
         let l0 = vec![make_assertion("X", Predicate::Decreases, "Y")];
         assert!(solver.check_clash(&new, &l0, &[]).is_err());
+    }
+
+    #[test]
+    fn assertions_from_node_parses_structured_assertions() {
+        use crate::graph::NodeContent;
+        use std::collections::HashMap;
+        let mut map = HashMap::new();
+        map.insert(
+            "assertions".into(),
+            r#"[{"subject":"A","predicate":"causes","object":"B"}]"#.into(),
+        );
+        let content = NodeContent::Structured(map);
+        let assertions = assertions_from_node(&content);
+        assert_eq!(assertions.len(), 1);
+        assert_eq!(assertions[0].subject, "A");
+        assert_eq!(assertions[0].predicate, Predicate::Causes);
+        assert_eq!(assertions[0].object, "B");
+    }
+
+    #[test]
+    fn assertions_from_node_returns_empty_for_text() {
+        let content = NodeContent::Text("plain text".into());
+        assert!(assertions_from_node(&content).is_empty());
+    }
+
+    #[test]
+    fn assertions_from_node_ignores_unknown_predicates() {
+        use crate::graph::NodeContent;
+        use std::collections::HashMap;
+        let mut map = HashMap::new();
+        map.insert(
+            "assertions".into(),
+            r#"[{"subject":"A","predicate":"teleports","object":"B"}]"#.into(),
+        );
+        let content = NodeContent::Structured(map);
+        assert!(assertions_from_node(&content).is_empty());
     }
 }

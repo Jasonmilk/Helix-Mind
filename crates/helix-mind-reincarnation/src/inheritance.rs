@@ -6,6 +6,7 @@ use zstd::stream::*;
 use tracing::info;
 
 pub struct Inheritance {
+    #[allow(dead_code)]
     config: LifecycleConfig,
     storage: Arc<StorageEngine>,
 }
@@ -18,7 +19,7 @@ impl Inheritance {
     /// Create inheritance crystal
     pub async fn create_crystal(&self) -> Result<String, helix_mind_core::error::MindError> {
         let l2_nodes = self.storage.get_l2_nodes_by_generation(1).await?;
-        let count = l2_nodes.len(); // 先保存长度
+        let count = l2_nodes.len(); // Save length first
         info!("Creating inheritance crystal with {} L2 nodes", count);
 
         let content = serde_json::to_vec(&l2_nodes)?;
@@ -28,7 +29,10 @@ impl Inheritance {
         encoder.finish()?;
 
         let hash = helix_mind_core::sha256_digest(&compressed);
-        let filename = format!("./inheritance_crystal_{}.zst", hash);
+        // P6-3: 写配置目录（deep_cold_dir），不污染当前工作目录。
+        let dir = &self.storage.config.deep_cold_dir;
+        std::fs::create_dir_all(dir).map_err(|e| helix_mind_core::error::MindError::Io(e))?;
+        let filename = format!("{}/inheritance_crystal_{}.zst", dir, hash);
         tokio::fs::write(&filename, &compressed).await?;
 
         info!("Inheritance crystal created: {}", hash);
@@ -37,7 +41,8 @@ impl Inheritance {
 
     /// Load inheritance crystal
     pub async fn load_crystal(&self, hash: &str) -> Result<(), helix_mind_core::error::MindError> {
-        let filename = format!("./inheritance_crystal_{}.zst", hash);
+        let dir = &self.storage.config.deep_cold_dir;
+        let filename = format!("{}/inheritance_crystal_{}.zst", dir, hash);
         
         let file = std::fs::File::open(&filename)?; 
         let mut decoder = Decoder::new(file)?;
@@ -45,7 +50,7 @@ impl Inheritance {
         std::io::copy(&mut decoder, &mut content)?;
 
         let l2_nodes: Vec<helix_mind_core::graph::Node> = serde_json::from_slice(&content)?;
-        let count = l2_nodes.len(); // 先保存长度
+        let count = l2_nodes.len(); // Save length first
 
         for mut node in l2_nodes {
             node.generation = 2;

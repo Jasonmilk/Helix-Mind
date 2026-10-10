@@ -53,7 +53,14 @@ pub async fn execute(
         None
     };
 
-    let current_gen = 1; // TODO: get from storage
+    // 真实世代：从 storage 的 L3 节点最大 generation 获取（P6-3 修复，不再硬编码 1）。
+    let current_gen = storage
+        .get_nodes_by_type(helix_mind_core::graph::NodeType::L3)
+        .await?
+        .iter()
+        .map(|n| n.generation)
+        .max()
+        .unwrap_or(1);
     let new_generation = current_gen + 1;
     if let Some(hash) = &crystal_hash {
         storage

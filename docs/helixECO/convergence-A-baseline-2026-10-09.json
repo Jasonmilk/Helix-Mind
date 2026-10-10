@@ -1,0 +1,203 @@
+{
+  "generated_at": "2026-10-09T02:48:18",
+  "experiment": "收敛判据实验 A —— 基线（改进前）",
+  "setup": {
+    "rounds": 21,
+    "secret": "ZEPHYR-7421",
+    "planted_at_round": 1,
+    "asked_at_round": 21,
+    "chain": "每轮 job_id = 上一轮 period_id"
+  },
+  "measures": {
+    "lineage_path_length": 21,
+    "prompt_chars_round2": 288,
+    "prompt_chars_round21": 288,
+    "round21_contains_secret": false,
+    "drilldown_path_exists": false
+  },
+  "verdict": {
+    "criterion1_bounded": true,
+    "criterion1_forced": true,
+    "criterion2_retrievable": false,
+    "criterion3_lineage_intact": true,
+    "note": "判据①真空成立（常量 288 字符），代价是链上其余 19 轮全部不可见；判据②无任何路径"
+  },
+  "rounds": [
+    {
+      "period": "run-8bba24c5ee368a4a-p006ac7e55a000000",
+      "user": "Calculate 2 to the power of 10",
+      "parent": null,
+      "injected_chars_memory": 0,
+      "prompt_chars": 146,
+      "contains_secret": false
+    },
+    {
+      "period": "run-7e2a43434fcf3721-p006ac7e55b000001",
+      "user": "请记住这个词：ZEPHYR-7421。只回 OK。",
+      "parent": null,
+      "injected_chars_memory": 0,
+      "prompt_chars": 141,
+      "contains_secret": true
+    },
+    {
+      "period": "run-f18255668342d37f-p006ac7e55b000002",
+      "user": "第 2 轮：只回 OK。",
+      "parent": "run-7e2a43434fcf3721-p006ac7e55b000001",
+      "injected_chars_memory": 0,
+      "prompt_chars": 288,
+      "contains_secret": true
+    },
+    {
+      "period": "run-20775c080431982a-p006ac7e55c000003",
+      "user": "第 3 轮：只回 OK。",
+      "parent": "run-f18255668342d37f-p006ac7e55b000002",
+      "injected_chars_memory": 0,
+      "prompt_chars": 275,
+      "contains_secret": false
+    },
+    {
+      "period": "run-0515d0eb134d9db9-p006ac7e55c000004",
+      "user": "第 4 轮：只回 OK。",
+      "parent": "run-20775c080431982a-p006ac7e55c000003",
+      "injected_chars_memory": 0,
+      "prompt_chars": 275,
+      "contains_secret": false
+    },
+    {
+      "period": "run-c640459b6b07e01c-p006ac7e55c000005",
+      "user": "第 5 轮：只回 OK。",
+      "parent": "run-0515d0eb134d9db9-p006ac7e55c000004",
+      "injected_chars_memory": 0,
+      "prompt_chars": 275,
+      "contains_secret": false
+    },
+    {
+      "period": "run-694df1f2c5fd330b-p006ac7e55d000006",
+      "user": "第 6 轮：只回 OK。",
+      "parent": "run-c640459b6b07e01c-p006ac7e55c000005",
+      "injected_chars_memory": 0,
+      "prompt_chars": 275,
+      "contains_secret": false
+    },
+    {
+      "period": "run-74af055447dcb6b6-p006ac7e55d000007",
+      "user": "第 7 轮：只回 OK。",
+      "parent": "run-694df1f2c5fd330b-p006ac7e55d000006",
+      "injected_chars_memory": 0,
+      "prompt_chars": 275,
+      "contains_secret": false
+    },
+    {
+      "period": "run-f4472b6664601625-p006ac7e55d000008",
+      "user": "第 8 轮：只回 OK。",
+      "parent": "run-74af055447dcb6b6-p006ac7e55d000007",
+      "injected_chars_memory": 0,
+      "prompt_chars": 275,
+      "contains_secret": false
+    },
+    {
+      "period": "run-396adc08a2ab4128-p006ac7e55d000009",
+      "user": "第 9 轮：只回 OK。",
+      "parent": "run-f4472b6664601625-p006ac7e55d000008",
+      "injected_chars_memory": 0,
+      "prompt_chars": 275,
+      "contains_secret": false
+    },
+    {
+      "period": "run-443dd887cc914372-p006ac7e55e00000a",
+      "user": "第 10 轮：只回 OK。",
+      "parent": "run-396adc08a2ab4128-p006ac7e55d000009",
+      "injected_chars_memory": 0,
+      "prompt_chars": 276,
+      "contains_secret": false
+    },
+    {
+      "period": "run-32fc19042c4380a7-p006ac7e55e00000b",
+      "user": "第 11 轮：只回 OK。",
+      "parent": "run-443dd887cc914372-p006ac7e55e00000a",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-cc05a84d8db80ac8-p006ac7e55e00000c",
+      "user": "第 12 轮：只回 OK。",
+      "parent": "run-32fc19042c4380a7-p006ac7e55e00000b",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-a0be6307f69bc0c5-p006ac7e55f00000d",
+      "user": "第 13 轮：只回 OK。",
+      "parent": "run-cc05a84d8db80ac8-p006ac7e55e00000c",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-05c20392e2ef487e-p006ac7e55f00000e",
+      "user": "第 14 轮：只回 OK。",
+      "parent": "run-a0be6307f69bc0c5-p006ac7e55f00000d",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-b99e4be56ecc2473-p006ac7e55f00000f",
+      "user": "第 15 轮：只回 OK。",
+      "parent": "run-05c20392e2ef487e-p006ac7e55f00000e",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-7caebeec2fa03284-p006ac7e560000010",
+      "user": "第 16 轮：只回 OK。",
+      "parent": "run-b99e4be56ecc2473-p006ac7e55f00000f",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-e69bc8a026b80821-p006ac7e560000011",
+      "user": "第 17 轮：只回 OK。",
+      "parent": "run-7caebeec2fa03284-p006ac7e560000010",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-06aaa903bf62174a-p006ac7e560000012",
+      "user": "第 18 轮：只回 OK。",
+      "parent": "run-e69bc8a026b80821-p006ac7e560000011",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-468de2f201e1159f-p006ac7e561000013",
+      "user": "第 19 轮：只回 OK。",
+      "parent": "run-06aaa903bf62174a-p006ac7e560000012",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-677cbda6b2ad554f-p006ac7e561000014",
+      "user": "第 20 轮：只回 OK。",
+      "parent": "run-468de2f201e1159f-p006ac7e561000013",
+      "injected_chars_memory": 0,
+      "prompt_chars": 277,
+      "contains_secret": false
+    },
+    {
+      "period": "run-5995cdc0ec3c520c-p006ac7e561000015",
+      "user": "第 1 轮我让你记住的那个词是什么？只回那个词。",
+      "parent": "run-677cbda6b2ad554f-p006ac7e561000014",
+      "injected_chars_memory": 0,
+      "prompt_chars": 288,
+      "contains_secret": false
+    }
+  ]
+}

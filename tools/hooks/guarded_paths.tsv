@@ -1,0 +1,32 @@
+# Claimed coverage of the GUARDED prefix set in `commit-msg`, one row per path.
+#
+# Columns (TAB-separated):  claim <TAB> repo <TAB> path <TAB> basis
+#
+#   claim  match   = the comment claims this path IS guarded
+#          nomatch = the comment claims this path is NOT guarded
+#   repo   informational only. `git diff --cached --numstat` prints paths
+#          relative to the repo being committed, so the regex never sees the
+#          repo name — that is exactly why the three prefixes are repo-agnostic
+#          and why the earlier "two Cellrix trees plus the ADRs, and nothing
+#          else" wording was a claim the mechanism could not honour (K-104c).
+#   basis  where the claim comes from: the comment's own words, or an explicit
+#          declaration added by the K-104c correction (`@scope:` line).
+#
+# `commit-msg.scope.sh` replays this table and fails if any row disagrees with
+# the regex. A row that cannot be justified by the comment is a bug in the
+# comment, not in the regex.
+claim	repo	path	basis
+match	Cellrix	web/assets/app.js	comment: "the scenes of the four overwrites" — Cellrix web assets tree
+match	Cellrix	web/src/main.rs	comment: same — Cellrix web source tree
+match	Cellrix	docs/decisions/ADR-0001.md	comment: "plus the ADRs"
+match	helix-mind	docs/decisions/ADR-0001.md	actual+declared: paths are repo-relative, so this repo's ADR dir is guarded too (@scope: repo-agnostic)
+match	Tuck	docs/decisions/K-066.md	actual+declared: same — repo-agnostic
+match	Helix-MCP-Learner	docs/decisions/x.md	actual+declared: same — repo-agnostic
+nomatch	Cellrix	src/lib.rs	comment: "Rewriting `src/` … deliberately NOT guarded"
+nomatch	Cellrix	crates/core/src/lib.rs	comment: same, for `crates/`
+nomatch	helix-mind	src/lib.rs	comment: same — no repo's `src/` is guarded
+nomatch	Cellrix	README.md	not source and not `docs/decisions/`
+nomatch	Cellrix	docs/PLAN.md	`docs/` but not `docs/decisions/`
+nomatch	helix-mind	tools/hooks/commit-msg	the tool itself must not be able to guard itself in
+nomatch	Cellrix	web/other/x.js	only the two `web/…` prefixes are guarded, not `web/` as a whole
+nomatch	Cellrix	docs/decisions-archive/x.md	the prefix carries its trailing slash; `decisions-archive/` is a different directory

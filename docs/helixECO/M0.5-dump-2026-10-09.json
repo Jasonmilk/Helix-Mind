@@ -1,0 +1,64 @@
+{
+  "generated_at": "2026-10-09T00:26:13",
+  "store": "/Users/jason/Developer/Jasonmilk/.helix/events",
+  "cutoff_adr0041": "2026-09-18T00:00:00Z",
+  "ts_range": [
+    "2026-09-28T18:03:36Z",
+    "2026-10-04T07:03:50Z"
+  ],
+  "turn_start_distribution": {
+    "1": 462
+  },
+  "probe_named": {
+    "total": 10,
+    "roots": 7
+  },
+  "totals": {
+    "periods": 462,
+    "nonempty": 462,
+    "empty": 0,
+    "rows": 5664,
+    "names_sidecars": 462,
+    "parse_errors": 0
+  },
+  "I2_non_id_parents": {
+    "count": 0,
+    "before": 0,
+    "after": 0,
+    "samples": []
+  },
+  "dangling_parents": {
+    "count": 0,
+    "before": 0,
+    "after": 0,
+    "samples": []
+  },
+  "A1_multi_turn_start": {
+    "count": 0,
+    "before": 0,
+    "after": 0,
+    "samples": []
+  },
+  "I4_non_monotonic_paths": {
+    "count": 0,
+    "before": 0,
+    "after": 0,
+    "samples": []
+  },
+  "graph": {
+    "roots": 335,
+    "roots_before": 0,
+    "roots_after": 335,
+    "linked": 127,
+    "orphan_ratio": 0.7251,
+    "distinct_chains": 335,
+    "chain_len_hist": {
+      "1": 324,
+      "2": 5,
+      "3": 3,
+      "4": 2,
+      "54": 1
+    },
+    "max_path_len": 54
+  }
+}

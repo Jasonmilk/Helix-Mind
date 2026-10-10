@@ -2,26 +2,36 @@ use helix_mind_core::graph::*;
 use helix_mind_core::config::*;
 use helix_mind_storage::StorageEngine;
 use helix_mind_storage::WritePriority;
-use helix_mind_retrieval::RetrievalEngine;
+use helix_mind_retrieval::{RetrievalEngine, FakeAdapter};
 use helix_mind_metabolism::decay::DecayEngine;
-use helix_mind_metabolism::symbolic::SymbolicSolver;
-use helix_mind_metabolism::symbolic::LogicAssertion;
-use helix_mind_metabolism::symbolic::Predicate;
+use helix_mind_core::symbolic::SymbolicSolver;
+use helix_mind_core::symbolic::LogicAssertion;
+use helix_mind_core::symbolic::Predicate;
 use uuid::Uuid;
 use std::sync::Arc;
 
 async fn create_test_storage() -> Arc<StorageEngine> {
+    // 临时**文件**库，不是 `:memory:`（r2d2 池的每条 `:memory:` 连接都是私有空库，
+    // schema 只在其中一条上 ⇒ 并发偶发 `no such table`）。见 `sqlite_pool.rs:477`。
+    //
+    // 顺带修掉原先写死的共享目录：`/tmp/test_human_view`、`/tmp/test_parquet`、
+    // `/tmp/test_wal` 与本仓 `helix-mind-federation/tests/outbound_gate_test.rs`
+    // 是**同名字面量**，两个测试二进制并行跑时会互相踩。改为按 uuid 各自独立。
+    let db = std::env::temp_dir().join(format!("hm_cli_{}.db", Uuid::new_v4()));
+    let base = db.to_string_lossy().to_string();
     let config = StorageConfig {
-        sqlite_path: ":memory:".to_string(),
-        human_view_dir: "/tmp/test_human_view".to_string(),
+        sqlite_path: base.clone(),
+        human_view_dir: format!("{base}.human_view"),
         human_view_max_size_mb: 1,
         node_cache_capacity: 100,
-        deep_cold_dir: "/tmp/test_deep_cold".to_string(),
+        deep_cold_dir: format!("{base}.deep_cold"),
         deferred_write_interval_sec: 60,
         l3_merge_similarity_threshold: 0.85,
-        parquet_dir: "/tmp/test_parquet".to_string(),
+        parquet_dir: format!("{base}.parquet"),
         topology_max_nodes: 100000,
         vector_similarity_threshold: 0.7,
+        wal_enabled: true, // 文件库：可用 WAL（`:memory:` 才需关闭）
+        wal_dir: format!("{base}.wal"),
     };
     StorageEngine::new(&config).await.unwrap()
 }
@@ -50,6 +60,10 @@ fn create_l2_node(content: &str, utility: f64) -> Node {
         high_risk: false,
         abstract_provenance: None,
         derived_from: vec![],
+        // P0 (ADR-0011): L2 nodes are Low subject-dependency, Liquid phase.
+        phase_state: PhaseState::Liquid,
+        subject_dependency: SubjectDependency::Low,
+        meta: PhaseMeta::default(),
     }
 }
 
@@ -64,6 +78,11 @@ async fn test_write_and_retrieve_node() {
     let retrieved = storage.get_nodes_by_ids(&[node_id]).await.unwrap();
     assert_eq!(retrieved.len(), 1);
     assert_eq!(retrieved[0].utility, 0.8);
+    // P0 (ADR-0011): phase-state & subject-dependency survive the SQLite round-trip.
+    assert_eq!(retrieved[0].phase_state, PhaseState::Liquid);
+    assert_eq!(retrieved[0].subject_dependency, SubjectDependency::Low);
+    assert_eq!(retrieved[0].meta.concentration, Concentration::Dissolved);
+    assert_eq!(retrieved[0].meta.tension, 0.0);
 }
 
 #[tokio::test]
@@ -88,16 +107,28 @@ async fn test_retrieval_engine_basic() {
     storage.add_edge(&edge).await.unwrap();
 
     let retrieval_config = RetrievalConfig {
+        stopwords: Vec::new(),
         beam_width: 3,
-        weight_threshold: 0.5,
+        // ADR-0042 D0: no threshold workaround needed — the gate is relative
+        // to the activation mass, so a 1-hop leaf survives the default τ=0.02.
+        // (`weight_threshold: 0.2` used to be required to slip under the
+        // absolute 0.8 gate, which sat above the first-hop ceiling α.)
         max_nodes_per_query: 100,
         dead_end_penalty_factor: 0.8,
         max_hops: 5,
         soft_edge_decay_factor: 0.8,
         soft_edge_min_weight: 0.1,
         tentative_edge_weight: 0.3,
+        ..Default::default()
     };
-    let retrieval = RetrievalEngine::new(retrieval_config, storage.clone());
+    // P0.5: inject the deterministic FakeAdapter as the start-node extractor.
+    let mut fake = FakeAdapter::new();
+    fake.add("test", vec![id_a]);
+    let retrieval = RetrievalEngine::with_extractor(
+        retrieval_config,
+        storage.clone(),
+        Arc::new(fake),
+    );
 
     let energy = EnergyContext {
         token_budget: 1000,
@@ -108,6 +139,7 @@ async fn test_retrieval_engine_basic() {
         system_load: 0.0,
         familiarity: 0.5,
         impasse_depth: 0,
+        budget_tier: BudgetTier::Augmentable,
     };
 
     let result = retrieval.query(
@@ -119,6 +151,14 @@ async fn test_retrieval_engine_basic() {
         AutonomyLevel::Open,
     ).await.unwrap();
 
+    // P0.5: extraction is now wired (FakeAdapter), so the pipeline must return
+    // real nodes — start node A and its causal neighbor B.
+    let returned: Vec<uuid::Uuid> = result.nodes.iter().map(|n| n.id).collect();
+    assert!(!result.nodes.is_empty(), "retrieval must return nodes via FakeAdapter");
+    assert!(
+        returned.contains(&id_a) && returned.contains(&id_b),
+        "skilled traversal should reach B from A via the causal edge"
+    );
     println!("Impasse: {:?}, stages: {}", result.impasse_level, result.stages_attempted);
 }
 

@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+# Large-diff gate, driven by the commit message rather than an environment
+# variable.
+#
+# WHAT THIS IS, AND WHAT IT IS NOT.
+#
+# This hook is **"help me not make this mistake"**, not **"guarantee this mistake
+# never enters"**. It is bypassed by `git commit --no-verify`, it does not run on a
+# machine where hooks were never installed, and it does not run at all for a commit
+# made through a web interface. Anyone who reads it as a guarantee will stop looking
+# — and it guards *commit messages*, which are the thing most easily mistaken for
+# evidence. A guarantee mistaken for a mechanism is the fourth instance of
+# "declaration standing in for a check" that this file's own history records.
+#
+# The two things it does enforce, it enforces only where it runs:
+#   gate 0 — the message is not shell shrapnel (see below)
+#   gate 1 — a large guarded diff carries a `[large] <reason>` marker
+# Both are refusals with instructions, not silent fixes.
+#
+# An env var is invisible to `git log`: who skipped the gate and why becomes
+# unrecoverable, and habit makes people carry it permanently — at which point
+# the gate is decoration, which is exactly the failure it exists to prevent
+# (the third overwrite was committed after the author saw "+62/-258").
+#
+# A marker in the message is auditable:  git log --grep='\[large\]'
+#
+# Why this is the general solution and a content check is not: the four
+# overwrites on 2026-09-15/16 had one physical shape in common — the whole file
+# was replaced. That shows up as hundreds of changed lines. It does not require
+# knowing what the pollution looks like, so it cannot be outrun by wording.
+#
+#   [large] 重建 ADR 索引（36 份）
+set -u
+
+LARGE_DIFF_MAX="${LARGE_DIFF_MAX:-50}"
+MSG_FILE="${1:-}"
+[ -n "$MSG_FILE" ] && [ -f "$MSG_FILE" ] || exit 0
+
+# ---------------------------------------------------------- gate 0: no shrapnel
+#
+# A message written with `git commit -m "…"` lets the shell interpret backticks
+# and `$(…)` as command substitutions. When one fails, bash prints its complaint
+# into the message and the substituted text vanishes — so the record loses words
+# and gains error text, silently, and `git log` shows the result as if it were
+# what the author wrote. That happened here: four phrases of a commit body became
+# a lone backslash, and it was only noticed by reading the log afterwards.
+#
+# A content check is the right shape for this and not for the diff gate above,
+# because unlike "was the file replaced wholesale" there is no proxy for it: the
+# damage is only visible as the damage.
+#
+#   REJECT: 提交信息含 shell 误解析残渣
+#
+# The fix is to pass the message on stdin — `git commit -F -` with a quoted
+# heredoc — which is what the passages that survived were written with.
+shrapnel='command not found|^bash: |return: can only|syntax error: unexpected end of file|unexpected EOF while looking for|^\[\[[a-z_]*\]\]: '
+if grep -qE "$shrapnel" "$MSG_FILE" 2>/dev/null; then
+  echo "REJECT: 提交信息里有 shell 误解析的残渣 —— 说明这条消息是用 -m/\"…\" 传的，"
+  echo "        反引号或 \$(…) 被当成了命令替换，**原文已经有词被吃掉了**。"
+  grep -nE "$shrapnel" "$MSG_FILE" | head -3 | sed 's/^/        /'
+  echo "        改用：git commit -F - <<'MSG' … MSG   （带引号的分隔符，不做替换）"
+  exit 1
+fi
+
+# A lone backslash standing between whitespace is the specific residue a failed
+# substitution leaves in place of the text it swallowed. The first version of this
+# rule only matched a backslash on a line by itself, which is NOT the shape the
+# damage took: what actually happened was `CI-7 ran inside \ and mutates src/` —
+# an inline backslash where four words used to be. A control caught the misfire.
+#
+# Narrow on purpose: a backslash inside a word (a path, an escape) is normal prose
+# and is left alone. Thirty real historical messages are replayed against this gate
+# below to hold that line.
+if grep -qE '(^|[[:space:]])\\([[:space:]]|$)' "$MSG_FILE" 2>/dev/null; then
+  echo "REJECT: 提交信息里有孤立的反斜杠 —— 被吞掉的命令替换留下的残骸，"
+  echo "        通常在两个空格之间，那里原本是一段文字。"
+  grep -nE '(^|[[:space:]])\\([[:space:]]|$)' "$MSG_FILE" | head -3 | sed 's/^/        /'
+  echo "        用 git commit -F - <<'MSG' 重写，别用 -m。"
+  exit 1
+fi
+
+if grep -q '\[large\]' "$MSG_FILE" 2>/dev/null; then
+  exit 0
+fi
+
+stat="$(git diff --cached --shortstat 2>/dev/null || true)"
+[ -n "$stat" ] || exit 0
+
+# --numstat is a machine format (added, deleted, path) — no human text to parse
+# and no dialect to get wrong. The previous version used --shortstat plus sed,
+# and macOS sed silently matched nothing (BRE treats \+ as a literal), so the
+# gate computed 0 and passed everything for as long as it existed.
+numstat="$(git diff --cached --numstat 2>/dev/null || true)"
+
+# Only GUARDED paths count. Tests, fixtures and inline test data are data, not
+# logic, and being large is their nature — the gate kept firing on exactly the
+# change it should encourage (putting a real period slice into the net). Three
+# consecutive [large] markers is how a gate becomes a ritual, and a ritual is a
+# gate nobody reads.
+#
+# WHAT THE PREFIXES BELOW DO AND DO NOT COVER (K-104c, corrected in place).
+#
+# The three prefixes are **the scenes of the four overwrites**, not a claim
+# about what "source" is. An earlier wording said they were "two Cellrix trees
+# plus the ADRs, and nothing else" — that was a *repository-scoped* claim, and
+# the mechanism is not repository-scoped: `git diff --cached --numstat` prints
+# paths **relative to the repo being committed**, so `docs/decisions/` matches
+# in *every* repo that has one (ten of them today), not only in Cellrix's ADRs,
+# and `web/src/` + `web/assets/` would match in any repo that had those trees.
+#
+# ⇒ Declared scope and actual scope are now stated in one machine-checked line:
+#
+# @scope: repo-agnostic prefixes: web/assets/ web/src/ docs/decisions/
+#
+# `commit-msg.scope.sh` asserts that this line's prefix set equals the GUARDED
+# alternation below, and that `guarded_paths.tsv`'s claimed-covered paths match
+# while its claimed-uncovered paths do not. The regex itself is **unchanged**
+# (that script also proves it byte-for-byte against HEAD): the mechanism was
+# never wrong, the *declaration* was. Correcting a declaration is not widening a
+# gate — widening is what the next paragraph refuses to do.
+#
+# Rewriting `src/` or `crates/` is this workspace's normal work and is
+# deliberately NOT guarded: widening this would re-create the ritual the
+# paragraph above retreats from.
+#
+# An earlier wording of this comment read "Source, assets and ADRs keep the
+# tight limit", which read as a category and was false — it covered one repo's
+# source and assets. Corrected in place (K-104b). **The regex is unchanged on
+# purpose**: this gate exists for a *failure shape* observed in exactly these
+# places ("one of those replaced wholesale"), and a longer prefix list would
+# measure size instead of that shape.
+#
+# If it should be wider, the honest form is a **ratio bound on any path**, not a
+# longer prefix list — that is a decision, not a cleanup. That judgement now
+# exists as `diff-ratio.sh`: it measures `deleted/before` per path and reports
+# REPLACED / LOCAL / NEW / UNMEASURABLE. It is deliberately **not wired in
+# here**, so that this file's blocking behaviour stays bit-for-bit what it was;
+# adopting it remains the policy decision the previous paragraph left open.
+GUARDED='^(web/assets/|web/src/|docs/decisions/)'
+total=$(printf '%s\n' "$numstat" | awk -v re="$GUARDED" 'NF>=3 && $3 ~ re {a+=$1} NF>=3 && $3 ~ re && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
+skipped=$(printf '%s\n' "$numstat" | awk -v re="$GUARDED" 'NF>=3 && $3 !~ re {a+=$1} NF>=3 && $3 !~ re && $2 ~ /^[0-9]+$/ {a+=$2} END {print a+0}')
+
+# Fail LOUD on a parse that yields nothing while the input is non-empty: that
+# is a broken parser, not a small diff. Failing open here is how the gate died
+# silently the first time.
+if [ -n "$numstat" ] && [ "${total:-0}" = "0" ] && [ "${skipped:-0}" = "0" ]; then
+  echo "REJECT: numstat 非空但解析出 0 —— 解析器坏了，拒绝放行"
+  printf '%s\n' "$numstat" | head -3 | sed 's/^/        /'
+  exit 1
+fi
+
+if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
+  echo "REJECT: guarded diff is $total lines (limit $LARGE_DIFF_MAX); unguarded $skipped"
+  echo "        大改动常常是「整份被替换」，而不是「逐处修改」。"
+  echo "        确认这是本意后，在提交信息里写明："
+  echo "            [large] <为什么这次改动这么大>"
+  exit 1
+fi
+exit 0
