@@ -1,3 +1,18 @@
+# ★ 欠账进报告头（2026-10-10）：不进报告头就永远靠外挂记忆背 —— 而外挂是人的，不是生态的。
+_report_field_debts() {
+  local f="$ROOT/docs/helixECO/DEBTS.md"
+  [ -f "$f" ] || { echo "▸ 欠账：—（缺 DEBTS.md）"; return 0; }
+  local open_
+  open_=$(grep -cE '\| (⬜|⏳|⏸)' "$f" 2>/dev/null)
+  [ -n "$open_" ] || open_=0
+  echo "▸ 欠账（**未销号 ${open_} 条** · 真源 docs/helixECO/DEBTS.md）："
+  grep -E '\| (⬜|⏳|⏸)' "$f" 2>/dev/null | while IFS='|' read -r _ item since st cond owner _r; do
+    printf '    %-36s 起 %-11s %-12s 归属 %s\n' \
+      "$(printf %s "$item" | sed 's/^ *//;s/ *$//')" "$(printf %s "$since" | sed 's/^ *//;s/ *$//')" \
+      "$(printf %s "$st" | sed 's/^ *//;s/ *$//')" "$(printf %s "$owner" | sed 's/^ *//;s/ *$//')"
+  done
+}
+
 #!/usr/bin/env bash
 # todo-ready.sh —— 【候选期租客】：**只读的顾问**。回答："现在能做的是什么 · 该改哪一行"。
 #
