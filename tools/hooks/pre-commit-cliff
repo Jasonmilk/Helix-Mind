@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# pre-commit-cliff —— 提交前的【悬崖检测】。★ 为什么存在（2026-10-10 实测事故）：
+# `open(p,"w")` 打开即截断 ⇒ 异常一抛文件停在 0 字节 ⇒ `git add -A` 把灾难提交（52,457 B → 0 B 无声过闸）。
+# 本钩子只做一件事：**任何文本文件在一次提交里丢掉 >80% 的行 ⇒ 拦截，要求显式确认**。
+# 绕过：`CLIFF_OK=1 git commit ...`（留痕：确认是你本意）。
+set -uo pipefail
+[ "${CLIFF_OK:-0}" = "1" ] && { echo "  [cliff] 已显式确认（CLIFF_OK=1），放行"; exit 0; }
+warn=0
+while IFS=$'\t' read -r add del path; do
+  case "$path" in *.md|*.rs|*.toml|*.sh|*.py|*.json|*.yml|*.yaml|*.js|*.ts) ;; *) continue ;; esac
+  [ "${del:-0}" -lt 20 ] && continue                      # 小文件不判（噪声）
+  old=$((add + del)); [ "$old" -lt 20 ] && continue
+  pct=$(( del * 100 / old ))
+  if [ "$pct" -ge 80 ]; then
+    echo "  ★★ 悬崖警报: ${path} 先删 ${del} 行 / 共 ${old} 行（${pct}%）"
+    warn=1
+  fi
+done < <(git diff --cached --numstat 2>/dev/null)
+if [ "$warn" = 1 ]; then
+  echo "  ⇒ 这看起来是【截断/误删】，不是正常编辑。"
+  echo "    确认是你本意: CLIFF_OK=1 git commit ... ；否则: git checkout -- <file> 恢复后重做"
+  exit 1
+fi
+exit 0
