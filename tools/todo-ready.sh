@@ -74,11 +74,19 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       printf '▸ 候选工具评审：截止 %s（还剩 %s 天）· 使用日志 %s 条 · 行动变化=有 %s 条\n' "${end:-?}" "${left:-?}" "$n" "$act"
     fi
 
-    # ★★ 必出六段【自证】(D15 补丁 · 2026-10-10)：为什么需要它 ——
+    _report_field_debts
+    # ★★ 必出七段【自证】(D15 补丁 · 2026-10-10)：为什么需要它 ——
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
     #   掉的是我的**呈现**（每次都 `head -14` 截断后才贴）⇒ **观察者的取景框造出了假缺口**。
     #   解法：**生成器自报齐不齐** ⇒ 任何残片贴上时**自暴不全**，无需人去比对字段清单。
-    printf '▸ 必出六段自证：光=%s 倒计时=%s USAGE=%s 能做/等人/不许动=%s 本轮动了=%s 矩阵=%s\n' \
+    printf '▸ 必出七段自证：光=%s 倒计时=%s USAGE=%s 能做/等人/不许动=%s 本轮动了=%s 矩阵=%s 欠账=%s\n' \
+      "$([ -f "$ROOT/../phyt-DNA/VISION.md" ] && echo ✅ || echo —)" \
+      "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
+      "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
+      "$([ -f "$ROOT/docs/helixECO/KNOWN_ISSUES.md" ] && echo ✅ || echo —)" \
+      "$([ -n "$SNAP" ] && echo ✅ || echo —)" \
+      "$([ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ] && echo ✅ || echo —)" \
+      "$([ -f "$ROOT/docs/helixECO/DEBTS.md" ] && echo ✅ || echo —)"
       "$([ -f "$ROOT/../phyt-DNA/VISION.md" ] && echo ✅ || echo ★缺)" \
       "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo ★缺)" \
       "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo ★缺)" \

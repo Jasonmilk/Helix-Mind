@@ -7,7 +7,8 @@
 #       bash tools/branch-map.sh --check   # 与文档里 <!-- BEGIN/END GENERATED --> 之间比对，过期则非零
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; ROOT="$ROOT/.."
-REPOS="anaphase-helix helix-mind Cellrix FlowModus Tuck phyt-DNA"
+# ★ 12 仓（2026-10-10 更正）：我一直误说"六仓"，实际工作区有 12 个 git 仓
+REPOS="anaphase-helix helix-mind Cellrix FlowModus Tuck phyt-DNA helix-tentacle Helix-MCP-Learner HelixECO-Glove lodestone-md lodestone-spec lumtract"
 
 gen() {
   echo "| 仓 | 活跃分支 | 主干(rs) | feature 领先/落后 rs | merge-base | 已并入 rs? | main 与 rs 的关系 | 工作树 |"

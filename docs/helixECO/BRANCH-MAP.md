@@ -8,12 +8,18 @@
 <!-- BEGIN GENERATED -->
 | 仓 | 活跃分支 | 主干(rs) | feature 领先/落后 rs | merge-base | 已并入 rs? | main 与 rs 的关系 | 工作树 |
 |---|---|---|---|---|---|---|---|
-| **anaphase-helix** | `feature/convergence-M0M7` | `rs` | 68 / 0 | `7b74d1d` | 否 | **无关历史**（骨架） | 干净 |
-| **helix-mind** | `feature/convergence-M0M7` | `rs` | 419 / 0 | `7c6f010` | 否 | **无关历史**（骨架） | dirty |
-| **Cellrix** | `feature/convergence-M0M7` | `rs` | 45 / 0 | `12e4088` | 否 | **无关历史**（骨架） | 干净 |
-| **FlowModus** | `rs` | `rs` | 0 / 0 | `a342590` | ✅ 是 | 落后 rs 46 笔 · 领先 2 笔 | 干净 |
-| **Tuck** | `rs` | `rs` | 0 / 0 | `915111e` | ✅ 是 | 落后 rs 79 笔 · 领先 0 笔 | 干净 |
+| **anaphase-helix** | `rs` | `rs` | 0 / 0 | `1af160d` | ✅ 是 | **无关历史**（骨架） | 干净 |
+| **helix-mind** | `rs` | `rs` | 0 / 0 | `45705af` | ✅ 是 | **无关历史**（骨架） | dirty |
+| **Cellrix** | `feature/convergence-M0M7` | `rs` | 48 / 0 | `12e4088` | 否 | **无关历史**（骨架） | 干净 |
+| **FlowModus** | `rs` | `rs` | 0 / 0 | `8ebbbea` | ✅ 是 | 落后 rs 48 笔 · 领先 2 笔 | 干净 |
+| **Tuck** | `rs` | `rs` | 0 / 0 | `21afba3` | ✅ 是 | 落后 rs 81 笔 · 领先 0 笔 | 干净 |
 | **phyt-DNA** | `v2` | — | — | — | — | — | 干净 |
+| **helix-tentacle** | `rs` | `rs` | 0 / 0 | `2554ebf` | ✅ 是 | 落后 rs 56 笔 · 领先 0 笔 | 干净 |
+| **Helix-MCP-Learner** | `main` | `—` | — / — | `—` | — | — | 干净 |
+| **HelixECO-Glove** | `main` | `—` | — / — | `—` | — | — | 干净 |
+| **lodestone-md** | `main` | `—` | — / — | `—` | — | — | 干净 |
+| **lodestone-spec** | `main` | `—` | — / — | `—` | — | — | 干净 |
+| **lumtract** | `main` | `—` | — / — | `—` | — | — | 干净 |
 
 _生成于 `bash tools/branch-map.sh` · 判据：`--check`（生成物过期 ⇒ CI 红）_
 <!-- END GENERATED -->
