@@ -53,10 +53,10 @@
 | ID | 状态 | 收据（可核） |
 |---|---|---|
 | **R1** | ✅ 已做 | `phyt-DNA/docs/PROTECTION.md`「引擎设计规范 · 通道契约」 |
-| **R2** | ⬜ **未做** | — （与 R5 同源，一笔做） |
+| **R2** | ✅ 已做 | `DIAGNOSIS-METHODS.md#green-is-a-sample`「绿的三种腐败形态」+ **绿必须带 run 收据**（命令·计数·分母·模式） |
 | **R3** | ✅ 已落盘 | 本节 + §0-a 引用表 |
 | **R4** | ⬜ **未做** | 现状读数：`Cellrix: (no runs)`（无 CI）· `phyt-DNA/anaphase-helix: success` |
-| **R5** | ⬜ **未做** | — （与 R2 同源） |
+| **R5** | ✅ 已做 | `DIAGNOSIS-METHODS.md#red-lifecycle` ③「红的保真」：假红/从不红/不可归因 ⇒ **红必须可归因** |
 | **R6** | ✅ 已做 | K19 行：484 里 +1 = `execution_failure_leaves_a_named_ledger_row`（**K26 判据，非 K19-1 专属**） |
 | **R7** | ✅ 已做 | `phyt-DNA/tools/redrate.sh` 头部「样本量分层」 |
 | **R8** | ✅ 已做 | `DIAGNOSIS-METHODS.md#silent-family` |
