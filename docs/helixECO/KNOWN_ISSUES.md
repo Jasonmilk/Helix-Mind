@@ -48,6 +48,10 @@
 
 
 
+| # | 缺陷 | 位置 | 为什么还没修 | 关联 |
+|---|---|---|---|---|
+| **K26** | ★ **`run_cycle/mod.rs:1229` 把执行期失败降级成 `warn!` + `Failure` —— 违背本仓自己的「A REFUSAL IS A DECLARED ROW, NOT A MISSING NODE」（`run_cycle/mod.rs:722`）**。后果实测（K25 排查全程）：该 `warn!` 在**测试二进制里没有订阅者** ⇒ 完全静音 ⇒ 我曾用「grep 不到它」错判"该分支未走"，白走好几轮。**它是本次排查成本的最大单一放大器。** **已获授权（2026-10-09），但本轮只做到设计级**（构建已回退到干净态）。**设计（已定）**：在 `Pipeline::execute_calls` 内**工具调用那一跳**的 `?` 处记录（那里 `tool`/`index` 在作用域内，`run_cycle` 的 Err 臂不知道是第几个调用）——用 `map_err` 追加一行具名记录后原样返回 `e`。**具名行形态（已写、已验证枚举可编译）**：新增 `LedgerRecord::ExecutionFailed { job_id, tool, index, class, detail, identity_label }` + 构造函数 `execution_failed(...)`；`class` 是**稳定可 grep 的指纹**（如 `"transport"`），`detail` 放原始错误文本 ⇒ 消费者不必解析散文。**为什么【不】复用 `Blocked`**：`Blocked` 的语义是"被闸门物理拦截"，装"已派发但通道失败"就是**一名两物**（K19 的病）。**⚠️ 语义红线**：只动**记录方式**，**不动后续处理**（仍是 `Ok(TransitionReason::Failure)`）；且**闸门拦截的 Err 已被 `blocked` 行记过** ⇒ 新记录必须跳过以 `"blocked by security gate:"` 开头的错误，避免双记。**下游消费者（已扫描，共 2 处，都必须补 arm）**：`src/run_cycle/reflection.rs:49`（已有 `Blocked` 先例）· **`src/pipeline/mod.rs:391`**（`let (verdict_status, retry_due) = match &verdict`）。另有断言类消费者 7 处需回归（`tests/security_gate.rs:100` 的 `all(!=Verdict)` 最需盯：**只在闸门路径上成立，新增记录若出现在该测试路径上会红**）。**行预算代价（实测，不可忽略）**：新增变体+构造函数 = `src/ledger/mod.rs` **237 → 265（+28 NOCL）**，超出既有 **+18** 余量 ⇒ **必须先登记坑 + `[[fix_window]]`**（本仓规矩：record the pit, then fix），**否则修完 1229 会撞开行预算、刚盖章的 K25 立刻又开一条**。**判据（已定）**：**能红** = 用 `tests/mock_tentacle.rs:66` 的现成手法造传输错误 ⇒ 失败以**具名行**出现（**不靠日志订阅可见**）；**能绿** = 全套 35 二进制 / 483 用例不变绿。`tests/mock_tentacle.rs:66` 的语义预期同步更新（从"降级处理"到"具名记录"），算修复的一部分。 | `anaphase-helix/src/{run_cycle/mod.rs,pipeline/mod.rs,ledger/mod.rs,run_cycle/reflection.rs}` | ⏳ **待实现**（设计已定、授权已有；本轮按纪律回退以免留下坏构建） | `K25`（同族：静音仪器）· `K19`（一名两物）· `ADR-0051` |
+
 ## 2. 已修
 
 > **规则第 5 条**：每行必须注明【回归判据】——没有回归判据的"已修"是纸面富贵。
