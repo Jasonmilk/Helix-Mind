@@ -71,6 +71,9 @@
 
 ## 1. 未修
 
+| **K29** | **FlowModus 的 CI 红，根因未确立**：R4 新建 CI 后首个 run 失败于 **Rust 硬门**（`cargo test --all-features`）—— 而**本地全 ok**。**已读事实**：`flowmodus-rs/Cargo.toml` 有 `prost-build`/`tonic-build` 且 `build.rs` 调 `tonic_build::configure()` ⇒ 构建期需 `protoc`；本地有 `protoc 36.2`，而 ubuntu runner 默认没有 ⇒ **已加 `apt-get install protobuf-compiler` 且该步成功**。**但 Rust 门仍红** ⇒ **假设是必要但不充分**。**读不到日志**（CI logs 需 admin，403）⇒ 已把失败输出改为 **artifact 上传 + 末尾 120 行打印**（**让下一轮能读**）。 | `FlowModus/.github/workflows/ci.yml` | ⏳ **待查**（下一步：下一轮 run 后**读 artifact**，而不是继续猜；候选：apt 的 protoc **版本过旧** ⇒ 需装新版 protoc）。**判据**：FlowModus CI 转绿（`ci-matrix.sh` 一屏可见）。 | `R4`（CI 的第一次回本）· `K28`（同族：CI 揭出的潜伏问题） |
+
+
 | **K28** | ★ **CI 揭出的潜伏破损（Cellrix）**：`cargo test --all-features` 有 **2 个红**，**本地与 CI 都可复现** —— `boot::tests::boot_output_is_byte_identical_to_the_legacy_mechanism`（"T1a 必须是纯重构，输出须逐字节相同"，**首个差异 @ 字节 163000**：新输出**内联了 `panel_tree`**（`<script>/* panel_tree — DAG NA…`），而期望仍是**占位符 `__PANEL_TREE__`**）· `boot::tests::graph_order_matches_the_legacy_sequence`。**★ 它"红着却没人知道"的原因正是：Cellrix 此前【没有 CI】（R4 之前实测 `(no runs)`）。** 相关提交 `76b8d25 feat(web): 第 0 步 —— 投影资产进清单/替换表/占位符` ⇒ **变更是有意的，像是"变更落了、它的逐字节测试没同步更"**。 | `Cellrix/web/src/boot.rs:312/50` | ⏳ **升级（需裁决）**：**"哪一边是对的"是行为面问题**（boot 输出确实变了）⇒ 按三级守则：**不擅自改测试**（会"祝福"一个可能错的输出）· **不擅改代码**。**两个选项**：① 变更是有意的 ⇒ **更新那两条测试的期望**（并在提交信息里具名"为什么逐字节契约作废"）② 输出确实漂了 ⇒ **修代码**。**回归判据**：修完后 `cargo test --all-features` **0 红**（Cellrix CI 的首个绿 run）。 | `R4`（CI 的第一次回本）· `K25`（同族：红着没人知道） |
 
 
