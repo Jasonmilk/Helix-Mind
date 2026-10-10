@@ -9,7 +9,7 @@
 | 仓 | 活跃分支 | 主干(rs) | feature 领先/落后 rs | merge-base | 已并入 rs? | main 与 rs 的关系 | 工作树 |
 |---|---|---|---|---|---|---|---|
 | **anaphase-helix** | `feature/convergence-M0M7` | `rs` | 68 / 0 | `7b74d1d` | 否 | **无关历史**（骨架） | 干净 |
-| **helix-mind** | `feature/convergence-M0M7` | `rs` | 416 / 0 | `7c6f010` | 否 | **无关历史**（骨架） | dirty |
+| **helix-mind** | `feature/convergence-M0M7` | `rs` | 419 / 0 | `7c6f010` | 否 | **无关历史**（骨架） | dirty |
 | **Cellrix** | `feature/convergence-M0M7` | `rs` | 45 / 0 | `12e4088` | 否 | **无关历史**（骨架） | 干净 |
 | **FlowModus** | `rs` | `rs` | 0 / 0 | `a342590` | ✅ 是 | 落后 rs 46 笔 · 领先 2 笔 | 干净 |
 | **Tuck** | `rs` | `rs` | 0 / 0 | `915111e` | ✅ 是 | 落后 rs 79 笔 · 领先 0 笔 | 干净 |

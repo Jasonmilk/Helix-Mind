@@ -14,6 +14,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: ⓪ 系统依赖（prost-build 需要 protoc —— 与 FlowModus 同一病同一修法）
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq protobuf-compiler
       - name: ① ADR 头解析（每份都要 ok）
         run: bash tools/check-adr-heads.sh
       - name: ②·5 文档不得落后于代码（分支地图生成物比对）
