@@ -39,6 +39,15 @@ gen() {
 }
 
 if [ "${1:-}" = "--check" ]; then
+  # ★ 2026-10-10 实测教训：CI 只 checkout【本仓】，**没有兄弟仓** ⇒ 生成器读不到其余五仓
+  #   ⇒ 生成表与本仓文档必然不同 ⇒ 若照判就是"过期"假红（我那一步实测 exit 1）。
+  #   **规矩：取不到数不得映射成任何态** ⇒ 无兄弟仓时**具名跳过**（exit 0），本地（有兄弟仓）才是真判官。
+  sib=0; for x in $REPOS; do [ -d "$ROOT/$x/.git" ] && sib=$((sib+1)); done
+  if [ "$sib" -lt 2 ]; then
+    echo "  ⚠ 跳过：本环境只看到 ${sib} 个仓（CI 只 checkout 本仓）⇒ 无法判读分支地图是否过期"
+    echo "    （真判官 = 本地六仓环境：bash tools/branch-map.sh --check）"
+    exit 0
+  fi
   doc="docs/helixECO/BRANCH-MAP.md"
   [ -f "$doc" ] || { echo "★ 缺 $doc"; exit 2; }
   python3 - "$doc" <<'PY' || exit 1
