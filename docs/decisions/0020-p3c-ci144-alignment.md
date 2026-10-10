@@ -1,9 +1,9 @@
+# ADR-0020: P3c CI-144 INTENT-7 语义对齐（动词映射 + traceparent 透传）
 - **决策日期**：2026-08-28
 - **对齐知识本体**：v4.1（认知相态范式深化）
 - **原始引用路径**：ECOSYSTEM.md v1.5 §3.1（trace_id 由 Anaphase 生成）/ §4.1（Mind↔Anaphase 契约）+ INTENT-7 spec §2-3（traceparent + 动词）+ P3 计划（2026-08-28 起草，待审查）
 - **状态**：Active（2026-08-28 审查通过，P3 编码开工）
 
-# ADR-0020: P3c CI-144 INTENT-7 语义对齐（动词映射 + traceparent 透传）
 
 > 编号说明：ADR-0015 预留给 P4.5 WAL，0016-0019 已用，故本决策取 0020。
 
