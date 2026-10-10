@@ -27,6 +27,9 @@
 > 实测：上一轮审查新增 **八件**，其中三件（K19-1 的 +1 点名 · redrate 样本量分层 · 静默家族索引）**我做了**，
 > 但**没有一件进入清单** ⇒ 于是我据"我记得的那份"宣布"清单已清空" ⇒ **那句话不成立**。
 > **⇒ 报告规矩（2026-10-10 加入）**：**报告 = 状态增量 + 收据；零增量不占轮次。**
+> **类型首行**：报告的**第一行**必须就是这句（"报告（状态增量+收据）"），让人一眼知道这是增量报告而非复述。
+> **工件生命周期**：**半页裁决之后 ⇒ 缩成一行 + 指针，不再重贴**（已裁决的工件不再占版面）。
+> **修订不重写**：新信息**进旧清单** ⇒ **编号不动、状态动**（本表所有 R/K/D 均按此维护）。
 > 来源：上一份报告逐字相同地发了两遍、零增量 —— 那不构成两轮。**同一条也约束本表自身**：
 > 每轮必须给出**新的状态行**（哪怕只是把某件从 ⬜ 改成 ◐），否则不算引用。
 
@@ -67,7 +70,24 @@
 | **R9** | ✅ 已入册 | 同上，**第 ⑤ 形态：定义层静默** |
 | **R10** | ✅ 已入规范 | `phyt-DNA/docs/PROTECTION.md`「不是所有纪律都该成为闸门」 |
 | **R11** | ✅ **本轮完成** | `DIAGNOSIS-METHODS.md`「落点登记表」——每张卡的落点 + **机械化程度** |
+| **R12** | ⬜ **新（D5 揭出，比 D5 本身更大）** | **六仓的真判据 CI 覆盖率 = 4/6**：`phyt-DNA ✅ · Tuck ✅ · Cellrix ★红(K28) · FlowModus ★红(K29)`；
+**★ `anaphase` 与 `helix-mind` 的"绿"来自 `Graph Update`（依赖图更新，过期且非判据）⇒ 它们的【测试没有 CI】**。
+判据 = `bash phyt-DNA/tools/ci-matrix.sh` 一屏里**没有 ⚠️非判据**的仓数 = 6/6 |
 | **K23** | ✅ **自治结案** | 三问过尺（不改行为面/可逆/有判据）⇒ **不改名**；改为"Tuck 实施序列化时加一处映射 + 一条能红判据" |
+
+
+### §0-d · **D 系列引用表**（审查输出的编号，与 R/K 同法：每轮逐条引用）
+
+| ID | 状态 | 收据 |
+|---|---|---|
+| **D1** 三份半页内联呈报 | ✅ | 上一份报告正文（K28/K16/K11 各两选项 + 后果 + 判据） |
+| **D2** 空读数 fail loud（**两半**） | ◐→✅ | **真空那半**：已打印「(无就绪项)」并说明它 ≠「全做完了」；**数据源缺失那半**：`[ -f ]` + `except OSError ⇒ exit 2 + stderr 报路径`（本轮复核确认在位） |
+| **D3** `filter-before-sort` 入卡 + 红测 | ✅ | `DIAGNOSIS-METHODS.md#filter-before-sort`（含**第一体验者机制**作红测） |
+| **D4** 三件落地（prio 推导 / `--done` 顾问 / 读数进报告头） | ✅ 大部 | `todo-ready.sh`；**未能全绿的一处**：报告头第二腿（`--ready`）需手动贴 ⇒ 见 R12 的"读数进报告"制度化 |
+| **D5** 矩阵"过期收据"刀 | ✅ **本轮**（**且它揭出一处更大的**） | `ci-matrix.sh` 加两列（**⚠️过期** / **⚠️非判据**）；**实测**：**anaphase 与 helix-mind 的"绿"来自 `Graph Update`（过期且非判据）** ⇒ **它们的测试没有 CI** ⇒ 见 **R12** |
+| **D6** D2 的另一半 | ✅ | 同上（`except OSError` 分支：`exit 2` + stderr 报路径） |
+| **D7** R4 可结 | ✅ | R4 → **已结**（交付物 3/3：Cellrix/FlowModus/Tuck 的 CI 已建、读数可得）；**红是 K28/K29 的账**，不再由 R4 挂 ◐ |
+
 
 ## 1. 未修
 
@@ -98,7 +118,7 @@
 |---|---|---|---|---|
 | **K3** | `run_cycle.rs:1052` 把 `reasoning_mode`（`"left_brain"` 模式标签）当 `model` 写进 `traces/reasoning.jsonl`，与 `assistant/reply` 的 physical model（ADR-0036）**不是同一事实** | anaphase-helix `src/run_cycle.rs:1052` | **用户明确要求"再议"**（2026-09-14），故冻结不动 | `anaphase:ADR-0036` 〔deps=— · prio=— · class=人类冻结〕 |
 | **K4** | ADR 编号**跨仓撞号且不同义**：`anaphase:ADR-0016`（编排哲学）vs `Cellrix:ADR-0016`（证轨资产解耦）；`anaphase:ADR-0017`（CI-144 传输层）vs `Cellrix:ADR-0017`（资产语言） | 两仓 `docs/decisions/` | 编号是**生态共享序列**，不能回改。缓解办法已落地：**跨仓引用一律仓名限定**（见各 ADR 头部） | 本表 §3 ⇒ **同族新例（2026-10-09）**：**文档级撞名** —— `helix-mind/docs/helixECO/IP-LEDGER.md`（20 行·生态 IP 保护台账）与 `phyt-DNA/docs/PROTECTION.md`（16974 B·闸门设计规范）**是两个不同的东西共用一个名字** ⇒ 两份文件头部各写明分工（问题域不同，不是同一份）。 〔deps=— · prio=low · class=自治〕 |
-| **K11** | `assistant/usage`（计量事件）被 `prove_track.data.js::derivePeriodUsage` 期待，但**不在 `anaphase:ADR-0026` D2 词表中** ⇒ 装配层（按词表校验）会**拒收**它，该原语恒 `null`。**前提修正（2026-09-15）**：原记录「真实事件流亦从未出现」**不成立** —— `assistant/usage` 自 2026-09-14 17:19 起就在真实流中（`run-66c96eca` / `run-ee6cbd83` / `run-fbb7890b` / `run-ddaf2e59` 均含，09-15 `run-8bba24c5` 亦有，seq 3，data `{chars,model}`）⇒ **是词表落后于实现**，不是实现缺失。**危险面坐实**：装配层对未知 kind 静默丢弃（见 K13），计量事件进装配路径即消失无痕 | `Cellrix/web/assets/prove_track.data.js:168` ／ `anaphase-helix/docs/decisions/ADR-0026-session-event-stream.md` §D2 ／ `Cellrix/web/assets/event_family.js` | 需裁决：① **词表补 metering 事件（协议扩展，推荐 —— 生产者已在发）**，或 ② 明确「计量不进事件流」并移除 Cellrix 的期待 | `K13` 〔deps=— · prio=**high** · class=**升级** · blocks=证轨〕 |
+| **K11** | `assistant/usage`（计量事件）被 `prove_track.data.js::derivePeriodUsage` 期待，但**不在 `anaphase:ADR-0026` D2 词表中** ⇒ 装配层（按词表校验）会**拒收**它，该原语恒 `null`。**前提修正（2026-09-15）**：原记录「真实事件流亦从未出现」**不成立** —— `assistant/usage` 自 2026-09-14 17:19 起就在真实流中（`run-66c96eca` / `run-ee6cbd83` / `run-fbb7890b` / `run-ddaf2e59` 均含，09-15 `run-8bba24c5` 亦有，seq 3，data `{chars,model}`）⇒ **是词表落后于实现**，不是实现缺失。**危险面坐实**：装配层对未知 kind 静默丢弃（见 K13），计量事件进装配路径即消失无痕 | `Cellrix/web/assets/prove_track.data.js:168` ／ `anaphase-helix/docs/decisions/ADR-0026-session-event-stream.md` §D2 ／ `Cellrix/web/assets/event_family.js` | 需裁决：① **词表补 metering 事件（协议扩展，推荐 —— 生产者已在发）**，或 ② 明确「计量不进事件流」并移除 Cellrix 的期待 | `K13` 〔deps=— · prio=**high** · class=**升级** · blocks=证轨〕 ⇒ ★★ **2026-10-10 重核（reviewer：'谁还按词表校验？'）**：**该前提在代码层已过时** —— `anaphase-helix/src/session_events/types_and_stream.rs:82` 有 **`EventType::Usage => "assistant/usage"`** ⇒ **它已经是事件词表的成员**（词表的载体是代码里的 `EventType` 枚举，不是 ADR 的散文）⇒ 故"不在词表中 ⇒ 被拒收"至少有一半不成立。**下一步（D 裁决后仍按 ① 执行）**：① 核对 `ADR-0026` D2 的**文本**是否落后于代码（若是 ⇒ 更新 ADR 文本，属文档面）② **端到端重核拒收者**：Cellrix 装配层（`web/assets/event_family.js`）/ `prove_track.data.js` 的实际判定 ⇒ **判据 = `derivePeriodUsage` 从 `null` 变有值**（可在面板读数或 `run_all.js` 的相关判据上看到）。 |
 | **K5** | ECOSYSTEM.md 自述为生态 SSOT，但其内部存在**多份互相打架的组件清单**（目录树 / 项目状态总览 / 架构图 / 快速入口） | `helix-mind/docs/helixECO/ECOSYSTEM.md` v1.94（390 行） | **先收敛 SSOT 本身**，再谈投影一致 —— 否则会收敛到一个自相矛盾的源 | — 〔deps=— · prio=low · class=自治〕 |
 | **K15** | **会话身份缺失**：`job_id = derive(输入内容)` ⇒ **锚在「内容」上** ⇒ 内容每次提问都变 ⇒ **每次都是新文件** ⇒ **会话永远只有一轮**（一问一答，无连续会话）。注意区分：**确定性 ≠ 稳定** —— 确定性只保证「同一输入→同一 id」，稳定性要求「同一会话→同一 id」；锚在内容上则**确定性满足、稳定性为零** | `anaphase-helix/src/contract.rs`（`derive_job_id`） | **未修**。正解：**`session_id`（容器锚）与 `job_id`（内容锚）分离** —— 见 `ADR-0020`。**L0**（Cellrix 视图层沿 `resume_from` 合并成连续问答流）是**临时缓解，须标注待 L1 退役**；**L1**（anaphase 提供 `session_id`，同会话 append 而非新建文件）**跨仓提案** 〔deps=— · prio=**high** · class=自治 · blocks=DSH 对话界面〕 ⇒ ★★ **2026-10-10 先查纠正（原行把读者指向了错的 ADR）**：**真正的相关决策是 `ADR-0006`（会话即经历——Episode 边界，Proposed→Active 2026-09-05 用户批准）**；`ADR-0020` 是"事件轨迹持久化"，与此无关。**实测**：`contract::derive_episode_id` **已实现**（`contract/mod.rs:406` + 单测 `:561`）、**已在被使用**（`reflection.rs:296` 的 provenance `{episode_id}#{step}`）。⇒ 故 K15 的真问题**不是"要发明 session_id"**，而是：**容器锚（episode）已存在/已批准/已实现，但文件命名的键是 `period_id`（每提问一个）而不是 `episode_id`（每会话一个）**。★ 另：**"session" 与 "episode" 是同一概念的两个名字 ⇒ 归入 K19/K23 家族**（本仓内一物两名），不新开条目。**自治/升级分界（reviewer 2026-10-10 三）**：**判据 + 观察态 = ① 自治**（不改行为，可直接推、做完报）；**把文件命名键从 `period_id` 改为 `episode_id` = ② 升级**（**落盘命名模式是持久化接口 ⇒ 行为面**）⇒ 升级段须带**半页**：旧 `{period_id}.events.jsonl` 的**迁移策略** + **下游读取者清单**。〔deps=— · prio=**high** · class=自治（自治段）＋升级（落盘段） · blocks=DSH 对话界面〕 |
 | **K14** | **`/api/sessions` 的 `limit` 会静默截断**：磁盘有 **91** 个 period，API 只返回 **50** ⇒ **41 个不进 DOM**。两个后果：① **跨边界的链其 `+N` 只是下界**（老链会被再次报低，形态与 F16 同）；② **对话累积后老记录持续掉出窗口** ⇒ 将来会以「又消失了」的形式复发 | `anaphase-helix/src/main.rs:169`（`unwrap_or(50)`）／`Cellrix/web/src/routes.rs:118`（`?limit=50`） | **未修。已核对（91 vs 50）**。留痕两处：跨边界链的 `+N` 标注为**下界**；考虑改为不受 limit 影响的算法或分页加载 〔deps=— · prio=**high** · class=自治 · blocks=DSH 对话界面〕 |
