@@ -1,9 +1,9 @@
+# ADR-0010: 认知预算前置路由（cognitive budget front routing）
 - **决策日期**：2026-08-27
 - **对齐知识本体**：v4.1（认知相态范式深化）
 - **原始引用路径**：审查② B1（预算时序矛盾）→ 收敛为前置路由
 - **状态**：采纳
 
-# ADR-0010: 认知预算前置路由（cognitive budget front routing）
 
 ## 状态
 

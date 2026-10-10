@@ -1,0 +1,227 @@
+{
+  "generated_at": "2026-10-09T03:26:34",
+  "experiment": "收敛判据实验 A —— 改进后（ADR-0049 落地）",
+  "setup": {
+    "rounds": 21,
+    "secret": "ZEPHYR-7421",
+    "planted_at_round": 1,
+    "asked_at_round": 21,
+    "skeleton_max_lines": 12,
+    "line_chars": 96
+  },
+  "measures": {
+    "lineage_path_length": 21,
+    "skeleton_lines_round13": 12,
+    "skeleton_lines_round21": 12,
+    "prompt_chars_round13": 989,
+    "prompt_chars_round21": 1054,
+    "prompt_delta_round20_to_21": 12,
+    "round21_skeleton_contains_secret": false,
+    "drilldown_body_returns_secret": true,
+    "drilldown_commands": {
+      "lodes": "ok",
+      "lode": "D7 four answers",
+      "body": "full round",
+      "sediment": "named empty"
+    },
+    "lineage_path_length_note": "21 轮链的最大路径长度（不是最后创建的周期——下钻测试也产生周期）"
+  },
+  "verdict": {
+    "criterion1_bounded": true,
+    "criterion2_retrievable": true,
+    "criterion3_lineage_intact": true,
+    "note": "骨架自第13轮起锁定 12 行；prompt 由 287→1054 后转平（每轮增量仅省略计数文本）。第1轮事实已退出骨架 ⇒ 判据②确实由 !body 下钻满足，不是靠骨架顺手带出。"
+  },
+  "cap12_rationale": "cap=24 时骨架从不触发省略（链长21<24）⇒ prompt 287→1504 线性增长，判据①失败。一个从不生效的上界不是上界。",
+  "rounds": [
+    {
+      "round": "Calculate 2 to the power",
+      "prompt_chars": 146,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    },
+    {
+      "round": "请记住这个词：ZEPHYR-7421。只回 OK",
+      "prompt_chars": 141,
+      "skeleton_lines": 0,
+      "contains_secret": true
+    },
+    {
+      "round": "第 2 轮：只回 OK。",
+      "prompt_chars": 287,
+      "skeleton_lines": 0,
+      "contains_secret": true
+    },
+    {
+      "round": "第 3 轮：只回 OK。",
+      "prompt_chars": 365,
+      "skeleton_lines": 2,
+      "contains_secret": true
+    },
+    {
+      "round": "第 4 轮：只回 OK。",
+      "prompt_chars": 427,
+      "skeleton_lines": 3,
+      "contains_secret": true
+    },
+    {
+      "round": "第 5 轮：只回 OK。",
+      "prompt_chars": 489,
+      "skeleton_lines": 4,
+      "contains_secret": true
+    },
+    {
+      "round": "第 6 轮：只回 OK。",
+      "prompt_chars": 551,
+      "skeleton_lines": 5,
+      "contains_secret": true
+    },
+    {
+      "round": "第 7 轮：只回 OK。",
+      "prompt_chars": 613,
+      "skeleton_lines": 6,
+      "contains_secret": true
+    },
+    {
+      "round": "第 8 轮：只回 OK。",
+      "prompt_chars": 675,
+      "skeleton_lines": 7,
+      "contains_secret": true
+    },
+    {
+      "round": "第 9 轮：只回 OK。",
+      "prompt_chars": 737,
+      "skeleton_lines": 8,
+      "contains_secret": true
+    },
+    {
+      "round": "第 10 轮：只回 OK。",
+      "prompt_chars": 800,
+      "skeleton_lines": 9,
+      "contains_secret": true
+    },
+    {
+      "round": "第 11 轮：只回 OK。",
+      "prompt_chars": 863,
+      "skeleton_lines": 10,
+      "contains_secret": true
+    },
+    {
+      "round": "第 12 轮：只回 OK。",
+      "prompt_chars": 926,
+      "skeleton_lines": 11,
+      "contains_secret": true
+    },
+    {
+      "round": "第 13 轮：只回 OK。",
+      "prompt_chars": 989,
+      "skeleton_lines": 12,
+      "contains_secret": true
+    },
+    {
+      "round": "第 14 轮：只回 OK。",
+      "prompt_chars": 1036,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "第 15 轮：只回 OK。",
+      "prompt_chars": 1037,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "第 16 轮：只回 OK。",
+      "prompt_chars": 1038,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "第 17 轮：只回 OK。",
+      "prompt_chars": 1039,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "第 18 轮：只回 OK。",
+      "prompt_chars": 1040,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "第 19 轮：只回 OK。",
+      "prompt_chars": 1041,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "第 20 轮：只回 OK。",
+      "prompt_chars": 1042,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "第 1 轮我让你记住的那个词是什么？只回那个词。",
+      "prompt_chars": 1054,
+      "skeleton_lines": 12,
+      "contains_secret": false
+    },
+    {
+      "round": "Calculate 2 to the power",
+      "prompt_chars": 146,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    },
+    {
+      "round": "None",
+      "prompt_chars": 0,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    },
+    {
+      "round": "None",
+      "prompt_chars": 0,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    },
+    {
+      "round": "Calculate 2 to the power",
+      "prompt_chars": 146,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    },
+    {
+      "round": "None",
+      "prompt_chars": 0,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    },
+    {
+      "round": "None",
+      "prompt_chars": 0,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    },
+    {
+      "round": "None",
+      "prompt_chars": 0,
+      "skeleton_lines": 0,
+      "contains_secret": false
+    }
+  ],
+  "round1_period": "run-7e2a43434fcf3721-p006ac7edfb000001",
+  "counter_proof": {
+    "claim": "退回旧实现 ⇒ 判据②红",
+    "mutation": "把 `if let Some(answer) = self.answer_read_instruction()` 改成 `if let Some(answer) = None::<String>`（读数指令分支失效 ⇒ `!body` 退回「当工具名」的旧行为）",
+    "observed_red": {
+      "reply": "",
+      "impasse": false,
+      "meaning": "第1轮的独有事实不可取回 ⇒ 判据②红"
+    },
+    "observed_green_after_restore": {
+      "reply_contains": "ZEPHYR-7421",
+      "runs": "5/5 稳定"
+    },
+    "also_proves": "人类第1项确认（撞名）为什么重要：`parse_structured_command` 把 `!` 后第一个词一律当工具名 —— 没有这道本地分支，`!body` 会被当工具发出去并静默失败（reply 为空），极难查。"
+  }
+}

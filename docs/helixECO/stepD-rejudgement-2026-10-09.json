@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-10-09T04:22:37",
+  "experiment": "D 的复判 —— 两步：先质疑判定规则本身，再做有效对照",
+  "step_1_trigger_from_human": "『gist 绿 ⇒ 若 C 关 + S 仍假，再做 D』",
+  "step_1_finding": {
+    "C_off_plus_S": "假（沿用 stepD-control-v2 的实测）",
+    "但这条触发规则**本身不能判别**": "`converge_enabled=false` 同时关掉骨架**和 gist** ⇒ `C 关 + S` 必然为假，与 D 是否必要无关。",
+    "性质": "第 4 条指标陷阱（无效对照比没有对照更危险）的同一个形状，只是上了一层：判定规则用了一个构造性退化的对照组。"
+  },
+  "step_2_valid_control": {
+    "design": "gist **开**、把 gist 字符预算**故意绑死**（converge_gist_max_chars=60，21 轮 ⇒ 17 轮沉底），第 21 轮追问，人不做任何事",
+    "measured": {
+      "gist 标题行": "gist of 17 earlier round(s) — bounded; originals intact",
+      "prompt 含事实": true,
+      "reply": "旺财"
+    },
+    "reason": "gist 按**最旧优先**填充 ⇒ 最早的内容**最后**才被裁（我的实现如此，且是刻意的）"
+  },
+  "verdict": {
+    "D_increment_for_this_acceptance": "0，且是**构造性**的：gist 覆盖全链，预算绑死时仍保护最早的内容",
+    "D_might_still_matter_for": "链长使**第一轮单独**都放不进预算时（gist 连第一个片段都装不下）—— 那是另一个判据，需另行设计",
+    "recommendation": "按当前判据：**不做 D**。若要保留 D，必须先给出一个**能判别**的判据（例如 gist 预算 < 首轮 gist 长度）。"
+  }
+}

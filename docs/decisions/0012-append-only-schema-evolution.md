@@ -1,9 +1,9 @@
+# ADR-0012: 硬冻结契约 Append-Only Schema Evolution
 - **决策日期**：2026-08-27
 - **对齐知识本体**：v4.1
 - **原始引用路径**：审查② B2（硬冻结契约"补齐"的语义悖论）→ 收敛为 Append-Only
 - **状态**：采纳
 
-# ADR-0012: 硬冻结契约 Append-Only Schema Evolution
 
 ## 状态
 

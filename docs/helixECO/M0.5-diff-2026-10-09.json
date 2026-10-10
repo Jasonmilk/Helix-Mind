@@ -1,0 +1,230 @@
+{
+  "generated_at": "2026-10-09T00:43:15",
+  "experiment": {
+    "only_variable": "FlowModus(lib) 在/不在推理路径",
+    "upstream_common": "llama-swap @127.0.0.1:8080 v1 · model coder-3b",
+    "inputs": "5 条互不相同的新对话 + 1 次续接（第 5 条的 period_id 作为 job_id）",
+    "armA": "ANAPHASE_REASONING_ENDPOINT=http://127.0.0.1:8080/v1（不经 FlowModus）",
+    "armB": "ANAPHASE_FLOWMODUS_ENDPOINT=grpc://127.0.0.1:60054（flowmodus grpc）",
+    "timestamp_precision": "秒（RFC3339 无亚秒）"
+  },
+  "armA": {
+    "periods": 7,
+    "roots": 6,
+    "linked": 1,
+    "dangling": 0,
+    "non_id_parents": 0,
+    "multi_turn_start": 0,
+    "inversions": 0,
+    "ties_same_second": 0,
+    "models": [
+      "coder-3b"
+    ],
+    "shapes": [
+      [
+        11,
+        1
+      ],
+      [
+        12,
+        1
+      ],
+      [
+        13,
+        1
+      ],
+      [
+        14,
+        1
+      ],
+      [
+        15,
+        1
+      ],
+      [
+        17,
+        1
+      ],
+      [
+        30,
+        1
+      ]
+    ],
+    "items": [
+      {
+        "period_id": "run-8bba24c5ee368a4a-p006ac7c7fb000000",
+        "ts": "2026-10-08T16:42:35Z",
+        "parent": null,
+        "user": "Calculate 2 to the power of 10",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-27af0c4ce951db99-p006ac7c7fc000002",
+        "ts": "2026-10-08T16:42:36Z",
+        "parent": null,
+        "user": "第二问：数一下 7 加 5 等于几",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-4384ac8b6dc599bd-p006ac7c7fc000001",
+        "ts": "2026-10-08T16:42:36Z",
+        "parent": null,
+        "user": "第一问：一句话说明你为什么存在",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-13dc454bca910719-p006ac7c7fd000003",
+        "ts": "2026-10-08T16:42:37Z",
+        "parent": null,
+        "user": "第三问：用一个词形容确定性",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-727cbc88cf4d4b60-p006ac7c7fd000004",
+        "ts": "2026-10-08T16:42:37Z",
+        "parent": null,
+        "user": "第四问：列出两个你需要的输入",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-819421ac70ac004a-p006ac7c7fd000005",
+        "ts": "2026-10-08T16:42:37Z",
+        "parent": null,
+        "user": "第五问：这条链有几个环节",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-fccce2076f5deb32-p006ac7c7fe000006",
+        "ts": "2026-10-08T16:42:38Z",
+        "parent": "run-819421ac70ac004a-p006ac7c7fd000005",
+        "user": "续接：上一轮说的是什么",
+        "turns": 1,
+        "model": "coder-3b"
+      }
+    ],
+    "_inv_detail": [],
+    "_tie_detail": []
+  },
+  "armB": {
+    "periods": 7,
+    "roots": 6,
+    "linked": 1,
+    "dangling": 0,
+    "non_id_parents": 0,
+    "multi_turn_start": 0,
+    "inversions": 0,
+    "ties_same_second": 1,
+    "models": [
+      "coder-3b"
+    ],
+    "shapes": [
+      [
+        11,
+        1
+      ],
+      [
+        12,
+        1
+      ],
+      [
+        13,
+        1
+      ],
+      [
+        14,
+        1
+      ],
+      [
+        15,
+        1
+      ],
+      [
+        17,
+        1
+      ],
+      [
+        30,
+        1
+      ]
+    ],
+    "items": [
+      {
+        "period_id": "run-8bba24c5ee368a4a-p006ac7c7f5000000",
+        "ts": "2026-10-08T16:42:29Z",
+        "parent": null,
+        "user": "Calculate 2 to the power of 10",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-13dc454bca910719-p006ac7c7f6000003",
+        "ts": "2026-10-08T16:42:30Z",
+        "parent": null,
+        "user": "第三问：用一个词形容确定性",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-27af0c4ce951db99-p006ac7c7f6000002",
+        "ts": "2026-10-08T16:42:30Z",
+        "parent": null,
+        "user": "第二问：数一下 7 加 5 等于几",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-4384ac8b6dc599bd-p006ac7c7f6000001",
+        "ts": "2026-10-08T16:42:30Z",
+        "parent": null,
+        "user": "第一问：一句话说明你为什么存在",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-727cbc88cf4d4b60-p006ac7c7f7000004",
+        "ts": "2026-10-08T16:42:31Z",
+        "parent": null,
+        "user": "第四问：列出两个你需要的输入",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-819421ac70ac004a-p006ac7c7f7000005",
+        "ts": "2026-10-08T16:42:31Z",
+        "parent": null,
+        "user": "第五问：这条链有几个环节",
+        "turns": 1,
+        "model": "coder-3b"
+      },
+      {
+        "period_id": "run-fccce2076f5deb32-p006ac7c7f7000006",
+        "ts": "2026-10-08T16:42:31Z",
+        "parent": "run-819421ac70ac004a-p006ac7c7f7000005",
+        "user": "续接：上一轮说的是什么",
+        "turns": 1,
+        "model": "coder-3b"
+      }
+    ],
+    "_inv_detail": [],
+    "_tie_detail": [
+      {
+        "parent": "run-819421ac70ac004a-p006ac7c7f7000005",
+        "child": "run-fccce2076f5deb32-p006ac7c7f7000006",
+        "ts": "2026-10-08T16:42:31Z"
+      }
+    ]
+  },
+  "verdict": {
+    "topology_identical": true,
+    "flowmodus_affects_dag": false,
+    "excluded_option": "选项 3：痛感来自 FlowModus 那一半",
+    "remaining": "A3/A4 均已修（chat.js 双键 + chainJobIds=血缘路径）；缺口在 I5（slice 可达闭包未成为可断言原语）",
+    "i4_precision": "I4 严格『父<子』在秒级精度下会误报同秒续接 ⇒ 必须写成父≤子（或补亚秒精度）"
+  }
+}

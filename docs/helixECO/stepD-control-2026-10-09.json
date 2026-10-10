@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-10-09T04:01:24",
+  "experiment": "步骤 D 对照实验 —— 选中的会话是否为召回的优先区",
+  "design": {
+    "chain": "5 轮 + 第 6 轮追问",
+    "fact": "第 1 轮用户消息埋「我的狗叫旺财」",
+    "probe": "第 6 轮问「我养的那只宠物叫什么名字？」—— 不含「狗」不含「旺财」（语义不相似）",
+    "arms": {
+      "S": "选中（job_id = 第 5 轮 period_id）",
+      "N": "不选中（不带 job_id）"
+    },
+    "groups": {
+      "C_on": "converge_enabled = true（收敛在）",
+      "C_off": "converge_enabled = false（隔离 D）"
+    }
+  },
+  "results": [
+    {
+      "group": "C_on",
+      "arm_S": "旺财",
+      "arm_S_verdict": "correct",
+      "arm_N": "小明",
+      "arm_N_verdict": "wrong"
+    },
+    {
+      "group": "C_off",
+      "arm_S": "毛毛",
+      "arm_S_verdict": "wrong",
+      "arm_N": "Tom",
+      "arm_N_verdict": "wrong"
+    }
+  ],
+  "verdict": {
+    "observable_criterion_met_by": "C (ADR-0049 收敛骨架)",
+    "D_increment_isolated": "0 —— 关闭 C 后，选中与否都答错（毛毛/Tom）",
+    "meaning": "步骤 D（选中的会话传给召回作为优先区）**尚未实现**；不得报成『两条都答对=更好』。",
+    "why_D_not_measurable_yet": "召回来自 Helix-Mind；本实验两臂都没有 Mind 运行，故 D 的通路不存在。D 的挂点是 src/run_cycle/memory_retrieval.rs 的 memory.query 调用。"
+  }
+}
