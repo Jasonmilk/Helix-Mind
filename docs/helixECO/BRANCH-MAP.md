@@ -1,3 +1,23 @@
+# 分支地图（六仓）—— **本表由生成器产出，不手写**
+
+> **人类 2026-10-10**：「整理对齐相关文档，确保文档不会落后于代码」。
+> **结构性答案**：分支/HEAD 是每天都变的事实，**手写必然落后** ⇒ 本表**由 `tools/branch-map.sh` 从 git 生成**；
+> 标记之间的内容是**生成物**，`bash tools/branch-map.sh --check` 一比对即知**是否过期**（已接入 CI ⇒ 过期即红）。
+> **主干是 `rs`**（人类澄清：`main` 只是初始化骨架）。
+
+<!-- BEGIN GENERATED -->
+| 仓 | 活跃分支 | 主干(rs) | feature 领先/落后 rs | merge-base | 已并入 rs? | main 与 rs 的关系 | 工作树 |
+|---|---|---|---|---|---|---|---|
+| **anaphase-helix** | `feature/convergence-M0M7` | `rs` | 68 / 0 | `7b74d1d` | 否 | **无关历史**（骨架） | 干净 |
+| **helix-mind** | `feature/convergence-M0M7` | `rs` | 416 / 0 | `7c6f010` | 否 | **无关历史**（骨架） | dirty |
+| **Cellrix** | `feature/convergence-M0M7` | `rs` | 45 / 0 | `12e4088` | 否 | **无关历史**（骨架） | 干净 |
+| **FlowModus** | `rs` | `rs` | 0 / 0 | `a342590` | ✅ 是 | 落后 rs 46 笔 · 领先 2 笔 | 干净 |
+| **Tuck** | `rs` | `rs` | 0 / 0 | `915111e` | ✅ 是 | 落后 rs 79 笔 · 领先 0 笔 | 干净 |
+| **phyt-DNA** | `v2` | — | — | — | — | — | 干净 |
+
+_生成于 `bash tools/branch-map.sh` · 判据：`--check`（生成物过期 ⇒ CI 红）_
+<!-- END GENERATED -->
+
 # 分支地图（六仓 · 生成 2026-10-10）—— 让"HEAD 语义"从此显式
 
 > **为什么需要它**（评审 2026-10-10）：六仓 SYNC 的 HEAD **从未显式说明"在哪个分支"**；

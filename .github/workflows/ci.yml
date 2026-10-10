@@ -16,6 +16,8 @@ jobs:
           python-version: '3.12'
       - name: ① ADR 头解析（每份都要 ok）
         run: bash tools/check-adr-heads.sh
+      - name: ②·5 文档不得落后于代码（分支地图生成物比对）
+        run: bash tools/branch-map.sh --check
       - name: ② 脚本语法自检
         run: for f in tools/*.sh tools/hooks/*; do [ -f "$f" ] && bash -n "$f" || true; done
       - name: ③ Rust workspace 测试（本仓 20+ crates ⇒ 比 ADR 头强得多的真门）
