@@ -65,3 +65,5 @@ docs/archive/deprecated/*.md
 
 # LunarAST runtime
 repos.json
+# 报告头/光的快照（仓内状态，不入库；见 tools/todo-ready.sh）
+.helix/

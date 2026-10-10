@@ -52,7 +52,9 @@ case "${1:-}" in
     #   实测教训：我写过"六仓 SYNC"而实际只有 2 仓动过（口径轻微回退）。
     #   做法：把上一轮各仓 HEAD 存进**仓库之外的快照**（与使用日志同处，可丢弃），
     #   本轮用 `git rev-parse` 逐个比对 ⇒ 机械算出"本轮动了 X 仓，哪几个"。
-    SNAP="${HELIX_HEAD_SNAPSHOT:-$HOME/.helix/report-head-last.txt}"
+    # ★ 快照进仓（reviewer 2026-10-10 三刺②）：原先放 $HOME ⇒ 跨环境漂移、不可复现
+    #   ⇒ 改为**仓内 `.helix/`**（随 checkout 走；已在 .gitignore 里）
+    SNAP="${HELIX_HEAD_SNAPSHOT:-$ROOT/.helix/report-head-last.txt}"
     mkdir -p "$(dirname "$SNAP")" 2>/dev/null || true
     changed=""; total=0
     for x in anaphase-helix helix-mind Cellrix FlowModus Tuck phyt-DNA; do
@@ -67,6 +69,11 @@ case "${1:-}" in
 ' "$total"
     else
       printf '▸ 本轮动了：**%s 仓** ⇒%s\n' "$(echo $changed | wc -w | tr -d ' ')" "$changed"
+      # ★ 内容收据机械化（reviewer 2026-10-10 旗二）：每笔的 commit 首行**自动带出**（git log 就有）
+      #   ⇒ 不再靠"我记得写"（b29182b 有、33e00ab 又漏 = 靠记性不是机制）
+      for x in $changed; do
+        printf '    %-16s %s\n' "$x" "$(git -C "$ROOT/../$x" log -1 --format=%s 2>/dev/null | cut -c1-88)"
+      done
     fi
     : > "$SNAP"
     for x in anaphase-helix helix-mind Cellrix FlowModus Tuck phyt-DNA; do
@@ -79,7 +86,7 @@ case "${1:-}" in
       vh=$(cd "$ROOT/../phyt-DNA" && git hash-object VISION.md 2>/dev/null | cut -c1-7)
       printf '\n▸ 光：vision@%s（git hash-object 前 7 位 · phyt-DNA/VISION.md；内容一字不改是它的价值）\n' "${vh:-unknown}"
       # ★ 光已更新标记（2026-10-10）：与上轮快照比对 ⇒ 变了就【连打几轮】（光动了要让每滴水知道）
-      vsnap="${HELIX_VISION_SNAPSHOT:-$HOME/.helix/vision-last.txt}"
+      vsnap="${HELIX_VISION_SNAPSHOT:-$ROOT/.helix/vision-last.txt}"
       mkdir -p "$(dirname "$vsnap")" 2>/dev/null || true
       vprev=$(cat "$vsnap" 2>/dev/null || true)
       if [ -n "$vprev" ] && [ "$vprev" != "$vh" ]; then
