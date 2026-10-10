@@ -32,6 +32,31 @@ case "${1:-}" in
     if ! bash "$ROOT/tools/todo-ready.sh" 2>/dev/null; then
       echo "★ 段【读数】失败（--report-head 不完整）" >&2; _fail=1
     fi
+    # ★★ 补丁一（reviewer 2026-10-10）：**SYNC 行也由生成器算** —— 凡是能生成的，不靠记。
+    #   实测教训：我写过"六仓 SYNC"而实际只有 2 仓动过（口径轻微回退）。
+    #   做法：把上一轮各仓 HEAD 存进**仓库之外的快照**（与使用日志同处，可丢弃），
+    #   本轮用 `git rev-parse` 逐个比对 ⇒ 机械算出"本轮动了 X 仓，哪几个"。
+    SNAP="${HELIX_HEAD_SNAPSHOT:-$HOME/.helix/report-head-last.txt}"
+    mkdir -p "$(dirname "$SNAP")" 2>/dev/null || true
+    changed=""; total=0
+    for x in anaphase-helix helix-mind Cellrix FlowModus Tuck phyt-DNA; do
+      [ -d "$ROOT/../$x/.git" ] || continue
+      total=$((total+1))
+      now=$(git -C "$ROOT/../$x" rev-parse --short=7 HEAD 2>/dev/null)
+      was=$(grep "^$x " "$SNAP" 2>/dev/null | awk '{print $2}')
+      [ -n "$was" ] && [ "$now" != "$was" ] && changed="$changed $x($now)"
+    done
+    if [ -z "$changed" ]; then
+      printf '▸ 本轮动了：**0 仓**（与上一轮快照比对得出）· 共 %s 仓
+' "$total"
+    else
+      printf '▸ 本轮动了：**%s 仓** ⇒%s\n' "$(echo $changed | wc -w | tr -d ' ')" "$changed"
+    fi
+    : > "$SNAP"
+    for x in anaphase-helix helix-mind Cellrix FlowModus Tuck phyt-DNA; do
+      [ -d "$ROOT/../$x/.git" ] || continue
+      printf '%s %s\n' "$x" "$(git -C "$ROOT/../$x" rev-parse --short=7 HEAD 2>/dev/null)" >> "$SNAP"
+    done
     # ★ 小件①（reviewer 2026-10-10）：**光的哈希**一行 —— 口径声明为 `git hash-object` 前 7 位
     #   （**不碰 VISION.md 内容**）；光变了，报告第一屏就能看见。
     if [ -f "$ROOT/../phyt-DNA/VISION.md" ]; then
