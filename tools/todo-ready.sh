@@ -41,8 +41,14 @@ PY
   *)
 python3 - "$ISSUES" <<'PY'
 # -*- coding: utf-8 -*-
+# ★ 静默家族第 ⑥ 形态候选（reviewer 2026-10-10 二）：**空读数无法区分"全做完了"与"没找到数据"**。
+#   ⇒ 两条规矩：**数据源缺失 ⇒ 非零退出 + stderr 报路径**（此处由上面 `[ -f ]` 已保证）；
+#     **真空（表里没有可解析项）⇒ 正常退出，但显式打印"(无就绪项)"**，绝不静默留白。
 import io, re, sys
-s = io.open(sys.argv[1], encoding='utf-8').read()
+try:
+    s = io.open(sys.argv[1], encoding='utf-8').read()
+except OSError as e:
+    print('★ 读不到登记册: %s' % e, file=sys.stderr); sys.exit(2)
 items = []
 for line in s.split('\n'):
     m = re.match(r'^\| \*\*(K[0-9]+)\*\* \|', line)
@@ -78,6 +84,8 @@ for kid, dp, decl, blocks, deps in ready:
 print('\n▸ 等人类一句话（class=升级）—— **不要等它们**，先做上面那些')
 for kid, deps, cls in waiting:
     print('  %-5s （%s）' % (kid, deps if deps != '—' else '无依赖，只等人'))
+if not (ready or waiting or frozen):
+    print('\n（无就绪项）—— 登记册里没有可解析的声明行 ⇒ **这不是"全做完了"，是"没找到数据"**')
 print('\n▸ ⛔ 不许动（人类冻结 / 禁行）—— **不在你的清单里**')
 for kid, why in frozen: print('  %-5s （%s）' % (kid, why))
 print('\n▸ 注意事项（按类别，来自 DIAGNOSIS-METHODS.md）')
