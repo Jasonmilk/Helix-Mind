@@ -37,6 +37,14 @@
 # Exit:   0 = reported; 1 = --strict and something is REPLACED; 2 = cannot judge
 set -u
 
+# ★ 合并豁免（2026-10-10 实测）：`git merge` 的暂存 diff 是【对第一父】的 ⇒ 合并批必然"很大"，
+#   但那是【笔数的和】，不是"某份文件被重写" ⇒ 用"大改动"判据拦合并是判据用错了地方。
+#   （实测：anaphase `feature → rs` 被拦 853 行 ⇒ 要人工加 [large] 才过 —— 语义问题推给了人。）
+if [ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]; then
+  echo "  [diff-ratio] 合并提交（MERGE_HEAD 在）⇒ 跳过（本判据判的是编辑，不是合并）"
+  exit 0
+fi
+
 RATIO_MAX="${RATIO_MAX:-0.8}"
 MIN_LINES="${MIN_LINES:-20}"
 STRICT=0
