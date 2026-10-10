@@ -25,5 +25,16 @@ if not d.get('ok'): print('★ 不可解析:', d.get('file')); sys.exit(1)
 " || fail=1
           done
           exit $fail
-      - name: ② 脚本语法自检
+      - name: ② Rust workspace 测试（**本仓有 20+ crates** ⇒ 这是比 ADR 头强得多的真门）
+        run: |
+          set +e
+          cargo test --all-features --no-fail-fast 2>&1 | tee /tmp/test.log
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" != 0 ]; then echo "--- 末尾 150 行（完整见 artifact）---"; tail -150 /tmp/test.log; fi
+          exit $rc
+      - name: 上传日志
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: test-log, path: /tmp/test.log, if-no-files-found: warn }
+      - name: ③ 脚本语法自检
         run: for f in tools/*.sh tools/hooks/*; do bash -n "$f" || exit 1; done
