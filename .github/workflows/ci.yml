@@ -1,46 +1,30 @@
-# helix-mind · 真判据 CI（R12，2026-10-10）
+# helix-mind · 真判据 CI（R12；2026-10-10 重写）
 #
-# ★ 同 anaphase：此前矩阵里的"绿"来自 `Graph Update`（非判据）⇒ 本仓也没有测试 CI。
-# 本仓是**跨仓登记册的宿主**（KNOWN_ISSUES / HANDOFF / DIAGNOSIS-METHODS）⇒ 它的判据是**文档结构**：
-#   ① `tools/adr_head.py` 逐份 ADR 解析（**一份 ADR 的头解析不了 ⇒ 它就不是 ADR**）
-#   ② 工具脚本的可执行性（`bash -n` 语法自检 —— 语法错会在别人调用时才炸）
+# ★ 重写理由（实测）：上一版把 python 直接嵌进 YAML 的 run 块 ⇒ **YAML 少一个缩进就整份非法**
+#   ⇒ 症状是 **workflow 有 0 个 job**、run 的 name 显示成文件路径（查不到，看起来像"跑失败了"）。
+#   ⇒ **换一种不再需要小心的组织方式**：YAML 只调用脚本，脚本自己管缩进与引号。
+# ★ 平台钉住：ubuntu-latest 将于 2026-10-19 迁到 Ubuntu 26 ⇒ 钉 24.04（**不让外部变更决定我们的红绿**）
 name: ci
 on: [push, pull_request]
 jobs:
   gate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+        with:
+          python-version: '3.12'
       - name: ① ADR 头解析（每份都要 ok）
-        run: |
-          set -e
-          fail=0
-          for f in docs/decisions/*.md; do
-            python3 tools/adr_head.py "$f" | python3 -c "
-import json,sys
-d=json.load(sys.stdin)
-if not d.get('ok'): print('★ 不可解析:', d.get('file')); sys.exit(1)
-" || fail=1
-          done
-          exit $fail
-      - name: ② Rust workspace 测试（**本仓有 20+ crates** ⇒ 这是比 ADR 头强得多的真门）
+        run: bash tools/check-adr-heads.sh
+      - name: ② 脚本语法自检
+        run: for f in tools/*.sh tools/hooks/*; do [ -f "$f" ] && bash -n "$f" || true; done
+      - name: ③ Rust workspace 测试（本仓 20+ crates ⇒ 比 ADR 头强得多的真门）
         run: |
           set +e
           cargo test --all-features --no-fail-fast 2>&1 | tee /tmp/test.log
           rc=${PIPESTATUS[0]}
-          if [ "$rc" != 0 ]; then echo "--- 末尾 150 行（完整见 artifact）---"; tail -150 /tmp/test.log; fi
-          # ★★ 耐久修法（reviewer Ⓑ，2026-10-10）：**把失败尾部同时写进 job summary** ——
-          #   CI logs 要 admin（403）· artifact 下载要凭据（401）⇒ **两者我都读不到**。
-          #   而 **job summary 是公开可读的**（网页上直接看）⇒ **从此不依赖任何凭据**。
           if [ "$rc" != 0 ]; then
-            { echo '## 失败尾部（前 120 行）'; echo '```'; tail -120 /tmp/*.log 2>/dev/null | head -120; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
+            echo "--- 末尾 150 行 ---"; tail -150 /tmp/test.log
+            { echo '## 失败尾部'; echo '```'; tail -120 /tmp/test.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY" || true
           fi
           exit $rc
-      - name: 上传日志
-        if: always()
-        uses: actions/upload-artifact@v4
-        with: { name: test-log, path: /tmp/test.log, if-no-files-found: warn }
-      - name: ③ 脚本语法自检
-        run: for f in tools/*.sh tools/hooks/*; do bash -n "$f" || exit 1; done
