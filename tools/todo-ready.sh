@@ -15,7 +15,9 @@
 #
 # ★ 解冻条款：docs/helixECO/PROPOSAL-workitem-dag.md（自 2026-10-10 起算）；使用日志：docs/helixECO/USAGE-candidate-tools.md
 set -uo pipefail
-ISSUES="${PHYT_ISSUES:-docs/helixECO/KNOWN_ISSUES.md}"
+# ★ 自解仓库根（2026-10-10）：**在任意 cwd 都能用** —— 否则"报告头贴读数"这条腿会在别处静默为空。
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+ISSUES="${PHYT_ISSUES:-$ROOT/docs/helixECO/KNOWN_ISSUES.md}"
 [ -f "$ISSUES" ] || { echo "★ 找不到登记册：$ISSUES" >&2; exit 2; }
 
 case "${1:-}" in
