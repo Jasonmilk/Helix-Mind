@@ -1,0 +1,29 @@
+# helix-mind · 真判据 CI（R12，2026-10-10）
+#
+# ★ 同 anaphase：此前矩阵里的"绿"来自 `Graph Update`（非判据）⇒ 本仓也没有测试 CI。
+# 本仓是**跨仓登记册的宿主**（KNOWN_ISSUES / HANDOFF / DIAGNOSIS-METHODS）⇒ 它的判据是**文档结构**：
+#   ① `tools/adr_head.py` 逐份 ADR 解析（**一份 ADR 的头解析不了 ⇒ 它就不是 ADR**）
+#   ② 工具脚本的可执行性（`bash -n` 语法自检 —— 语法错会在别人调用时才炸）
+name: ci
+on: [push, pull_request]
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: ① ADR 头解析（每份都要 ok）
+        run: |
+          set -e
+          fail=0
+          for f in docs/decisions/*.md; do
+            python3 tools/adr_head.py "$f" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+if not d.get('ok'): print('★ 不可解析:', d.get('file')); sys.exit(1)
+" || fail=1
+          done
+          exit $fail
+      - name: ② 脚本语法自检
+        run: for f in tools/*.sh tools/hooks/*; do bash -n "$f" || exit 1; done
