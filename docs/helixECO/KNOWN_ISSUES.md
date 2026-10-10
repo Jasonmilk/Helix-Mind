@@ -21,6 +21,15 @@
 
 ## 1. 未修
 
+> **闭合清单的第五个元素（2026-10-09 新增）：清单迁移本身就是闭合的一部分。**
+> K25/K26 结案后条目仍留在「未修」里，正是缺了这一步 ⇒ 审计才"偶发抓谎"。
+> **⇒ 从此：ADR 落笔 ⇒ 同笔或紧邻一笔更新本清单**（审计从"偶发抓谎"变"流程免疫"）。
+> **迁移必须带收据**：条目 + 修于哪个 commit + 判据绿在哪条测试。**带收据的迁移是记账，不带收据是洗白。**
+
+> **剩余"需定性"条的定性标准（三问）**：① **位置**（哪一行/哪个函数）② **判据**（怎么证明它已好/仍坏，**能红吗**）③ **进不进序列化**（若进 ⇒ 改它就是**改行为面/指纹**，需单独授权；纯内部 ⇒ 可跨仓同步提交）。
+> ⇒ 三问齐 ⇒ 归入「待裁决」或「没人做」；三问不齐 ⇒ 先补测量，再分类。
+
+
 > **债务审计（2026-10-09，工具产出）**：本表共 **17** 条，其中 **✅ 已修待迁移 2 条**（K25 · K26，见 §2）⇒ **真·未修 15 条**。
 > **分类（按"为什么还没修"的第一列）**：**⏳ 待裁决（需人点头）= 2 条**（K19 一物两名 · K23 跨仓一物两名）· **没人做（agent 可自行推进）= 3 条**（K17 并发 · K20 编排两份 · K21 clippy 存量）· **其余 10 条**需按行读原文定性（K3/K4/K5/K11/K14/K15/K16/K18/K22/K24 —— 其中 K18/K22/K24 已具备回归判据，形态上是"已修待迁移"）。
 > ⇒ **"做完了吗"由本清单回答，不由感觉回答。**
@@ -65,6 +74,10 @@
 | **K27** | **Tuck `tools/verify.sh` 的 gateway 步骤"名不副实 + 静音"**：名叫「gateway crate 参与编译」，命令却是 `cargo build --workspace --all-features`（**承诺一件事、做另一件事**，且该命令**不证明**任何关于 gateway 的事）；并 `>/dev/null 2>&1` ⇒ **红不带原因**。实测它报过一次 ★ RED 而同一命令手跑 exit=0 ⇒ **不可归因的红**（比红更糟：会教人重跑直到绿）。附带查明：`gateway` feature 属于 `tuck` 包（`-p tuck-gateway --features gateway` ⇒ does not contain this feature）。 | `Tuck/tools/verify.sh:57` | **已修（2026-10-09）** 改为 `cargo build -p tuck --features gateway` + 失败打印末尾 12 行。**回归判据**：改回丢 stderr 的写法 ⇒ 一旦再红又变得不可归因；判据 = 连跑 3 次全绿且 ★ RED 数为 0。 | `K24`（同族：入口/构建的判据必须名实相符）· `K25`（同族：静音仪器） |
 
 > **规则第 5 条**：每行必须注明【回归判据】——没有回归判据的"已修"是纸面富贵。
+
+| **K18** | CI-144 边界上的 `vendored` 类型会漂（anaphase `src/ci144/` 钉在 Cellrix 的旧 commit 上） | `Cellrix/transport/tests/ci144_anaphase_live.rs` | **已修（2026-10-09）** · **收据**：修于 `Cellrix:ead8968`；并修掉它"**未测量 = 通过**"的那一环（缺 `ANAPHASE_BIN` 时由**静默 return ⇒ 报绿**改为**具名 panic `UNMEASURED: …`**）。**回归判据** = 该测试（真协议/真二进制/真往返）；**实测 `ok. 1 passed`**。 | `K16` · `ADR-0050` |
+| **K22** | PreToolUse 执行闸对真危险动作 fail-open（写 `DNA.md` / `rm -rf` 均放行） | `phyt-DNA/examples/claude-code/hooks/` | **已修（2026-10-09）** · **收据**：修于 `phyt-DNA:27b115b`（hook 加 **L0.5**（`rm -rf` 家族 + `git push --force ` 带词边界）+ `ADR-20261009-dangerous-action-shapes-must-be-blocked`（`timing: pre`））。**回归判据** = `examples/claude-code/hooks/hook_test.sh`（**9 例，含 3 条 ★回归**）；**实测 9 passed**，并已接进 `ci-local.sh` 第 5a 步。 | `K25`（同族：闸门必须能红） |
+| **K24** | 单 crate 构建失败而 workspace 通过（`cargo build -p tuck-gateway --all-features` ⇒ E0425；workspace ⇒ 0 error） | `Tuck/crates/tuck-audit/src/lib.rs` | **已修（2026-10-09）** · **收据**：修于 `Tuck:9868161`（`pub type Signer` 补 `#[cfg(feature = "anchor")]` —— 它与那处 `use std::sync::Arc` 同属该 feature）；**判据落在 `Tuck:fdeb5a7`**（把一个"每个 crate 各自 `--all-features` 可编译"的检查加进 `tools/verify.sh`）。**回归判据** = 该步（先造判据看它红 ⇒ 再修 ⇒ 现 **OK(4 crate)**）。 | `K27`（同族：入口判据必须名实相符） |
 
 
 | # | 缺陷 | 修于 | 出处 |
