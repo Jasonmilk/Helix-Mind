@@ -55,7 +55,7 @@
 | **R1** | ✅ 已做 | `phyt-DNA/docs/PROTECTION.md`「引擎设计规范 · 通道契约」 |
 | **R2** | ✅ 已做 | `DIAGNOSIS-METHODS.md#green-is-a-sample`「绿的三种腐败形态」+ **绿必须带 run 收据**（命令·计数·分母·模式） |
 | **R3** | ✅ 已落盘 | 本节 + §0-a 引用表 |
-| **R4** | ⬜ **未做** | 现状读数：`Cellrix: (no runs)`（无 CI）· `phyt-DNA/anaphase-helix: success` |
+| **R4** | ◐ **已交付（回本已发生）** | ✅ **Cellrix 最小 CI**（Rust 硬门 + 面板顾问读数；`.github/workflows/ci.yml`）· ✅ **六仓 CI 矩阵**（`phyt-DNA/tools/ci-matrix.sh`，首跑读数：**3 有 / 3 无**）· ★ **首次回本**：Cellrix CI 的首个 run **揭出 2 个潜伏红**（⇒ **K28**） |
 | **R5** | ✅ 已做 | `DIAGNOSIS-METHODS.md#red-lifecycle` ③「红的保真」：假红/从不红/不可归因 ⇒ **红必须可归因** |
 | **R6** | ✅ 已做 | K19 行：484 里 +1 = `execution_failure_leaves_a_named_ledger_row`（**K26 判据，非 K19-1 专属**） |
 | **R7** | ✅ 已做 | `phyt-DNA/tools/redrate.sh` 头部「样本量分层」 |
@@ -66,6 +66,9 @@
 | **K23** | ✅ **自治结案** | 三问过尺（不改行为面/可逆/有判据）⇒ **不改名**；改为"Tuck 实施序列化时加一处映射 + 一条能红判据" |
 
 ## 1. 未修
+
+| **K28** | ★ **CI 揭出的潜伏破损（Cellrix）**：`cargo test --all-features` 有 **2 个红**，**本地与 CI 都可复现** —— `boot::tests::boot_output_is_byte_identical_to_the_legacy_mechanism`（"T1a 必须是纯重构，输出须逐字节相同"，**首个差异 @ 字节 163000**：新输出**内联了 `panel_tree`**（`<script>/* panel_tree — DAG NA…`），而期望仍是**占位符 `__PANEL_TREE__`**）· `boot::tests::graph_order_matches_the_legacy_sequence`。**★ 它"红着却没人知道"的原因正是：Cellrix 此前【没有 CI】（R4 之前实测 `(no runs)`）。** 相关提交 `76b8d25 feat(web): 第 0 步 —— 投影资产进清单/替换表/占位符` ⇒ **变更是有意的，像是"变更落了、它的逐字节测试没同步更"**。 | `Cellrix/web/src/boot.rs:312/50` | ⏳ **升级（需裁决）**：**"哪一边是对的"是行为面问题**（boot 输出确实变了）⇒ 按三级守则：**不擅自改测试**（会"祝福"一个可能错的输出）· **不擅改代码**。**两个选项**：① 变更是有意的 ⇒ **更新那两条测试的期望**（并在提交信息里具名"为什么逐字节契约作废"）② 输出确实漂了 ⇒ **修代码**。**回归判据**：修完后 `cargo test --all-features` **0 红**（Cellrix CI 的首个绿 run）。 | `R4`（CI 的第一次回本）· `K25`（同族：红着没人知道） |
+
 
 > **闭合清单的第五个元素（2026-10-09 新增）：清单迁移本身就是闭合的一部分。**
 > K25/K26 结案后条目仍留在「未修」里，正是缺了这一步 ⇒ 审计才"偶发抓谎"。

@@ -11,3 +11,4 @@
 | 2026-10-10 | `bash helix-mind/tools/todo-ready.sh` | 现在能做 = **K15 / K14**（prio=high，挡着 DSH 对话界面）；等人 = K11/K16/K19 | ✅ **有**：我据它**把 K15 排在 K14 之前**（且它同时告诉我"K11/K16/K19 不要等"） |
 | 2026-10-10 | `--done K14` · `--ready`（含 prio 推导） | 顾问模式可用；推导给出 K14/K15=high、K3 曾被误列入"能做" | ✅ **有**：修掉三分桶（**"人类冻结"不得被列成可做** —— 那是指南针指反） |
 | 2026-10-10 | `--ready`（三分桶修正后） | 能做 = K14/K15（推导 high）· 等人 = K11/K16/K19 · **不许动 = K3** | ✅ **有**：确认了"K3 不在我的清单里"⇒ 我转去做 R2+R5（无聊的收据） |
+| 2026-10-10 | `bash phyt-DNA/tools/ci-matrix.sh` | **3 有 / 3 无**（phyt-DNA/anaphase/helix-mind 绿；Cellrix/FlowModus/Tuck 无 CI） | ✅ **有**：我据此给 Cellrix 建了最小 CI，而它**首个 run 就揭出 2 个潜伏红**（K28） |
