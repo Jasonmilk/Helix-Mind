@@ -54,6 +54,8 @@
 
 ## 2. 已修
 
+| **K27** | **Tuck `tools/verify.sh` 的 gateway 步骤"名不副实 + 静音"**：名叫「gateway crate 参与编译」，命令却是 `cargo build --workspace --all-features`（**承诺一件事、做另一件事**，且该命令**不证明**任何关于 gateway 的事）；并 `>/dev/null 2>&1` ⇒ **红不带原因**。实测它报过一次 ★ RED 而同一命令手跑 exit=0 ⇒ **不可归因的红**（比红更糟：会教人重跑直到绿）。附带查明：`gateway` feature 属于 `tuck` 包（`-p tuck-gateway --features gateway` ⇒ does not contain this feature）。 | `Tuck/tools/verify.sh:57` | **已修（2026-10-09）** 改为 `cargo build -p tuck --features gateway` + 失败打印末尾 12 行。**回归判据**：改回丢 stderr 的写法 ⇒ 一旦再红又变得不可归因；判据 = 连跑 3 次全绿且 ★ RED 数为 0。 | `K24`（同族：入口/构建的判据必须名实相符）· `K25`（同族：静音仪器） |
+
 > **规则第 5 条**：每行必须注明【回归判据】——没有回归判据的"已修"是纸面富贵。
 
 
