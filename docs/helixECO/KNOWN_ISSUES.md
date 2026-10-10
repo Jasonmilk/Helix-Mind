@@ -70,7 +70,7 @@
 | **R9** | ✅ 已入册 | 同上，**第 ⑤ 形态：定义层静默** |
 | **R10** | ✅ 已入规范 | `phyt-DNA/docs/PROTECTION.md`「不是所有纪律都该成为闸门」 |
 | **R11** | ✅ **本轮完成** | `DIAGNOSIS-METHODS.md`「落点登记表」——每张卡的落点 + **机械化程度** |
-| **R12** | ⬜ **新（D5 揭出，比 D5 本身更大）** | **六仓的真判据 CI 覆盖率 = 4/6**：`phyt-DNA ✅ · Tuck ✅ · Cellrix ★红(K28) · FlowModus ★红(K29)`；
+| **R12** | ⬜ **新（D5 揭出）** —— ★ **"485 · 0 红"自 2026-10-10 起【停牌】**：那是**本地读数**，而**真 CI 首红未读** ⇒ 在读到之前，不得以它作为"绿"的依据（**不是悄悄摘牌——悄悄摘牌是小静默**） | **六仓的真判据 CI 覆盖率 = 4/6**：`phyt-DNA ✅ · Tuck ✅ · Cellrix ★红(K28) · FlowModus ★红(K29)`；
 **★ `anaphase` 与 `helix-mind` 的"绿"来自 `Graph Update`（依赖图更新，过期且非判据）⇒ 它们的【测试没有 CI】**。
 判据 = `bash phyt-DNA/tools/ci-matrix.sh` 一屏里**没有 ⚠️非判据**的仓数 = 6/6 |
 | **K23** | ✅ **自治结案** | 三问过尺（不改行为面/可逆/有判据）⇒ **不改名**；改为"Tuck 实施序列化时加一处映射 + 一条能红判据" |
@@ -89,9 +89,13 @@
 | **D7** R4 可结 | ✅ | R4 → **已结**（交付物 3/3：Cellrix/FlowModus/Tuck 的 CI 已建、读数可得）；**红是 K28/K29 的账**，不再由 R4 挂 ◐ |
 
 
+| **D8** | **读数二连断**（我只贴矩阵，不贴读数与 D/R 表 ⇒ 每轮靠"我记得贴" ⇒ 一定漏） | ✅ **由 D9 结构性修复** | 诊断：**幸存模式即诊断——矩阵最有趣，读数最无聊**；代价当场可见：**"你定其一"让自治的 K15 也去等裁决**（指南针不在，工人就等人指方向） |
+| **D9** | **加 `--report-head`：一条命令打印完整报告头骨架**（读数 + CI 矩阵 + D/R/K 桩）；**D 刀收到即入登记册，一行一条——刀活在机器里，不活在会话里** | ✅ **已落地并首跑** | `helix-mind/tools/todo-ready.sh --report-head`（读数 + 矩阵 + 三套编号的桩，全部**生成**而非手写） |
+| **D10** | **首红的解释学**：红未读之前**没有故事**；新 CI 首红**第一嫌疑是 CI 自己**（棘轮种在当前值了吗？工具链对吗？）—— **别把 Cellrix 剧本提前套在 anaphase 头上**（拿叙事代替读数 = "凭想法写 pattern"长在解释层） | ✅ 姿势已立 | 见下方"轻件①"的停牌句与 K28/K29 的凭据标注 |
+
 ## 1. 未修
 
-| **K29** | **FlowModus 的 CI 红，根因未确立**：R4 新建 CI 后首个 run 失败于 **Rust 硬门**（`cargo test --all-features`）—— 而**本地全 ok**。**已读事实**：`flowmodus-rs/Cargo.toml` 有 `prost-build`/`tonic-build` 且 `build.rs` 调 `tonic_build::configure()` ⇒ 构建期需 `protoc`；本地有 `protoc 36.2`，而 ubuntu runner 默认没有 ⇒ **已加 `apt-get install protobuf-compiler` 且该步成功**。**但 Rust 门仍红** ⇒ **假设是必要但不充分**。**读不到日志**（CI logs 需 admin，403）⇒ 已把失败输出改为 **artifact 上传 + 末尾 120 行打印**（**让下一轮能读**）。 | `FlowModus/.github/workflows/ci.yml` | ⏳ **待查**（下一步：下一轮 run 后**读 artifact**，而不是继续猜；候选：apt 的 protoc **版本过旧** ⇒ 需装新版 protoc）。**判据**：FlowModus CI 转绿（`ci-matrix.sh` 一屏可见）。 | `R4`（CI 的第一次回本）· `K28`（同族：CI 揭出的潜伏问题） |
+| **K29** | ⚠️ **与 K28 同一凭据阻塞**（不是"没做"，是"**读不到**"）—— **FlowModus 的 CI 红，根因未确立**：R4 新建 CI 后首个 run 失败于 **Rust 硬门**（`cargo test --all-features`）—— 而**本地全 ok**。**已读事实**：`flowmodus-rs/Cargo.toml` 有 `prost-build`/`tonic-build` 且 `build.rs` 调 `tonic_build::configure()` ⇒ 构建期需 `protoc`；本地有 `protoc 36.2`，而 ubuntu runner 默认没有 ⇒ **已加 `apt-get install protobuf-compiler` 且该步成功**。**但 Rust 门仍红** ⇒ **假设是必要但不充分**。**读不到日志**（CI logs 需 admin 403；artifact 下载亦 401 ⇒ **需凭据**）⇒ 已把失败输出改为 **artifact 上传 + 末尾 120 行打印**（**让下一轮能读**）。 | `FlowModus/.github/workflows/ci.yml` | ⏳ **待查**（下一步：下一轮 run 后**读 artifact**，而不是继续猜；候选：apt 的 protoc **版本过旧** ⇒ 需装新版 protoc）。**判据**：FlowModus CI 转绿（`ci-matrix.sh` 一屏可见）。 | `R4`（CI 的第一次回本）· `K28`（同族：CI 揭出的潜伏问题） |
 
 
 | **K28** | ★ **CI 揭出的潜伏破损（Cellrix）**：`cargo test --all-features` 有 **2 个红**，**本地与 CI 都可复现** —— `boot::tests::boot_output_is_byte_identical_to_the_legacy_mechanism`（"T1a 必须是纯重构，输出须逐字节相同"，**首个差异 @ 字节 163000**：新输出**内联了 `panel_tree`**（`<script>/* panel_tree — DAG NA…`），而期望仍是**占位符 `__PANEL_TREE__`**）· `boot::tests::graph_order_matches_the_legacy_sequence`。**★ 它"红着却没人知道"的原因正是：Cellrix 此前【没有 CI】（R4 之前实测 `(no runs)`）。** 相关提交 `76b8d25 feat(web): 第 0 步 —— 投影资产进清单/替换表/占位符` ⇒ **变更是有意的，像是"变更落了、它的逐字节测试没同步更"**。 | `Cellrix/web/src/boot.rs:312/50` | ⏳ **升级（需裁决）**：**"哪一边是对的"是行为面问题**（boot 输出确实变了）⇒ 按三级守则：**不擅自改测试**（会"祝福"一个可能错的输出）· **不擅改代码**。**两个选项**：① 变更是有意的 ⇒ **更新那两条测试的期望**（并在提交信息里具名"为什么逐字节契约作废"）② 输出确实漂了 ⇒ **修代码**。**回归判据**：修完后 `cargo test --all-features` **0 红**（Cellrix CI 的首个绿 run）。 | `R4`（CI 的第一次回本）· `K25`（同族：红着没人知道） |

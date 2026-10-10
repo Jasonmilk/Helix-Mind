@@ -12,3 +12,5 @@
 | 2026-10-10 | `--done K14` · `--ready`（含 prio 推导） | 顾问模式可用；推导给出 K14/K15=high、K3 曾被误列入"能做" | ✅ **有**：修掉三分桶（**"人类冻结"不得被列成可做** —— 那是指南针指反） |
 | 2026-10-10 | `--ready`（三分桶修正后） | 能做 = K14/K15（推导 high）· 等人 = K11/K16/K19 · **不许动 = K3** | ✅ **有**：确认了"K3 不在我的清单里"⇒ 我转去做 R2+R5（无聊的收据） |
 | 2026-10-10 | `bash phyt-DNA/tools/ci-matrix.sh` | **3 有 / 3 无**（phyt-DNA/anaphase/helix-mind 绿；Cellrix/FlowModus/Tuck 无 CI） | ✅ **有**：我据此给 Cellrix 建了最小 CI，而它**首个 run 就揭出 2 个潜伏红**（K28） |
+| 2026-10-10 | `bash tools/todo-ready.sh --report-head` | 读数 + CI 矩阵 + D/R/K 桩（**生成**） | ✅ **有**：从此报告头不靠我记得贴；**D9 的直接兑现** |
+| 2026-10-10 | `bash phyt-DNA/tools/ci-matrix.sh`（加两列后） | 揭出 anaphase/helix-mind 的"绿"是 `Graph Update`（非判据） | ✅ **有**：据此给两仓建真 CI（R12） |

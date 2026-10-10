@@ -21,6 +21,28 @@ ISSUES="${PHYT_ISSUES:-$ROOT/docs/helixECO/KNOWN_ISSUES.md}"
 [ -f "$ISSUES" ] || { echo "★ 找不到登记册：$ISSUES" >&2; exit 2; }
 
 case "${1:-}" in
+  --report-head)
+    # ★ D9（reviewer 2026-10-10）：**报告头由生成器产出** —— "视图不该靠记，该靠生成"。
+    #   诊断来源：读数二连断（我只贴了矩阵），说明**每一轮都靠我记得贴 → 一定漏**。
+    #   它把三件拼在一起：① 读数（本脚本）② CI 矩阵（引擎工具）③ D/R 表的桩（从登记册现取）。
+    echo "════════ 报告头（生成，非手写）· $(date -u +%Y-%m-%dT%H:%M:%SZ) ════════"
+    bash "$ROOT/tools/todo-ready.sh" 2>/dev/null || true
+    if [ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ]; then
+      echo; bash "$ROOT/../phyt-DNA/tools/ci-matrix.sh"
+    fi
+    echo; echo "▸ 收件箱（R/D）与未修（K）—— 逐条引用；状态取自登记册"
+    python3 -c "
+import io,re,sys
+s=io.open(sys.argv[1],encoding='utf-8').read()
+for sec,pat in (('R（审查跟进）',r'^\| \*\*(R[0-9]+)\*\*'),('D（D 系列）',r'^\| \*\*(D[0-9]+)\*\*'),('K（未修）',r'^\| \*\*(K[0-9]+)\*\* \|')):
+    rows=[l for l in s.split(chr(10)) if re.match(pat,l)]
+    print('  §0/%s：%d 条' % (sec,len(rows)))
+    for r in rows[:16]:
+        c=[x.strip() for x in r.split('|')]
+        kid=re.sub(r'[*\[\]]','',c[1])[:9]; st=(c[2][:26] if len(c)>2 else '')
+        print('    %-10s %s' % (kid,st))
+" "$ISSUES"
+    exit 0;;
   --done) python3 - "$ISSUES" "${2:?用法: --done <ID>}" <<'PY'
 import io, re, sys
 s=io.open(sys.argv[1],encoding='utf-8').read(); kid=sys.argv[2]
