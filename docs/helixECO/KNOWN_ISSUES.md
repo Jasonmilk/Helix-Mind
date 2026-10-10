@@ -93,6 +93,25 @@
 | **D9** | **加 `--report-head`：一条命令打印完整报告头骨架**（读数 + CI 矩阵 + D/R/K 桩）；**D 刀收到即入登记册，一行一条——刀活在机器里，不活在会话里** | ✅ **已落地并首跑** | `helix-mind/tools/todo-ready.sh --report-head`（读数 + 矩阵 + 三套编号的桩，全部**生成**而非手写） |
 | **D10** | **首红的解释学**：红未读之前**没有故事**；新 CI 首红**第一嫌疑是 CI 自己**（棘轮种在当前值了吗？工具链对吗？）—— **别把 Cellrix 剧本提前套在 anaphase 头上**（拿叙事代替读数 = "凭想法写 pattern"长在解释层） | ✅ 姿势已立 | 见下方"轻件①"的停牌句与 K28/K29 的凭据标注 |
 
+
+### §0-e · **光的分类（2026-10-10，实测读数）** —— 加冕 ≠ 废黜
+
+> **背景**：reviewer 提 vision 机制时命我"**先读 + 分类**"：另外 7 份 `VISION.md` **不是引用光的叶子，是另外的灯**；
+> **按引用图扫描恰好会漏掉它们**。⇒ 下面是一次**实测分类**（读到词形为止，不猜）。
+> ⚠️ **本分类不修改任何 `VISION.md` 的内容**（reviewer 明令"**内容一个字不动**"）。
+
+| 类 | 文档 | 它是什么 | 佐证（实测） |
+|---|---|---|---|
+| **方法之光（王）** | `phyt-DNA/VISION.md` | **朝向"怎么长"** —— 方法论的光 | 27 行 · 标题 **"VISION · 种子"** · 首句 **"让项目像植物一样生长，而不是像机器一样被建造"** |
+| **目标之光（七盏子光）** | `helix-mind/docs/VISION.md` · `Cellrix/docs/VISION.md` · `anaphase-helix/docs/VISION.md` · `FlowModus/docs/VISION.md` · `Tuck/docs/VISION.md` · `helix-tentacle/docs/VISION.md` · `lodestone-md/docs/VISION.md` | **各自朝向"朝哪去"** —— 项目级 | **词形完全一致**："**某某 愿景索引**"（7/7）· 各有版本号（v1.0 ~ v3.1） |
+
+**⇒ 结论**：生态里有**两类光**（**方法之光 × 目标之光**）—— 这是**分层，不是重复** ⇒
+**"给王加冕"= 声明这个分层**（在**登记册**里声明），**而不是**去改七盏子光的内容；
+**七灯若愿意引用方法论的光，加一行 `上位光@<哈希>` 即可——那是可选的"称臣"，不是强制的"废黜"。**
+
+**⇒ 扫描范围（mechanized）**：`grep -rl 'phyt-DNA/VISION.md' <各仓>` ⇒
+**实测只有 `phyt-DNA/**` 引用它**（RNA/PROTECTION/ADR/README）⇒ **光的变更只影响朝向它的叶子**（按需加载用在愿景上）。
+
 ## 1. 未修
 
 | **K29** | ⚠️ **与 K28 同一凭据阻塞**（不是"没做"，是"**读不到**"）—— **FlowModus 的 CI 红，根因未确立**：R4 新建 CI 后首个 run 失败于 **Rust 硬门**（`cargo test --all-features`）—— 而**本地全 ok**。**已读事实**：`flowmodus-rs/Cargo.toml` 有 `prost-build`/`tonic-build` 且 `build.rs` 调 `tonic_build::configure()` ⇒ 构建期需 `protoc`；本地有 `protoc 36.2`，而 ubuntu runner 默认没有 ⇒ **已加 `apt-get install protobuf-compiler` 且该步成功**。**但 Rust 门仍红** ⇒ **假设是必要但不充分**。**读不到日志**（CI logs 需 admin 403；artifact 下载亦 401 ⇒ **需凭据**）⇒ 已把失败输出改为 **artifact 上传 + 末尾 120 行打印**（**让下一轮能读**）。 | `FlowModus/.github/workflows/ci.yml` | ⏳ **待查**（下一步：下一轮 run 后**读 artifact**，而不是继续猜；候选：apt 的 protoc **版本过旧** ⇒ 需装新版 protoc）。**判据**：FlowModus CI 转绿（`ci-matrix.sh` 一屏可见）。 | `R4`（CI 的第一次回本）· `K28`（同族：CI 揭出的潜伏问题） |
