@@ -4,6 +4,13 @@
 # 本钩子只做一件事：**任何文本文件在一次提交里丢掉 >80% 的行 ⇒ 拦截，要求显式确认**。
 # 绕过：`CLIFF_OK=1 git commit ...`（留痕：确认是你本意）。
 set -uo pipefail
+# ★ 合并豁免（2026-10-10 实测）：`git merge` 的暂存 diff 是【对第一父】的 ⇒ 若另一侧远远落后，
+#   看起来就像"整份被删"（实测：storage/src/lib.rs 被报"先删 665 行/共 699 行"）⇒ **假悬崖**。
+#   合并的语义不是"编辑"，故本钩子对它不判；普通提交仍照判。
+if [ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]; then
+  echo "  [cliff] 合并提交（MERGE_HEAD 在）⇒ 跳过悬崖检测（判据只对普通编辑有意义）"
+  exit 0
+fi
 [ "${CLIFF_OK:-0}" = "1" ] && { echo "  [cliff] 已显式确认（CLIFF_OK=1），放行"; exit 0; }
 warn=0
 while IFS=$'\t' read -r add del path; do
