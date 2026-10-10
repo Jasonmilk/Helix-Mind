@@ -6,10 +6,11 @@ _report_field_debts() {
   open_=$(grep -cE '\| (⬜|⏳|⏸)' "$f" 2>/dev/null)
   [ -n "$open_" ] || open_=0
   echo "▸ 欠账（**未销号 ${open_} 条** · 真源 docs/helixECO/DEBTS.md）："
-  grep -E '\| (⬜|⏳|⏸)' "$f" 2>/dev/null | while IFS='|' read -r _ item since st cond owner _r; do
-    printf '    %-36s 起 %-11s %-12s 归属 %s\n' \
-      "$(printf %s "$item" | sed 's/^ *//;s/ *$//')" "$(printf %s "$since" | sed 's/^ *//;s/ *$//')" \
-      "$(printf %s "$st" | sed 's/^ *//;s/ *$//')" "$(printf %s "$owner" | sed 's/^ *//;s/ *$//')"
+  # 列序（2026-10-10 加 K 号列）：项 | K号/非K理由 | 挂账起 | 状态 | 解锁条件 | 归属
+  grep -E '\| (⬜|⏳|⏸)' "$f" 2>/dev/null | while IFS='|' read -r _ item k since st cond owner _r; do
+    printf '    %-38s [%s] 起 %-11s 归属 %s\n' \
+      "$(printf %s "$item" | sed 's/^ *//;s/ *$//')" "$(printf %s "$k" | sed 's/^ *//;s/ *$//')" \
+      "$(printf %s "$since" | sed 's/^ *//;s/ *$//')" "$(printf %s "$owner" | sed 's/^ *//;s/ *$//')"
   done
 }
 
@@ -77,6 +78,14 @@ case "${1:-}" in
     if [ -f "$ROOT/../phyt-DNA/VISION.md" ]; then
       vh=$(cd "$ROOT/../phyt-DNA" && git hash-object VISION.md 2>/dev/null | cut -c1-7)
       printf '\n▸ 光：vision@%s（git hash-object 前 7 位 · phyt-DNA/VISION.md；内容一字不改是它的价值）\n' "${vh:-unknown}"
+      # ★ 光已更新标记（2026-10-10）：与上轮快照比对 ⇒ 变了就【连打几轮】（光动了要让每滴水知道）
+      vsnap="${HELIX_VISION_SNAPSHOT:-$HOME/.helix/vision-last.txt}"
+      mkdir -p "$(dirname "$vsnap")" 2>/dev/null || true
+      vprev=$(cat "$vsnap" 2>/dev/null || true)
+      if [ -n "$vprev" ] && [ "$vprev" != "$vh" ]; then
+        printf '▸ ★ **光已更新**：vision@%s → vision@%s（本轮起连续几轮标注；判读方向可能随之改变）\n' "$vprev" "$vh"
+      fi
+      printf '%s' "$vh" > "$vsnap"
     fi
     # ★ 小件②：**评审倒计时**（冻结期自 2026-10-10 起算两周）—— 读数回归，不靠记
     if [ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ]; then

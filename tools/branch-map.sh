@@ -10,6 +10,19 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"; ROOT="$ROOT/.."
 # ★ 12 仓（2026-10-10 更正）：我一直误说"六仓"，实际工作区有 12 个 git 仓
 REPOS="anaphase-helix helix-mind Cellrix FlowModus Tuck phyt-DNA helix-tentacle Helix-MCP-Learner HelixECO-Glove lodestone-md lodestone-spec lumtract"
 
+gen_footer() {
+  echo
+  echo "### 12 仓全景中的【另 5 仓】（在 \`main\`、无 \`rs\`）"
+  echo "| 仓 | 判定 |"
+  echo "|---|---|"
+  for x in Helix-MCP-Learner HelixECO-Glove lodestone-md lodestone-spec lumtract; do
+    [ -d "$ROOT/$x/.git" ] || continue
+    printf "| %s | 无 \`rs\` 主干 ⇒ **不参与本轮收敛**（另族；若将来纳入，须先立主干） |\n" "$x"
+  done
+  echo
+  echo "> ★ 第 7 员勘测（2026-10-10）：**helix-tentacle** 默认分支 = \`main\`，但**有 \`rs\` 主干**（线性，最后一笔 2026-09-21）"
+  echo "> 且**没有** \`feature/convergence-M0M7\` ⇒ **不是本轮收敛批的成员**；故人侧"默认分支切 rs"要点的仓数**不等于 12**（勘测后定）。"
+}
 gen() {
   echo "| 仓 | 活跃分支 | 主干(rs) | feature 领先/落后 rs | merge-base | 已并入 rs? | main 与 rs 的关系 | 工作树 |"
   echo "|---|---|---|---|---|---|---|---|"
@@ -35,6 +48,7 @@ gen() {
     else a=—; z=—; mb=—; merged=—; mr=—; fi
     printf "| **%s** | \`%s\` | \`%s\` | %s / %s | \`%s\` | %s | %s | %s |\n" "$x" "$cur" "$rsr" "$a" "$z" "$mb" "$merged" "$mr" "$( [ -z "$(g status --porcelain)" ] && echo '干净' || echo 'dirty' )"
   done
+  gen_footer
   echo
   echo "_生成于 \`bash tools/branch-map.sh\` · 判据：\`--check\`（生成物过期 ⇒ CI 红）_"
 }
@@ -46,7 +60,7 @@ if [ "${1:-}" = "--check" ]; then
   sib=0; for x in $REPOS; do [ -d "$ROOT/$x/.git" ] && sib=$((sib+1)); done
   if [ "$sib" -lt 2 ]; then
     echo "  ⚠ 跳过：本环境只看到 ${sib} 个仓（CI 只 checkout 本仓）⇒ 无法判读分支地图是否过期"
-    echo "    （真判官 = 本地六仓环境：bash tools/branch-map.sh --check）"
+    echo "    （真判官 = 本地 12 仓工作区：bash tools/branch-map.sh --check）"
     exit 0
   fi
   doc="docs/helixECO/BRANCH-MAP.md"
@@ -65,3 +79,5 @@ PY
   exit $?
 fi
 gen
+
+# ★ 12 仓全景里【另 5 仓】的名单（reviewer 2026-10-10：只报 7 个等于画了一半）
