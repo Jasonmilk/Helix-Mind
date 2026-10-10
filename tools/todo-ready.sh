@@ -26,7 +26,12 @@ case "${1:-}" in
     #   诊断来源：读数二连断（我只贴了矩阵），说明**每一轮都靠我记得贴 → 一定漏**。
     #   它把三件拼在一起：① 读数（本脚本）② CI 矩阵（引擎工具）③ D/R 表的桩（从登记册现取）。
     echo "════════ 报告头（生成，非手写）· $(date -u +%Y-%m-%dT%H:%M:%SZ) ════════"
-    bash "$ROOT/tools/todo-ready.sh" 2>/dev/null || true
+    # ★ D13（reviewer 2026-10-10，D2 移植）：**生成器任何一段挂 ⇒ 整体非零 + 具名哪段** ——
+    #   **绝不允许"半截报告头"静默流出**（半截最危险：它看起来像完整的，只是少了点东西）。
+    _fail=0
+    if ! bash "$ROOT/tools/todo-ready.sh" 2>/dev/null; then
+      echo "★ 段【读数】失败（--report-head 不完整）" >&2; _fail=1
+    fi
     # ★ 小件①（reviewer 2026-10-10）：**光的哈希**一行 —— 口径声明为 `git hash-object` 前 7 位
     #   （**不碰 VISION.md 内容**）；光变了，报告第一屏就能看见。
     if [ -f "$ROOT/../phyt-DNA/VISION.md" ]; then
@@ -44,7 +49,12 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       printf '▸ 候选工具评审：截止 %s（还剩 %s 天）· 使用日志 %s 条 · 行动变化=有 %s 条\n' "${end:-?}" "${left:-?}" "$n" "$act"
     fi
     if [ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ]; then
-      echo; bash "$ROOT/../phyt-DNA/tools/ci-matrix.sh"
+      echo
+      if ! bash "$ROOT/../phyt-DNA/tools/ci-matrix.sh"; then
+        echo "★ 段【CI 矩阵】失败（--report-head 不完整）" >&2; _fail=1
+      fi
+    else
+      echo "★ 段【CI 矩阵】缺失：找不到 phyt-DNA/tools/ci-matrix.sh" >&2; _fail=1
     fi
     echo; echo "▸ 收件箱（R/D）与未修（K）—— 逐条引用；状态取自登记册"
     python3 -c "
@@ -58,6 +68,10 @@ for sec,pat in (('R（审查跟进）',r'^\| \*\*(R[0-9]+)\*\*'),('D（D 系列�
         kid=re.sub(r'[*\[\]]','',c[1])[:9]; st=(c[2][:26] if len(c)>2 else '')
         print('    %-10s %s' % (kid,st))
 " "$ISSUES"
+    if [ "$_fail" != 0 ]; then
+      echo "★ --report-head 有段落失败 ⇒ 拒绝输出为完整报告头（退出非零）" >&2
+      exit 1
+    fi
     exit 0;;
   --done) python3 - "$ISSUES" "${2:?用法: --done <ID>}" <<'PY'
 import io, re, sys
