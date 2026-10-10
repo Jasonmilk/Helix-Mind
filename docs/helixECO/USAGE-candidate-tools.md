@@ -14,3 +14,4 @@
 | 2026-10-10 | `bash phyt-DNA/tools/ci-matrix.sh` | **3 有 / 3 无**（phyt-DNA/anaphase/helix-mind 绿；Cellrix/FlowModus/Tuck 无 CI） | ✅ **有**：我据此给 Cellrix 建了最小 CI，而它**首个 run 就揭出 2 个潜伏红**（K28） |
 | 2026-10-10 | `bash tools/todo-ready.sh --report-head` | 读数 + CI 矩阵 + D/R/K 桩（**生成**） | ✅ **有**：从此报告头不靠我记得贴；**D9 的直接兑现** |
 | 2026-10-10 | `bash phyt-DNA/tools/ci-matrix.sh`（加两列后） | 揭出 anaphase/helix-mind 的"绿"是 `Graph Update`（非判据） | ✅ **有**：据此给两仓建真 CI（R12） |
+| 2026-10-10 | `ci-matrix.sh`（首版） | Tuck 显示 `—  ★红` | ✅ **有**：我**直查 API** 发现它两次都是 `success` ⇒ **矩阵造假红** ⇒ 修工具（三态 + 引号免疫 + 取数失败具名）⇒ **D14 由此入册** |
