@@ -158,7 +158,7 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       _gsnap="$ROOT/.helix/gates-last.txt"
       if [ -f "$_gsnap" ]; then
         _diff=$(diff <(sort "$_gsnap") <(ls "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | xargs -n1 basename | sort) 2>/dev/null | grep -E '^[<>]' | head -6)
-        [ -n "$_diff" ] && { echo "▸ 闸门数变更归因（总 $_gnow）："; printf '%s\n' "$_diff" | sed 's/^</     − /;s/^>/     ＋ /' ; }
+        [ -n "$_diff" ] && { echo "▸ 闸门数变更归因（总 ${_gnow}）："; printf '%s\n' "$_diff" | sed 's/^</     − /;s/^>/     ＋ /' ; }
       fi
       ls "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | xargs -n1 basename | sort > "$_gsnap"
     fi
