@@ -135,7 +135,7 @@ case "${1:-}" in
 import datetime
 d=datetime.date(2026,10,10)+datetime.timedelta(days=14)
 print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
-      printf '▸ 候选工具评审：截止 %s（还剩 %s 天）· 使用日志 %s 条 · 行动变化=有 %s 条\n' "${end:-?}" "${left:-?}" "$n" "$act"
+      printf '▸ 候选工具评审（=评审倒计时）：截止 %s（还剩 %s 天）· 使用日志 %s 条 · 行动变化=有 %s 条\n' "${end:-?}" "${left:-?}" "$n" "$act"
     fi
 
     _report_field_debts

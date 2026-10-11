@@ -17,7 +17,10 @@ gen_footer() {
   echo "|---|---|"
   for x in Helix-MCP-Learner HelixECO-Glove lodestone-md lodestone-spec lumtract; do
     [ -d "$ROOT/$x/.git" ] || continue
-    printf "| %s | 无 \`rs\` 主干 ⇒ **不参与本轮收敛**（另族；若将来纳入，须先立主干） |\n" "$x"
+    b=$(git -C "$ROOT/$x" rev-parse --abbrev-ref HEAD 2>/dev/null)
+    last=$(git -C "$ROOT/$x" log -1 --format=%ad --date=short "$b" 2>/dev/null)
+    ci=$([ -d "$ROOT/$x/.github/workflows" ] && echo 有 || echo 无)
+    printf "| %s | 分支 \`%s\` · 无 \`rs\` 主干 · CI=%s · 末次 %s ⇒ **不纳入本轮收敛**（另族；纳入须先立主干+CI） |\n" "$x" "$b" "$ci" "$last"
   done
   echo
   echo "> ★ 第 7 员勘测（2026-10-10）：**helix-tentacle** 默认分支 = \`main\`，但**有 \`rs\` 主干**（线性，最后一笔 2026-09-21）"
