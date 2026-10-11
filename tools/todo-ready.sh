@@ -9,13 +9,14 @@ _report_field_debts() {
   # 列序（2026-10-10 加 K 号列）：项 | K号/非K理由 | 挂账起 | 状态 | 解锁条件 | 归属
   # ★ 滞留提示（reviewer 旗一 · 第三轮落地）：挂账 ≥2 天且状态仍为 ⬜/⏳ 的行 ⇒ 逐条标 ⚠️
   #   （"关于欠账的欠账正在被遗忘"⇒ 机械提醒每轮回看；真正的销号仍靠人/agent 写收据）
+  #   ★ 阈值 2 天 → **1 天**（迁移期口径）：实测 2 天太慢 —— 三条"已做未销"行的日期都是 0–1 天 ⇒ 未被点名。
   _today=$(date +%s)
   grep -E '\| (⬜|⏳|⏸)' "$f" 2>/dev/null | while IFS='|' read -r _ item k since st cond owner _r; do
     _d=$(printf %s "$since" | sed 's/^ *//;s/ *$//')
     _age=""
     if printf '%s' "$_d" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
       _t=$(date -j -f %Y-%m-%d "$_d" +%s 2>/dev/null || date -d "$_d" +%s 2>/dev/null || echo "")
-      if [ -n "$_t" ]; then _n=$(( (_today - _t) / 86400 )); [ "$_n" -ge 2 ] && _age=" ⚠️滞留${_n}天"; fi
+      if [ -n "$_t" ]; then _n=$(( (_today - _t) / 86400 )); [ "$_n" -ge 1 ] && _age=" ⚠️滞留${_n}天"; fi
     fi
     printf '    %-38s [%s] 起 %-11s 归属 %s%s\n' \
       "$(printf %s "$item" | sed 's/^ *//;s/ *$//')" "$(printf %s "$k" | sed 's/^ *//;s/ *$//')" \
