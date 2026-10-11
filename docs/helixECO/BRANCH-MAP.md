@@ -9,9 +9,9 @@
 | 仓 | 活跃分支 | 主干(rs) | feature 领先/落后 rs | merge-base | 已并入 rs? | main 与 rs 的关系 | 工作树 |
 |---|---|---|---|---|---|---|---|
 | **anaphase-helix** | `rs` | `rs` | 0 / 0 | `1af160d` | ✅ 是 | **无关历史**（骨架） | 干净 |
-| **helix-mind** | `rs` | `rs` | 0 / 0 | `b29182b` | ✅ 是 | **无关历史**（骨架） | dirty |
-| **Cellrix** | `feature/convergence-M0M7` | `rs` | 48 / 0 | `12e4088` | 否 | **无关历史**（骨架） | 干净 |
-| **FlowModus** | `rs` | `rs` | 0 / 0 | `8ebbbea` | ✅ 是 | 落后 rs 48 笔 · 领先 2 笔 | 干净 |
+| **helix-mind** | `rs` | `rs` | 0 / 0 | `484bee0` | ✅ 是 | **无关历史**（骨架） | dirty |
+| **Cellrix** | `rs` | `rs` | 0 / 0 | `5a975a0` | ✅ 是 | **无关历史**（骨架） | 干净 |
+| **FlowModus** | `rs` | `rs` | 0 / 0 | `8ebbbea` | ✅ 是 | 落后 rs 48 笔 · 领先 2 笔 | dirty |
 | **Tuck** | `rs` | `rs` | 0 / 0 | `21afba3` | ✅ 是 | 落后 rs 81 笔 · 领先 0 笔 | 干净 |
 | **phyt-DNA** | `v2` | — | — | — | — | — | 干净 |
 | **helix-tentacle** | `rs` | `rs` | 0 / 0 | `2554ebf` | ✅ 是 | 落后 rs 56 笔 · 领先 0 笔 | 干净 |

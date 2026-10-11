@@ -53,6 +53,37 @@ gen() {
   echo "_生成于 \`bash tools/branch-map.sh\` · 判据：\`--check\`（生成物过期 ⇒ CI 红）_"
 }
 
+
+# ★ 引用守卫（人 2026-10-11 原则：**写了值就要有东西守时效**）：
+#   长寿命载体里的分支字面量（如 workflow 的 `ref: rs`）必须**指向仍然存在的分支**。
+#   主干改名那天 ⇒ 这里红 ⇒ 过期引用无所遁形（"快照+守卫"形态的机械落地）。
+check_ref_literals() {
+  local bad=0 n=0
+  for wf in "$ROOT"/*/.github/workflows/*.yml; do
+    [ -f "$wf" ] || continue
+    local repo
+    while IFS= read -r line; do
+      repo=$(printf '%s' "$line" | sed -nE 's/.*repository:[[:space:]]*[^\/]*\/([A-Za-z0-9._-]+).*/\1/p')
+      ref=$(printf '%s' "$line" | sed -nE 's/.*ref:[[:space:]]*([A-Za-z0-9._\/-]+).*/\1/p')
+      [ -n "$repo" ] && [ -n "$ref" ] || continue
+      n=$((n+1))
+      # 找本地同名目录（大小写不敏感）
+      local dir=""
+      for d in "$ROOT"/*/; do
+        [ -d "$d/.git" ] || continue
+        case "$(basename "$d" | tr 'A-Z' 'a-z')" in "$(printf %s "$repo" | tr 'A-Z' 'a-z')") dir="$d"; break;; esac
+      done
+      if [ -n "$dir" ]; then
+        if ! git -C "$dir" rev-parse --verify "$ref" >/dev/null 2>&1 && ! git -C "$dir" rev-parse --verify "origin/$ref" >/dev/null 2>&1; then
+          echo "  ★ 过期引用：$(basename "$wf") 里 ref: $ref 指向 $repo，而该仓没有这个分支"; bad=1
+        fi
+      fi
+    done < <(grep -h "repository:" "$wf" 2>/dev/null)
+  done
+  [ "$bad" = 0 ] && echo "  ✅ 引用守卫：${n} 处跨仓分支字面量全部指仍然存在的分支"
+  return $bad
+}
+
 if [ "${1:-}" = "--check" ]; then
   # ★ 2026-10-10 实测教训：CI 只 checkout【本仓】，**没有兄弟仓** ⇒ 生成器读不到其余五仓
   #   ⇒ 生成表与本仓文档必然不同 ⇒ 若照判就是"过期"假红（我那一步实测 exit 1）。
@@ -63,6 +94,7 @@ if [ "${1:-}" = "--check" ]; then
     echo "    （真判官 = 本地 12 仓工作区：bash tools/branch-map.sh --check）"
     exit 0
   fi
+  check_ref_literals || exit 1
   doc="docs/helixECO/BRANCH-MAP.md"
   [ -f "$doc" ] || { echo "★ 缺 $doc"; exit 2; }
   python3 - "$doc" <<'PY' || exit 1

@@ -72,7 +72,13 @@ case "${1:-}" in
       # ★ 内容收据机械化（reviewer 2026-10-10 旗二）：每笔的 commit 首行**自动带出**（git log 就有）
       #   ⇒ 不再靠"我记得写"（b29182b 有、33e00ab 又漏 = 靠记性不是机制）
       for x in $changed; do
-        printf '    %-16s %s\n' "$x" "$(git -C "$ROOT/../$x" log -1 --format=%s 2>/dev/null | cut -c1-88)"
+        # ★ 修 no-op（2026-10-11）：$changed 的每项形如 `name(sha)` ⇒ 先剥括号再取 commit 首行
+        #   （原版直接把 name(sha) 当目录名 ⇒ git 找不到 => 打印为空 ⇒ "成功调用≠效果发生"的又一例，
+        #    这次被我自己的新功能命中 ⇒ 证明了那条纪律的必要性）
+        _r="${x%%(*}"; _h="${x#*(}"; _h="${_h%)}"
+        _msg=$(git -C "$ROOT/../$_r" log -1 --format=%s "$_h" 2>/dev/null | cut -c1-88)
+        [ -n "$_msg" ] || _msg="（取不到 commit 首行 —— 判读不了，不等于没有内容）"
+        printf '    %-16s %s\n' "$_r" "$_msg"
       done
     fi
     : > "$SNAP"
