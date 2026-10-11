@@ -151,6 +151,17 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       _lim=${_lim:-320}
       printf '▸ 预算：PLAN %s + RNA %s = %s / %s（余量 %s）· 真源 %s\n' "$_pl" "$_rn" "$(( _pl + _rn ))" "$_lim" "$(( _lim - _pl - _rn ))" "ADR-20261011-layer1-threshold-calibrated-by-premiere"
     fi
+
+    # ★ 闸门数变更归因（reviewer 刺二 · 2026-10-11）：数字变了必须像红一样**具名归因**（"12→18"那课的闸门数版本）
+    if [ -d "$ROOT/../phyt-DNA/decisions" ]; then
+      _gnow=$(ls "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | wc -l | tr -d ' ')
+      _gsnap="$ROOT/.helix/gates-last.txt"
+      if [ -f "$_gsnap" ]; then
+        _diff=$(diff <(sort "$_gsnap") <(ls "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | xargs -n1 basename | sort) 2>/dev/null | grep -E '^[<>]' | head -6)
+        [ -n "$_diff" ] && { echo "▸ 闸门数变更归因（总 $_gnow）："; printf '%s\n' "$_diff" | sed 's/^</     − /;s/^>/     ＋ /' ; }
+      fi
+      ls "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | xargs -n1 basename | sort > "$_gsnap"
+    fi
     _report_field_debts
     # ★★ 必出七段【自证】(D15 补丁 · 2026-10-10)：为什么需要它 ——
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
