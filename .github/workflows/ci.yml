@@ -16,6 +16,10 @@ jobs:
           python-version: '3.12'
       - name: ⓪ 系统依赖（prost-build 需要 protoc —— 与 FlowModus 同一病同一修法）
         run: sudo apt-get update -qq && sudo apt-get install -y -qq protobuf-compiler
+      - name: ⓪·4 报告头不得死（生成器完整性 · CI 只判"死不死"）
+        # ★ 为什么在 CI：报告头生成器曾被两处 `$var（` 静默打死，而**没有 CI 断言它跑完**。
+        #   CI 只 checkout 本仓（无五仓兄弟）⇒ 光/预算等段天然取不到 ⇒ 故只断言【跑完 + 自证行在】。
+        run: bash tools/check-report-head.sh --death-only
       - name: ① ADR 头解析（每份都要 ok）
         run: bash tools/check-adr-heads.sh
       - name: ②·5 文档不得落后于代码（分支地图生成物比对）

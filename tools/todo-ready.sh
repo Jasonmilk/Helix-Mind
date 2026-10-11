@@ -181,6 +181,19 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       _rep=$(grep -h '"kind"[[:space:]]*:[[:space:]]*"replay"' "$ROOT/../phyt-DNA/ledger/hits-2026.jsonl" 2>/dev/null | grep -oE '"gate_id"[[:space:]]*:[[:space:]]*"ADR-[^"]+"' | sort -u | wc -l | tr -d ' ')
       printf '▸ 重放：活跃硬闸门 %s 条 · 已有重放记录 %s 条（普查 18 条已入账 · 时钟自 2026-10-11）\n' "$_tot" "$_rep"
     fi
+    # ★ 数轴历史（reviewer ① · 2026-10-11）：**闭合声称必须带自己的历史** ——
+    #   数轴变了带【变更归因】；没变带【未变声明】。快照放 .helix/（与 HEAD 快照同款，可丢弃）。
+    if [ -d "$ROOT/../phyt-DNA/decisions" ]; then
+      _ax_tot=$(ls "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | wc -l | tr -d ' ')
+      _ax_h=$(grep -h '^hard: true' "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | wc -l | tr -d ' ')
+      _ax_d=$(grep -l '^status: deprecated' "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | wc -l | tr -d ' ')
+      _ax="$ROOT/.helix/axis-last.txt"; _prev=$(cat "$_ax" 2>/dev/null || true)
+      if [ -z "$_prev" ]; then printf '▸ 数轴历史：闸门总 %s · hard:true %s · deprecated %s（首次记录，无上轮可比）\n' "$_ax_tot" "$_ax_h" "$_ax_d"
+      elif [ "$_prev" = "tot=$_ax_tot h=$_ax_h d=$_ax_d" ]; then printf '▸ 数轴历史：闸门总 %s · hard:true %s · deprecated %s（**与上轮同，未变**）\n' "$_ax_tot" "$_ax_h" "$_ax_d"
+      else printf '▸ 数轴历史：闸门总 %s · hard:true %s · deprecated %s（**较上轮有变**：%s → 见本笔 commit 的归因）\n' "$_ax_tot" "$_ax_h" "$_ax_d" "$_prev"; fi
+      printf 'tot=%s h=%s d=%s' "$_ax_tot" "$_ax_h" "$_ax_d" > "$_ax"
+    fi
+
     _report_field_debts
     # ★★ 必出七段【自证】(D15 补丁 · 2026-10-10)：为什么需要它 ——
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
