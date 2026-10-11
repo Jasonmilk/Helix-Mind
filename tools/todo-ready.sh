@@ -177,7 +177,16 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
     fi
     # ★ 重放覆盖率（新判据的看板读数 · 从闸门移到这里）
     if [ -f "$ROOT/../phyt-DNA/ledger/hits-2026.jsonl" ]; then
-      _tot=$(grep -l '^hard: true' "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | xargs -I{} sh -c 'grep -q "^status: deprecated" {} || grep -q "^replay-exempt: true" {} || echo x' | wc -l | tr -d ' ')
+      # ★ 单一进程计数（reviewer ⑦ · 2026-10-11）：xargs 命令行过长 ⇒ 计数为 0 的**假读数**（实测）。
+      _tot=$(python3 - "$ROOT/../phyt-DNA/decisions" <<'PY'
+import io,glob,os,sys
+n=0
+for f in glob.glob(os.path.join(sys.argv[1],'ADR-*.md')):
+    t=io.open(f,encoding='utf-8',errors='surrogateescape').read()
+    if 'hard: true' in t and 'status: deprecated' not in t and 'replay-exempt: true' not in t: n+=1
+print(n)
+PY
+)
       _rep=$(grep -h '"kind"[[:space:]]*:[[:space:]]*"replay"' "$ROOT/../phyt-DNA/ledger/hits-2026.jsonl" 2>/dev/null | grep -oE '"gate_id"[[:space:]]*:[[:space:]]*"ADR-[^"]+"' | sort -u | wc -l | tr -d ' ')
       printf '▸ 重放：活跃硬闸门 %s 条 · 已有重放记录 %s 条（普查 18 条已入账 · 时钟自 2026-10-11）\n' "$_tot" "$_rep"
     fi
