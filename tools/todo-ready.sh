@@ -6,6 +6,11 @@ _report_field_debts() {
   open_=$(grep -cE '\| (⬜|⏳|⏸)' "$f" 2>/dev/null)
   [ -n "$open_" ] || open_=0
   echo "▸ 欠账（**未销号 ${open_} 条** · 真源 docs/helixECO/DEBTS.md）："
+  # ★ 最老三笔的轮龄（reviewer ① 2026-10-11）：「老刺蒸发」从模式变可测
+  grep -E '\| (⬜|⏳|⏸)' "$f" 2>/dev/null | awk -F'|' '{gsub(/^ +| +$/,"",$4); print $4"\t"$2}' | sort | head -3 | while IFS=$'\t' read -r d it; do
+    t=$(date -j -f %Y-%m-%d "$d" +%s 2>/dev/null || date -d "$d" +%s 2>/dev/null || echo "")
+    [ -n "$t" ] && printf '    ⏳最老：%s（挂 %s 天）\n' "$(printf %s "$it" | sed 's/^ *//' | cut -c1-40)" "$(( ( $(date +%s) - t ) / 86400 ))"
+  done
   # 列序（2026-10-10 加 K 号列）：项 | K号/非K理由 | 挂账起 | 状态 | 解锁条件 | 归属
   # ★ 滞留提示（reviewer 旗一 · 第三轮落地）：挂账 ≥2 天且状态仍为 ⬜/⏳ 的行 ⇒ 逐条标 ⚠️
   #   （"关于欠账的欠账正在被遗忘"⇒ 机械提醒每轮回看；真正的销号仍靠人/agent 写收据）
@@ -138,6 +143,14 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       printf '▸ 候选工具评审（=评审倒计时）：截止 %s（还剩 %s 天）· 使用日志 %s 条 · 行动变化=有 %s 条\n' "${end:-?}" "${left:-?}" "$n" "$act"
     fi
 
+    # ★ 预算行（reviewer ⑦ · 2026-10-11）：与 vision@ 同款 —— 由生成器量，不手写
+    if [ -f "$ROOT/../phyt-DNA/PLAN.md" ] && [ -f "$ROOT/../phyt-DNA/RNA.md" ]; then
+      _pl=$(wc -l < "$ROOT/../phyt-DNA/PLAN.md" | tr -d ' ')
+      _rn=$(wc -l < "$ROOT/../phyt-DNA/RNA.md" | tr -d ' ')
+      _lim=$(grep -m1 -oE '\-gt [0-9]+' "$ROOT/../phyt-DNA/decisions/ADR-20261011-layer1-threshold-calibrated-by-premiere.md" 2>/dev/null | awk '{print $2}')
+      _lim=${_lim:-320}
+      printf '▸ 预算：PLAN %s + RNA %s = %s / %s（余量 %s）· 真源 %s\n' "$_pl" "$_rn" "$(( _pl + _rn ))" "$_lim" "$(( _lim - _pl - _rn ))" "ADR-20261011-layer1-threshold-calibrated-by-premiere"
+    fi
     _report_field_debts
     # ★★ 必出七段【自证】(D15 补丁 · 2026-10-10)：为什么需要它 ——
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
