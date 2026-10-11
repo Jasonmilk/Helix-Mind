@@ -7,8 +7,17 @@ _report_field_debts() {
   [ -n "$open_" ] || open_=0
   echo "▸ 欠账（**未销号 ${open_} 条** · 真源 docs/helixECO/DEBTS.md）："
   # 列序（2026-10-10 加 K 号列）：项 | K号/非K理由 | 挂账起 | 状态 | 解锁条件 | 归属
+  # ★ 滞留提示（reviewer 旗一 · 第三轮落地）：挂账 ≥2 天且状态仍为 ⬜/⏳ 的行 ⇒ 逐条标 ⚠️
+  #   （"关于欠账的欠账正在被遗忘"⇒ 机械提醒每轮回看；真正的销号仍靠人/agent 写收据）
+  _today=$(date +%s)
   grep -E '\| (⬜|⏳|⏸)' "$f" 2>/dev/null | while IFS='|' read -r _ item k since st cond owner _r; do
-    printf '    %-38s [%s] 起 %-11s 归属 %s\n' \
+    _d=$(printf %s "$since" | sed 's/^ *//;s/ *$//')
+    _age=""
+    if printf '%s' "$_d" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
+      _t=$(date -j -f %Y-%m-%d "$_d" +%s 2>/dev/null || date -d "$_d" +%s 2>/dev/null || echo "")
+      if [ -n "$_t" ]; then _n=$(( (_today - _t) / 86400 )); [ "$_n" -ge 2 ] && _age=" ⚠️滞留${_n}天"; fi
+    fi
+    printf '    %-38s [%s] 起 %-11s 归属 %s%s\n' \
       "$(printf %s "$item" | sed 's/^ *//;s/ *$//')" "$(printf %s "$k" | sed 's/^ *//;s/ *$//')" \
       "$(printf %s "$since" | sed 's/^ *//;s/ *$//')" "$(printf %s "$owner" | sed 's/^ *//;s/ *$//')"
   done
@@ -94,11 +103,28 @@ case "${1:-}" in
       # ★ 光已更新标记（2026-10-10）：与上轮快照比对 ⇒ 变了就【连打几轮】（光动了要让每滴水知道）
       vsnap="${HELIX_VISION_SNAPSHOT:-$ROOT/.helix/vision-last.txt}"
       mkdir -p "$(dirname "$vsnap")" 2>/dev/null || true
-      vprev=$(cat "$vsnap" 2>/dev/null || true)
+      # ★ 量法版本（刺一 · 2026-10-11）：量法从【commit SHA】换成【git hash-object】——
+      #   升级理由：内容寻址（同内容跨 commit 同值）⇒ 但**切换本身是仪器事件**，
+      #   不得混入"内容变了"的读数里 ⇒ 快照里连同 METHOD 一起存，并分别打印。
+      METHOD="hash-object-v1"
+      prev_raw=$(cat "$vsnap" 2>/dev/null || true)
+      vprev="${prev_raw%%|*}"; mprev="${prev_raw#*|}"
+      [ "$mprev" = "$prev_raw" ] && mprev=""      # 旧快照（无量法字段）
+      # 连续几轮计数器（刺一：上轮承诺本轮兑现）
+      cfile="$ROOT/.helix/vision-change-count.txt"
       if [ -n "$vprev" ] && [ "$vprev" != "$vh" ]; then
-        printf '▸ ★ **光已更新**：vision@%s → vision@%s（本轮起连续几轮标注；判读方向可能随之改变）\n' "$vprev" "$vh"
+        if [ -n "$mprev" ] && [ "$mprev" != "$METHOD" ]; then
+          printf '▸ **量法变更**：%s → %s（**仪器事件，不是内容变化**；光值 %s → %s 不得当作"光动了"读）\n' "$mprev" "$METHOD" "$vprev" "$vh"
+        else
+          printf '%s' 3 > "$cfile"    # 新的变化 ⇒ 回头连打 3 轮
+        fi
       fi
-      printf '%s' "$vh" > "$vsnap"
+      n=$(cat "$cfile" 2>/dev/null || echo 0)
+      if [ "${n:-0}" -gt 0 ] 2>/dev/null; then
+        printf '▸ ★ **光已更新**：vision@%s → vision@%s（连续标注第 %s/3 轮；判读方向可能随之改变）\n' "${vprev:-?}" "$vh" "$(( 4 - n ))"
+        [ "$n" -gt 1 ] && printf '%s' $(( n - 1 )) > "$cfile" || rm -f "$cfile"
+      fi
+      printf '%s|%s' "$vh" "$METHOD" > "$vsnap"
     fi
     # ★ 小件②：**评审倒计时**（冻结期自 2026-10-10 起算两周）—— 读数回归，不靠记
     if [ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ]; then
