@@ -20,7 +20,7 @@
 | 我要回答的问题 | 读这一份 |
 |---|---|
 | **生态现在在哪？**（各仓 HEAD / 待裁决项） | `docs/helixECO/HANDOFF.md` —— ≤40 行指针，内含**量测命令** |
-| **有那些已知问题？还没修的原因？** | `docs/helixECO/KNOWN_ISSUES.md` —— **唯一**跨仓登记册；§1 未修（含**债务审计**：待裁决 2 条 · 没人做 3 条）· §2 已修（**每行带回归判据与收据**） |
+| **有那些已知问题？还没修的原因？** | `docs/helixECO/KNOWN_ISSUES.md` —— **唯一**跨仓登记册；§1 未修（**债务枚举以 `bash tools/todo-ready.sh --report-head` 现量为准**——禁手编：手编数字顶着生成器的名字存活，比手写 ✅ 更隐蔽）· §2 已修（**每行带回归判据与收据**） |
 | **生态的组件与边界？** | `docs/helixECO/ECOSYSTEM.md` |
 | **某条决定/判据的正文？** | 各仓 `docs/decisions/`（anaphase 最新：ADR-0050 快照 golden 与判据诚实 · ADR-0051 被 drop 的 shutdown 发送端 · ADR-0052 执行期失败必须留下具名的行） |
 | **各仓怎么自证？** | anaphase `cargo test --all-features --no-fail-fast` · Cellrix `node web/tests/run_all.js` · Tuck `bash tools/verify.sh` · phyt-DNA `bash tools/ci-local.sh` · FlowModus `cargo test --all-features` |

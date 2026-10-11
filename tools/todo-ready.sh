@@ -56,6 +56,9 @@ case "${1:-}" in
     # ★ D9（reviewer 2026-10-10）：**报告头由生成器产出** —— "视图不该靠记，该靠生成"。
     #   诊断来源：读数二连断（我只贴了矩阵），说明**每一轮都靠我记得贴 → 一定漏**。
     #   它把三件拼在一起：① 读数（本脚本）② CI 矩阵（引擎工具）③ D/R 表的桩（从登记册现取）。
+    # ★ 自证行派生化（reviewer ② 核心提案 · 2026-10-11）：报告头**先把自己的输出 tee 到临时文件**，
+    #   末尾再由【段存在性】算出 ✅/✗ —— 根治"段没打而 ✅ 在"（那个病已骗我数轮）。
+    _HEADSELF=$(mktemp); exec > >(tee "$_HEADSELF") 2>&1
     echo "════════ 报告头（生成，非手写）· $(date -u +%Y-%m-%dT%H:%M:%SZ) ════════"
     # ★ D13（reviewer 2026-10-10，D2 移植）：**生成器任何一段挂 ⇒ 整体非零 + 具名哪段** ——
     #   **绝不允许"半截报告头"静默流出**（半截最危险：它看起来像完整的，只是少了点东西）。
@@ -165,9 +168,10 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
 
     # ★ 近期销号（reviewer 队列更正 · 2026-10-11）：销号的行【不再打印】⇒ 读者以为"蒸发"。
     #   把最近 5 条 ✅ 带收据的行也列出来（一行一条，收据截断）。
-    if [ -f "$f" ]; then
+    _f="$ROOT/docs/helixECO/DEBTS.md"   # ★ 补定义（$f 未定义 + set -u ⇒ 打死脚本；reviewer ③：锚点用上下文、改后必断言）
+    if [ -f "$_f" ]; then
       echo "▸ 近期销号（最近 5 条 · 销号不再蒸发）："
-      grep -E '\| ✅' "$f" 2>/dev/null | tail -5 | while IFS='|' read -r _ item k since st cond _r; do
+      grep -E '\| ✅' "$_f" 2>/dev/null | tail -5 | while IFS='|' read -r _ item k since st cond _r; do
         printf '    ✅ %-34s %s\n' "$(printf %s "$item" | sed 's/^ *//' | cut -c1-34)" "$(printf %s "$cond" | sed 's/^ *//' | cut -c1-56)"
       done
     fi
@@ -182,8 +186,20 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
     #   掉的是我的**呈现**（每次都 `head -14` 截断后才贴）⇒ **观察者的取景框造出了假缺口**。
     #   解法：**生成器自报齐不齐** ⇒ 任何残片贴上时**自暴不全**，无需人去比对字段清单。
-    printf '▸ 必出七段自证：光=%s 倒计时=%s USAGE=%s 能做/等人/不许动=%s 本轮动了=%s 矩阵=%s 欠账=%s\n' \
-      "$([ -f "$ROOT/../phyt-DNA/VISION.md" ] && echo ✅ || echo —)" \
+    # ★ 派生自证（reviewer ②）：逐段 grep【本报告头自己的输出】⇒ 段死则 ✗（不再手打）
+    # ★ 派生自证·竞态修（reviewer ④-c · 2026-10-11）：`exec > >(tee …)` **异步** ⇒
+    #   最末一段（矩阵）常未落盘就被读 ⇒ 误报"矩阵=✗"（机器制造的假缺口）。
+    sync 2>/dev/null || true; sleep 0.4
+    python3 - "$_HEADSELF" <<'PY'
+import io, sys
+h = io.open(sys.argv[1], encoding='utf-8', errors='surrogateescape').read()
+segs = [('光','▸ 光：'), ('倒计时','还剩'), ('USAGE','使用日志'), ('能做/等人/不许动','▸ 现在能做'),
+            ('本轮动了','▸ 本轮动了'), ('矩阵','run-SHA'), ('欠账','▸ 欠账（')]
+print('▸ 必出七段自证（**派生**）：' + ' · '.join('%s=%s' % (n, '✅' if k in h else '✗') for n, k in segs))
+missing = [n for n, k in segs if k not in h]
+if missing: print('  ★ 缺段：%s ⇒ 报告头不完整（D21 门：只审这一项）' % '、'.join(missing))
+PY
+    cp "$_HEADSELF" /tmp/headself.keep 2>/dev/null || true; rm -f "$_HEADSELF"\
       "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
       "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
       "$([ -f "$ROOT/docs/helixECO/KNOWN_ISSUES.md" ] && echo ✅ || echo —)" \
