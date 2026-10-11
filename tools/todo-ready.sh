@@ -162,6 +162,21 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       fi
       ls "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | xargs -n1 basename | sort > "$_gsnap"
     fi
+
+    # ★ 近期销号（reviewer 队列更正 · 2026-10-11）：销号的行【不再打印】⇒ 读者以为"蒸发"。
+    #   把最近 5 条 ✅ 带收据的行也列出来（一行一条，收据截断）。
+    if [ -f "$f" ]; then
+      echo "▸ 近期销号（最近 5 条 · 销号不再蒸发）："
+      grep -E '\| ✅' "$f" 2>/dev/null | tail -5 | while IFS='|' read -r _ item k since st cond _r; do
+        printf '    ✅ %-34s %s\n' "$(printf %s "$item" | sed 's/^ *//' | cut -c1-34)" "$(printf %s "$cond" | sed 's/^ *//' | cut -c1-56)"
+      done
+    fi
+    # ★ 重放覆盖率（新判据的看板读数 · 从闸门移到这里）
+    if [ -f "$ROOT/../phyt-DNA/ledger/hits-2026.jsonl" ]; then
+      _tot=$(grep -l '^hard: true' "$ROOT/../phyt-DNA/decisions"/ADR-*.md 2>/dev/null | xargs -I{} sh -c 'grep -q "^status: deprecated" {} || grep -q "^replay-exempt: true" {} || echo x' | wc -l | tr -d ' ')
+      _rep=$(grep -h '"kind"[[:space:]]*:[[:space:]]*"replay"' "$ROOT/../phyt-DNA/ledger/hits-2026.jsonl" 2>/dev/null | grep -oE '"gate_id"[[:space:]]*:[[:space:]]*"ADR-[^"]+"' | sort -u | wc -l | tr -d ' ')
+      printf '▸ 重放：活跃硬闸门 %s 条 · 已有重放记录 %s 条（普查 18 条已入账 · 时钟自 2026-10-11）\n' "$_tot" "$_rep"
+    fi
     _report_field_debts
     # ★★ 必出七段【自证】(D15 补丁 · 2026-10-10)：为什么需要它 ——
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
