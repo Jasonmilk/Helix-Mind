@@ -186,20 +186,6 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
     #   掉的是我的**呈现**（每次都 `head -14` 截断后才贴）⇒ **观察者的取景框造出了假缺口**。
     #   解法：**生成器自报齐不齐** ⇒ 任何残片贴上时**自暴不全**，无需人去比对字段清单。
-    # ★ 派生自证（reviewer ②）：逐段 grep【本报告头自己的输出】⇒ 段死则 ✗（不再手打）
-    # ★ 派生自证·竞态修（reviewer ④-c · 2026-10-11）：`exec > >(tee …)` **异步** ⇒
-    #   最末一段（矩阵）常未落盘就被读 ⇒ 误报"矩阵=✗"（机器制造的假缺口）。
-    sync 2>/dev/null || true; sleep 0.4
-    python3 - "$_HEADSELF" <<'PY'
-import io, sys
-h = io.open(sys.argv[1], encoding='utf-8', errors='surrogateescape').read()
-segs = [('光','▸ 光：'), ('倒计时','还剩'), ('USAGE','使用日志'), ('能做/等人/不许动','▸ 现在能做'),
-            ('本轮动了','▸ 本轮动了'), ('矩阵','run-SHA'), ('欠账','▸ 欠账（')]
-print('▸ 必出七段自证（**派生**）：' + ' · '.join('%s=%s' % (n, '✅' if k in h else '✗') for n, k in segs))
-missing = [n for n, k in segs if k not in h]
-if missing: print('  ★ 缺段：%s ⇒ 报告头不完整（D21 门：只审这一项）' % '、'.join(missing))
-PY
-    cp "$_HEADSELF" /tmp/headself.keep 2>/dev/null || true; rm -f "$_HEADSELF"\
       "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
       "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
       "$([ -f "$ROOT/docs/helixECO/KNOWN_ISSUES.md" ] && echo ✅ || echo —)" \
@@ -236,6 +222,20 @@ for sec,pat in (('R（审查跟进）',r'^\| \*\*(R[0-9]+)\*\*'),('D（D 系列�
       echo "★ --report-head 有段落失败 ⇒ 拒绝输出为完整报告头（退出非零）" >&2
       exit 1
     fi
+    # ★ 派生自证（reviewer ②）：逐段 grep【本报告头自己的输出】⇒ 段死则 ✗（不再手打）
+    # ★ 派生自证·竞态修（reviewer ④-c · 2026-10-11）：`exec > >(tee …)` **异步** ⇒
+    #   最末一段（矩阵）常未落盘就被读 ⇒ 误报"矩阵=✗"（机器制造的假缺口）。
+    sync 2>/dev/null || true; sleep 0.4
+    python3 - "$_HEADSELF" <<'PY'
+import io, sys
+h = io.open(sys.argv[1], encoding='utf-8', errors='surrogateescape').read()
+segs = [('光','▸ 光：'), ('倒计时','还剩'), ('USAGE','使用日志'), ('能做/等人/不许动','▸ 现在能做'),
+            ('本轮动了','▸ 本轮动了'), ('矩阵','run-SHA'), ('欠账','▸ 欠账（')]
+print('▸ 必出七段自证（**派生**）：' + ' · '.join('%s=%s' % (n, '✅' if k in h else '✗') for n, k in segs))
+missing = [n for n, k in segs if k not in h]
+if missing: print('  ★ 缺段：%s ⇒ 报告头不完整（D21 门：只审这一项）' % '、'.join(missing))
+PY
+    cp "$_HEADSELF" /tmp/headself.keep 2>/dev/null || true; rm -f "$_HEADSELF"\
     exit 0;;
   --done) python3 - "$ISSUES" "${2:?用法: --done <ID>}" <<'PY'
 import io, re, sys
