@@ -194,6 +194,9 @@ print(d.isoformat(), (d-datetime.date.today()).days)" 2>/dev/null)"
       printf 'tot=%s h=%s d=%s' "$_ax_tot" "$_ax_h" "$_ax_d" > "$_ax"
     fi
 
+    _rn="$ROOT/.helix/round.txt"; _n=$(cat "$_rn" 2>/dev/null || echo 0); _n=$(( _n + 1 )); printf '%s' "$_n" > "$_rn"
+    printf '▸ 轮次：**#%s**（同号两次=重复/零进展 · 跳号=丢报 · 有号缺段=截断）\n' "$_n"
+
     _report_field_debts
     # ★★ 必出七段【自证】(D15 补丁 · 2026-10-10)：为什么需要它 ——
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
