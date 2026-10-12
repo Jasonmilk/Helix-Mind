@@ -6,6 +6,7 @@
 ⇒ 规则：**先写临时文件 · 过自检 · 再原子改名**；自检不过就**原封不动**。
 用法：from safe_edit import safe_write; safe_write(path, text, must_contain=['# 标题'], min_bytes=100)
 """
+import stat  # ★ 模式保留：丢执行位是【哑失败】（只用 bash 跑时永远看不见）
 import io, os, sys, tempfile
 
 def safe_write(path, text, must_contain=(), min_bytes=1):
@@ -20,7 +21,14 @@ def safe_write(path, text, must_contain=(), min_bytes=1):
     try:
         with os.fdopen(fd, 'wb') as fh:
             fh.write(data)
+        _mode = None
+        try:
+            _mode = stat.S_IMODE(os.stat(path).st_mode)   # 原文件模式（os.replace 后 tmp 是默认 umask ⇒ 丢执行位）
+        except OSError:
+            pass
         os.replace(tmp, path)          # 原子：读者要么看旧、要么看新，绝不见半截
+        if _mode is not None:
+            os.chmod(path, _mode)
     except BaseException:
         os.path.exists(tmp) and os.unlink(tmp)
         raise
