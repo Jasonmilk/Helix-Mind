@@ -29,3 +29,29 @@ def safe_write(path, text, must_contain=(), min_bytes=1):
         sys.exit('★ 回读不一致: %s 期望 %d 实得 %d' % (path, len(data), got))
     print('  ✅ safe_write: %s ⇒ %d 字节（自检通过）' % (path, got))
     return got
+
+
+def patch(path, old, new, min_bytes=1, must_contain_new=(  ), expect_old_count=1):
+    """★ assert-then-replace（reviewer ⑤ · 2026-10-12）：**先断言锚点存在，再替换**。
+
+    为什么存在（实测根因，不是"记得用 grep -n"）：补丁脚本里 `s.replace(old, new, 1)`
+    在 `old` **不匹配**时是**静默 no-op** —— "没写进去"被当成"写了"；而 safe_write 的自检
+    **确实报警了**，但调用方没把它当**阻断**。⇒ 本函数把两件事焊成一件：
+      ① `old` 必须存在（可指定出现次数）⇒ 否则 **SystemExit**（整链中断）
+      ② 替换后 `new` 必须在、`old` 必须不在 ⇒ 否则 **SystemExit**
+      ③ 之后走 `safe_write`（原子写 + 回读 + 锚点自检）
+    """
+    import io as _io
+    s = _io.open(path, encoding='utf-8').read()
+    n = s.count(old)
+    if n != expect_old_count:
+        raise SystemExit('★ patch 中断：%s 里 `%s` 出现 %d 次（期望 %d）—— **锚点不匹配，拒绝静默 no-op**'
+                         % (path, old[:60], n, expect_old_count))
+    s2 = s.replace(old, new, expect_old_count)
+    if new not in s2:
+        raise SystemExit('★ patch 中断：替换后新串未出现（%s）' % path)
+    if old in s2:
+        raise SystemExit('★ patch 中断：替换后旧串仍在（%s）' % path)
+    got = safe_write(path, s2, must_contain=tuple(must_contain_new) or (new[:24],), min_bytes=min_bytes)
+    print('  ✅ patch: %s ⇒ %d 字节（旧串已消失 · 新串已在位）' % (path, got))
+    return got
