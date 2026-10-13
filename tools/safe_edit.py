@@ -9,13 +9,27 @@
 import stat  # ★ 模式保留：丢执行位是【哑失败】（只用 bash 跑时永远看不见）
 import io, os, sys, tempfile
 
-def safe_write(path, text, must_contain=(), min_bytes=1):
+def safe_write(path, text, must_contain=(), min_bytes=1, allow_existing=False):
+    # ★ 9（2026-10-13）：**改严** —— 两次真实翻车（替换静默没落地；`must_contain` 命中**旧行**从而"证明"了没发生的事）
+    #   ① 新内容与旧内容**逐字节相同** ⇒ 拒绝（"替换未落地"必须红，不许静默成功）
+    #   ② `must_contain` 的锚点在**旧内容里就有** ⇒ 拒绝（它证明不了新内容落地；确有正当场合请显式 `allow_existing=True`）
+    #   更好的是用本模块已有的 `patch(old,new,must_contain_new,expect_old_count)` —— 它对旧文计数也算。
+    old_text = None
+    try:
+        old_text = io.open(path, encoding='utf-8').read()
+    except OSError:
+        pass
     data = text.encode('utf-8')
     if len(data) < min_bytes:
         sys.exit('★ 自检失败（太短，拒绝写入）: %s = %d 字节 < %d' % (path, len(data), min_bytes))
+    if old_text is not None and old_text == text:
+        sys.exit('★ 自检失败（**替换未落地**：新内容与旧内容逐字节相同）: %s（改了半天没改到东西 ⇒ 必红）' % path)
     for anchor in must_contain:
         if anchor not in text:
             sys.exit('★ 自检失败（锚点缺失，拒绝写入）: %s 里没有 %r' % (path, anchor))
+        if old_text is not None and anchor in old_text and not allow_existing:
+            sys.exit('★ 自检失败（**断言无效**：校验串 %r 在**旧内容里就有** ⇒ 它不能证明新内容落地）: %s'
+                     '（若确为正当场合，显式 allow_existing=True）' % (anchor, path))
     d = os.path.dirname(os.path.abspath(path))
     fd, tmp = tempfile.mkstemp(dir=d, prefix='.safe_edit.')
     try:
