@@ -76,3 +76,5 @@ git diff --name-only helixECO-before-cleanup-2026-10-25 HEAD -- docs/helixECO \
 > `--exclude=docs/helixECO/README.md` 是**必需**的：本契约自己就写着上面这些路径与 `已于 .* 清理` 这类样例串 ⇒ 不排除就会**自己命中自己**（假红/装饰品）。
 
 **另加一条**（散文式说谎抓不住，靠人读）：搬完 `grep -rn '已于 .* 清理' README.md README.zh-CN.md docs/ --exclude=docs/helixECO/README.md`（同样排除契约自身）—— **假话比断链更坏：断链会报错，说谎不会**。
+**★ 本门（形态①）的具名局限**：它抓不住**讲解性引用**——即"文档为了说明某条历史，把旧路径原文写出来"（今天实测被自己扫到两次：契约里的样例、以及 PLAN 的更正说明）。
+⇒ 处理：讲解时**别写完整字面路径**（写"本目录下的 PROTECTION.md"这类）；确实要写 ⇒ 在契约里**具名登记**该例外（不许静默保留）。

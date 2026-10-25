@@ -96,7 +96,7 @@ P0-Pre → P9 全部于 2026-08-28 完成，详见阶段总览（第 2 节）。
 | 认知工艺 | ADR-0021 + `spec/cognitive-craft.md`（Mind=编排 / CognitiveService=执行，Phase 1 定稿） |
 | 参考资源 | Event Sourcing / The Log / CI-144 / Lumtract（见 VISION 组件仓库索引） |
 | 跨仓缺陷登记 | `docs/helixECO/register/KNOWN_ISSUES.md` —— 生态**唯一**登记处（K1-K8，2026-09-15）|
-| IP 保护台账 | **`phyt-DNA/docs/PROTECTION.md`**（26,824 B）—— **更正 2026-10-25**：旧行称"2026-09-15 从 phyt-DNA 迁入 `docs/helixECO/PROTECTION.md`"，实测该文件**从未存在于本仓**（历史 0 笔 · 归档 tag 里也没有）⇒ 引用直指真件 |
+| IP 保护台账 | **`phyt-DNA/docs/PROTECTION.md`**（26,824 B）—— **更正 2026-10-25**：旧行称"2026-09-15 从 phyt-DNA 迁入本目录下的 PROTECTION.md"，实测该文件**从未存在于本仓**（历史 0 笔 · 归档 tag 里也没有）⇒ 引用直指真件（讲解性引用不写完整字面路径，否则会被"字面路径存在性"自检当成断链） |
 
 ---
 

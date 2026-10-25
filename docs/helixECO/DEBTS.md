@@ -81,3 +81,4 @@
 **机检判据**：本表 `revisit-on < 2026-10-25 且状态仍"待做"` 的行数 **= 0**（本轮由 6 降为 0，另 1 条已重定日落）。
 **同步**：phyt-DNA 侧 `DEBTS.md` 的对应条目（`d-phyt-census` / 其余）以同一证据为准；两本账的 revisit-on 到期须一致。
 | `d-mind-sunset-audit` | helix-mind | **问题类（根因）** | 2026-10-25 | ⬜ 待做 | 2026-11-08 | **本仓没有日落审计**（无 `ci-local`）⇒ 本表 6 条 `revisit-on: 2026-10-20` **逾期 5 天无人知**（2026-10-25 已对账销账，但**机制仍未装**）。**本体判据**：`grep -cE "revisit-on[: ]*[0-9]{4}-[0-9]{2}-[0-9]{2}" docs/helixECO/DEBTS.md` 中「逾期且未销」行数 **必须为 0 且由机器报警**（不是靠人肉对账）。**恢复命令**：接 phyt-DNA 的同一段审计（`kind:skip`/`kind:question` 的 sunset 扫描）或在本仓 CI 加一步只读检查；见 phyt-DNA `docs/PROTECTION.md` 三执行点。 | Pi |
+| `d-mind-test-count-generator` | helix-mind | 债（**第三次谎报**） | 2026-10-25 | ⬜ 待做 | revisit-on: 2026-11-08 | **测试数不许手写**：ECOSYSTEM 118→123 陈旧误差 · Cellrix 352 vs 351 · FlowModus README 83/87 vs 实际 **109**（本日已手改，但**手改必再漂**）。**照抄 `BRANCH-MAP` 的形态**：生成器产出 + `--check` 过期即红。**本体判据**：README 的测试数由命令生成，且 `--check` 能红。 |
