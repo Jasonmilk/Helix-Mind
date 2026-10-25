@@ -60,9 +60,9 @@
 # ★ 形态①（首选）：**字面路径存在性**——与"变更集"无关，连【变更之前就已断】的引用也抓得住。
 #   实测教训：从 tag→HEAD 的 diff 派生名字，扫不到 `docs/helixECO/PROTECTION.md`（它**从未存在**）⇒ 半截版。
 # ★ 选项必须写在路径【之前】：BSD grep 在第一个非选项参数（`.`）后**不再解析选项**
-#   （实测：`--exclude` 放在 `.` 之后 = 无效 ⇒ 契约自己那句示例把这条抓成"断链"，假红）
+#   （实测两层坑：① 放在 `.` 之后 = 无效；② `--exclude` 匹配的是**基名** ⇒ 写完整路径永远不生效）
 grep -rhoE --include='*.md' --include='*.sh' --include='*.rs' --include='*.yml' \
-  --exclude=docs/helixECO/README.md 'docs/helixECO/[A-Za-z0-9_./-]+\.(md|json)' . \
+  --exclude=README.md 'docs/helixECO/[A-Za-z0-9_./-]+\.(md|json)' . \   # ★ --exclude 匹配【基名】，不是完整路径
  | sort -u | while read -r p; do [ -e "$p" ] || echo "★ 断链: $p"; done
 
 # ★ 形态②（补充）：**搬运后**再看"旧名是否还被引用"（此时变更集才对）
