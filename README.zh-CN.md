@@ -16,10 +16,10 @@
 |---|---|
 | **本仓现在健康吗？怎么自证？** | `git -C <各仓> rev-parse --short HEAD（见 HANDOFF 的量测块）` |
 | **本仓的规矩 / 判据的正文？** | `docs/decisions/`（或各仓对应目录） |
-| **遇到怪事 / 想知道是否已知？** | `helix-mind/`docs/helixECO/ECOSYSTEM.md`（原 KNOWN_ISSUES.md 已于 2026-10-25 清理，内容见 git 历史） —— **唯一**跨仓登记册 |
-| **我们现在在哪？下一步？（合拢现状）** | `helix-mind/docs/helixECO/STATUS-2026-10-10.md` |
-| **判据在骗我吗？（假绿/静音/零）** | `helix-mind/`docs/helixECO/ECOSYSTEM.md`（原 DIAGNOSIS-METHODS.md 已于 2026-10-25 清理，内容见 git 历史） |
-| **生态入口？** | `helix-mind/`docs/helixECO/ECOSYSTEM.md`（原 HANDOFF.md 已于 2026-10-25 清理，内容见 git 历史） —— ≤40 行指针，状态用量测命令 |
+| **遇到怪事 / 想知道是否已知？** | `helix-mind/`docs/helixECO/register/KNOWN_ISSUES.md` —— **唯一**跨仓登记册 |
+| **我们现在在哪？下一步？（合拢现状）** | `docs/helixECO/handoff/STATUS-2026-10-10.md` |
+| **判据在骗我吗？（假绿/静音/零）** | `helix-mind/`docs/helixECO/canon/DIAGNOSIS-METHODS.md` |
+| **生态入口？** | `helix-mind/`docs/helixECO/handoff/HANDOFF.md` —— ≤40 行指针，状态用量测命令 |
 
 ## 🤖 1. 智能体架构与解耦（面向 AI/智能体）
 如果您是阅读本仓库以构建、运行或修改系统的 AI 智能体，请理解以下核心约束：

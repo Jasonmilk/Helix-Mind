@@ -19,14 +19,14 @@
 
 | 我要回答的问题 | 读这一份 |
 |---|---|
-| **生态现在在哪？**（各仓 HEAD / 待裁决项） | `docs/helixECO/ECOSYSTEM.md`（原 HANDOFF.md 已于 2026-10-25 清理，内容见 git 历史） —— ≤40 行指针，内含**量测命令** |
-| **有那些已知问题？还没修的原因？** | `docs/helixECO/ECOSYSTEM.md`（原 KNOWN_ISSUES.md 已于 2026-10-25 清理，内容见 git 历史） —— **唯一**跨仓登记册；§1 未修（**债务枚举以 `bash tools/todo-ready.sh --report-head` 现量为准**——禁手编：手编数字顶着生成器的名字存活，比手写 ✅ 更隐蔽）· §2 已修（**每行带回归判据与收据**） |
+| **生态现在在哪？**（各仓 HEAD / 待裁决项） | `docs/helixECO/handoff/HANDOFF.md` —— ≤40 行指针，内含**量测命令** |
+| **有那些已知问题？还没修的原因？** | `docs/helixECO/register/KNOWN_ISSUES.md` —— **唯一**跨仓登记册；§1 未修（**债务枚举以 `bash tools/todo-ready.sh --report-head` 现量为准**——禁手编：手编数字顶着生成器的名字存活，比手写 ✅ 更隐蔽）· §2 已修（**每行带回归判据与收据**） |
 | **生态的组件与边界？** | `docs/helixECO/ECOSYSTEM.md` |
 | **某条决定/判据的正文？** | 各仓 `docs/decisions/`（anaphase 最新：ADR-0050 快照 golden 与判据诚实 · ADR-0051 被 drop 的 shutdown 发送端 · ADR-0052 执行期失败必须留下具名的行） |
 | **各仓怎么自证？** | anaphase `cargo test --all-features --no-fail-fast` · Cellrix `node web/tests/run_all.js` · Tuck `bash tools/verify.sh` · phyt-DNA `bash tools/ci-local.sh` · FlowModus `cargo test --all-features` |
-| **我们现在在哪？下一步是什么？（合拢现状）** | `docs/helixECO/STATUS-2026-10-10.md` —— 六仓现状 · 闭环判定 · **下一站的必经路** |
-| **判据在骗我吗？（假绿 / 静音仪器 / 零 / 孤证 / 误差分叉）** | `docs/helixECO/ECOSYSTEM.md`（原 DIAGNOSIS-METHODS.md 已于 2026-10-25 清理，内容见 git 历史） —— **诊断法**（按 slug 锚点，7 条；`red-lifecycle` 由第 6 条与两个新标本合并而来） |
-| **裁决简报（需人点头的）？** | `docs/helixECO/RULING-BRIEF-K19-K23-2026-10-09.md`（四问齐：名字/出现面/波及面/建议+授权需求） |
+| **我们现在在哪？下一步是什么？（合拢现状）** | `docs/helixECO/handoff/STATUS-2026-10-10.md` —— 六仓现状 · 闭环判定 · **下一站的必经路** |
+| **判据在骗我吗？（假绿 / 静音仪器 / 零 / 孤证 / 误差分叉）** | `docs/helixECO/canon/DIAGNOSIS-METHODS.md` —— **诊断法**（按 slug 锚点，7 条；`red-lifecycle` 由第 6 条与两个新标本合并而来） |
+| **裁决简报（需人点头的）？** | `docs/helixECO/proposals/RULING-BRIEF-K19-K23-2026-10-09.md`（四问齐：名字/出现面/波及面/建议+授权需求） |
 
 ## Governance
 

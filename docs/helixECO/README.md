@@ -50,3 +50,19 @@
 | 日期 | 变更 |
 |---|---|
 | 2026-10-25 | 立契约；16 个文件从根搬入 8 个子目录；两个中文名改为 UPPER-KEBAB；消费者 6 处同步；交叉引用 12 份文档改写；`branch-map` 生成物路径迁到 `gen/` |
+
+## ★ 搬迁/删除后：**自检命令（名字从 tag 动态派生，不许手列）**
+
+手列名字必漏（2026-10-25 实测：我列了 8/17 个名字、又只扫 `docs/` ⇒ 报"残留 0"，而根 README 里有 3 处假话 + 2 处断链）。
+**正确量法**：名字从归档 tag 派生，扫描面 = **全仓**，根上保留的 `ECOSYSTEM.md`/`DEBTS.md`/`README.md` 不算残留。
+
+```bash
+git diff --name-only helixECO-before-cleanup-2026-10-25 HEAD -- docs/helixECO \
+ | sed 's|.*/||' | sort -u | while read -r b; do
+     git grep -nF "helixECO/$b" -- . \
+       | grep -vE 'helixECO/(register|proposals|usage|canon|gen|center|handoff|observations)/' \
+       | grep -vE "helixECO/(ECOSYSTEM|DEBTS)\.md" && echo "★ 残留引用: $b"
+   done
+```
+
+**另加一条**（散文式说谎抓不住，靠人读）：搬完 `grep -rn '已于 .* 清理' README.md README.zh-CN.md docs/` —— 假话比断链更坏（断链会报错，说谎不会）。
