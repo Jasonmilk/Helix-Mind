@@ -226,10 +226,10 @@ PY
     if [ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ]; then
       echo
       if ! bash "$ROOT/../phyt-DNA/tools/ci-matrix.sh"; then
-        echo "★ 段【CI 矩阵】失败（--report-head 不完整）" >&2; _fail=1
+        echo "▸ 矩阵：（不适用 · CI 矩阵段失败 ⇒ 本环境无 run-SHA 来源，**不是失败**）"; echo "★ 段【CI 矩阵】失败（--report-head 不完整）" >&2; _fail=1
       fi
     else
-      echo "★ 段【CI 矩阵】缺失：找不到 phyt-DNA/tools/ci-matrix.sh" >&2; _fail=1
+      echo "▸ 矩阵：（不适用 · 找不到 phyt-DNA/tools/ci-matrix.sh ⇒ 本环境无 run-SHA 来源，**不是失败**）"; echo "★ 段【CI 矩阵】缺失：找不到 phyt-DNA/tools/ci-matrix.sh" >&2; _fail=1
     fi
     echo; echo "▸ 收件箱（R/D）与未修（K）—— 逐条引用；状态取自登记册"
     python3 -c "
@@ -251,9 +251,13 @@ for sec,pat in (('R（审查跟进）',r'^\| \*\*(R[0-9]+)\*\*'),('D（D 系列�
 import io, sys
 h = io.open(sys.argv[1], encoding='utf-8', errors='surrogateescape').read()
 segs = [('光','▸ 光：'), ('倒计时','还剩'), ('USAGE','使用日志'), ('能做/等人/不许动','▸ 现在能做'),
-            ('本轮动了','▸ 本轮动了'), ('矩阵','run-SHA'), ('欠账','▸ 欠账（')]
-print('▸ 必出七段自证（**派生**）：' + ' · '.join('%s=%s' % (n, '✅' if k in h else '✗') for n, k in segs))
-missing = [n for n, k in segs if k not in h]
+            ('本轮动了','▸ 本轮动了'), ('欠账','▸ 欠账（')]
+# ★ 2026-10-25（reviewer ②）：**矩阵段是三态，不是二态** —— 需要生态级 run-SHA；
+#   本仓/CI 内取不到 ⇒ 标 **N/A（显式降级，不是失败）**，并**不进 missing**。
+#   原来它恒为 ✗ ⇒ 永久红被容忍（"红着但过"），正是降档累积。
+_mx = '✅' if 'run-' in h and 'run-SHA' in h else ('N/A' if '不适用' in h else '✗')
+print('▸ 必出七段自证（**派生**）：' + ' · '.join('%s=%s' % (n, '✅' if k in h else '✗') for n, k in segs) + ' · 矩阵=' + _mx)
+missing = [n for n, k in segs if k not in h] + ([] if _mx in ('✅','N/A') else ['矩阵'])
 if missing: print('  ★ 缺段：%s ⇒ 报告头不完整（D21 门：只审这一项）' % '、'.join(missing))
 PY
     # ★ 2026-10-25 修：**先出自证（含★缺段点名），再按 _fail 退非零** —— 原来先 exit，
