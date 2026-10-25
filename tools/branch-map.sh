@@ -98,7 +98,7 @@ if [ "${1:-}" = "--check" ]; then
     exit 0
   fi
   check_ref_literals || exit 1
-  doc="docs/helixECO/BRANCH-MAP.md"
+  doc="docs/helixECO/gen/BRANCH-MAP.md"
   [ -f "$doc" ] || { echo "★ 缺 $doc"; exit 2; }
   python3 - "$doc" <<'PY' || exit 1
 import io,re,subprocess,sys

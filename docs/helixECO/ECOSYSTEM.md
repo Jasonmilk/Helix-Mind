@@ -115,8 +115,8 @@
 > ### ⛔ 冻结生效（2026-10-09，M0）—— 本列表四项已「停」
 >
 > 生态收敛执行计划 M0 已落地，**本列表的下列方向即刻停止**（具名定义见
-> [`生态收敛执行计划_M0-M7.md`](./生态收敛执行计划_M0-M7.md) §三，中心命题见
-> [`收敛_会话DAG是中心.md`](./收敛_会话DAG是中心.md)）：
+> [`center/CONVERGENCE-M0-M7.md`](./生态收敛执行计划_M0-M7.md) §三，中心命题见
+> [`center/SESSION-DAG-IS-THE-CENTER.md`](./收敛_会话DAG是中心.md)）：
 >
 > | # | 冻结项 | 状态 |
 > |---|---|---|
@@ -130,8 +130,8 @@
 
 > **前置条件已满足**：CI-144 协议家族机制完备（PFP/SAP 冻结；INTENT-7/CAPABILITY-13/INTENT-7-SECURE 为 v1.0.0-RFC-4 draft，扩展保留区已明确，不阻塞落地），Anaphase 候选 E + 候选 F 完成，生态联调成功（MCP-Learner → Tentacle 全链路畅通），Helix-Mind P10 准备工作完成。
 
-> **2026-09-15 快照（当前开放项，详见根目录 HANDOFF.md §4）**：
-> ① **ADR-0018 T5 裁决**（关闭 T5 vs 跨仓扩展 SSE 协议）；② **T7 已完成**（A/B 实测：移走事件族资产 = 3 suites RED → 恢复 = 3 suites GREEN，验收网非空转实锤）；③ **K11 裁决**（词表补 metering 事件——推荐，生产者已在发——vs 移除 Cellrix 期待）；④ **K13**（D3 违约：装配层静默丢弃未知 kind 无诊断计数，需与 K11 一并落）；⑤ **身份绑定**（Anaphase 发起 1对1，方向已定未实施）；⑥ **helix-mind P10 mock 优先验证**；⑦ **结晶闭环实施**（Unmet≥2 → 判据候选 → Tuck hard 规则）；⑧ **生态加固**（项目生命周期管理 / tuck 小白引导）。跨仓缺陷唯一登记处 = 同目录 `KNOWN_ISSUES.md`（K12 已结案转 F13，见该表 §2）。
+> **2026-09-15 快照（当前开放项，详见根目录 handoff/HANDOFF.md §4）**：
+> ① **ADR-0018 T5 裁决**（关闭 T5 vs 跨仓扩展 SSE 协议）；② **T7 已完成**（A/B 实测：移走事件族资产 = 3 suites RED → 恢复 = 3 suites GREEN，验收网非空转实锤）；③ **K11 裁决**（词表补 metering 事件——推荐，生产者已在发——vs 移除 Cellrix 期待）；④ **K13**（D3 违约：装配层静默丢弃未知 kind 无诊断计数，需与 K11 一并落）；⑤ **身份绑定**（Anaphase 发起 1对1，方向已定未实施）；⑥ **helix-mind P10 mock 优先验证**；⑦ **结晶闭环实施**（Unmet≥2 → 判据候选 → Tuck hard 规则）；⑧ **生态加固**（项目生命周期管理 / tuck 小白引导）。跨仓缺陷唯一登记处 = 同目录 `register/KNOWN_ISSUES.md`（K12 已结案转 F13，见该表 §2）。
 
 ### 第一优先级（立即启动，并行）
 1. **Anaphase 候选 D'** — M1.5 深化（seen_entropy_bloom 重放守卫 ✅ / main.rs pipeline 接线 ✅ / **D'-2 Tuck 深度集成 ✅（SecurityGate 接线点，ADR-0008，真实 TuckSecurityGate 连通验证）** / D'-4 真实场景插件待 MCP-Learner）

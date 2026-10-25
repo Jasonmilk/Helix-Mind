@@ -44,11 +44,11 @@ _report_field_debts() {
 #      **若哪天发现自己在脚本里"补数据"，就是造了第六真相 ⇒ 即刻冻结。**
 #   ③ **冻结期不偷跑**：两周内不进引擎/UPSTREAM、不做写回、不扩字段。
 #
-# ★ 解冻条款：docs/helixECO/PROPOSAL-workitem-dag.md（自 2026-10-10 起算）；使用日志：docs/helixECO/USAGE-candidate-tools.md
+# ★ 解冻条款：docs/helixECO/proposals/PROPOSAL-workitem-dag.md（自 2026-10-10 起算）；使用日志：docs/helixECO/usage/USAGE-candidate-tools.md
 set -uo pipefail
 # ★ 自解仓库根（2026-10-10）：**在任意 cwd 都能用** —— 否则"报告头贴读数"这条腿会在别处静默为空。
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-ISSUES="${PHYT_ISSUES:-$ROOT/docs/helixECO/KNOWN_ISSUES.md}"
+ISSUES="${PHYT_ISSUES:-$ROOT/docs/helixECO/register/KNOWN_ISSUES.md}"
 [ -f "$ISSUES" ] || { echo "★ 找不到登记册：$ISSUES" >&2; exit 2; }
 
 case "${1:-}" in
@@ -136,9 +136,9 @@ case "${1:-}" in
       printf '%s|%s' "$vh" "$METHOD" > "$vsnap"
     fi
     # ★ 小件②：**评审倒计时**（冻结期自 2026-10-10 起算两周）—— 读数回归，不靠记
-    if [ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ]; then
-      n=$(grep -c '^| 2026-' "$ROOT/docs/helixECO/USAGE-candidate-tools.md" 2>/dev/null || echo 0)
-      act=$(grep -c '有\*\*' "$ROOT/docs/helixECO/USAGE-candidate-tools.md" 2>/dev/null || echo 0)
+    if [ -f "$ROOT/docs/helixECO/usage/USAGE-candidate-tools.md" ]; then
+      n=$(grep -c '^| 2026-' "$ROOT/docs/helixECO/usage/USAGE-candidate-tools.md" 2>/dev/null || echo 0)
+      act=$(grep -c '有\*\*' "$ROOT/docs/helixECO/usage/USAGE-candidate-tools.md" 2>/dev/null || echo 0)
       read -r end left <<< "$(python3 -c "
 import datetime
 d=datetime.date(2026,10,10)+datetime.timedelta(days=14)
@@ -211,16 +211,16 @@ PY
     #   实测翻案：评审说"光/倒计时/USAGE 掉了"，而它们**一直在生成器里**；
     #   掉的是我的**呈现**（每次都 `head -14` 截断后才贴）⇒ **观察者的取景框造出了假缺口**。
     #   解法：**生成器自报齐不齐** ⇒ 任何残片贴上时**自暴不全**，无需人去比对字段清单。
-      "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
-      "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
-      "$([ -f "$ROOT/docs/helixECO/KNOWN_ISSUES.md" ] && echo ✅ || echo —)" \
+      "$([ -f "$ROOT/docs/helixECO/usage/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
+      "$([ -f "$ROOT/docs/helixECO/usage/USAGE-candidate-tools.md" ] && echo ✅ || echo —)" \
+      "$([ -f "$ROOT/docs/helixECO/register/KNOWN_ISSUES.md" ] && echo ✅ || echo —)" \
       "$([ -n "$SNAP" ] && echo ✅ || echo —)" \
       "$([ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ] && echo ✅ || echo —)" \
       "$([ -f "$ROOT/docs/helixECO/DEBTS.md" ] && echo ✅ || echo —)"
       "$([ -f "$ROOT/../phyt-DNA/VISION.md" ] && echo ✅ || echo ★缺)" \
-      "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo ★缺)" \
-      "$([ -f "$ROOT/docs/helixECO/USAGE-candidate-tools.md" ] && echo ✅ || echo ★缺)" \
-      "$([ -f "$ROOT/docs/helixECO/KNOWN_ISSUES.md" ] && echo ✅ || echo ★缺)" \
+      "$([ -f "$ROOT/docs/helixECO/usage/USAGE-candidate-tools.md" ] && echo ✅ || echo ★缺)" \
+      "$([ -f "$ROOT/docs/helixECO/usage/USAGE-candidate-tools.md" ] && echo ✅ || echo ★缺)" \
+      "$([ -f "$ROOT/docs/helixECO/register/KNOWN_ISSUES.md" ] && echo ✅ || echo ★缺)" \
       "$([ -f "$SNAP" ] && echo ✅ || echo ★缺)" \
       "$([ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ] && echo ✅ || echo ★缺)"
     if [ -x "$ROOT/../phyt-DNA/tools/ci-matrix.sh" ]; then
@@ -335,7 +335,7 @@ if not (ready or waiting or frozen):
     print('\n（无就绪项）—— 登记册里没有可解析的声明行 ⇒ **这不是"全做完了"，是"没找到数据"**')
 print('\n▸ ⛔ 不许动（人类冻结 / 禁行）—— **不在你的清单里**')
 for kid, why in frozen: print('  %-5s （%s）' % (kid, why))
-print('\n▸ 注意事项（按类别，来自 DIAGNOSIS-METHODS.md）')
+print('\n▸ 注意事项（按类别，来自 docs/helixECO/canon/DIAGNOSIS-METHODS.md）')
 print('  · 改判据/加测试 ⇒ 绿必须带 run 收据（red-lifecycle ①）')
 print('  · 排查 flaky   ⇒ 先问『这个仪器死掉时输出长什么样』（silent-family）')
 print('  · 写闸门       ⇒ 不是所有纪律都该成为闸门（hard:true vs hard:false 要分型）')

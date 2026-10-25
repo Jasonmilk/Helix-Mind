@@ -12,10 +12,10 @@
 for r in anaphase-helix helix-mind Cellrix FlowModus Tuck; do printf '%-16s %s\n' "$r" "$(git -C $r rev-parse --short HEAD)"; done
 git -C phyt-DNA rev-parse --short HEAD
 
-# ② 等你 —— 唯一真源：KNOWN_ISSUES.md 的「为什么还没修」列里标【待裁决】的行
-grep -n '待裁决' helix-mind/docs/helixECO/KNOWN_ISSUES.md
+# ② 等你 —— 唯一真源：../register/KNOWN_ISSUES.md 的「为什么还没修」列里标【待裁决】的行
+grep -n '待裁决' helix-mind/docs/helixECO/register/KNOWN_ISSUES.md
 
-# ③ 已有什么（别重复发明）—— ①引擎生成的闸门清单 ②【判据与决定的正文】在各仓 docs/decisions/ ③【诊断法】docs/helixECO/DIAGNOSIS-METHODS.md
+# ③ 已有什么（别重复发明）—— ①引擎生成的闸门清单 ②【判据与决定的正文】在各仓 docs/decisions/ ③【诊断法】docs/helixECO/canon/DIAGNOSIS-METHODS.md
 #    （anaphase 最新两条：ADR-0050 快照 golden 与判据诚实 · ADR-0051 被 drop 的 shutdown 发送端；索引见各仓 docs/decisions/README.md）
 cd phyt-DNA && bash tools/validate.sh --index
 
@@ -35,7 +35,7 @@ cd phyt-DNA && bash tools/validate.sh --index
 | **1** | **G6-②**：`examples/fixtures/inject.sh` 加一次行使 · **G6-③**：`appeals` 账加守卫 | 只加判据/测试 | 零 | 回归判据各一条 |
 | **1** | **K18**：ci144 `vendored` 一致性判据（不作重构） | 只加判据 | 零 | 改一处字段 ⇒ 必红 |
 | **2** | **K20 低成本半**：`pipeline::run()` 加一行指向活路径的注释 · **K21**：Tuck 存量 clippy 清理 | 注释/清理 | 低 | 注释不等于判据 ⇒ **K21 要真删才红** |
-| **3** | **K16 给「做」装门**（M1 Tuck 端点 → M2 装配观察态 → M3 翻转 → M4 判据） | **改行为** | **高** | 见 `D8-PLAN.md`（M2/M3 必须分开；反证=停 Tuck 必须具名拒绝） |
+| **3** | **K16 给「做」装门**（M1 Tuck 端点 → M2 装配观察态 → M3 翻转 → M4 判据） | **改行为** | **高** | 见 `../observations/2026-10-09/D8-PLAN.md`（M2/M3 必须分开；反证=停 Tuck 必须具名拒绝） |
 | **3** | **K17 并发**：`build_agent` 可复用部分按需缓存 · 无界→有界+背压 · 并发上限具名 | **改行为** | 中 | 并发 N ⇒ 见"上限生效"的**具名**证据 |
 | **4** | **K19**：`verdict` / `GateVerdict` 改名 | 重构 | 中 | 纯改名 ⇒ 全量自证必须仍绿 |
 

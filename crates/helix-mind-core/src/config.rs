@@ -446,7 +446,7 @@ fn default_federation_enabled() -> bool { false }
 
 fn default_gene_lock_path() -> String { "./gene_lock.md".into() }
 fn default_listen_addr() -> String {
-    // SSOT: helixECO/ports.json — mind = 50052. The old default was 50051, which is
+    // SSOT: helixECO/canon/ports.json — mind = 50052. The old default was 50051, which is
     // TENTACLE's port: the factory default collided with another component and nothing
     // tested it (the ecosystem only worked because a local config.toml overrode it).
     // A listening address that is MISSING must be fail-closed; this default exists only
