@@ -12,7 +12,12 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"
 mode="${1:-full}"
 out=$(bash tools/todo-ready.sh --report-head 2>/tmp/.chk-head.err); rc=$?
 if [ "$rc" != 0 ]; then
-  echo "★ 报告头生成器退出非零（rc=${rc}）—— 生成器死，头必然残缺"; head -3 /tmp/.chk-head.err | sed 's/^/    /'; exit 1
+  # ★ 2026-10-25：**rc 不再作"判死"依据**（生成器在有段落失败时会故意 exit 1 = 诚实信号，不是死亡）。
+  #   判死改为【正断言】：输出里必须有"跑完哨兵"。真死（语法错/被杀/缺解释器）时哨兵必然缺席。
+  if ! printf '%s' "$out" | grep -q 'self-attest: 报告头生成器跑完'; then
+    echo "★ 报告头生成器【死于半途】（无跑完哨兵 · rc=${rc}）—— 头必然残缺"; head -3 /tmp/.chk-head.err | sed 's/^/    /'; exit 1
+  fi
+  echo "NOTE: 生成器跑完，但 rc=${rc}（= 有段落失败；CI 无兄弟仓时属预期）—— 不判死" >&2
 fi
 printf '%s' "$out" | grep -q '必出七段自证' || { echo "★ 报告头里没有【必出七段自证】行 —— 生成器没跑到末尾"; exit 1; }
 if [ "$mode" = "--death-only" ]; then echo "OK: 生成器跑完且自证行在（CI 只判死不死）"; exit 0; fi

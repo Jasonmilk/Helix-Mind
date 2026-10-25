@@ -243,10 +243,6 @@ for sec,pat in (('R（审查跟进）',r'^\| \*\*(R[0-9]+)\*\*'),('D（D 系列�
         kid=re.sub(r'[*\[\]]','',c[1])[:9]; st=(c[2][:26] if len(c)>2 else '')
         print('    %-10s %s' % (kid,st))
 " "$ISSUES"
-    if [ "$_fail" != 0 ]; then
-      echo "★ --report-head 有段落失败 ⇒ 拒绝输出为完整报告头（退出非零）" >&2
-      exit 1
-    fi
     # ★ 派生自证（reviewer ②）：逐段 grep【本报告头自己的输出】⇒ 段死则 ✗（不再手打）
     # ★ 派生自证·竞态修（reviewer ④-c · 2026-10-11）：`exec > >(tee …)` **异步** ⇒
     #   最末一段（矩阵）常未落盘就被读 ⇒ 误报"矩阵=✗"（机器制造的假缺口）。
@@ -260,6 +256,12 @@ print('▸ 必出七段自证（**派生**）：' + ' · '.join('%s=%s' % (n, '�
 missing = [n for n, k in segs if k not in h]
 if missing: print('  ★ 缺段：%s ⇒ 报告头不完整（D21 门：只审这一项）' % '、'.join(missing))
 PY
+    # ★ 2026-10-25 修：**先出自证（含★缺段点名），再按 _fail 退非零** —— 原来先 exit，
+    #   把"哪几段缺了"这条诊断本身吞掉了（诊断盲区；CI 因此只能看到"没跑到末尾"）。
+    if [ "$_fail" != 0 ]; then
+      echo "★ --report-head 有段落失败 ⇒ 拒绝输出为完整报告头（退出非零）" >&2
+      exit 1
+    fi
     cp "$_HEADSELF" /tmp/headself.keep 2>/dev/null || true; rm -f "$_HEADSELF"\
     exit 0;;
   --done) python3 - "$ISSUES" "${2:?用法: --done <ID>}" <<'PY'
@@ -339,3 +341,8 @@ PY
 esac
 LOG="${HELIX_TODO_LOG:-$HOME/.helix/todo-ready.log}"
 mkdir -p "$(dirname "$LOG")" 2>/dev/null && printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${1:---ready}" >> "$LOG" 2>/dev/null || true
+# ★ 2026-10-25：**跑完哨兵**（正断言）—— "判死"必须断言"我看到了什么"，不能断言"rc 是多少"。
+#   背景：--report-head 在有段落失败时**故意** exit 1（不当完整头）；而 CI 的 --death-only 把任何 rc≠0 当"死"
+#   ⇒ CI 只 checkout 本仓（无兄弟仓）⇒ 光/预算段天然失败 ⇒ **预期内失败被读成"生成器死了"**（false red）。
+#   现在：跑到这里 = 生成器完成；检查器只认这行。
+printf '\n▸ self-attest: 报告头生成器跑完（sentinel · 2026-10-25）\n' 
