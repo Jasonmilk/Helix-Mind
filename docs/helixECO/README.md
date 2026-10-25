@@ -57,6 +57,14 @@
 **正确量法**：名字从归档 tag 派生，扫描面 = **全仓**，根上保留的 `ECOSYSTEM.md`/`DEBTS.md`/`README.md` 不算残留。
 
 ```bash
+# ★ 形态①（首选）：**字面路径存在性**——与"变更集"无关，连【变更之前就已断】的引用也抓得住。
+#   实测教训：从 tag→HEAD 的 diff 派生名字，扫不到 `docs/helixECO/PROTECTION.md`（它**从未存在**）⇒ 半截版。
+grep -rhoE 'docs/helixECO/[A-Za-z0-9_./-]+\.(md|json)' \
+  --include='*.md' --include='*.sh' --include='*.rs' --include='*.yml' . \
+  --exclude=docs/helixECO/README.md \
+ | sort -u | while read -r p; do [ -e "$p" ] || echo "★ 断链: $p"; done
+
+# ★ 形态②（补充）：**搬运后**再看"旧名是否还被引用"（此时变更集才对）
 git diff --name-only helixECO-before-cleanup-2026-10-25 HEAD -- docs/helixECO \
  | sed 's|.*/||' | sort -u | while read -r b; do
      git grep -nF "helixECO/$b" -- . \
@@ -65,4 +73,6 @@ git diff --name-only helixECO-before-cleanup-2026-10-25 HEAD -- docs/helixECO \
    done
 ```
 
-**另加一条**（散文式说谎抓不住，靠人读）：搬完 `grep -rn '已于 .* 清理' README.md README.zh-CN.md docs/` —— 假话比断链更坏（断链会报错，说谎不会）。
+> `--exclude=docs/helixECO/README.md` 是**必需**的：本契约自己就写着上面这些路径与 `已于 .* 清理` 这类样例串 ⇒ 不排除就会**自己命中自己**（假红/装饰品）。
+
+**另加一条**（散文式说谎抓不住，靠人读）：搬完 `grep -rn '已于 .* 清理' README.md README.zh-CN.md docs/ --exclude=docs/helixECO/README.md`（同样排除契约自身）—— **假话比断链更坏：断链会报错，说谎不会**。
