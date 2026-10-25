@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-10-09T04:15:45",
+  "experiment": "gist 判据实验（D5 的另一半）—— 人不做任何事，AI 自己答出",
+  "supersedes_partial": "convergence-A-after-2026-10-09.json 只做到『有界 + 可经 !body 取回』；本份补的是**原位 gist**，即不需要人翻也能知道",
+  "setup": {
+    "chain": "21 轮，第 1 轮埋「我的狗叫旺财」",
+    "probe": "第 21 轮「第 1 轮我让你记住的那个词是什么？」",
+    "skeleton_max_lines": 3,
+    "gist_max_chars": 400,
+    "mind": "**未启动** ⇒ 答对只可能来自 gist（排除召回）",
+    "human_actions": "无（不选中第1轮、不发 !body）"
+  },
+  "measures": {
+    "recent_original_lines": 3,
+    "round1_in_recent_lines": false,
+    "gist_block_present": true,
+    "prompt_contains_fact": true,
+    "reply": "狗叫旺财",
+    "reply_contains_fact": true,
+    "prompt_chars": 787
+  },
+  "verdict": {
+    "criterion_met": true,
+    "proof_it_came_from_the_gist": "max_lines=3 ⇒ 第 1 轮必然沉底（实测 recent 3 行不含它），事实却仍在 prompt 里 ⇒ 只能来自 gist；且无 Mind ⇒ 不可能是召回",
+    "bounded": true,
+    "originals_intact": true,
+    "note": "gist 是**一块有界文本**（一个字符预算），不是每轮一行 —— 否则只是把线性增长搬进 gist"
+  },
+  "suggestions_from_human": {
+    "deep_dream_offline": "未采用为**生产者**：本版 gist 由本地确定性函数产出（write-once 侧车）。接口留好，Deep Dream 可替换生产者而不改形状。",
+    "versioned_traceable": "已做：<period_id>.gist，write-once（按内容版本化），来源 = 该轮自身字节",
+    "never_replaces_original": "已做：事件流仍是原件的所在地，gist 只读写一次，**无任何删除路径**"
+  }
+}
