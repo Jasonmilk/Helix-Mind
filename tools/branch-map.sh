@@ -100,16 +100,40 @@ if [ "${1:-}" = "--check" ]; then
   check_ref_literals || exit 1
   doc="docs/helixECO/gen/BRANCH-MAP.md"
   [ -f "$doc" ] || { echo "★ 缺 $doc"; exit 2; }
-  python3 - "$doc" <<'PY' || exit 1
+  python3 - "$doc" "$(basename "$(git -C . rev-parse --show-toplevel)")" <<'PY' || exit 1
 import io,re,subprocess,sys
-doc=sys.argv[1]; s=io.open(doc,encoding='utf-8').read()
+doc=sys.argv[1]; me=sys.argv[2]
+s=io.open(doc,encoding='utf-8').read()
 m=re.search(r'<!-- BEGIN GENERATED -->\n(.*?)\n<!-- END GENERATED -->', s, re.S)
 if not m: sys.exit('★ 文档里没有 BEGIN/END GENERATED 标记（无法判过期）')
 cur=m.group(1).strip()
 new=subprocess.run(['bash','tools/branch-map.sh'],capture_output=True,text=True).stdout.strip()
-if cur!=new:
-    print('★ 生成物【过期】：文档里的表 ≠ 现在跑生成器的输出'); sys.exit(1)
-print('OK: 生成物与 git 现状一致（未过期）')
+
+def norm(t):
+    """★ 自指使判据【没有不动点】：本表含本仓自己的 HEAD 与 dirty，
+    而本表就活在本仓里 ⇒ 提交本表会移动 HEAD ⇒ 表立刻过期 ⇒ 再提交又移动。
+    实测：把重生成的表提交后 --check 立刻 rc=1，差异**只有本仓那一行**（5 个兄弟行逐字相同）。
+    ⇒ 本仓那一行的 HEAD/dirty 两格不参与判读（它不是"过期"，是"自我指涉"）。
+    其余行照判：任何一个兄弟仓的行对不上，仍然红（相邻样本见同文件注释）。"""
+    out=[]
+    for ln in t.split('\n'):
+        f=ln.split('|')
+        # 形如 | **x** | `cur` | `rs` | a / z | `head` | merged | mr | clean |
+        if len(f)>=10 and ('**%s**'%me) in f[1]:
+            f[5]=' `SELF` '          # HEAD 格
+            f[9]=' SELF '            # dirty 格
+            ln='|'.join(f)
+        out.append(ln)
+    return '\n'.join(out)
+
+if norm(cur)!=norm(new):
+    import difflib
+    d=[x for x in difflib.unified_diff(norm(cur).split('\n'),norm(new).split('\n'),
+                                       'doc','gen',lineterm='',n=0) if x[:1] in '+-' and x[:3] not in ('+++','---')]
+    print('★ 生成物【过期】：文档里的表 ≠ 现在跑生成器的输出')
+    for x in d[:8]: print('   ',x[:120])
+    sys.exit(1)
+print('OK: 生成物与 git 现状一致（未过期；本仓那一行的 HEAD/dirty 属自指，不参与判读）')
 PY
   exit $?
 fi
