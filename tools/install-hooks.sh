@@ -94,7 +94,7 @@ EXCLUDE="
 #   它的方向由人裁决，不由钩子裁决。
 # ★ 陷阱（当场踩到）：本声明体内【不得出现 ASCII 双引号字符】—— 解析器在第一个双引号处截断，
 #   于是 Excluded 读成 []（「读到空」 与 「缺席」 分不开），I5 照样红。写理由用「」。
-thinking/phyt-DNA的任务编排思路 | decided | 驱动层仓，非生态仓；见上
+thinking/phyt-DNA的任务编排思路 | decided | 驱动层仓，非生态仓；职责/监视关系/为何在生态仓外：helixECO/ECOSYSTEM.md §0.2（那边是唯一真相，本行只是 I5 的声明入口）
 "
 MODE="${1:-install}"
 

@@ -8,8 +8,8 @@
 <!-- BEGIN GENERATED -->
 | 仓 | 活跃分支 | 主干(rs) | feature 领先/落后 rs | merge-base | 已并入 rs? | main 与 rs 的关系 | 工作树 |
 |---|---|---|---|---|---|---|---|
-| **anaphase-helix** | `rs` | `rs` | 0 / 0 | `b13bc93` | ✅ 是 | **无关历史**（骨架） | 干净 |
-| **helix-mind** | `rs` | `rs` | 0 / 0 | `856bd17` | ✅ 是 | **无关历史**（骨架） | dirty |
+| **anaphase-helix** | `rs` | `rs` | 0 / 0 | `4b4a3a6` | ✅ 是 | **无关历史**（骨架） | 干净 |
+| **helix-mind** | `rs` | `rs` | 0 / 0 | `fab0a91` | ✅ 是 | **无关历史**（骨架） | dirty |
 | **Cellrix** | `rs` | `rs` | 0 / 0 | `6d67476` | ✅ 是 | **无关历史**（骨架） | dirty |
 | **FlowModus** | `rs` | `rs` | 0 / 0 | `9359a8f` | ✅ 是 | 落后 rs 52 笔 · 领先 2 笔 | 干净 |
 | **Tuck** | `rs` | `rs` | 0 / 0 | `4c53657` | ✅ 是 | 落后 rs 83 笔 · 领先 0 笔 | 干净 |

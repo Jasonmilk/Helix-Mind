@@ -51,6 +51,21 @@
 > 生态内的 `Cellrix:ADR-0021` 仍以 CI-144 协议为设计源。
 
 
+### 0.2 驱动层仓（**不在生态仓清单里**，但它会移动兄弟仓的检查结果）
+
+| 项 | 内容 |
+|---|---|
+| 路径 | `thinking/phyt-DNA的任务编排思路/`（独立 git 仓） |
+| 职责 | 跨仓**判据编排内核**：`kernel.py`（环 c1/c2/c3 三件 + 收据账本）· `portctl.py`（端口派生）· `tools/edges-census.py`（依赖边普查）· `tools/expiry-census.py`（豁免有效期）· `tools/up.sh`（环间隔离启停）· `GLOSSARY.md` / `rings.schema.md` |
+| 它监视谁 | **只读地**驱动生态各仓的测试与探测（`anaphase-helix` 的 `tests/upstream_live.rs`、`Cellrix` 的 `tests/anaphase_live.rs` 等），并记录读数 |
+| 被谁监视 | `anaphase-helix` 的 I5（`tests/security_gate.rs`：声明覆盖必须等于实际覆盖）。它 `git init` 后是工作区第 20 个 git 仓，未登记时 I5 具名红（2026-10-27 实测） |
+| **为什么在生态仓之外** | **监视者外置**（同族已三次：phyt-DNA 引擎不放母仓 · 内核用 Python 不依赖被测物工具链 · 告警代码不放被它自己棘轮监视的仓）。它跑跨仓编排，提交语义与生态仓不同，生态的 ADR 首行门 / `[large]` 标记门对它没有对应物 |
+| 登记方式 | `helix-mind/tools/install-hooks.sh` 的 `EXCLUDE` 声明里有一行（`decided` + 理由），**由 I5 断言读取**；**不进 `REPOS`**（不对它装生态钩子） |
+
+> **不把 `EXCLUDE` 改成"登记后就不需要了"**：`EXCLUDE` 是**声明**，不是绕过——I5 的判据是
+> 「每个实际存在的仓，要么在 `REPOS`，要么在 `EXCLUDE` 且有理由」，两条路都算登记。删掉 EXCLUDE 行
+> 而不同时进 `REPOS`，只会让 I5 重新变红（这正是它该做的事）。
+
 ## 1. 项目状态总览
 
 | # | 项目 | 分支 | 测试数 | 当前阶段 | 最后提交 | 状态 | 仓库 |
