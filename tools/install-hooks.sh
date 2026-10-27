@@ -83,10 +83,18 @@ REPOS="Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle
 # adding a repo here does NOT stop the loop below from hooking it. To change the
 # policy, move the name into REPOS (which the loop consumes) and drop the row.
 EXCLUDE="
-# Currently empty, and that is a statement rather than an oversight: every git repo in
-# this workspace is now in REPOS. The declaration stays because the I5 assertion reads it
-# and refuses a script that has none — an empty list that is DECLARED is reviewable, an
-# absent one is not. A future exclusion belongs here with a status and a reason.
+# 之前是空的，且那是声明而非疏忽：当时工作区里每个 git 仓都在 REPOS。该声明保留 —— I5 断言
+# 读它、并拒绝没有它的脚本：声明过的空表可复审，缺席的不可。
+#
+# thinking/phyt-DNA的任务编排思路 | decided | 驱动层（环判据编排内核），不是生态仓
+#   2026-10-27 实测触发 anaphase-helix tests/security_gate.rs 的 I5：它 `git init` 后成为
+#   工作区里的第 20 个 git 仓，既不在 REPOS 也不在 EXCLUDE ⇒ 具名红（K-104a：声明覆盖 ≠ 实际覆盖）。
+#   为什么不放进 REPOS：它跑的是跨仓「环」编排（内核 + 环定义 + 账本），提交语义与生态仓不同，
+#   生态的 ADR 首行门 / [large] 标记门对它没有对应物；硬挂上去只会产生「为过判据而填的表」。
+#   它的方向由人裁决，不由钩子裁决。
+# ★ 陷阱（当场踩到）：本声明体内【不得出现 ASCII 双引号字符】—— 解析器在第一个双引号处截断，
+#   于是 Excluded 读成 []（「读到空」 与 「缺席」 分不开），I5 照样红。写理由用「」。
+thinking/phyt-DNA的任务编排思路 | decided | 驱动层仓，非生态仓；见上
 "
 MODE="${1:-install}"
 
