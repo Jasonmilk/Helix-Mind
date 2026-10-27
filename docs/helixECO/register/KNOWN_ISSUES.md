@@ -385,6 +385,32 @@ anaphase 的 `HttpSecurityGate` 把 404 映射成 `GateVerdict::HitlRequired("se
 
 **判据（修好后会自动变绿的那一条）**：`curl -X POST :60052/v1/security/gate` ⇒ 200，且 `grep -c '"source":"security_gate"' <gateway.audit_path>` 随调用递增。
 
+**★ 追加实测（2026-10-28，ROAD-12 P0-① 的零成本验证）—— A 方案不是「挂一行」**
+
+用临时测试文件验证「把 gate 路由并进 `governance_router`」（文件跑完即删，`git status --porcelain` 收回 0）：
+
+```
+现状：        POST /v1/security/gate ⇒ 404（与 /v1/nonexistent 同码）
+直接 merge：  panic: Overlapping method route. Handler for `POST /v1/chat/completions` already exists
+              ⇒ 两个 Router 都自带 /v1/chat/completions，Router::merge 在**构造期**就炸 ⇒ 不是加一行
+语义（挂载后回什么）：handler 的 decision 是常量 "pass"（lib.rs:265），reason 明说 gate=none
+              既有测试 security_gate_test.rs:45（断言在 :67 reason.contains("gate=none")）⇒ 4 passed
+可行路径：    GatewayState（state.rs:58-86）**已带 access 与 chain** ⇒ 把 handler 的 state 从
+              Arc<Gateway> 换成 Arc<Pipeline> 即可在 governance_router 内注册该路由（改 handler ≈30 行
+              + 一处 route），**不需要合并 Router**
+```
+
+⇒ **A 的真实工作量 = 一次 handler state 重构**（不是「挂载」），性质仍是授权②。
+
+**★ 另一处实测（ROAD-12 P0-②）：anaphase 侧也是 0 行，且成因可分离**
+
+- `~/.helix` 下**没有 anaphase 运行期目录**（只有 helix-mind 的三个 .txt/.log）⇒ 本机 anaphase 只跑过测试；
+- 我起过的 ring4 配置 `/tmp/anaphase_cap.toml` **没有 `tuck_endpoint`** ⇒ `gate_url(None, None) = None`
+  （`anaphase-helix/src/adapters/security_gate.rs` 的 `gate_url`）⇒ **门压根没装**，不是「装了被 404 挡下」。
+
+⇒ 「404 → HitlRequired 正在误伤」**当前并未发生**（门没装；装了才会发生）。所以 A 的性质是
+**第一次把门装上门框**，不是「解除正在进行的误伤」。这一条改变了紧急度，不改变选项集。
+
 ## 3. 已落地的缓解措施（不是修复，是止血）
 
 | 缺陷 | 缓解 | 状态 |
