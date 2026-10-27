@@ -33,7 +33,10 @@ cd phyt-DNA && bash tools/validate.sh --index
 |---|---|---|---|---|
 | **1** | **K22 的"危险动作形状"判据**（`rm -rf` / force push / **权威卷路径** ⇒ pre 时刻拦，因为实测它对危险是 fail-open） | 只加判据 | **零行为风险** | 喂 `rm -rf` ⇒ 必须 exit 2 |
 | **1** | **G6-②**：`examples/fixtures/inject.sh` 加一次行使 · **G6-③**：`appeals` 账加守卫 | 只加判据/测试 | 零 | 回归判据各一条 |
+| | ✅ **G6-② 已完成（2026-10-27）**：`tools/ci-local.sh` 新增 **step 5b**（真跑示范 + 判行数**越过** ADR 自己写的阈值，不写死 150）｜收据：正样本 `OK (真跑一次：151 行注入 ⇒ 1 → 152 行 > 阈值 150)` · 注入①`seq 1 151→100` ⇒ `★ RED …未越过阈值 150` · 注入②示范改回写死路径 ⇒ `★ RED 示范没用「${F}」` · 注入③文件不存在 ⇒ `★ RED 示范文件不存在` ｜步数 11 → **12** |
+| | ✅ **G6-③ 本就存在（2026-10-27 核实）**：`phyt-DNA/decisions/ADR-20261009-appeals-must-be-parseable.md`（`hard: true` · `probe: yes` · `--index` = `yes \| yes`）｜单门 probe 三形实测全绿（基线綠 / 注入后 `RED — 检出: 申诉账不可解析…第 1 行不是合法 JSON` / 反例守住）⇒ 无需新建 |
 | **1** | **K18**：ci144 `vendored` 一致性判据（不作重构） | 只加判据 | 零 | 改一处字段 ⇒ 必红 |
+| | ✅ **K18 已完成（2026-10-27）**：新判据 `anaphase-helix/tests/ci144_vendored_consistency.rs`（逐行状态机抽 `pub struct`/`pub enum` 形状，逐个与 `Cellrix/protocol/src` 对齐；**顺序敏感**——MessagePack 里 struct 按声明序编数组）｜四格收据：一致 ⇒ `CONSISTENT: 14 个类型逐字段一致` rc=0 · 上游多一字段 ⇒ rc=101 `CapabilityManifest：成员不同 … 只在上游: ["color_tag"]` · 上游互挨两个字段次序 ⇒ rc=101 `成员相同但【顺序】不同 … 顺序也是契约` · 上游不可得 ⇒ `NEEDS-INPUT` + pass，`CELLRIX_REQUIRED=1` ⇒ 具名红 |
 | **2** | **K20 低成本半**：`pipeline::run()` 加一行指向活路径的注释 · **K21**：Tuck 存量 clippy 清理 | 注释/清理 | 低 | 注释不等于判据 ⇒ **K21 要真删才红** |
 | **3** | **K16 给「做」装门**（M1 Tuck 端点 → M2 装配观察态 → M3 翻转 → M4 判据） | **改行为** | **高** | 见 `../observations/2026-10-09/D8-PLAN.md`（M2/M3 必须分开；反证=停 Tuck 必须具名拒绝） |
 | **3** | **K17 并发**：`build_agent` 可复用部分按需缓存 · 无界→有界+背压 · 并发上限具名 | **改行为** | 中 | 并发 N ⇒ 见"上限生效"的**具名**证据 |
