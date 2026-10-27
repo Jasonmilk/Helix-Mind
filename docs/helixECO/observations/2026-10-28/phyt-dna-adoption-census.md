@@ -44,12 +44,31 @@
 
 | 仓 | 跑了吗 | 证据 |
 | --- | --- | --- |
-| helix-mind | **跑了**（运行时，跟 v2 走、不钉版本） | `tools/todo-ready.sh:228` `bash ../phyt-DNA/tools/ci-matrix.sh`；本仓文档头就是它生成的（报告头 7/7 ✅ 是它的输出） |
+| helix-mind | **跑了读数工具，没跑判据引擎** | `tools/todo-ready.sh:228` `bash ../phyt-DNA/tools/ci-matrix.sh`（**读数**：CI 矩阵，本仓报告头 7/7 ✅ 是它的输出）；`validate.sh`（**判据引擎**）在本仓调用点 = **0** |
 | Cellrix | **跑了副本的校验器，没跑副本的引擎** | CI `ci.yml:45` `bash tools/upstream-manifest.sh`；`validate.sh` / `xray.sh` 在 `.github/` `tools/*.sh` `package.json` 里的 grep 命中 **2 行、全部是注释**（`upstream-manifest.sh:4` 说明 + `:13` 用法示例）⇒ **执行调用点 = 0** |
 | anaphase-helix | **没跑**（只检出） | CI 对 phyt-DNA 的唯一用途是 `[ -d "$d/.git" ]` 工作区自检 |
 | FlowModus / Tuck / helix-tentacle | **没跑** | CI 里 phyt-DNA 相关行 = 0 |
 
 ---
+
+## 2 · 五条真问题（排序按 ROAD-11 §P0-④ 修正：**谎报 > 沉默**）
+
+> 排序原则（2026-10-28 修正）：**正在谎报 > 只是沉默 > 可复现性**。旧排序把 P1（44 文件写归档线，沉默）放在 P2（宣称"与上游一致"，谎报）之前，是错的。
+> 新增 §2.0：园丁 ROAD-11 §P0-③ 的读数——**判据引擎在生态里的执行调用点 = 0**，它比四条问题更根本，所以排在最前。
+
+### P0 · 判据引擎 `validate.sh` 的生态执行调用点 = **0**
+
+| 仓 | 跑的是 | 是判据引擎吗 | 执行调用点 |
+| --- | --- | --- | --- |
+| helix-mind | `ci-matrix.sh` | 否（**读数**工具） | 0 |
+| Cellrix | `upstream-manifest.sh` | 否（**自签指纹**） | 0（`validate.sh` 的 2 处命中全在注释里） |
+| anaphase / Tuck / FlowModus / helix-tentacle | 无 | — | 0 |
+| phyt-DNA 自己 | `tools/ci-local.sh` | 是 | **19**（纯自证） |
+
+复跑：`for r in <6 仓>; do grep -rn 'validate\.sh' $r --include='*.sh' --include='*.yml' --include='*.toml' --include='*.rs' --include='*.js' | grep -v "^$r/tools/validate\.sh:" ; done` ⇒ 只剩注释命中。
+
+⇒ 「生态共用一套方法论」的真状态：**声明 44 个文件 · 引擎调用 0**。这是同一个母题在**采纳面**的形态（根 README 三处"已清理" · `over_total` 写了没实现 · K22 判据绿无人调用 · 本条）。
+**不造仪器**（触发判据未达），只让这个数字可数：它随新 adopt 变化，命令在本节。
 
 ## 2 · 四条真问题（按严重度，全部带可复跑命令）
 
@@ -70,7 +89,11 @@
 性质：**不是版本漂移，是可见性缺口**。这 44 个文件里没有一个是"引擎调用点"（引擎调用点只有 2 处：helix-mind `todo-ready.sh:228`、Cellrix CI `ci.yml:45`），它们全是**七卷的头注**——即"我是谁、我跟谁一套方法"的声明。声明指向归档线，执行跟着 v2，两者从未对账。
 FlowModus 的 0 是独立问题：**0 声明 = 无契约**，不是"跟随最新"。
 
-### P2 · Cellrix 副本是真债，且它的指纹是「自我一致性」而非「上游对齐」
+### P2 · Cellrix 副本是真债，且它的指纹是「自我一致性」而非「上游对齐」（**零成本那一半已做，2026-10-28**）
+
+> 已做（自治档，不需授权）：成功文案 `OK: 引擎与上游一致` → `OK: 引擎副本与本仓自签指纹一致（…）—— 不证明与上游一致`；文件头注改写为"证明什么/不证明什么"；CI 步骤名 `引擎与上游一致（R4 附带：防分叉）` → `引擎副本未漂（自签指纹；≠ 上游对齐）`。Cellrix commit 见 `d-cellrix-vendored-engine`。
+> 顺带发现：旧 `tools/UPSTREAM.sha256` 里**有一条自指条目**（`tools/upstream-manifest.sh` 自己）——脚本 `FILES=$(ls tools/*.sh | grep -vE '^tools/(upstream-manifest)\.sh$')` 明确排除自己，但清单是三行（含自己）⇒ **改文案 = 改指纹 = 自检当场红**。重签后 4 条（补上原先漏掉的 `determinism.sh` / `emit-failures.sh`），差异在提交信息里具名。
+> 命名局限：这份指纹**无法在"不重签"的前提下修正文案/注释**——仪器把自己的维护成本记成了漂移。
 
 - 副本与 v2 HEAD 差 **369 行**；同一文件头注在 2026-10-09 自述「与上游已差 **274** 行」⇒ 18 天涨 95 行，**漂移在加速而不是收敛**。
 - 更硬的一层：`tools/upstream-manifest.sh` 的 `--write` 用 `shasum $FILES > tools/UPSTREAM.sha256` 把**副本自己的** sha 写进去，校验分支跑 `shasum -c` ⇒ 它证明的是"副本没被再改过"，**永远不能证明"副本与上游一致"**；而它的成功文案逐字写「`OK: 引擎与上游一致`」。
@@ -85,6 +108,14 @@ FlowModus 的 0 是独立问题：**0 声明 = 无契约**，不是"跟随最新
 helix-mind `tools/todo-ready.sh:228` 直接跑 `../phyt-DNA/tools/ci-matrix.sh`（工作区里的那一份）。它不钉版本、也不校验上游指纹 ⇒ 同一句命令在不同工作区给出不同矩阵。这一条**是我每天在用的东西**（报告头的矩阵段由它出），目前靠"工作区里就是最新 v2"这个习惯，不是靠机制。
 
 ---
+
+## 2.5 · 「phyt-DNA 引擎冻结」的范围澄清（园丁 P1-⑤）
+
+**结论：冻结的是我给自己下的操作约束（本轮不改 phyt-DNA 引擎），不是上游停止演进。**
+
+- `git -C phyt-DNA log --oneline d9a16a0..v2 -- tools/validate.sh` ⇒ **21 次提交**（Cellrix 副本正是 `d9a16a0` 那一版），逐条看全是**引擎语义/自述算术**的修法：`hard:report` 分母四类 · 门面门改名 · 豁免名单从注入点派生 · 变量必须赋值断言 · 账本回写 trap 擦行根因 · probe-all 算术闭合 24+1=25 …… 没有一条是"未冻结区"。
+- ⇒ 369 行差异里**混着引擎语义变更**，所以「同步副本」不能当成"拿一次更新"，它等于把 21 次引擎修法一次性引进来 ⇒ 必须授权（P2 的 A 方案），且要先能逐条说清引进了什么。
+- 一句话：**「冻结」= 我不动它；「没动」不等于「它没变」。** 18 天里它变了 21 次，而副本一次都没跟上。
 
 ## 3 · 判读与处置建议（不自裁）
 

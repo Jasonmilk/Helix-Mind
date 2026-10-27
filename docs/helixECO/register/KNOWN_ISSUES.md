@@ -169,7 +169,7 @@
 | **K14** | **`/api/sessions` 的 `limit` 会静默截断**：磁盘有 **91** 个 period，API 只返回 **50** ⇒ **41 个不进 DOM**。两个后果：① **跨边界的链其 `+N` 只是下界**（老链会被再次报低，形态与 F16 同）；② **对话累积后老记录持续掉出窗口** ⇒ 将来会以「又消失了」的形式复发 | `anaphase-helix/src/main.rs:169`（`unwrap_or(50)`）／`Cellrix/web/src/routes.rs:118`（`?limit=50`） | **未修。已核对（91 vs 50）**。留痕两处：跨边界链的 `+N` 标注为**下界**；考虑改为不受 limit 影响的算法或分页加载 〔deps=— · prio=**high** · class=自治 · blocks=DSH 对话界面〕 |
 
 ---
-| **K16** | **「想 / 说 / 做」之间没有门**：`main.rs` **从不装配** security gate（grep `with_security_gate` 为空）；`config.toml` 无该配置；**Tuck 也没有 `security/gate` 端点**（grep 为空）⇒ 提示注入让 LLM「想」出 `rm -rf` 时，**「做」这一步没有门**。**契约与纪律其实都在**（`security.rs` 的 `SecurityGate`/`GateVerdict`、`adapters/security_gate.rs` 的 `HttpSecurityGate`、`pipeline/mod.rs:171` 的 I7「没装门 ≠ 门通过了」、`run_cycle/mod.rs:722`「拒绝是具名的行」）—— **缺的只是三处接线** | `anaphase-helix/src/main.rs`（无装配）／`anaphase-helix/config.toml`（无配置）／`Tuck/crates/`（无端点） | **进展 2026-10-09**：M0 ✅ · **M1 ✅**（Tuck `POST /v1/security/gate`，形状逐字对齐本仓契约；观察态；每次判定落一行审计，口径与 HTTP 响应同一套）· **M2 ✅**（anaphase 装配，`anaphase-helix 0a760f1`；地址由既有 `tuck_endpoint` 派生而非新增字段；**仍观察态**：Tuck 侧无准入表时回 `pass` 并**明说 `gate=none`**）· **M3/M4 ⏳ 待批准**。原待批准项 ①②③ **已全数落地**（③ 以派生替代新增配置项），见 `helix-mind/docs/helixECO/canon/THINK-SAY-DO.md` 与 `../observations/2026-10-09/D8-PLAN.md`。**⚠️ 门是 fail-closed ⇒ 装了它 "Tuck 挂了 = Helix 不思考"**（`run_cycle/mod.rs:671` 自己写着） | `I7` · `../canon/THINK-SAY-DO.md` 〔deps=授权（M3/M4 需人类一句话） · prio=**high** · class=**升级** · blocks=DSH 对话界面（安全收尾）〕 ⇒ ⏱ **观察态死线（2026-10-10）**：**两周 或 ≥50 条 `security_gate` 判定被记录**（先到者）⇒ 届时**带数据呈报**，在 ①（直接翻转）/ ③（带具名风险阈值翻转）里选。**读数来源可核**：Tuck `ledger/hits-2026.jsonl` 里 `source:"security_gate"` 的行数（或 anaphase 的 `gate` 事件行）⇒ **死线不是「以后」，是一个可数的量**。 |
+| **K16** | **「想 / 说 / 做」之间没有门**：`main.rs` **从不装配** security gate（grep `with_security_gate` 为空）；`config.toml` 无该配置；**Tuck 也没有 `security/gate` 端点**（grep 为空）⇒ 提示注入让 LLM「想」出 `rm -rf` 时，**「做」这一步没有门**。**契约与纪律其实都在**（`security.rs` 的 `SecurityGate`/`GateVerdict`、`adapters/security_gate.rs` 的 `HttpSecurityGate`、`pipeline/mod.rs:171` 的 I7「没装门 ≠ 门通过了」、`run_cycle/mod.rs:722`「拒绝是具名的行」）—— **缺的只是三处接线** | `anaphase-helix/src/main.rs`（无装配）／`anaphase-helix/config.toml`（无配置）／`Tuck/crates/`（无端点） | **★ 部署层修正（2026-10-28，见 K-133）**：M1/M2 均为 **crate 层为真、交付层为假** —— 真二进制挂的是 `governance_router`，`/v1/security/gate` 只被 tests 挂载（真探针 `POST :60052/v1/security/gate` ⇒ **404**；对照 `/v1/audit` ⇒ 401）⇒ **观察态从未产生过判定**（`gateway.audit_path` 里 `security_gate` 行 = 0），且 anaphase 把 404 映射成 `HitlRequired` ⇒ 线上是 **fail-closed 挡路**，不是「回 pass 并明说未准入」。**M3/M4 在 K-133 修好前无法启动。** ｜ **进展 2026-10-09**：M0 ✅ · **M1 ✅**（Tuck `POST /v1/security/gate`，形状逐字对齐本仓契约；观察态；每次判定落一行审计，口径与 HTTP 响应同一套）· **M2 ✅**（anaphase 装配，`anaphase-helix 0a760f1`；地址由既有 `tuck_endpoint` 派生而非新增字段；**仍观察态**：Tuck 侧无准入表时回 `pass` 并**明说 `gate=none`**）· **M3/M4 ⏳ 待批准**。原待批准项 ①②③ **已全数落地**（③ 以派生替代新增配置项），见 `helix-mind/docs/helixECO/canon/THINK-SAY-DO.md` 与 `../observations/2026-10-09/D8-PLAN.md`。**⚠️ 门是 fail-closed ⇒ 装了它 "Tuck 挂了 = Helix 不思考"**（`run_cycle/mod.rs:671` 自己写着） | `I7` · `../canon/THINK-SAY-DO.md` 〔deps=授权（M3/M4 需人类一句话） · prio=**high** · class=**升级** · blocks=DSH 对话界面（安全收尾）〕 ⇒ ⏱ **观察态死线（2026-10-10）**：**两周 或 ≥50 条 `security_gate` 判定被记录**（先到者）⇒ 届时**带数据呈报**，在 ①（直接翻转）/ ③（带具名风险阈值翻转）里选。**读数来源可核**：Tuck `ledger/hits-2026.jsonl` 里 `source:"security_gate"` 的行数（或 anaphase 的 `gate` 事件行）⇒ **死线不是「以后」，是一个可数的量**。 |
 | **K17** | ★ **实地样本（2026-10-09 K21 顺带发现）**：`Tuck/crates/tuck-core/src/file_store.rs:210` `self.credentials.lock().unwrap()` **held across an await** ⇒ 持 std Mutex 跨 await（阻塞执行器/可死锁）——**正是本条要治的那一类**。**并发三处坑**（异步/高并发/队列是人类的长期目标）：① **每请求都跑一遍 `build_agent`**（内含 `build_identity_block`：读文件 + 连 Tentacle 取工具清单，`main.rs:902`）⇒ 高并发下的延迟/资源放大器；② **`tokio::mpsc::unbounded_channel` ×2**（`main.rs:593/608`）⇒ **无背压**；③ **无 `semaphore`/`rate_limit`/`concurrency_limit`** ⇒ 无减速阀，且"打满"没人具名 | `anaphase-helix/src/main.rs` | **没人做**（不急）。**形状是对的**：每请求一份全新 `AgentLoop`（`main.rs:512/548/692`）⇒ 无共享可变 agent、无状态串扰，且 47 处 `lock().unwrap()` 的爆炸半径被限制在单请求。⇒ 要做的是给它**加背压 + 上限（具名）**，不是重设计 | `D11` 〔deps=— · prio=low · class=自治〕 |
 | **K19** | **同一个名字指两个东西**：`verdict` 一族 5 处定义 —— 一物两名（`LedgerRecord::Verdict` 账本裁定 vs `PeriodVerdict` 周期结束），且 **同一 crate 内两个 `GateVerdict`**（`security.rs:58` 安全策略决定 vs `run_cycle/safety_gate.rs:52` 执行前检查结果，语义完全不同）⇒ 读者会误读 | `anaphase-helix/src/{security.rs,run_cycle/verdict.rs,run_cycle/safety_gate.rs,ledger/mod.rs}` | ⏳ **待裁决**（改名属重构）：建议把 `safety_gate` 那个改为 `ToolGateOutcome` 之类 | `D3` ⇒ **裁决简报已呈**：`../proposals/RULING-BRIEF-K19-K23-2026-10-09.md`（四问齐：名字/出现面/波及面/建议 + 授权需求） ⇒ **K19-1 已修（2026-10-09，自动分流：三问全否 ⇒ 纯内部）**：`run_cycle/safety_gate.rs` 的 `GateVerdict` → **`ToolGateOutcome`**（判据：编译 0 error · 全套 **484 用例 0 红** · 跨仓引用仍 0。**收据点名**：484 里那个 +1 是 `execution_failure_leaves_a_named_ledger_row`（K26 的判据测试，**非 K19-1 专属**）⇒ 故 K19-1 自身的收据是"**编译绿 + 全套绿 + 旧名 grep 0**"；近名（`GateVerdict` 一族）以 `grep -w` 边界为准，不扩大。；三笔分账：定义+测试 / 调用点 / 本条清单同步）。**K19-2（公开的那个）建议不改**（生态契约名；线上词汇已由 `security_gate.rs:89-95` 字面量定死 ⇒ 改标识符无收益）。**K19-3（`LedgerRecord::Verdict`）进 JSONL（`record_type`）⇒ 动指纹 ⇒ 要动需单独授权，本轮不动。** 详见 `../proposals/RULING-BRIEF-K19-K23-2026-10-09.md`。 〔deps=K19-3 需授权 · prio=low · class=升级（K19-3）〕 |
 | **K20** | **编排有两份**：`pipeline::run()` 串六阶段，而**活路径**是 `run_cycle` + `Reflection` 自己调 `execute_calls`/`record_evidence`。⇒ 查"裁定为何没写"时读 `pipeline/mod.rs` 会**读错文件**（本会话实证：连猜四次全错，因为活路径根本不走它） | `anaphase-helix/src/pipeline/mod.rs` vs `src/run_cycle/{mod.rs,reflection.rs}` | **没人做**（大重构）。**低成本那一半可先做**：在 `pipeline::run()` 上**加一行注释指向活路径** | `D5` 〔deps=— · prio=low · class=自治〕 |
@@ -332,6 +332,51 @@ $ grep -rn 'check_guards' --include=*.yml --include=*.toml --include=*.sh --incl
 
 **它离“能红”还差什么**：不是判据本身（已经能红：装饰性变异 ⇒ rc=1），
 而是**一个会看它的调用者**。这也正是本轮把它单独登记、而不是顺手接进 CI 的理由。
+
+## K-133（未修 · **门在 crate 里，生产二进制没挂**）· Tuck 的 `/v1/security/gate` 只被 tests 挂载
+
+**登记日期**：2026-10-28 ｜ **状态**：未修（登记 + 待授权）｜ **revisit-on**：2026-11-10
+**出处**：`Tuck/crates/tuck-gateway/src/lib.rs:165`（`Gateway::router()` 里 `route("/v1/security/gate", post(security_gate))`）· `Tuck/crates/tuck-gateway/src/router.rs:19`（`governance_router()`）· `Tuck/crates/tuck/src/main.rs:102/155`（真二进制挂 `governance_router`）
+
+**实测（命令 + 输出）**：
+
+```
+$ grep -rn '\.router()\|Gateway::new' --include=*.rs .            # Tuck 仓
+  ⇒ 5 处，全部在 tests/：proxy.rs:46 / proxy.rs:121 / security_gate_test.rs:24,83,131
+  ⇒ **生产代码 0 处**（crates/tuck/src/main.rs 挂的是 governance_router）
+
+$ grep -rn '"/v1/security/gate"' --include=*.rs .                   # Tuck 仓
+  ⇒ 1 处在 lib.rs（定义）+ 3 处在 crates/tuck-gateway/tests/security_gate_test.rs
+
+$ grep -n 'route(' crates/tuck-gateway/src/router.rs
+  ⇒ /v1/chat/completions · /v1/audit · /v1/stats —— **没有 /v1/security/gate**
+```
+
+**端到端探针（真二进制、真端口；探针后已 kill，60052 监听行数 = 0）**：
+
+```
+$ ./target/debug/tuck -c /tmp/tuckprobe/cfg.toml     # [gateway] audit_path 已配
+  日志：content-governance gateway serving addr=127.0.0.1:60052
+$ curl -o /dev/null -w '%{http_code}' http://127.0.0.1:60052/v1/audit                 ⇒ 401   ← 正对照：路由在、只是要鉴权
+$ curl -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:60052/v1/security/gate ⇒ 404
+$ curl -o /dev/null -w '%{http_code}' http://127.0.0.1:60052/v1/nonexistent           ⇒ 404   ← 与「不存在的路径」同码
+$ grep -c '"source":"security_gate"' /tmp/tuckprobe/gate.chain ⇒ 0
+```
+
+⇒ **门的路由在 crate 里成立、在交付物里不成立。** K16 的 M1（「Tuck `POST /v1/security/gate` ✅」）与 M2（「anaphase 装配 ✅」）都是 **crate 层为真、部署层为假**：
+anaphase 的 `HttpSecurityGate` 把 404 映射成 `GateVerdict::HitlRequired("security gate returned HTTP 404")`（`anaphase-helix/src/adapters/security_gate.rs:85`）⇒ **线上每次被门的调用都会被 fail-closed 挡下**，而账本里一行判定都没有。
+
+**与母题的关系**：这是「断言在 ≠ 会跑到它」在**交付面**的形态，与 K22（harness 不调用）、K-132（CI 不调用）同族；本条最坏，因为它不是「没判」，而是**「判不了却挡路」**。
+
+**为什么本轮不修**：把 `/v1/security/gate` 挂进 `governance_router` = **改 Tuck 生产路由 = 行为面（授权②升级）**，且它连带决定 K16 的死线形态（先挂载才有判定可攒）。三选项待裁：
+
+| 选项 | 内容 | 代价 / 风险 |
+|---|---|---|
+| A | 挂进 `governance_router`（M1 的端点原样挂上，仍观察态） | 行为面；但从此「观察态」才真的存在 |
+| B | 不挂，改 K16 结案口径为「本条作废，重开设计」 | 承认门从未上工；需重写批 3 |
+| C | 挂进 provider 侧（另起一个只读门端口） | 多一个端口，违反「不加面」 |
+
+**判据（修好后会自动变绿的那一条）**：`curl -X POST :60052/v1/security/gate` ⇒ 200，且 `grep -c '"source":"security_gate"' <gateway.audit_path>` 随调用递增。
 
 ## 3. 已落地的缓解措施（不是修复，是止血）
 
