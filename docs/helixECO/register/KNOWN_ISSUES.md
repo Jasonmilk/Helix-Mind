@@ -174,7 +174,7 @@
 | **K19** | **同一个名字指两个东西**：`verdict` 一族 5 处定义 —— 一物两名（`LedgerRecord::Verdict` 账本裁定 vs `PeriodVerdict` 周期结束），且 **同一 crate 内两个 `GateVerdict`**（`security.rs:58` 安全策略决定 vs `run_cycle/safety_gate.rs:52` 执行前检查结果，语义完全不同）⇒ 读者会误读 | `anaphase-helix/src/{security.rs,run_cycle/verdict.rs,run_cycle/safety_gate.rs,ledger/mod.rs}` | ⏳ **待裁决**（改名属重构）：建议把 `safety_gate` 那个改为 `ToolGateOutcome` 之类 | `D3` ⇒ **裁决简报已呈**：`../proposals/RULING-BRIEF-K19-K23-2026-10-09.md`（四问齐：名字/出现面/波及面/建议 + 授权需求） ⇒ **K19-1 已修（2026-10-09，自动分流：三问全否 ⇒ 纯内部）**：`run_cycle/safety_gate.rs` 的 `GateVerdict` → **`ToolGateOutcome`**（判据：编译 0 error · 全套 **484 用例 0 红** · 跨仓引用仍 0。**收据点名**：484 里那个 +1 是 `execution_failure_leaves_a_named_ledger_row`（K26 的判据测试，**非 K19-1 专属**）⇒ 故 K19-1 自身的收据是"**编译绿 + 全套绿 + 旧名 grep 0**"；近名（`GateVerdict` 一族）以 `grep -w` 边界为准，不扩大。；三笔分账：定义+测试 / 调用点 / 本条清单同步）。**K19-2（公开的那个）建议不改**（生态契约名；线上词汇已由 `security_gate.rs:89-95` 字面量定死 ⇒ 改标识符无收益）。**K19-3（`LedgerRecord::Verdict`）进 JSONL（`record_type`）⇒ 动指纹 ⇒ 要动需单独授权，本轮不动。** 详见 `../proposals/RULING-BRIEF-K19-K23-2026-10-09.md`。 〔deps=K19-3 需授权 · prio=low · class=升级（K19-3）〕 |
 | **K20** | **编排有两份**：`pipeline::run()` 串六阶段，而**活路径**是 `run_cycle` + `Reflection` 自己调 `execute_calls`/`record_evidence`。⇒ 查"裁定为何没写"时读 `pipeline/mod.rs` 会**读错文件**（本会话实证：连猜四次全错，因为活路径根本不走它） | `anaphase-helix/src/pipeline/mod.rs` vs `src/run_cycle/{mod.rs,reflection.rs}` | **没人做**（大重构）。**低成本那一半可先做**：在 `pipeline::run()` 上**加一行注释指向活路径** | `D5` 〔deps=— · prio=low · class=自治〕 |
 
-| **K21** | **Tuck 存量 clippy 警告**（2026-10-09 起：cargo fix/clippy --fix 清掉可机械修的部分 **27→22**，测试 12/12 仍绿；余 22 条为风格级 + 1 条并发隐患已转 K17 + 1 条假警告已具名 allow）。**`-D warnings` 不是本仓标准**（其 PLAN 写的是"clippy **新文件**零警告"）⇒ 整仓 `-D warnings` 会把既有的测试模块 lint 判成 error（假红） | `Tuck/crates/tuck-core/src/{config.rs,file_store.rs,audit_query.rs,credential.rs}` 等 | **没人做**（低优先）。**已落地处置**：`Tuck/tools/verify.sh` 的自证入口按**本仓标准**判：报告存量（具名）+ **只对真正的 `error` 判红** ⇒ 它仍然**能红**（不为装饰）。⚠️ 计数必须排除 cargo 的汇总行（"generated N warnings"），否则会报出不可归因的数（本步第一版就把 10 说成 40） | `Tuck/tools/verify.sh` 〔deps=— · prio=low · class=自治〕 |
+| **K21** | **Tuck 存量 clippy 警告**（2026-10-09：cargo fix/clippy --fix 清掉可机械修的部分 27→22。**2026-10-27 已清零**：`cargo clippy --all-targets --all-features` 诊断站点 **27 → 0**（rc=0）；16 个文件全是 clippy 明示的等价变换（unnecessary_cast×7 · derivable_impls×5 · manual_div_ceil×3 · manual_strip · option_map_unit_fn · empty_line_after_outer_attr · unusual_byte_groupings×2 · needless_borrows · unnecessary_sort_by · new_without_default · unused_import/unused_variable · await_holding_lock（唯一非纯风格：`file_store::save()` 的 MutexGuard 原本跨 `.await`）· too_many_arguments（夹具具名 allow + 理由））；回归 `cargo test --all-features` 改前改后**同为** passed=431 failed=0 ignored=8（13 suite；基线用 `git stash` 实测，不是推断）；`bash tools/verify.sh` ⇒ rc=0「全绿（clippy 存量警告 0 条）」。提交 `Tuck:71feaec`）。**`-D warnings` 不是本仓标准**（其 PLAN 写的是"clippy **新文件**零警告"）⇒ 整仓 `-D warnings` 会把既有的测试模块 lint 判成 error（假红） | `Tuck/crates/tuck-core/src/{config.rs,file_store.rs,audit_query.rs,credential.rs}` 等 | **没人做**（低优先）。**已落地处置**：`Tuck/tools/verify.sh` 的自证入口按**本仓标准**判：报告存量（具名）+ **只对真正的 `error` 判红** ⇒ 它仍然**能红**（不为装饰）。⚠️ 计数必须排除 cargo 的汇总行（"generated N warnings"），否则会报出不可归因的数（本步第一版就把 10 说成 40） | `Tuck/tools/verify.sh` 〔deps=— · prio=low · class=自治〕 |
 
 
 | **K23** | ★ **跨仓"一物两名"**：anaphase 的 `GateVerdict::HitlRequired(String)` 与 Tuck 的 `DecisionConfig::NeedHumanConfirm` 是**同一件事的两个名字**（其余三档同名同义：Pass/Reject/HardOverride）。⇒ 接线时必须写映射表，而**最容易漏的那一档恰是"需要人工确认"= 最该守的一档** | `anaphase-helix/src/security.rs:63` · `Tuck/crates/tuck-core/src/policy.rs:78` | ⏳ **待裁决**（统一名字 = 改跨仓契约；或先只登记 + 在 M1 的映射处写明这一档）。**已登记在 `../observations/2026-10-09/K16-DESIGN-GROUNDED.md` §八** | `K16` · `K19`（同族：本仓内的一物两名/一名两物） ⇒ **裁决简报已呈**：同上文件；★ 量测缩小了严重度 —— **线上词汇其实已一致**（anaphase 按 "hitl_required" 解析），真实风险是"将来 Tuck 序列化时必须写对且**没有测试守着**"，故建议**不改名**、改为"一处映射 + 一条能红的判据"，并入 Tuck 实施序列化那次改动 ⇒ ✅ **自治结案（2026-10-10，用三级守则过尺）：不改名**（三问：不改行为面 · 可逆 · 有判据）⇒ 改为"Tuck 实施序列化时加一处映射 + 一条能红判据" ⇒ **移出待裁决**。 〔deps=— · prio=— · class=✅ 自治结案〕 |
@@ -236,9 +236,9 @@
 
 ---
 
-## K-131（未修 · **仪器坏了，不是判据红了**）· anaphase 三条 mutation guard 的 `from` 文本已失配
+## K-131（**已修 2026-10-27** · 这一条是「仪器坏了」，不是「判据红了」）· anaphase 三条 mutation guard 的 `from` 文本已失配
 
-**登记日期**：2026-10-27 ｜ **状态**：未修（既有红，已证伪与本轮无关） ｜ **revisit-on**：2026-11-10
+**登记日期**：2026-10-27 ｜ **状态**：已修（`anaphase-helix:082bc83`）｜ **revisit-on**：—
 **出处**：`anaphase-helix/ci/check_guards.py`（`ci/guards.toml` 驱动的变异判据）
 
 **现象（实测原文）**：`python3 ci/check_guards.py` ⇒ **rc=3**，首行 `CHECKER ERROR: 3 guard(s) could not be evaluated:`，
@@ -268,6 +268,70 @@
 
 **修法（两选，都要三形）**：
 (A) 按现行源码重写三条 `from` 文本（照抄真件，别按记忆写）；(B) 若那三条 guard 的意图已被别的判据覆盖 ⇒ 具名注销它们。
+
+**已落地（选了 A，`082bc83`）· 只改 `ci/guards.toml` 的 `from`/`to`，判据含义与方向不变**：
+
+| guard | 漂移原因 | 现在照抄的真件字面量 |
+|---|---|---|
+| `gate-directions-differ` | K19 改名 `GateVerdict` → `ToolGateOutcome` | `ToolGateOutcome` 分支文本 |
+| `hitl-error-blocks` | 同上 + `warn!` 加了具名后缀 `(hitl-unavailable: no channel could answer)` | 带后缀的那行 |
+| `no-gate-blocks-high-risk` | `is_high_risk(&tool)` → `is_high_risk_call(&tool, &params)`；旧 `to` 还引用了早已不存在的 `{e}`（那时是 `Err(e)` 分支） | `is_high_risk_call` 调用行；`to` 反成 `ToolGateOutcome::Cleared` |
+
+**三形收据（都需要 PATH 里有 cargo）**：
+
+```
+正（修后）  python3 ci/check_guards.py ⇒ rc=0
+  OK    12 guard(s) verified: each declared mutation reddens its NAMED test, the build still
+        compiles, and every test is green without it. 29s of 240s.
+  CI7-SUMMARY {"budget_seconds": 240, "decoration": 0, "guards": 12, "over_budget": false,
+               "seconds": 29.4, "skipped_slow": 0}
+红①（修前） rc=3，三条具名（见上表）
+红②（注入） 把 no-gate-blocks-high-risk 的 to 改成与 from 等价 ⇒ rc=1
+  FAIL  1 guard(s) are decoration — the declared mutation does not redden the named test
+  ⇒ 证明它判的是「真叫不叫」，不只是「文本能不能解析」；复原后 rc=0
+```
+
+跑完 `git status` 只有 `ci/guards.toml`（`recover()` 复位无污染）；行预算未受影响
+（`ci/*.toml` 属 `DATA_EXT`，不进 NOCL；`check_line_budget` 仍是既有的 2 FAIL）。
+
+**这一条真正的教训**：`from` 文本是**指针**（指向源码字面量），重构会把它指向空。
+指针失效时判据**不会红**，它只会**不工作**——所以 `rc=3` 必须有读者。见 K-132：
+它能被你修好，正是因为**没人**跑它；如果没人跑，修好也只是把 rc 从 3 变成 0，没人看见。
+
+## K-132（未修 · **判据没有调用者**）· anaphase 的 12 条变异判据（CI-7）不在任何 CI / 脚本里
+
+**登记日期**：2026-10-27 ｜ **状态**：未修（登记 + 待裁）｜ **revisit-on**：2026-11-15
+**出处**：`anaphase-helix/ci/check_guards.py`（由 `ci/guards.toml` 驱动）
+
+**实测（命令 + 命中数）**：
+
+```
+$ cd anaphase-helix && grep -cE 'check_guards|scan_mutants' .github/workflows/ci.yml   ⇒ 0
+$ grep -rn 'check_guards' --include=*.yml --include=*.toml --include=*.sh --include=Makefile .
+  ⇒ 只有 ci/baseline.toml:363 一条注释（叙述历史行数），不是调用
+```
+
+⇒ **12 条变异判据只有人想起来才会跑**。它们的工作是「把代码改坏、看判定测试是否叫」——
+而 K-131 那个 `rc=3` 之所以能静默存在，**正因为 CI 不跑它**；两者是同一个病的两面：
+判据在，调用层空。
+
+**与 K22 同族**（K22：危险动作闸门写好了却从不被 harness 调用）：
+- K22 = 断言在，调度层空；
+- K-132 = 判据在，CI 层空；
+- 共同点：**“存在”被读成了“生效”**。
+
+**为什么本轮不接进 CI（三选待裁，不自作主张）**：
+`check_guards` 一趟 **≈29s**（预算 240s），要动 `.github/workflows/ci.yml`
+⇒ 是行为面（加上会改变 CI 时长与红/绿边界），按授权三级属**升级类**。三个选项：
+
+| 选项 | 内容 | 代价 |
+|---|---|---|
+| A | 接进 CI 的「② Rust 构建」之后（`--changed-since` 限定改动文件） | CI +≈30s；会把既有变异面红暴露出来 |
+| B | 只接本地入口（写进 `verify`/提交前的可选步骤，不阻塞 CI） | 无 CI 代价；仍靠人记得 |
+| C | 具名注销（在 `ci/baseline.toml` 写明“变异面不进入自动判据”） | 诚实，但把 K-131 那类漂移永久交给运气 |
+
+**它离“能红”还差什么**：不是判据本身（已经能红：装饰性变异 ⇒ rc=1），
+而是**一个会看它的调用者**。这也正是本轮把它单独登记、而不是顺手接进 CI 的理由。
 
 ## 3. 已落地的缓解措施（不是修复，是止血）
 

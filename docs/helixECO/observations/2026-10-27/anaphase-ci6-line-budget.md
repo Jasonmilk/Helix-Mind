@@ -181,6 +181,32 @@ checkers 是后来才计入的），所以能直接比的是 **1471 vs 1090**。
 而是"**一条明确写下的不变式，实际无人执守，且已反向走了 +381**"。选择 B 在语义上等于
 承认"这条边界不自守，可以继续涨"——那是改 ADR，不是调一个数字。
 
+### 5.2.1 现成的机器判据就在 phyt-DNA，**形状可复用、字节不可复用**（2026-10-27 核实）
+
+`phyt-DNA/tools/ci-local.sh:288-301` 干的事与本条要的判据**一模一样**：
+
+```bash
+# ★ F-b 机器判据：**ADR 声明的码 == 引擎实际返回的码**（声明与行为不许分家）
+_decl=$(grep -oE '^\| `[0-9]+`' "$_adr" | grep -oE '[0-9]+' | sort -n | paste -sd, -)   # 声明侧：从 ADR 的表里取
+printf '{"tool":"Write","paths":["README.md"]}\n' | ./tools/validate.sh --timing post >/dev/null 2>&1; _eng="$_eng $?"  # 实返侧：真跑
+[ "${_decl}" = "${_eng}" ] || echo "★ RED: rc 契约分家 —— ADR 声明 {$_decl} != 引擎实返 {$_eng}"
+```
+
+**形状 = 声明侧从文档机读 + 行为侧真跑 + 集合比对 + 分家具名红。** 这正是 K-129 缺的那道门
+（`over_total`「只减不增」写在 ADR 里，代码里 0 处实现，**声明与行为早已分家，却没有任何东西会因此变红**）。
+
+**但两个字节级复用都不成立**（实测，不是怕麻烦）：
+
+| 障碍 | 证据 |
+|---|---|
+| 这段代码在**受上游指纹保护的引擎文件**里 | `phyt-DNA/tools/UPSTREAM.sha256` 覆盖 17 个引擎文件；改/拷它 = 分叉，须具名理由 |
+| anaphase 的 `ci/` 有**文件级 + 目录级双棘轮** | 2026-10-27 实测：往 `ci/allowances.py` 加 7 行、`ci/check_line_budget.py` 加 10 行 ⇒ `FAIL ci/check_line_budget.py 704 -> 714` + `FAIL 1 directory total(s) grew past their ratchet: ci/ 1787 -> 1804` |
+
+⇒ 结论：**判据要建在监视者一侧**（driver 仓，与 `tools/expiry-census.py` 同一位置、同一形态：
+从上游真件机读声明 + 只给读数）。这不是新设计——`expiry-census.py` 已经是这个形状在「日期」维度的实例，
+本条要的是它在「声明 vs 实现」维度的第二个实例。**本轮不建**（一个意图一个 commit），
+已挂 `d-k129-declared-vs-implemented`（revisit-on 2026-11-20，三选项见 DEBTS）。
+
 ### 5.3 `+381` 现在是**实测**，不是推断（口径已对齐）
 
 在 ADR 写入 1090 的那个 commit（`8c99738`，`docs(adr): D17 …`）上，用**同一份**检查器计数器重算：
@@ -330,7 +356,40 @@ ADR 的 400 口径只用 `iter_sources` + `is_test_path`，不排除 data-only �
 
 | 红 | 读法 | 取值 | 与哪次改动无关（怎么证的） | revisit-on |
 |---|---|---|---|---|
-| `python3 ci/check_guards.py` **rc=3** | **仪器坏了，不是判据红**（`CHECKER ERROR: 3 guard(s) could not be evaluated`） | 三条 `from` 文本出现 0 次 ⇒ 变异无法定位 | 2026-10-27 改 ADR-0042 状态：`git stash push docs/decisions/ADR-0042-400-line-debt.md` 前后各跑 ⇒ **rc 都是 3** | 2026-11-10（K-131 / `d-anaphase-guards-stale-from`） |
+| ~~`python3 ci/check_guards.py` **rc=3**~~ **已修（2026-10-27，`anaphase-helix:082bc83`）** | 修前 = **仪器坏了，不是判据红**（`CHECKER ERROR: 3 guard(s) could not be evaluated`）；修后 rc=0：`OK 12 guard(s) verified … decoration 0` | 三条 `from` 文本出现 0 次 ⇒ 变异无法定位；现按现行源码照抄真件字面量 | 这条红**不再成立**，故从「复跑不必怀疑」清单移出（同类新条目见 K-132：判据没有调用者） | — |
 
 **为什么单列这张表**：已证伪的红如果不标注，每次复跑都要重新走一遍同样的怀疑 ⇒ **白耗判读带宽**，
 而带宽耗光的后果是"下次真的红会被当成噪声"（`rc=3` 这次就是被当噪声的活样本）。
+
+## 9. K32 ↔ K32-a 闭环：**CI 读不到的根因第一次被读到**（2026-10-27 实测）
+
+K32 原文：anaphase CI 是古红，最近 10 个 run 全 failure，annotations **只给 exit code 101**，
+状态记为「读不到日志」⇒ 无从判断红在哪。本节只做**确认**，不修任何东西。
+
+### 9.1 三行对照（同一份失败，三个来源）
+
+| 来源 | 取值（原文） |
+|---|---|
+| **CI annotations**（run `40530853421` · sha `70a8bf1` · check-run `122282904694`） | `失败具名 / failure` ×9，逐字含 `test the_override_does_not_affect_the_real_run ... FAILED` · `test the_line_budget_check_runs_and_passes ... FAILED` · `test result: FAILED. 16 passed; 2 failed; 0 ignored` · `line budget violated:` · `assertion left == right failed: the tree is clean:`，并给出**定位行** `tests/ci_line_budget.rs:39:14` / `tests/ci_line_budget.rs:94:5` |
+| **本地 failed 清单**（`cargo test --test ci_line_budget --all-features --no-fail-fast` ⇒ rc=101） | 同样两条：`the_line_budget_check_runs_and_passes ... FAILED` · `the_override_does_not_affect_the_real_run ... FAILED`；`test result: FAILED. 16 passed; 2 failed; 0 ignored; 0 measured` |
+| **是否同一批文件** | **是**。两条都住在 `anaphase-helix/tests/ci_line_budget.rs`（`:39` 是 `1 => panic!("line budget violated: …")`，`:94` 是 `assert_eq!(code, 0, "the tree is clean: …")`），即 **CI-6 在 cargo test 里的第二处读数**；第一处是 `python3 ci/check_line_budget.py`（§1 的 8 文件 + 3 份过期豁免） |
+
+### 9.2 结论（两句，都可复跑）
+
+1. **K32 的「读不到」已经不成立**——annotations 现在直接给出**测试名 + 文件:行号 + 断言原文**。
+   这正是本会话早前那条「机器可读失败通道」（`::error title=失败具名::`）的落地效果：
+   它当初是为「step 红了却不打印」造的，如今把 K32 的盲区一并解决掉了。
+2. **K32 与 K32-a 是同一件事**：CI 红 = `ci_line_budget.rs` 的两条失败 = 8 个超预算文件（口径 **300**）+
+   3 份过期豁免。**不是**两件互相独立的红。
+
+### 9.3 所以 K32 结案还差什么 —— 只差一个裁决
+
+| 已有（可复跑） | 缺 |
+|---|---|
+| 红的具名读数（§9.1 三行一致） | **8 文件怎么处置**（§3 的 A 拆 / B 调阈值 / C 重签，口径 **300**，不是 400） |
+| 8 文件枚举表 + 5 个待到期文件的 NCLOC（§1.1 / §2.1） | 裁决记录（不存在；`d-ci6-8files-ruling` 即唯一机器记录） |
+| `over_total`「只减不增」无实现的实测（§5.2）+ 基线三选一（§5.4） | 「总量要不要一起管」的决定 |
+| `--budget 300` 无 SSOT、`400` 已被取消的指得到行（§7.1–7.4） | 300 的**归属**（给它一条 ADR，或从声明表读） |
+
+⇒ 本轮**不替园丁裁决**（那正是「阈值归人」）。把上表交出去，K32 就只剩一次点头。
+

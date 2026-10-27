@@ -38,6 +38,8 @@ cd phyt-DNA && bash tools/validate.sh --index
 | **1** | **K18**：ci144 `vendored` 一致性判据（不作重构） | 只加判据 | 零 | 改一处字段 ⇒ 必红 |
 | | ✅ **K18 已完成（2026-10-27）**：新判据 `anaphase-helix/tests/ci144_vendored_consistency.rs`（逐行状态机抽 `pub struct`/`pub enum` 形状，逐个与 `Cellrix/protocol/src` 对齐；**顺序敏感**——MessagePack 里 struct 按声明序编数组）｜四格收据：一致 ⇒ `CONSISTENT: 14 个类型逐字段一致` rc=0 · 上游多一字段 ⇒ rc=101 `CapabilityManifest：成员不同 … 只在上游: ["color_tag"]` · 上游互挨两个字段次序 ⇒ rc=101 `成员相同但【顺序】不同 … 顺序也是契约` · 上游不可得 ⇒ `NEEDS-INPUT` + pass，`CELLRIX_REQUIRED=1` ⇒ 具名红 |
 | **2** | **K20 低成本半**：`pipeline::run()` 加一行指向活路径的注释 · **K21**：Tuck 存量 clippy 清理 | 注释/清理 | 低 | 注释不等于判据 ⇒ **K21 要真删才红** |
+| | ✅ **K20 低成本半 本就存在（2026-10-27 核实）**：`anaphase-helix/src/pipeline/mod.rs:376-388` 的注释块（2026-10-09 写）已指向活路径，且**只写符号名不写行号**（防自己先腐）｜锚点实测仍有效：`fn execute_structured` 1 · `fn arm_reflection` 1 · `HelixState::Reflection` 13 · `self.arm_reflection()` 2（`grep -rn … src/ tests/` 计数）⇒ 无需新写，只补收据。
+| | ✅ **K21 已完成（2026-10-27，`Tuck:71feaec`）**：`cargo clippy --all-targets --all-features` 诊断站点 **27 → 0**（rc=0），16 个文件全是等价变换；**真删**而不是 allow 掉 | 收据：改前 27 站点 / 改后 0 ｜ 回归 `cargo test --all-features --no-fail-fast` ⇒ passed=431 failed=0 ignored=8（13 suite），**与 git stash 取的基线逐数相同** ｜ `bash tools/verify.sh` ⇒ rc=0「全绿（clippy 存量警告 0 条）」｜唯一非纯风格的一条：`file_store::save()` 的 MutexGuard 原本跨 `.await`（已收进块作用域）
 | **3** | **K16 给「做」装门**（M1 Tuck 端点 → M2 装配观察态 → M3 翻转 → M4 判据） | **改行为** | **高** | 见 `../observations/2026-10-09/D8-PLAN.md`（M2/M3 必须分开；反证=停 Tuck 必须具名拒绝） |
 | **3** | **K17 并发**：`build_agent` 可复用部分按需缓存 · 无界→有界+背压 · 并发上限具名 | **改行为** | 中 | 并发 N ⇒ 见"上限生效"的**具名**证据 |
 | **4** | **K19**：`verdict` / `GateVerdict` 改名 | 重构 | 中 | 纯改名 ⇒ 全量自证必须仍绿 |
