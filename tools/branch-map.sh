@@ -109,6 +109,7 @@ if not m: sys.exit('★ 文档里没有 BEGIN/END GENERATED 标记（无法判�
 cur=m.group(1).strip()
 new=subprocess.run(['bash','tools/branch-map.sh'],capture_output=True,text=True).stdout.strip()
 
+import re
 def norm(t):
     """★ 自指使判据【没有不动点】：本表含本仓自己的 HEAD 与 dirty，
     而本表就活在本仓里 ⇒ 提交本表会移动 HEAD ⇒ 表立刻过期 ⇒ 再提交又移动。
@@ -120,8 +121,16 @@ def norm(t):
         f=ln.split('|')
         # 形如 | **x** | `cur` | `rs` | a / z | `head` | merged | mr | clean |
         if len(f)>=10 and ('**%s**'%me) in f[1]:
-            f[5]=' `SELF` '          # HEAD 格
-            f[9]=' SELF '            # dirty 格
+            # ★ 2026-10-28 修：第一版把 dirty 格写成 f[9]，而 f[9] 是行尾空串
+            #   （行形如 | a | b | ... | 干净 | ⇒ split 后 f[8] 才是 dirty 格）
+            #   ⇒ 那一行"掩码"从未掩到任何东西（自满足的装饰）。现按【内容】定位，
+            #   不按位置，避免列增减再次错位。
+            for i,cell in enumerate(f):
+                c=cell.strip()
+                if re.match(r'^`[0-9a-f]{7,40}`$', c):
+                    f[i]=' `SELF` '
+                elif c in ('干净','dirty') or c.startswith('dirty('):
+                    f[i]=' SELF '
             ln='|'.join(f)
         out.append(ln)
     return '\n'.join(out)
