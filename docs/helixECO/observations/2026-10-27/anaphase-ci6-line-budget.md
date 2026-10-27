@@ -301,7 +301,8 @@ ADR 的 400 口径只用 `iter_sources` + `is_test_path`，不排除 data-only �
 
 - `phyt-DNA/position.md:20`（元律 H0）：「**是政策（人拍的阈值）⇒ 必须命名它的 ADR**（例：N=3 · 150 行 · 320 行）」。
   300 是政策阈值，**没有命名任何 ADR** ⇒ 违 H0。
-- 注意 H0 的例子里就有「320 行」= helix-mind 的 layer1 阈值（**它是指得到 ADR 的**）⇒ 同一个生态里，一个阈值有归属、另一个没有。
+- 注意 H0 的例子里就有「320 行」= **phyt-DNA 的常驻阅读层阈值**（`decisions/ADR-20261011-layer1-threshold-calibrated-by-premiere.md:19` `[ "$t" -gt 320 ]`、`:25`「阈值经首演校准：280 → 320」；`RNA.md:64` 指回它）⇒ **它是指得到 ADR 的**。同一个生态里，一个阈值有归属、另一个没有。
+  （★ 自我更正 2026-10-27：我第一版把这句写成「helix-mind 的 layer1 阈值」——**仓库名错了**；`grep -rln 320 helix-mind/docs/decisions/*.md` = 0 命中。**归属错和数值错一样是假读数**。）
 
 ### 7.3 修法（两条，都不许"改 default 的数值"——那是绕过 H0）
 
