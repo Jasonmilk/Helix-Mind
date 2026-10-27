@@ -236,6 +236,39 @@
 
 ---
 
+## K-131（未修 · **仪器坏了，不是判据红了**）· anaphase 三条 mutation guard 的 `from` 文本已失配
+
+**登记日期**：2026-10-27 ｜ **状态**：未修（既有红，已证伪与本轮无关） ｜ **revisit-on**：2026-11-10
+**出处**：`anaphase-helix/ci/check_guards.py`（`ci/guards.toml` 驱动的变异判据）
+
+**现象（实测原文）**：`python3 ci/check_guards.py` ⇒ **rc=3**，首行 `CHECKER ERROR: 3 guard(s) could not be evaluated:`，
+三条 `from` 文本在目标文件里**出现 0 次** ⇒ 变异无法定位：
+
+| guard | 目标文件 | 上游原文 |
+|---|---|---|
+| `gate-directions-differ` | `src/run_cycle/safety_gate.rs` | the `from` text occurs 0 time(s) … mutation is ambiguous |
+| `hitl-error-blocks` | `src/run_cycle/safety_gate.rs` | 同上 |
+| `no-gate-blocks-high-risk` | `src/pipeline/mod.rs` | 同上 |
+
+**为什么单列（它是什么、不是什么）**：
+- 它**不是"判据红了"**（那是发现了缺陷），而是 **"判据跑不起来"** ⇒ 按 GLOSSARY 的对照，属**仪器坏了**一侧。
+  混为一谈的代价：有人会去"修缺陷"，而真正要修的是**判据自己**。
+- 更严重的一层：**三条变异判据已静默失效**。它们唯一的工作就是"把代码改坏、看判据是否叫"——
+  定位不到变异 ⇒ 它们不叫，而 `rc=3` 只要没人看就等于通过。这是「断言在 ≠ 会跑到它」的**变异面**形态。
+- 根因与家族：`from` 文本要**照抄真件字面量**（同族：`NOCL`/`NCLOC`、可解析的占位路径）。
+  `safety_gate.rs` / `pipeline/mod.rs` 都已重构（`src/pipeline/mod.rs` 现 301 NOCL，见 CI-6 读数），
+  `from` 串大概率的原文已不在 ⇒ **重构带走了判据的锚点，而没有任何东西会因此变红**（`rc=3` 被当成噪声）。
+
+**本轮为什么不动**：本轮只做 md（ADR 状态粒度）。修它要动 `ci/guards.toml` 的变异文本
+⇒ 是"改判据"，须按纪律**同批跑三形 + 重基线**，不能在顺手的位置做。
+
+**已实测证伪的一件事**（免得下一个人重做）：
+`git stash push docs/decisions/ADR-0042-400-line-debt.md` 前后各跑一次 ⇒ **rc 都是 3**
+⇒ 与本次 md 改动**无关**。它的红是既有的、独立的。
+
+**修法（两选，都要三形）**：
+(A) 按现行源码重写三条 `from` 文本（照抄真件，别按记忆写）；(B) 若那三条 guard 的意图已被别的判据覆盖 ⇒ 具名注销它们。
+
 ## 3. 已落地的缓解措施（不是修复，是止血）
 
 | 缺陷 | 缓解 | 状态 |
