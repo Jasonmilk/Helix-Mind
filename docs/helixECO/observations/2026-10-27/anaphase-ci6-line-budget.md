@@ -16,18 +16,49 @@ python3 ci/check_line_budget.py --json     # 只有 {"exit": 1}，无机器可�
 **具名局限**：本表的"目录"是**路径机械切分**，不是"模块职责"。真正的职责边界要读代码——
 那正是需要园丁判断的部分，执行器不做。
 
-## 1. 超预算文件（8 个，全部 > 300 NOCL）
+## 1. 8 个文件 —— **口径：文书失效（豁免到期/无豁免），不是债务全集**
 
-| 文件 | NCLOC | 目录（机械，非模块语义） | CI-6 豁免 | 判据现状 |
+**本表叫什么名字，决定读者以为它覆盖什么。** 这张表的入选条件是「超 300 **且**豁免不生效」，
+所以它漏掉了那些「超 400 但豁免还没到期」的更大文件：
+
+```bash
+python3 ci/check_line_budget.py          # → 8 file(s) over 300 NOCL with no waiver
+```
+
+| 口径 | 分母 | 读数 |
+|---|---|---|
+| 本表（文书式失效） | 超 300 且无有效豁免 | **8 个** |
+| 债务全集（>400，ADR-0042 的分层边界） | `src/` 下非测试代码、NCLOC > 400 | **8 个 · over_total 1471**（见 §5.3） |
+
+**两张名单的交集只有 2 个**（`hitl.rs` · `convergence.rs`）：
+
+```bash
+# >400 全集（实测）
+main.rs 1035 · run_cycle/mod.rs 743 · bin/up.rs 545 · hitl.rs 505
+contract/mod.rs 502 · convergence.rs 489 · http_reasoning.rs 449 · config.rs 403
+# 本表 8 个
+bind 302 · hitl 505 · rails 370 · pipeline/mod 301 · convergence 489 · gc 376 · query 317 · mind 395
+# ⇒ 交集 = {hitl.rs, convergence.rs}
+```
+剩下的 6 个 >400 文件（`main.rs` 1035 · `run_cycle/mod.rs` 743 · `bin/up.rs` 545 ·
+`contract/mod.rs` 502 · `http_reasoning.rs` 449 · `config.rs` 403）**全部有未到期豁免或走 DATA-ONLY 标记**
+（`baseline.toml` 的 `[[waiver]]` due = 11-27 / 12-11 / 11-13 / 11-13 / 10-30，`config.rs` 走 `[[data_only_churn]]`）
+⇒ **它们不在这张表里，但它们在债务里，而且其中两个（1035 / 743）是最大的。**
+
+⇒ **按这 8 个裁 A/B/C，等于先处理文书问题，把最大的债继续往后推。** 这一点必须在裁决前讲明。
+
+## 1.1 超预算文件（8 个，全部 > 300 NOCL）
+
+| 文件 | NCLOC | 目录（机械，非模块语义） | CI-6 豁免 | 判据现状 | 在 >400 全集？ |
 |---|---|---|---|---|
-| `src/bind.rs` | 302 | `src` | jason / 2026-10-18 | 已过期（due 2026-10-18） |
-| `src/hitl.rs` | 505 | `src` | — / — | **超预算且无任何豁免** |
-| `src/rails.rs` | 370 | `src` | TBD / 2026-10-16 | 已过期（due 2026-10-16） |
-| `src/pipeline/mod.rs` | 301 | `src/pipeline` | — / — | **超预算且无任何豁免** |
-| `src/session_events/convergence.rs` | 489 | `src/session_events` | — / — | **超预算且无任何豁免** |
-| `src/session_events/gc.rs` | 376 | `src/session_events` | — / — | **超预算且无任何豁免** |
-| `src/session_events/query.rs` | 317 | `src/session_events` | — / — | **超预算且无任何豁免** |
-| `src/adapters/mind.rs` | 395 | `src/adapters` | TBD / 2026-10-16 | 已过期（due 2026-10-16） |
+| `src/bind.rs` | 302 | `src` | jason / 2026-10-18 | 已过期（due 2026-10-18） || ✅ 是（+2） |
+| `src/hitl.rs` | 505 | `src` | — / — | **超预算且无任何豁免** || ✅ 是（+105） |
+| `src/rails.rs` | 370 | `src` | TBD / 2026-10-16 | 已过期（due 2026-10-16） || — 否（−30） |
+| `src/pipeline/mod.rs` | 301 | `src/pipeline` | — / — | **超预算且无任何豁免** || — 否（−99） |
+| `src/session_events/convergence.rs` | 489 | `src/session_events` | — / — | **超预算且无任何豁免** || ✅ 是（+89） |
+| `src/session_events/gc.rs` | 376 | `src/session_events` | — / — | **超预算且无任何豁免** || — 否（−24） |
+| `src/session_events/query.rs` | 317 | `src/session_events` | — / — | **超预算且无任何豁免** || — 否（−83） |
+| `src/adapters/mind.rs` | 395 | `src/adapters` | TBD / 2026-10-16 | 已过期（due 2026-10-16） || — 否（−5） |
 
 ⇒ **3 份豁免到期后不再豁免任何东西**；**5 份从来没有任何豁免**。
 两个数相加 = 8，正好是检查器报的 over-budget 条数（这是交叉核对，不是巧合论）。
@@ -144,3 +175,46 @@ checkers 是后来才计入的），所以能直接比的是 **1471 vs 1090**。
 **对裁决的意义**：那 2 个 >400 的文件（`hitl.rs` / `convergence.rs`）不是"预算超 5 行要不要放宽"，
 而是"**一条明确写下的不变式，实际无人执守，且已反向走了 +381**"。选择 B 在语义上等于
 承认"这条边界不自守，可以继续涨"——那是改 ADR，不是调一个数字。
+
+### 5.3 `+381` 现在是**实测**，不是推断（口径已对齐）
+
+在 ADR 写入 1090 的那个 commit（`8c99738`，`docs(adr): D17 …`）上，用**同一份**检查器计数器重算：
+
+```bash
+git archive 8c99738 | tar -x -C /tmp/ana8c     # 不改本仓，不建 worktree
+cd /tmp/ana8c && python3 -c "…iter_sources/is_test_path/ncloc…"
+```
+```
+8c99738 上：>400 文件数=6 · over_total=1337 ｜ 仅 src/: 文件数=5 · over_total=1090
+    src/main.rs           941 (+541) · src/run_cycle/mod.rs 653 (+253)
+    src/bin/up.rs         545 (+145) · src/contract/mod.rs 502 (+102)
+    src/adapters/http_reasoning.rs 449 (+49) · ci/check_line_budget.py 647 (+247)
+```
+
+⇒ **`仅 src/` 口径 = 1090、5 个文件** —— 与 ADR 那句「已由 1365 降至 **1090**（门禁口径，**5 个文件**）」
+**逐字吻合**。⇒ 口径**已验证可比起**（ADR 当时 `ci/` 已纳入 `iter_sources`，但它 647 > 400，若含它则是 1337，不是 1090 ⇒ 1090 就是 src 口径）。
+
+**逐项分解 +381**（同一计数器，同一口径）：
+
+| 项 | 变化 | 增量 |
+|---|---|---|
+| `src/main.rs` | 941 → 1035 | **+94** |
+| `src/run_cycle/mod.rs` | 653 → 743 | **+90** |
+| `src/hitl.rs` | ≤400 → 505 | **+105**（新越界） |
+| `src/session_events/convergence.rs` | ≤400 → 489 | **+89**（新越界） |
+| `src/config.rs` | ≤400 → 403 | **+3**（新越界） |
+| `bin/up.rs` 545 · `contract/mod.rs` 502 · `http_reasoning.rs` 449 | 未变 | 0 |
+| **合计** | 1090 → **1471** | **+381** |
+
+⇒ **老文件涨了 184；两个新越界文件（`hitl.rs` / `convergence.rs`）贡献了 194。**
+⇒ 也就是说：**ADR 定下"400 是分层边界"之后，又有 3 个文件越过了它，而没有任何东西当时叫过一声。**
+这正是 K-129 的实证形态——不是"到期才红"，是"这道边界从来没有门"。
+
+**一处口径备注（如实标）**：`src/config.rs` 在 300 预算里走的是 `[[data_only_churn]]`（DATA-ONLY 标记，不参与 300 判决）；
+ADR 的 400 口径只用 `iter_sources` + `is_test_path`，不排除 data-only ⇒ 本表按 ADR 口径把它算进去（+3）。
+若按 300 预算的口径排除它，则是 **1468**。两个数都写出来，避免口径再次分叉。
+
+**另一处 ADR 内部不一致（顺带发现，未改 ADR）**：同一份 ADR 里 `over_total` 有三个值——
+`:496` 表的「1365 → **1158**（−207）」、`:566` 的「1365 → **1090**」、`:578` 的「此前记 1082，本轮实测 **1090**」。
+`8c99738` 上实测 = 1090 ⇒ 与 `:566`/`:578` 一致，`:496` 的 1158 是**另一次拆分后的中间读数**（口径/时点不同）。
+⇒ 记在这里，供园丁裁决时知道"1090 是哪个数"，不擅自改 ADR。
