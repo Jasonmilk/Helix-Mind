@@ -41,6 +41,20 @@
 | C-013 | 源代码 + 注释 + commit 必须英文；`.md`（含 `*.zh-CN.md`）允许中文，不溯及既往 | adopted | `docs/helixECO/ECOSYSTEM.md::语言规则` |
 | C-014 | 豁免机制必须配「必然被豁免」的正样本，且豁免总量必须可见 | adopted | `tools/check-source-language.py::all-exempt-not-dead` |
 | C-015 | 金融操作永远不进反射弧（可做，但必须走审议 + HITL） | adopted | `docs/helixECO/irreversible-actions.md::草稿` |
+| C-016 | 撤回项必须可查：撤回清单入台账，第五态 `withdrawn` 必带 `why-risk-gone:` | adopted | `docs/helixECO/consensus-ledger.md::withdrawn` |
+| C-017 | 撤回：break-glass（它是被消灭的旁路换了个持有人） | withdrawn | why-risk-gone: 「被约束者不能拥有解除约束的权限」仍然成立；复活须先证「agent 无法自我触发该通道」 |
+| C-018 | 撤回：审计影子期（含灰度期 / 试运行 / 观察期任何别名） | withdrawn | why-risk-gone: 加事件类型落 `payload.kind` ⇒ 零迁移 ⇒ 无不可逆风险需要影子保护；改名不算证据 |
+| C-019 | 撤回：撤回清单只写在对话/ROAD 文档里 | withdrawn | why-risk-gone: 本台账已存在且判据可跑；只有当台账再次失效才需重建该结论 |
+| C-020 | 撤回：「以 §9 为准」代替逐条裁决 | withdrawn | why-risk-gone: §9 就是被驳回那个错的产物；循环批准不可作为证据 |
+| C-021 | 撤回：用新 ADR 杀掉 / 驳回 ADR-0007（应写 superseded 或补注） | withdrawn | why-risk-gone: ADR 批准即历史，只能被取代 |
+| C-022 | 内容安全四动词：放行 / 拦截 / 打码 / 告警 / **未启用**（五个，第五个最常漏） | absent | revisit: 事件触发「Tuck 出站打码（说侧）开始实现」；现状：入站打码已实现，出站只有 demap |
+| C-023 | 两轴拆分：发生自由度（想/说允许→做阻断）与内容控制（边界上打码/切除）不得压成一轴 | absent | revisit: 事件触发「GLOSSARY §0.5 按园丁裁定改写」 |
+| C-024 | 「不存在」不许写成「待实现」 | adopted | `docs/helixECO/irreversible-actions.md::待定` |
+| C-025 | 状态 SSOT：一份文档只允许一处给批准状态，其余位置只能引用 | absent | revisit: 事件触发「下一版共识转达文档起草时」（防 §0/§9 冲突复发） |
+| C-026 | 待拍清单本身必须可枚举：条数由判据数出，且不得为 0 | absent | revisit: 事件触发「首次出现某轮待拍项从清单上消失」；现状靠人工逐条列表 |
+| C-027 | 跨规范引用字段前，先确认该字段在本生态有落点 | adopted | `../anaphase-helix/docs/ci144-profile.md::本生态没有落点` |
+| C-028 | 同名覆盖 = 静默失效新形态（目标在，但被同名者顶替）；抓到它的是豁免正样本 | adopted | `tools/check-source-language.py::bucket_of` |
+| C-029 | CI-144 profile §2.1 **不采纳** PFP 的 `HARD_OVERRIDE`（灾难时无条件放行） | deviated | `../anaphase-helix/docs/ci144-profile.md::HARD_OVERRIDE` ；why: 它是「被约束者给自己开的放行通道」，与 ROAD-18 B-4 直接冲突；复活前提 = 存在物理执行面 且 来源不可伪造 |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
@@ -58,3 +72,31 @@ helix-mind 1141 · commonintents 1059 · Glove 734 · thinking 705 · Cellrix up
 
 **此判据故意未接 CI**：一次打红 13593 行会让所有仓常红 ⇒ 红失去信息量（C-004）。
 接入条件（事件触发）：按仓降到可处理规模，或改为只判「新增/修改行」。
+
+## 覆盖率读数（2026-10-30，H0：见下方命令）
+
+```
+grep -c '^| C-' docs/helixECO/consensus-ledger.md          # 已入台账
+```
+
+台账 **28** 条。**已共识但未入台账的差额**——我要诚实说明：**我没有一份权威的「已共识清单」**，
+所以这个差额**不可机械枚举**（这本身就是 C-026 那条的实例）。我能逐条点名的是**我记得住且能落到仓里的**，
+下面这些**仍未入台账**，也就是说它们**正在腐烂**：
+
+| 未入台账的共识 | 现在住哪 |
+|---|---|
+| 「冻结 = 我不动它；没动 ≠ 它没变」 | `thinking/.../GLOSSARY.md §3.13`（只在仓里，没进台账，所以没有触发条件） |
+| 「存在性 ≠ 生效性」母题（七例谱系） | 同上 §3.12 |
+| 「两物一名必须拆」（K23：`NeedHumanConfirm` ↔ `HitlRequired`） | helix-mind KNOWN_ISSUES K23 |
+| 「判据要能红得有意义才配叫门」 | 同上 §3.17 + 台账 C-004 |
+| 「观察态 vs 授权态」（候选 ≠ 已授权之外的第二个同族） | 无落点 |
+| 「不借外部协议词汇做生态判据」 | 本台账 C-010 隐含，未单列 |
+| 「锚定/签名链只增不改前像」 | Tuck ADR-0007 D2（有落点，未入台账） |
+| 「先造判据看它红，再修，再看它绿」（K24 范式） | 本台账 C-003（已覆盖） |
+
+**一条实测更正**：本轮之前台账读数 `deviated=0`，而 C-029 这条偏离**确实存在**（`ci144-profile.md` §2.1 自述「本条是对不可协商部分的显式偏离」）
+⇒ **`deviated=0` 不是「本仓无偏离」，是「那条偏离没进台账」= 读到空的第 N 次**。补上后读数 `deviated=1`。
+
+⇒ **结论**：台账覆盖率**不可测量**，因为缺一份「已共识」的权威清单。
+在补齐清单之前，本台账**不能声称自己覆盖了全部共识**——它只覆盖「我记得住的那部分」。
+这是本文件的**具名局限**，不是谦虚。
