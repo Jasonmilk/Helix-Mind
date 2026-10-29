@@ -71,6 +71,25 @@ def scan(root):
     return scanned, exempted, hits
 
 
+def bucket_of(path, root):
+    """Top component RELATIVE to the scan root. Named bucket_of, not repo_of:
+    this file already has a repo_of() and re-defining it silently broke the
+    exemption rule (self-caught: 3/7 selftest cases flipped red)."""
+    rel = os.path.relpath(path.split(":")[0], root)
+    head = rel.split(os.sep)
+    return head[0] if len(head) > 1 else "."
+
+
+def tally(hits, root):
+    """Every hit lands in exactly one bucket -> the parts MUST sum to the total.
+    An implicit remainder bucket is how '10212 != 13623' happens: list them all."""
+    out = {}
+    for h in hits:
+        r = bucket_of(h, root)
+        out[r] = out.get(r, 0) + 1
+    return sorted(out.items(), key=lambda kv: (-kv[1], kv[0]))
+
+
 def run(root, quiet=False):
     scanned, exempted, hits = scan(root)
     if scanned == 0:
@@ -82,6 +101,13 @@ def run(root, quiet=False):
     if hits:
         for h in hits:
             print("RED: " + h)
+        if not quiet:
+            parts = tally(hits, root)
+            print("RED unit: lines (one line = one hit)")
+            for repo, n in parts:
+                print("  %-24s %d" % (repo, n))
+            print("  %-24s %d  (sum of the parts above, by construction)"
+                  % ("TOTAL", sum(n for _, n in parts)))
         return 1
     if not quiet:
         print("OK: no unmarked CJK in non-exempt source")
