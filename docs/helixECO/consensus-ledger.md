@@ -65,6 +65,7 @@
 | C-030 | 借外部协议词汇（`CRITICAL` / `HARD_OVERRIDE`）做生态动作判据 | rejected | why-never: 借了就要再做一次「协议枚举 ↔ 生态动作」的映射 = 第二份真相；生态自有清单才是单源 |
 | C-031 | 把「聊过的都进台账」（产出即留痕，不做准入） | rejected | why-never: 那是把「读到空」翻转成「读进一切」，更坏的假绿；绿必须来自区分力 |
 | C-032 | 源代码 + 注释英文（C-013）：`Tuck/crates/tuck-core/tests/financial_hitl_forensic.rs` 与 `financial_hitl_acceptance.rs` 曾是中文（107 + 38 行） | adopted | `../Tuck/crates/tuck-core/tests/financial_hitl_forensic.rs::no_test_fixture_may_encode_break_glass` |
+| C-033 | 预期红必须具名：判据红着进仓/进 CI 时，红的理由要写在入口旁边（清单只许缩短，禁 `#[ignore]`） | adopted | `../Tuck/crates/tuck-core/tests/EXPECTED-RED.md::EXPECTED-RED` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
