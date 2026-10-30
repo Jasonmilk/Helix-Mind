@@ -64,7 +64,7 @@
 | C-029 | CI-144 profile §2.1 **不采纳** PFP 的 `HARD_OVERRIDE`（灾难时无条件放行） | deviated | `../anaphase-helix/docs/ci144-profile.md::HARD_OVERRIDE` ；why: 它是「被约束者给自己开的放行通道」，与 ROAD-18 B-4 直接冲突；复活前提 = 存在物理执行面 且 来源不可伪造 |
 | C-030 | 借外部协议词汇（`CRITICAL` / `HARD_OVERRIDE`）做生态动作判据 | rejected | why-never: 借了就要再做一次「协议枚举 ↔ 生态动作」的映射 = 第二份真相；生态自有清单才是单源 |
 | C-031 | 把「聊过的都进台账」（产出即留痕，不做准入） | rejected | why-never: 那是把「读到空」翻转成「读进一切」，更坏的假绿；绿必须来自区分力 |
-| C-032 | 源代码 + 注释英文（C-013）的一个**具名偏离**：`Tuck/crates/tuck-core/tests/financial_hitl_forensic.rs`（107 行中文注释）与 `financial_hitl_acceptance.rs`（38 行） | deviated | why: 这两份判据由 YB-rust 以中文写成、我方原样 `git apply`（同一份字节原则），翻译需整文件重写，与「先拿到可红的判据」相比优先级更低；**待办**：翻译后把本行改回 `adopted` 或删除。commit `29a36f1` |
+| C-032 | 源代码 + 注释英文（C-013）：`Tuck/crates/tuck-core/tests/financial_hitl_forensic.rs` 与 `financial_hitl_acceptance.rs` 曾是中文（107 + 38 行） | adopted | 2026-10-30 已整文件英译（只改散文，断言/Mutation 映射/行号一处未动），读数前后一致：forensic 5 passed / 6 failed、acceptance 0 passed / 3 failed，两条文件 CJK 行 = 0。Tuck `6238a26`；阶段 A' 的偏离登记 `cac236a` 由本行取代 |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
