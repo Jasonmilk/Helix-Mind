@@ -70,6 +70,8 @@
 | C-035 | 两物一名必须拆（K23：`NeedHumanConfirm` 触发侧 ↔ `HitlRequired` 终局） | absent | revisit: 事件触发「B2 的 `NoResponder` 落地时同批拆」；现状：仍是终局拒绝 |
 | C-036 | 观察态 ≠ 授权态（候选 ≠ 已授权之外的第二同族） | absent | revisit: 事件触发「反射学习闭环动工（C1）」；现状：无观察态概念 |
 | C-037 | 锚定/签名链只增不改前像（改名必断指纹） | adopted | `../Tuck/docs/decisions/ADR-0007-audit-event-vocabulary-lives-in-payload.md::D2` |
+| C-038 | C3 判据 A 用 anaphase 本地形态；**B1 落地时必须收敛成一套**（两份分类并存 = 第二份语义） | absent | revisit: 事件触发「B1（Tuck 判定 / anaphase 执行）落地时」；B1 的改动必须触碰本行 |
+| C-039 | 不可逆清单数据在 helix-mind、判据在 anaphase ⇒ **跨仓引用 + 校验存在与版本哈希**，禁止内联副本 | adopted | `docs/helixECO/irreversible-actions.md::草稿` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
