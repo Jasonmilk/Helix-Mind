@@ -72,6 +72,7 @@
 | C-037 | 锚定/签名链只增不改前像（改名必断指纹） | adopted | `../Tuck/docs/decisions/ADR-0007-audit-event-vocabulary-lives-in-payload.md::D2` |
 | C-038 | C3 判据 A 用 anaphase 本地形态；**B1 落地时必须收敛成一套**（两份分类并存 = 第二份语义） | absent | revisit: 事件触发「B1（Tuck 判定 / anaphase 执行）落地时」；B1 的改动必须触碰本行 |
 | C-039 | 不可逆清单数据在 helix-mind、判据在 anaphase ⇒ **跨仓引用 + 校验存在与版本哈希**，禁止内联副本 | adopted | `docs/helixECO/irreversible-actions.md::草稿` |
+| C-040 | C3 接线的**当前真值**：`I-1..I-7 一律拒绝`，**不是**「无授权才拒绝」（「已授权」状态依赖 K23 拆分） | absent | revisit: 事件触发「K23 两物一名拆成 Pending{token} + Reject」；代码注释已写死同理一句 |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
