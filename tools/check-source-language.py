@@ -31,6 +31,10 @@ import re
 import sys
 
 EXEMPT_REPOS = {"phyt-DNA", "phyt-dna"}
+# D2 (ruled 2026-10-31): commonintents is READ-ONLY SPEC, never modified by us.
+# A red on a repo we are forbidden to fix is not a violation, it is a statement of
+# fact -> not attributable -> it drowns the reds that ARE ours. Excluded, not exempt.
+EXCLUDED_REPOS = {"commonintents"}
 SOURCE_EXT = {".rs", ".py", ".go", ".ts", ".js", ".java", ".c", ".h", ".sh"}
 CJK = re.compile(r"[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]")
 MARKER = "i18n-ok:"
@@ -44,13 +48,24 @@ def repo_of(path):
     return None
 
 
+def component_in(path, names):
+    for part in os.path.normpath(path).split(os.sep):
+        if part in names:
+            return part
+    return None
+
+
 def is_exempt(path):
-    return repo_of(path) in EXEMPT_REPOS
+    return component_in(path, EXEMPT_REPOS) is not None
+
+
+def is_excluded(path):
+    return component_in(path, EXCLUDED_REPOS) is not None
 
 
 def scan(root):
     """scanned counts EVERY source file seen; exempted is a separate counter."""
-    hits, scanned, exempted = [], 0, 0
+    hits, scanned, exempted, excluded = [], 0, 0, 0
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if not d.startswith(".")]
         for fn in filenames:
@@ -61,6 +76,9 @@ def scan(root):
             if is_exempt(full):
                 exempted += 1
                 continue
+            if is_excluded(full):
+                excluded += 1
+                continue
             try:
                 lines = io.open(full, encoding="utf-8", errors="replace").read().splitlines()
             except OSError:
@@ -68,7 +86,7 @@ def scan(root):
             for n, line in enumerate(lines, 1):
                 if CJK.search(line) and MARKER not in line:
                     hits.append("%s:%d %s" % (full, n, line.strip()[:80]))
-    return scanned, exempted, hits
+    return scanned, exempted, excluded, hits
 
 
 def bucket_of(path, root):
@@ -91,13 +109,13 @@ def tally(hits, root):
 
 
 def run(root, quiet=False):
-    scanned, exempted, hits = scan(root)
+    scanned, exempted, excluded, hits = scan(root)
     if scanned == 0:
         print("CHECKER DEAD: scanned 0 files -> not clean, read nothing")
         return 3
     if not quiet:
-        print("scanned %d source file(s), %d exempt, %d checked"
-              % (scanned, exempted, scanned - exempted))
+        print("scanned %d source file(s), %d exempt, %d excluded(read-only spec), "
+              "%d checked" % (scanned, exempted, excluded, scanned - exempted - excluded))
     if hits:
         for h in hits:
             print("RED: " + h)
@@ -130,6 +148,7 @@ def selftest():
     ]
 
     fails = 0
+    cases.append(("excluded-repo", {"commonintents/foo/src/a.rs": "// \u4e2d\u6587\n"}, 0))
     for name, files, want in cases:
         d = tempfile.mkdtemp()
         try:
