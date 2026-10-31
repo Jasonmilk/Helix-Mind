@@ -82,7 +82,7 @@ Helix-Mind 不是孤岛。它是 Helix 数字生命体的**认知中枢——相
 | **Rhizax** | 种群知识树（去中心化分发） | 三阶段演进：仅接口 → 中心化 → 去中心化。当前为第一阶段（仅接口） |
 | **CI-144 协议家族** | Helix 种群母语 | INTENT-7（意图）、BIND-19（传输）、CAPABILITY-13（能力认证） |
 
-**版本基准**：知识本体 **v4.1**（本文件基准，2026-08-27）；代码/白皮书版本 v3.4（rs-dev）——二者不同轴，勿混用。
+**版本基准**：知识本体 **v4.1**（本文件基准，2026-08-27）；代码/白皮书版本 v3.4（`rs`）——二者不同轴，勿混用。
 
 ### 生态落地对照（2026-09-06，Anaphase 侧对 VISION 原则的物理兑现）
 
@@ -121,7 +121,7 @@ Helix-Mind 不是孤岛。它是 Helix 数字生命体的**认知中枢——相
 
 | 组件 | 仓库 | 当前状态 |
 |---|---|---|
-| Helix-Mind | https://github.com/Jasonmilk/Helix-Mind/tree/rs-dev | Rust，活跃开发 |
+| Helix-Mind | https://github.com/Jasonmilk/Helix-Mind/tree/rs | Rust，活跃开发 |
 | Anaphase-Helix | https://github.com/Jasonmilk/Anaphase-Helix/tree/rs | Rust，活跃开发 |
 | Cellrix | https://github.com/Jasonmilk/Cellrix | Rust，活跃开发 |
 | Helix-Tentacle | https://github.com/Jasonmilk/Helix-Tentacle | Rust，活跃开发 |

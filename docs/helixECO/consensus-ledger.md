@@ -73,6 +73,8 @@
 | C-038 | C3 判据 A 用 anaphase 本地形态；**B1 落地时必须收敛成一套**（两份分类并存 = 第二份语义） | absent | revisit: 事件触发「B1（Tuck 判定 / anaphase 执行）落地时」；B1 的改动必须触碰本行 |
 | C-039 | 不可逆清单数据在 helix-mind、判据在 anaphase ⇒ **跨仓引用 + 校验存在与版本哈希**，禁止内联副本 | adopted | `docs/helixECO/irreversible-actions.md::草稿` |
 | C-040 | C3 接线的**当前真值**：`I-1..I-7 一律拒绝`，**不是**「无授权才拒绝」（「已授权」状态依赖 K23 拆分） | absent | revisit: 事件触发「K23 两物一名拆成 Pending{token} + Reject」；代码注释已写死同理一句 |
+| C-041 | N 层欠账：判据 A 是生态级变更（改「做」的边界），A 层与 D 层已更，**N 层未动**（原则 10：三层同时更新） | absent | revisit: 事件触发「人类裁定是否进方向锚 `center/SESSION-DAG-IS-THE-CENTER.md`」；`docs/VISION.md:37` 为原则出处，改动需等量替换 |
+| C-042 | `tools/expiry-census.py`（豁免有效期判据）**零调用点**：只在文档里被提到，任何脚本/CI 都不跑它 | absent | revisit: 事件触发「豁免机制下次到期前」；读数：`grep -rn 'expiry-census' --include=*.sh --include=*.yml .` ⇒ 0 命中（仅 .md 提及）⇒ 过期豁免只能被线预算判据顺带撞出 |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
