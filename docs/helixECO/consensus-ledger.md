@@ -66,6 +66,10 @@
 | C-031 | 把「聊过的都进台账」（产出即留痕，不做准入） | rejected | why-never: 那是把「读到空」翻转成「读进一切」，更坏的假绿；绿必须来自区分力 |
 | C-032 | 源代码 + 注释英文（C-013）：`Tuck/crates/tuck-core/tests/financial_hitl_forensic.rs` 与 `financial_hitl_acceptance.rs` 曾是中文（107 + 38 行） | adopted | `../Tuck/crates/tuck-core/tests/financial_hitl_forensic.rs::no_test_fixture_may_encode_break_glass` |
 | C-033 | 预期红必须具名：判据红着进仓/进 CI 时，红的理由要写在入口旁边（清单只许缩短，禁 `#[ignore]`） | adopted | `../Tuck/crates/tuck-core/tests/EXPECTED-RED.md::EXPECTED-RED` |
+| C-034 | 「冻结」= 我不动它；「没动」≠「它没变」 | adopted | `../thinking/phyt-DNA的任务编排思路/GLOSSARY.md::3.13` |
+| C-035 | 两物一名必须拆（K23：`NeedHumanConfirm` 触发侧 ↔ `HitlRequired` 终局） | absent | revisit: 事件触发「B2 的 `NoResponder` 落地时同批拆」；现状：仍是终局拒绝 |
+| C-036 | 观察态 ≠ 授权态（候选 ≠ 已授权之外的第二同族） | absent | revisit: 事件触发「反射学习闭环动工（C1）」；现状：无观察态概念 |
+| C-037 | 锚定/签名链只增不改前像（改名必断指纹） | adopted | `../Tuck/docs/decisions/ADR-0007-audit-event-vocabulary-lives-in-payload.md::D2` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
