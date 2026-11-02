@@ -76,6 +76,9 @@
 | C-041 | N 层欠账：判据 A 是生态级变更（改「做」的边界），A 层与 D 层已更，**N 层未动**（原则 10：三层同时更新） | absent | revisit: 事件触发「人类裁定是否进方向锚 `center/SESSION-DAG-IS-THE-CENTER.md`」；`docs/VISION.md:37` 为原则出处，改动需等量替换 |
 | C-042 | `tools/expiry-census.py`（豁免有效期判据）**零调用点**：只在文档里被提到，任何脚本/CI 都不跑它 | absent | revisit: 事件触发「豁免机制下次到期前」；读数：`grep -rn 'expiry-census' --include=*.sh --include=*.yml .` ⇒ 0 命中（仅 .md 提及）⇒ 过期豁免只能被线预算判据顺带撞出 |
 | C-043 | 跨仓判据的两个读空口子：`git diff --name-only` 不带范围只看未提交改动；CI 单仓检出没有兄弟仓 ⇒ 「根因文件是否被触碰」恒读不到。[revisit: **任何跨仓判据改动时** —— 教训类，永不删除] | adopted | `../Tuck/tools/expected-red.py::def touched_files` |
+| C-044 | 跨仓/跨层"根因文件是否被触碰"必须**按仓选池 + 后缀匹配**：纯后缀会让 `anaphase-helix:src/hitl.rs` 满足 Tuck 的 `src/hitl.rs`（两仓同名文件）⇒ 绿得没道理。[revisit: 任何 expected-red 名单/路径改动时] | adopted | `../Tuck/tools/expected-red.py::def touched_files` |
+| C-045 | **空名单必须判成功**：把"清零"当故障 ⇒ 压力变成"留一条假条目"，而假条目正是这套机制要防的东西。[revisit: 任何 expected-red 名单/路径改动时] | adopted | `../Tuck/tools/expected-red.py::KNOWN-LIVE: 0` |
+| C-046 | **B1 裁决（2026-11-01，据实测）**：Tuck `HumanConfirmGate` **零生产调用者**（只有我加的取证测试），而 anaphase `ApprovalOutcome` 已是四值闭集（`AllowedOnce/Rejected/Cancelled/Unavailable`，`anaphase-helix/src/hitl.rs:426`）⇒ **Tuck 判定 / anaphase 执行**；Tuck 侧该 gate **废弃，不接 `router.rs:39`**。B2 的四条判据随后需整体迁到 anaphase 侧（进队列，不本轮做）。[revisit: 任何 HITL 路由/状态改动时] | adopted | `../anaphase-helix/src/hitl.rs::enum ApprovalOutcome` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
