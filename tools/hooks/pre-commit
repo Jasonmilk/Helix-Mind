@@ -48,6 +48,26 @@ $adrs
 EOF
 fi
 
+
+# ------------------------------------------------- gate 3: staged ledger is valid
+# Three times in one week a ledger row was committed RED: the evidence column held
+# prose instead of a resolvable path::symbol, and the criterion said so -- after the
+# commit existed. Writing a fourth lesson was tried and did not work; the answer is a
+# vending-machine check: refusals belong at the moment of the act, not in a memory.
+#   (类比：与其培训收银员别收假钞，不如在收银台装验钞机)
+ledger_staged=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null | grep -E 'consensus-ledger\.md$' || true)
+if [ -n "$ledger_staged" ]; then
+  checker="$ROOT/../anaphase-helix/ci/check_ci144_profile.py"
+  if [ -f "$checker" ]; then
+    if ! python3 "$checker" --root "$ROOT" --file "docs/helixECO/consensus-ledger.md" > /tmp/ledger_gate.out 2>&1; then
+      echo "REJECT: 台账本行不合法（判据原文如下）"
+      sed 's/^/        /' /tmp/ledger_gate.out
+      echo "        修好再提交：evidence 列是可解析证据位，不是写说明的地方。"
+      fail=1
+    fi
+  fi
+fi
+
 # Gate 2 (diff magnitude) lives in commit-msg, not here — it needs the commit
 # message to read the [large] marker, and this hook runs before there is one.
 # Keeping a copy here would mean two implementations of one rule, which is the

@@ -1,45 +1,149 @@
-# sidecar 触发器表（最小形态）—— 台账仍是人读的 markdown，机器读这一份。
+# sidecar 触发器表 —— 台账仍给人读，机器读这一份。
 #
-# 为什么 sidecar 而不是迁整份台账：台账只有 47 行，全量 TOML（sha256/evidence/budget/verifier）
-# 的迁移成本大于收益。等条目数或消费方超过阈值再升级。
+# 两类，不是一个表（缺了这条就会造出宽条件来消除 NO-REVISIT-ON）：
+#   [C-xxx]            = 原子条件（paths / tests / commands 之一）⇒ lint 正常判 NO-REVISIT-ON
+#   [C-xxx.manual]     = 机器判不了，**显式承认**；lint 不判，但单独列清单给人看
 #
-# 三类原子条件，只许这三种：
-#   paths    = 一串 glob
-#   tests    = 一串测试名
-#   commands = 一串只读命令（退出码可判）
-# 禁用词：任何 / 相关 / 需要时 / 以后再说 —— 这些命中一切 ⇒ 永远在响 ⇒ 等于不会响
-#         （C-047 第一版就是这个错，已被收窄）
+# 禁用词（命中一切 = 永远在响 = 不会响，C-047 第一版就栽在这）：任何 / 相关 / 需要时
 #
-# 每条必须至少有 revisit_at（时钟型，喂 kernel.overdue()）或 revisit_when（事件型）。
-# 两样都没有 ⇒ NO-REVISION-ON ⇒ 违规（kernel 判据已存在，接线即生效）。
+# 每条必带 owner：只有人能改的（权威卷/架构裁决）标 gardener，其余标 pi。
+
+[C-007.manual]
+claim = "AITL ≠ HITL：AITL 只做 authentication（便利），**不得提升授权上限**"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-008.manual]
+claim = "学习是一等状态：候选 ≠ 已授权；§2 能力注册表是学习闭环的**唯一出口闸门**"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-009.manual]
+claim = "档位真值源 = 后果探测（① 物理执行面 ② 不可逆·资金能力面，任一命中即升档）"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-011.manual]
+claim = "字符串字面量边界：代码/注释/commit 英文；用户可见 i18n 文本可中文但须 `i18n-ok:` 具名留痕"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-012.manual]
+claim = "`commonintents` 不纳入源代码语言扫描（只读语料，不能修 ⇒ 红不可归因）"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-022.manual]
+claim = "内容安全四动词：放行 / 拦截 / 打码 / 告警 / **未启用**（五个，第五个最常漏）"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-023.manual]
+claim = "两轴拆分：发生自由度（想/说允许→做阻断）与内容控制（边界上打码/切除）不得压成一轴"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-025.manual]
+claim = "状态 SSOT：一份文档只允许一处给批准状态，其余位置只能引用"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-026.manual]
+claim = "待拍清单本身必须可枚举：条数由判据数出，且不得为 0"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-035.manual]
+claim = "两物一名必须拆（K23：`NeedHumanConfirm` 触发侧 ↔ `HitlRequired` 终局）"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-036.manual]
+claim = "观察态 ≠ 授权态（候选 ≠ 已授权之外的第二同族）"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-038.manual]
+claim = "C3 判据 A 用 anaphase 本地形态；**B1 落地时必须收敛成一套**（两份分类并存 = 第二份语义）"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-040.manual]
+claim = "C3 接线的**当前真值**：`I-1..I-7 一律拒绝`，**不是**「无授权才拒绝」（「已授权」状态依赖 K23 拆分）"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
 
 [C-041]
-claim = "N 层欠账：判据 A 是生态级变更，A/D 已更、N 未动"
-owner = "gardener"            # 唯一能裁的人；agent 不得自裁
-revisit_at = "2026-12-01"
+claim = "N 层欠账：判据 A 是生态级变更（改「做」的边界），A 层与 D 层已更，**N 层未动**（原则 10：三层同时更新）"
+owner = "gardener"
 revisit_when = { paths = ["docs/VISION.md", "docs/helixECO/consensus-ledger.md"] }
 
+[C-042.manual]
+claim = "`tools/expiry-census.py`（豁免有效期判据）**零调用点**：只在文档里被提到，任何脚本/CI 都不跑它"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
 [C-043]
-claim = "跨仓判据的两个读空口子（git diff 不带范围 / CI 单仓检出）"
+claim = "跨仓判据的两个读空口子：`git diff --name-only` 不带范围只看未提交改动；CI 单仓检出没有兄弟仓 ⇒ 「根因文件是否被触碰」恒读不到。[revisit: **任何跨仓判据改动时** —— 教训类，永"
 owner = "pi"
 revisit_when = { paths = ["Tuck/tools/expected-red.py", "Tuck/tools/expected-red.list"] }
 
 [C-044]
-claim = "跨仓根因匹配必须按仓选池 + 后缀匹配"
+claim = "跨仓/跨层"根因文件是否被触碰"必须**按仓选池 + 后缀匹配**：纯后缀会让 `anaphase-helix:src/hitl.rs` 满足 Tuck 的 `src/hitl.rs`（两仓同名文件）⇒ 绿得没道理。[r"
 owner = "pi"
 revisit_when = { paths = ["Tuck/tools/expected-red.py"] }
 
 [C-045]
-claim = "空名单必须判成功（否则清零被惩罚 ⇒ 逼人留假条目）"
+claim = "**空名单必须判成功**：把"清零"当故障 ⇒ 压力变成"留一条假条目"，而假条目正是这套机制要防的东西。[revisit: 任何 expected-red 名单/路径改动时]"
 owner = "pi"
 revisit_when = { paths = ["Tuck/tools/expected-red.py"] }
 
 [C-046]
-claim = "B1：Tuck 判定 / anaphase 执行；Tuck gate 废弃；B2b 迁移必须收窄语义"
+claim = "**B1 裁决（2026-11-01，据实测）**：Tuck `HumanConfirmGate` 零生产调用者，anaphase `ApprovalOutcome` 已是四值闭集 ⇒ **Tuck 判定 / anaph"
 owner = "gardener"
 revisit_when = { paths = ["anaphase-helix/src/hitl.rs", "Tuck/crates/tuck-core/src/hitl.rs"] }
 
 [C-047]
-claim = "空/缺席在同一轮被处理错三次"
+claim = "**「空 / 缺席」在同一轮里被处理错三次**：① 空名单 = 故障（清零被惩罚 ⇒ 逼人留假条目）② 无收据 ⇒ `max([])` 崩溃（"没有收据"报成"工具坏了"）③ 外部命令 `rc=127` 不可量却当失败/"
 owner = "pi"
-revisit_when = { paths = ["Tuck/tools/expected-red.py", "*/rings*.json", "*/ci/*.py"] }
+revisit_when = { paths = ["Tuck/tools/expected-red.py", "anaphase-helix/ci/*.py"] }
+
+[C-048]
+claim = "**读数更正两处**：①「台账 revisit 363 处 / 消费脚本 0 个」是未核引用 ⇒ 实测 `grep -c revisit` = **21**（带 revisit 的条目行 20）；② 「1 个消费方」**"
+owner = "pi"
+revisit_when = { paths = ["governance/triggers.toml", "Tuck/tools/expected-red.list"] }
+
+[C-049]
+claim = "**kernel 里 `urgency` 已存在，故不加 `blocks_decision_of` / `cost_grows`**（勿增实体）：`kernel.py:107` 落 `urgency`、`:735` se"
+owner = "pi"
+revisit_when = { paths = ["kernel.py"] }
+
+[C-050.manual]
+claim = "**生产上正在生效的是我们判定为错的合并语义**：anaphase `ApprovalOutcome::Unavailable` = 「没有应答者**或**应答者失败」，由 `src/run_cycle/safety_g"
+owner = "gardener"
+manual_only = true
+why = "配不出原子条件：触发它的是裁决/外部事件，不是一条只读命令。承认判不了，好过造一个假条件"
+
+[C-051]
+claim = "**判据工具自身的改动，必须过与新增判据同等的 mutation 验证**：C-045 的修复只跑了「复原后 rc=0」，没人跑「改坏后是否 rc≠0」⇒ 装进一个"套件根本不跑"的洞（mutation 第一次真跑就抓到"
+owner = "pi"
+revisit_when = { paths = ["Tuck/tools/expected-red.py", "Tuck/tools/verify.sh"] }
+
+[C-052]
+claim = "**空集静默第四次**：`kernel.py --status` 的 `if fnd:` 守着输出 ⇒ 台账为空时什么都不打印，与"没有入口"不可区分。已改无条件打印「登记项 0 条」。（前三次：空名单判故障 / `ma"
+owner = "pi"
+revisit_when = { paths = ["kernel.py"] }
