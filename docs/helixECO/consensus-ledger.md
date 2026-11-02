@@ -91,6 +91,8 @@
 | C-056 | **不编译的 mutation 不是红，是空转**：B2b-3 判据前两次"mutation 没红"的根因是改法让代码编译不过（删 `Cancelled` 臂 ⇒ 匹配非穷尽 E0004），测试二进制从未用变异后源码跑过；改成把该臂换成 `_ =>`（保持可编译）才真红。⇒ 「测试跑了并通过」≠「测试对着变异源码跑了」。[revisit: 任何 mutation 验证或判据改动时] | adopted | `../anaphase-helix/tests/approval_outcome.rs::the_closed_set_is_consumed_by_the_execution_gate` |
 | C-057 | **B2 收口 ≠ HITL 可用（必须每次一起说）**：`HITLApprover::default()` 没有应答者 ⇒ 全部高风险动作落 `Unavailable` ⇒ **fail-closed 全拒绝**。这是**安全**的，也是**已知**的：不是"HITL 在工作"，而是"没有 HITL，所以一律拒绝"。要让它真的能工作，缺的是**应答者注册**（B2 只保证「没人」与「有人没答」可区分）。[revisit: 任何 HITL 接线或应答者注册改动时] | adopted | `../anaphase-helix/tests/approval_outcome.rs::the_four_outcomes_are_reachable_and_pairwise_distinct` |
 | C-058 | **脚本报错而判据仍绿**（读数，2026-11-03）：`phyt-DNA` 的 `check-pool.sh` 跑出 **3 行 `fatal: -e option … empty (sub)expression`**（stderr），**rc 仍为 0**。⇒ 子命令失败被吞掉，判据在"有错但绿"的状态下发绿。未定位到具体调用点（只登记，不展开）。[revisit: 任何 check-pool / ci 脚本改动时] | adopted | `../phyt-DNA/tools/check-pool.sh::REG=` |
+| C-059 | **`--selftest` 绿 ≠ 真跑绿**：`check-pool.sh:50` 只跑 `regex-census.sh --selftest`（rc=0），而 `:49` 的真跑才是会出问题的那条（本地实测：真跑 rc=0 却打出 3 行 `fatal: -e option … empty (sub)expression`）。⇒ 判据必须验**「这条要跑的那次」**，不是「同类工具的样本集」。[revisit: 任何 `ci/*.py`、`tools/check-*.sh`、`tools/expected-red.py`、`phyt.yml` 改动时] | adopted | `../phyt-DNA/tools/check-pool.sh::REG=` |
+| C-060 | **`commit -m "…"` 双引号会把 `${var}` 展开成空串**：写进提交信息的技术文本会被 shell 吃掉（本轮实测：标题里 `\${var}` 变成空白）。⇒ 提交信息里出现 `${…}` 必须用单引号或 `-F` 从 heredoc 读。[revisit: 任何 git commit 写法变更时] | adopted | `../phyt-DNA/tools/deprecate.sh::参数不全` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
