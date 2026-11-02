@@ -1,0 +1,106 @@
+# 术语定义规范 v1 —— 一个概念 = 一个 entry = 两个描述面（zh + en）
+#
+# 两面不是两份定义，是同一概念的两个投影：结构上无法单独改一个面 ⇒ 不需要"译本同步判据"。
+# en_def 的作用是【检测中文定义是否清晰】（回译法）：译不过去 ⇒ 中文本身有歧义 ⇒ 软记录，不阻塞。
+# en 只做代码指针，不承担定义 —— 这是与"写两份"的根本区别。
+# 引用只认 id（稳定键，永不变）；zh/en 是显示名与指针，可改。
+
+[[term]]
+id = "small-steps"
+zh = "小步可验证"
+en = "small_steps_verifiable"
+zh_def = "经历→记账→结晶→重放，转完一整圈才算活——"
+en_def = "advance by diffs, never rewrites; every diff table must carry a debt column, because a diff that records only what changed is half a rewrite"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "two-axis-verdict"
+zh = "两轴裁决"
+en = "two_axis_verdict"
+zh_def = "verdict（pass|block）× validity（alive|unproven|unattributable|flaky），"
+en_def = "a verdict (pass|block) and a validity (alive|unproven|unattributable|flaky) are both required; one without the other is half a photo"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "absence-is-signal"
+zh = "缺席是信号"
+en = "absence_is_signal"
+zh_def = "读不到，先修仪器，再读数。"
+en_def = "unreadable, absent, empty and unmeasurable are facts and must be named; a green that was never read is unmeasured, not a pass"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "guard-cannot-self-sign"
+zh = "守卫不自签"
+en = "guard_cannot_self_sign"
+zh_def = "审判工具的规则，不得住进被审判的层。"
+en_def = "the rules that judge a tool may not live inside the layer being judged; a guard must be able to fail, and its legality comes from outside itself"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "guardrail-economics"
+zh = "护栏经济学"
+en = "guardrail_economics"
+zh_def = "护栏不是墙——每道闸门必有留痕出口；"
+en_def = "a guardrail is not a wall: every hard gate needs a logged exit, and a gate is only worth its maintenance cost when f x C exceeds it"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "certainty-to-scripts"
+zh = "确定性归脚本"
+en = "certainty_to_scripts"
+zh_def = "不要求 agent 更聪明，只要求它有可服从的机器。"
+en_def = "do not ask the agent to be smarter, give it a machine it can obey; real exit code outranks the rule file, and silent failure is forbidden"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "physical-fact-first"
+zh = "物理事实优先"
+en = "physical_fact_first"
+zh_def = "谁说的都不算，验过的才算。"
+en_def = "whoever said it does not count; what was verified counts. A symbol is a metaphor, the parts are the fact"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "single-source"
+zh = "唯一真源"
+en = "single_source"
+zh_def = "闸门 = `decisions/` 里 `hard: true` 的 ADR，不设独立闸门层；"
+en_def = "a gate is the ADR with hard: true in decisions/; derived views are regenerated, never hand-edited, and external state is not a source"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "decouple-and-reuse"
+zh = "解耦 × 复用"
+en = "decouple_and_reuse"
+zh_def = "单一职责是解耦的函数形态；"
+en_def = "single responsibility is the shape of decoupling; learning from giants is the shape of reuse. Inside a repo listen to reuse, across repos to decoupling"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
+
+[[term]]
+id = "on-demand"
+zh = "按需"
+en = "on_demand"
+zh_def = "三个启动子，同一个姿势：加载管 IO，驱动算力，渲染界面。"
+en_def = "nothing loads, computes or renders without an explicit trigger; no request, zero footprint, and the skeleton loads first"
+status = "admitted"
+superseded_by = ""
+anchors = ["phyt-DNA/DNA.md"]
