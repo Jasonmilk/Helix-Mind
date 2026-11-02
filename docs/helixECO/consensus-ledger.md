@@ -78,7 +78,8 @@
 | C-043 | 跨仓判据的两个读空口子：`git diff --name-only` 不带范围只看未提交改动；CI 单仓检出没有兄弟仓 ⇒ 「根因文件是否被触碰」恒读不到。[revisit: **任何跨仓判据改动时** —— 教训类，永不删除] | adopted | `../Tuck/tools/expected-red.py::def touched_files` |
 | C-044 | 跨仓/跨层"根因文件是否被触碰"必须**按仓选池 + 后缀匹配**：纯后缀会让 `anaphase-helix:src/hitl.rs` 满足 Tuck 的 `src/hitl.rs`（两仓同名文件）⇒ 绿得没道理。[revisit: 任何 expected-red 名单/路径改动时] | adopted | `../Tuck/tools/expected-red.py::def touched_files` |
 | C-045 | **空名单必须判成功**：把"清零"当故障 ⇒ 压力变成"留一条假条目"，而假条目正是这套机制要防的东西。[revisit: 任何 expected-red 名单/路径改动时] | adopted | `../Tuck/tools/expected-red.py::KNOWN-LIVE: 0` |
-| C-046 | **B1 裁决（2026-11-01，据实测）**：Tuck `HumanConfirmGate` **零生产调用者**（只有我加的取证测试），而 anaphase `ApprovalOutcome` 已是四值闭集（`AllowedOnce/Rejected/Cancelled/Unavailable`，`anaphase-helix/src/hitl.rs:426`）⇒ **Tuck 判定 / anaphase 执行**；Tuck 侧该 gate **废弃，不接 `router.rs:39`**。B2 的四条判据随后需整体迁到 anaphase 侧（进队列，不本轮做）。[revisit: 任何 HITL 路由/状态改动时] | adopted | `../anaphase-helix/src/hitl.rs::enum ApprovalOutcome` |
+| C-046 | **B1 裁决（2026-11-01，据实测）**：Tuck `HumanConfirmGate` 零生产调用者，anaphase `ApprovalOutcome` 已是四值闭集 ⇒ **Tuck 判定 / anaphase 执行**；Tuck 侧 gate **废弃，不接 `router.rs:39`**。★ 实测：anaphase 的 `Unavailable` 原文是「**没有应答者或应答者失败**」= **合并语义**，与决策 (a)（窄语义）冲突 ⇒ B2b 迁移**必须收窄，不许沿用**（会让 anaphase 既有测试变红，属预期成本）。[revisit: 任何 HITL 路由/状态改动时；另：若 anaphase 执行侧届时不可达 ⇒ 重评是否保留 Tuck 侧 gate] | adopted | `../anaphase-helix/src/hitl.rs::enum ApprovalOutcome` |
+| C-047 | **「空 / 缺席」在同一轮里被处理错三次**：① 空名单 = 故障（清零被惩罚 ⇒ 逼人留假条目）② 无收据 ⇒ `max([])` 崩溃（"没有收据"报成"工具坏了"）③ 外部命令 `rc=127` 不可量却当失败/当绿。三次同族：空集被当成**异常 / 0 / 失败**，唯独没被当成「空」这一独立事实。[revisit: 任何处理集合 / 收据 / 外部命令退出码的代码路径改动时] | adopted | `../Tuck/tools/expected-red.py::KNOWN-LIVE: 0` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
