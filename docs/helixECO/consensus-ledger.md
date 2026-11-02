@@ -88,6 +88,7 @@
 | C-053 | **「存在即合规」的判据是伪证生成器**：按字面规格（文件存在即可）实现 DEATH-CERT 判据，补 4～6 份**空文件**即转绿，而 `DEPRECATE.md:30` 要求 8 个字段、`:33` 说「不合规的退役写成成就是伪证 = I2 红线」。⇒ 判据必须查**内容非空**，不是查存在。[revisit: 任何 `ci/*.py`、`tools/check-*.sh`、`tools/expected-red.py` 改动时] | adopted | `../phyt-DNA/DEPRECATE.md::死亡证明（强制）` |
 | C-054 | **分母按位置取 = 误伤**：`archive/deprecated/*.md` 有 6 份，其中 `kind: plan-done-archive` 与 `kind: truth-source-removal-record` **不是退役记录** ⇒ 按目录 glob 取分母会红 6 条（其中 2 条不可归因）。正确分母 = `kind: deprecation-record`（4 条），id 取 frontmatter 的 `deprecated:`。[revisit: 任何 `ci/*.py`、`tools/check-*.sh`、`tools/expected-red.py` 改动时] | adopted | `../phyt-DNA/archive/deprecated/PLAN-done-2026-10-12.md::plan-done-archive` |
 | C-055 | **结构 vs 判据的裁决（实测，2026-11-03）**：DEATH-CERT 能不能靠结构消灭？**当前不能** —— `grep -rln 'DEATH-CERT' --include=*.sh --include=*.py` ⇒ **0 命中**，即「退役」是**手工多步动作**（移文件 + 改 frontmatter + 写指针 + 写账本），**没有唯一漏斗**，结构上无处挂第二个产物。⇒ 结论：先写判据（分母按 `kind: deprecation-record`、查 8 字段非空、分母 0 与目录缺失皆红）；**将来若建 `tools/deprecate.sh` 作为唯一入口，这条判据可降级为结构**。`[revisit: 任何 ci/*.py、tools/check-*.sh、tools/expected-red.py 改动时]` | adopted | `../phyt-DNA/DEPRECATE.md::死亡证明（强制）` |
+| C-056 | **不编译的 mutation 不是红，是空转**：B2b-3 判据前两次"mutation 没红"的根因是改法让代码编译不过（删 `Cancelled` 臂 ⇒ 匹配非穷尽 E0004），测试二进制从未用变异后源码跑过；改成把该臂换成 `_ =>`（保持可编译）才真红。⇒ 「测试跑了并通过」≠「测试对着变异源码跑了」。[revisit: 任何 mutation 验证或判据改动时] | adopted | `../anaphase-helix/tests/approval_outcome.rs::the_closed_set_is_consumed_by_the_execution_gate` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
