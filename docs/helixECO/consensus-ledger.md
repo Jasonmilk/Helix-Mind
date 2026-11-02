@@ -75,6 +75,7 @@
 | C-040 | C3 接线的**当前真值**：`I-1..I-7 一律拒绝`，**不是**「无授权才拒绝」（「已授权」状态依赖 K23 拆分） | absent | revisit: 事件触发「K23 两物一名拆成 Pending{token} + Reject」；代码注释已写死同理一句 |
 | C-041 | N 层欠账：判据 A 是生态级变更（改「做」的边界），A 层与 D 层已更，**N 层未动**（原则 10：三层同时更新） | absent | revisit: 事件触发「人类裁定是否进方向锚 `center/SESSION-DAG-IS-THE-CENTER.md`」；`docs/VISION.md:37` 为原则出处，改动需等量替换 |
 | C-042 | `tools/expiry-census.py`（豁免有效期判据）**零调用点**：只在文档里被提到，任何脚本/CI 都不跑它 | absent | revisit: 事件触发「豁免机制下次到期前」；读数：`grep -rn 'expiry-census' --include=*.sh --include=*.yml .` ⇒ 0 命中（仅 .md 提及）⇒ 过期豁免只能被线预算判据顺带撞出 |
+| C-043 | **跨仓判据的两个读空口子**：`git diff --name-only` 不带范围只看未提交改动；CI 单仓检出没有兄弟仓 ⇒ 跨仓"根因文件是否被触碰"恒读不到 | adopted | `../Tuck/tools/expected-red.py::root-cause file` ；revisit: **任何跨仓判据改动时**（修完就消失、留不住它的修复项不进队列，只有这条教训能防复发） |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
