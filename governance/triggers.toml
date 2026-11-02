@@ -1,0 +1,45 @@
+# sidecar 触发器表（最小形态）—— 台账仍是人读的 markdown，机器读这一份。
+#
+# 为什么 sidecar 而不是迁整份台账：台账只有 47 行，全量 TOML（sha256/evidence/budget/verifier）
+# 的迁移成本大于收益。等条目数或消费方超过阈值再升级。
+#
+# 三类原子条件，只许这三种：
+#   paths    = 一串 glob
+#   tests    = 一串测试名
+#   commands = 一串只读命令（退出码可判）
+# 禁用词：任何 / 相关 / 需要时 / 以后再说 —— 这些命中一切 ⇒ 永远在响 ⇒ 等于不会响
+#         （C-047 第一版就是这个错，已被收窄）
+#
+# 每条必须至少有 revisit_at（时钟型，喂 kernel.overdue()）或 revisit_when（事件型）。
+# 两样都没有 ⇒ NO-REVISION-ON ⇒ 违规（kernel 判据已存在，接线即生效）。
+
+[C-041]
+claim = "N 层欠账：判据 A 是生态级变更，A/D 已更、N 未动"
+owner = "gardener"            # 唯一能裁的人；agent 不得自裁
+revisit_at = "2026-12-01"
+revisit_when = { paths = ["docs/VISION.md", "docs/helixECO/consensus-ledger.md"] }
+
+[C-043]
+claim = "跨仓判据的两个读空口子（git diff 不带范围 / CI 单仓检出）"
+owner = "pi"
+revisit_when = { paths = ["Tuck/tools/expected-red.py", "Tuck/tools/expected-red.list"] }
+
+[C-044]
+claim = "跨仓根因匹配必须按仓选池 + 后缀匹配"
+owner = "pi"
+revisit_when = { paths = ["Tuck/tools/expected-red.py"] }
+
+[C-045]
+claim = "空名单必须判成功（否则清零被惩罚 ⇒ 逼人留假条目）"
+owner = "pi"
+revisit_when = { paths = ["Tuck/tools/expected-red.py"] }
+
+[C-046]
+claim = "B1：Tuck 判定 / anaphase 执行；Tuck gate 废弃；B2b 迁移必须收窄语义"
+owner = "gardener"
+revisit_when = { paths = ["anaphase-helix/src/hitl.rs", "Tuck/crates/tuck-core/src/hitl.rs"] }
+
+[C-047]
+claim = "空/缺席在同一轮被处理错三次"
+owner = "pi"
+revisit_when = { paths = ["Tuck/tools/expected-red.py", "*/rings*.json", "*/ci/*.py"] }
