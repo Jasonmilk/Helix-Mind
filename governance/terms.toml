@@ -14,6 +14,11 @@ en_def = "advance by diffs, never rewrites; every diff table must carry a debt c
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "two-axis-verdict"
@@ -24,6 +29,11 @@ en_def = "a verdict (pass|block) and a validity (alive|unproven|unattributable|f
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "absence-is-signal"
@@ -34,6 +44,11 @@ en_def = "unreadable, absent, empty and unmeasurable are facts and must be named
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "guard-cannot-self-sign"
@@ -44,6 +59,11 @@ en_def = "the rules that judge a tool may not live inside the layer being judged
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "guardrail-economics"
@@ -54,6 +74,11 @@ en_def = "a guardrail is not a wall: every hard gate needs a logged exit, and a 
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "certainty-to-scripts"
@@ -64,6 +89,11 @@ en_def = "do not ask the agent to be smarter, give it a machine it can obey; rea
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "physical-fact-first"
@@ -74,6 +104,11 @@ en_def = "whoever said it does not count; what was verified counts. A symbol is 
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "single-source"
@@ -84,6 +119,11 @@ en_def = "a gate is the ADR with hard: true in decisions/; derived views are reg
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "decouple-and-reuse"
@@ -94,6 +134,11 @@ en_def = "single responsibility is the shape of decoupling; learning from giants
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }
 
 [[term]]
 id = "on-demand"
@@ -104,3 +149,8 @@ en_def = "nothing loads, computes or renders without an explicit trigger; no req
 status = "admitted"
 superseded_by = ""
 anchors = ["phyt-DNA/DNA.md"]
+ambiguity_status = "clear"
+concept_atoms = 1
+split_into = []
+alignment_note = "(human read of both faces; per-entry)"
+revisit_when = { paths = ["governance/terms.toml", "phyt-DNA/DNA.md"] }

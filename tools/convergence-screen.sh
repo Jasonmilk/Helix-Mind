@@ -39,6 +39,7 @@ row "Tuck KNOWN-LIVE" "$(grep -m1 '^KNOWN-LIVE' /tmp/sc_er.out)"
 row "Tuck 名单外失败" "${others} 条（其中 K32 基线 ${k32} 条）"
 [ "$others" = "$k32" ] || fail=1
 if ( cd "$HERE" && python3 ../anaphase-helix/ci/check_ci144_profile.py --root . --file docs/helixECO/consensus-ledger.md >/tmp/sc_lg.out 2>&1 ); then row "台账 evidence" "$(tail -1 /tmp/sc_lg.out)"; else row "台账 evidence" "★ RED"; fail=1; fi
+if ( cd "$HERE" && python3 tools/check-terms.py >/tmp/sc_tm.out 2>&1 ); then row "术语准入（H2/H3）" "$(tail -1 /tmp/sc_tm.out)"; [ "$(grep -c 'admitted_unresolved 0' /tmp/sc_tm.out || true)" = 1 ] || { row "ADMITTED_UNRESOLVED" "★ RED（未决却 admitted）"; fail=1; }; else row "术语准入（H2/H3）" "★ RED"; fail=1; fi
 if ( cd "$HERE" && python3 tools/check-source-language.py --selftest >/dev/null 2>&1 ); then row "source-language selftest" "OK"; else row "source-language selftest" "★ RED"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --selftest >/dev/null 2>&1 ); then row "kernel selftest" "OK"; else row "kernel selftest" "★ RED"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --overdue --triggers /tmp/sc_trig.toml >/tmp/sc_od.out 2>&1 ); then row "触发器 lint" "$(tail -1 /tmp/sc_od.out)"; else row "触发器 lint" "★ RED（见 /tmp/sc_od.out）"; fail=1; fi

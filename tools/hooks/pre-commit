@@ -73,4 +73,15 @@ fi
 # Keeping a copy here would mean two implementations of one rule, which is the
 # shape Cellrix:ADR-0018 exists to remove.
 
+# ------------------------------------------------- gate: 术语准入层（H4）
+# 存量十基因名合格 ≠ 新命名不会绕过（自我测过：仅"双面非空"会放行
+# Unavailable = 没有应答者或应答者失败 这种合并语义）。
+if git diff --cached --name-only 2>/dev/null | grep -qE '^governance/terms\.toml$'; then
+  if ! python3 "$(cd "$(dirname "$0")" && pwd)/../check-terms.py" >/tmp/terms_gate.out 2>&1; then
+    echo "REJECT: 术语准入层未过（判据原文如下）"
+    sed 's/^/        /' /tmp/terms_gate.out
+    exit 1
+  fi
+fi
+
 exit $fail

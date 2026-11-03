@@ -38,6 +38,43 @@ def terms():
     return out
 
 
+PLACEHOLDER = ("todo", "同上", "任何", "相关", "需要时", "tbd", "xxx")
+
+
+def admission(t):
+    """准入层：歧义合并**从软问题变成可判状态**（2026-11-03）。
+
+    实测反例（为什么仅靠'双面非空'不够）：`Unavailable` = 「没有应答者或应答者失败」
+    两面都非空、en→id 唯一，却把两个处置相反的概念合并在一个名字里 ⇒ 必须红。
+    """
+    bad = []
+    tid = t.get("id", "?")
+    for face in ("zh_def", "en_def"):
+        v = (t.get(face) or "").strip()
+        if not v:
+            bad.append("H2 双面之一为空: %s/%s" % (tid, face))
+        elif any(w in v.lower() for w in PLACEHOLDER):
+            bad.append("H2 定义面是占位/宽词: %s/%s = %r" % (tid, face, v[:40]))
+    atoms = t.get("concept_atoms", "1")
+    try:
+        atoms_n = int(atoms)
+    except ValueError:
+        bad.append("H2 concept_atoms 不是整数: %s = %r" % (tid, atoms))
+        atoms_n = 1
+    split_into = t.get("split_into", "[]")
+    has_split = bool(split_into and split_into not in ("[]", ""))
+    if atoms_n > 1 and not has_split:
+        bad.append("H2 polysemy_not_split: %s 有 %d 个概念原子但 split_into 为空" % (tid, atoms_n))
+    amb = t.get("ambiguity_status", "")
+    if amb not in ("clear", "unresolved"):
+        bad.append("H3 ambiguity_status 非法: %s = %r（只许 clear|unresolved）" % (tid, amb))
+    if amb == "unresolved" and t.get("status") == "admitted":
+        bad.append("H3 admitted 却是 unresolved: %s —— 未决只能 draft" % tid)
+    if not (t.get("alignment_note") or "").strip():
+        bad.append("H3 缺 alignment_note（两面互译/消歧的审读记录）: %s" % tid)
+    return bad
+
+
 def main():
     g, t = genes(), terms()
     if not g or not t:
@@ -59,7 +96,13 @@ def main():
         seen_en[x.get("en")] = x.get("id")
         if not x.get("zh_def") or not x.get("en_def"):
             bad.append("J3': 双面之一为空: %s" % x.get("id"))
-    print("terms %d · DNA genes %d" % (len(t), len(g)))
+    for x in t:
+        bad.extend(admission(x))
+    print("terms %d · DNA genes %d · admitted_unresolved %d · draft_unresolved %d" % (
+        len(t), len(g),
+        sum(1 for x in t if x.get("ambiguity_status") == "unresolved" and x.get("status") == "admitted"),
+        sum(1 for x in t if x.get("ambiguity_status") == "unresolved" and x.get("status") != "admitted"),
+    ))
     for b in bad:
         print("★ " + b)
     return 1 if bad else 0
