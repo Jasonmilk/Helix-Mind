@@ -98,6 +98,9 @@
 | C-063 | **A4 三时钟（裁定 2026-11-03）**：① 撤销**不设 TTL** —— 撤销是状态变更，不是租约；② 授权 TTL（5min one-shot）**绑定 RE，不新建第二个时钟** —— 两个新鲜度会漂移（`the_two_defaults_must_not_drift_apart` 投影后恒绿那次）；③ 等人时限**按风险档分档**，`Catastrophic` **不等待、仍 fail-closed**。★ **软登记**：`risk_tier` 在 Tuck 的 PFP 里、anaphase 本层取不到（C-046）⇒ ③ **目前只是裁定，不是可落地状态**，跨仓取值完成后才可实施。[revisit: 任何 HITL 时效/RE 轴改动时] | adopted | `../anaphase-helix/src/hitl.rs::AllowedOnce` |
 | C-064 | **事件环不落盘**（读数，2026-11-03）：`grep -rn 'to_jsonl' src/` ⇒ 只在 `src/events.rs` 的测试里出现；`events_log_path` 只被 `health.rs` 检查与 `config.rs` 声明，**没有任何写盘点**。⇒ 每周期那行 `hitl` 读数仍在内存，**重启归零** ⇒ 「持久化」**未**被结构解决，队列项保留（不是重复记账）。[revisit: 任何事件环/落盘改动时] | adopted | `../anaphase-helix/src/events.rs::fn to_jsonl` |
 | C-065 | **我自己"信息仍完整落入 commit"是假读数（实测推翻）**：`git log -1 --format=%B | grep -c revisit` 在 anaphase 那条带 `[revisit: …]` 的提交上 ⇒ **0**。⇒ commit body 里的方括号文本**没有落进提交信息**，而我当时报"仍完整"。⇒ 这是 `C-060`（`commit -m` 双引号吃特殊字符）同族**第四次**，且这次是**被读数推翻的断言**。[revisit: 任何 git commit 写法变更时] | adopted | `../Tuck/tools/expected-red.py::def judge` |
+| C-066 | **合拢的定义（写死，防止变成第二个 B2b）**：合拢 = **一屏读数达标**；**队列尾部项不阻塞合拢**（7 环 READY 是"合拢后做什么"的门槛）。可复跑输出必须把 K32 两条 caliber 红写成**已知基线**，否则一屏永远带红、判不了完成。[revisit: 任何"合拢/收口"定义或那一屏内容改动时] | adopted | `../Tuck/tools/expected-red.py::def judge` |
+| C-067 | **C-062「回来做应答者注册」的确切含义**：合拢完成唤回的是 **HITL 观测/就绪评估**，**不是立刻实现**；实现由撞门数据触发。⇒ 顺序 = 合拢（不阻塞）→ 观测态 → **持久化先落地**（否则 ≥50 不可达，C-064）→ 真实授权需求出现 ⇒ 才实现注册。[revisit: 任何 HITL 观测/实现边界改动时] | adopted | `../anaphase-helix/src/hitl.rs::HitlCounters` |
+| C-068 | **C-060/C-065 族第 4 次 ⇒ 升硬（机械判据，不是"不再靠记"）**：`tools/hooks/commit-msg` 新增方括号配对检查（`tools/hooks/check_brackets.py`），失衡即拒。实测：失衡消息 rc=1、配对消息 rc=0。[revisit: 任何 git commit 写法变更时] | adopted | `../helix-mind/tools/hooks/check_brackets.py::sys.exit` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）

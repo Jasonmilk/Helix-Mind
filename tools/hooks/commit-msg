@@ -32,6 +32,14 @@
 #   [large] 重建 ADR 索引（36 份）
 set -u
 
+# gate: 方括号失衡 ⇒ 拒（「特殊字符被 shell 吃掉」已四次，C-060/C-065 族）
+if ! python3 "$(git rev-parse --show-toplevel)/tools/hooks/check_brackets.py" "$1"; then
+  echo "REJECT: 提交信息里方括号失衡 —— 大概率有文本被 shell 吃掉"
+  echo "        改用：git commit -F - <<'MSG' … MSG（heredoc + 单引号），不要用 -m \"…\""
+  exit 1
+fi
+
+
 LARGE_DIFF_MAX="${LARGE_DIFF_MAX:-50}"
 MSG_FILE="${1:-}"
 [ -n "$MSG_FILE" ] && [ -f "$MSG_FILE" ] || exit 0
@@ -156,4 +164,5 @@ if [ "$total" -gt "$LARGE_DIFF_MAX" ]; then
   echo "            [large] <为什么这次改动这么大>"
   exit 1
 fi
+
 exit 0
