@@ -58,6 +58,9 @@ if grep -qE '^signed *= *true' "$HERE/governance/signoff.toml" 2>/dev/null; then
 else
   row "SIGNOFF" "★ 未签（分项达标不等于合拢，见 C-069）"
 fi
+mn=$(grep -m1 '^status *=' "$HERE/governance/signoff.toml" 2>/dev/null | tr -d ' "' | cut -d= -f2)
+mnmode=$(grep -m1 '^mode *=' "$HERE/governance/signoff.toml" 2>/dev/null | tr -d ' "' | cut -d= -f2)
+row "H0 managed_naming" "mode=${mnmode:-?} · status=${mn:-?}（未实现也可见，不判红、不阻塞）"
 echo
 echo "⑤ 已知基线（不是红，也别读成绿）"
 row "anaphase K32" "2 条 caliber 口径红（基线，非本轮引入）"
