@@ -32,12 +32,16 @@ echo
 echo "② 判据（本屏实跑，非引用）"
 # Tuck：KNOWN-LIVE + K32 的两条 caliber 是**已知基线**（C-066）。判法是机械的：
 # 除这两条之外还有「名单外失败」⇒ 才判红。只写"已基线"而不判，就是给它豁免权。
-( cd "$W/Tuck" && python3 tools/expected-red.py >/tmp/sc_er.out 2>&1 )
+unmeas=0
+( cd "$W/Tuck" && python3 tools/expected-red.py >/tmp/sc_er.out 2>&1 ); rc_er=$?
 others=$(grep -c '名单外失败' /tmp/sc_er.out || true)
 k32=$(grep -c '名单外失败：.*ci_line_budget\|名单外失败：the_line_budget\|名单外失败：the_override' /tmp/sc_er.out || true)
 row "Tuck KNOWN-LIVE" "$(grep -m1 '^KNOWN-LIVE' /tmp/sc_er.out)"
 row "Tuck 名单外失败" "${others} 条（其中 K32 基线 ${k32} 条）"
 [ "$others" = "$k32" ] || fail=1
+# 三分类：rc=4 是"没测"（工具缺失/不可量），既不算绿也不算红 ——
+# 原来直接丢掉 rc ⇒ tools/expected-red.py 抛 UNMEASURABLE 时屏仍读成"0 条名单外失败"=假绿。
+if [ "$rc_er" = 4 ]; then row "Tuck 可测性" "UNMEASURABLE（rc=4 · 不是绿）"; unmeas=$((unmeas+1)); elif [ "$rc_er" != 0 ] && [ "$others" = "$k32" ]; then row "Tuck 可测性" "★ RED rc=$rc_er 但解析不出具名条目（判据输出形状变了？）"; fail=1; fi
 if ( cd "$HERE" && python3 ../anaphase-helix/ci/check_ci144_profile.py --root . --file docs/helixECO/consensus-ledger.md >/tmp/sc_lg.out 2>&1 ); then row "台账 evidence" "$(tail -1 /tmp/sc_lg.out)"; else row "台账 evidence" "★ RED"; fail=1; fi
 # S6 接线判据：判据存在 ≠ 判据被调用。pre-commit 里没有这一行 ⇒ 术语闸门实际不存在。
 if grep -q 'check-terms\.py"' "$HERE/tools/hooks/pre-commit" 2>/dev/null; then row "wire-terms(pre-commit)" "已接（接线 1/3：CI、triggers 未接）"; else row "wire-terms(pre-commit)" "★ RED 判据没被调用"; fail=1; fi
@@ -69,5 +73,7 @@ echo "⑤ 已知基线（不是红，也别读成绿）"
 row "anaphase K32" "2 条 caliber 口径红（基线，非本轮引入）"
 row "A 组 forensic" "0 条（9→0 靠修好，见 Tuck 的 expected-red）"
 echo
-echo "── 分项判定: $([ "$fail" = 0 ] && echo '达标（合拢结论由 governance/signoff.toml 签发，屏不自签 · C-069）' || echo '★ 未达标')"
-exit "$fail"
+if [ "$fail" != 0 ]; then echo "── 分项判定: ★ 未达标（rc=1）"; exit 1; fi
+if [ "$unmeas" != 0 ]; then echo "── 分项判定: 不可量 $unmeas 项 ⇒ 既不判绿也不判红（rc=2；修好可测性再判）"; exit 2; fi
+echo "── 分项判定: 达标（合拢结论由 governance/signoff.toml 签发，屏不自签 · C-069）"
+exit 0
