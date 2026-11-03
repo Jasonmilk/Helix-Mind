@@ -12,7 +12,7 @@ successor   = "进入 HITL 观测/就绪评估态（不是立刻实现应答者�
 # 只覆盖清单内命名；列不出的表面仍靠软记录，**不宣称 100%**。
 [managed_naming]
 mode            = "A"
-list_path       = "governance/managed-naming.toml"   # 待建：可枚举路径/形状清单
+list_path       = "governance/managed-naming.toml"   # 已建（H0=A2，见 C-074）
 criteria        = ["H0-P 清单内新增公开命名必须带 term_id", "H0-D 清单分母必须 > 0", "H0-W 判据必须被 pre-commit/屏调用"]
 mutation        = "清单内加一个不带 term_id 的 pub enum 变体 ⇒ 红；清单清空 ⇒ 红（分母 0）；删调用点 ⇒ 红"
 status          = "implemented"
