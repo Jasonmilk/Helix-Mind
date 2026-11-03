@@ -25,8 +25,8 @@
 | Q-P3-A4 | 时效三档（形状先定死） | — | 三钟各自可设可测；撤销不依赖 TTL | 🟡 形状已裁（C-063）· 未实现：`anaphase-helix/src/hitl.rs:213` 注释即「本层拿不到 risk_tier」⇒ 分档做不了，等跨仓取用 |
 | Q-P4 | 补测一：真实工具名矩阵 | — | 用例来自真实调用，不是编的 | ⬜ |
 | Q-P5-B1 | Tuck 判定 / anaphase 执行分层 | — | 一套 HITL：Tuck 判定、anaphase 执行 | ✅ 已裁（C-046：Tuck gate 零生产调用者 ⇒ 废弃，不接路由） |
-| Q-P5-B2b | 把 B2 四条判据迁到 anaphase 侧 | Q-P5-B1 | 见 `../../anaphase-helix/src/hitl.rs:510::ApprovalOutcome`（收窄与否以该枚举为准；**本行不复述代码事实**） | ✅ 已落（B2b-1 收窄 `Unavailable`=「只指没人」· B2b-2 Tuck gate 标废弃 · 现状见上引用） |
-| Q-P5-B2 | 应答者注册（窄语义 + 映射表） | Q-P5-B1 | 见 `../../anaphase-helix/src/hitl.rs:510::ApprovalOutcome` 与 `../../anaphase-helix/src/hitl.rs::HitlCounters` | ⬜ 未做（`grep -rn ApproverRegistry anaphase-helix/src/` = 0） |
+| Q-P5-B2b | 把 B2 四条判据迁到 anaphase 侧 | Q-P5-B1 | 见 `../../anaphase-helix/src/hitl.rs::enum ApprovalOutcome`（收窄与否以该枚举为准） | ✅ 已落 |
+| Q-P5-B2 | 应答者注册（窄语义 + 映射表） | Q-P5-B1 | 见 `../../anaphase-helix/src/hitl.rs::enum ApprovalOutcome` · 注册器缺失判据 = `grep -rn ApproverRegistry anaphase-helix/src/` = 0 | ⬜ 未做 |
 | Q-P6-C1 | 反射归「做」+ 学习一等状态（候选 ≠ 已授权） | — | ADR-0054 补段落；§2 学习出口闸门 | ⬜ |
 | Q-P6-C2 | 档位真值源 = 后果探测（物理面 OR 资金面） | Q-P6-C1 | 声明与事实冲突时取高者可测 | ⬜ |
 | Q-P6-M | 判据 A 对应 CONVERGENCE 的 M 几 | — | 写进 `center/CONVERGENCE-M0-M7.md` 任务列表 | ⬜ |
@@ -39,3 +39,10 @@
 
 ⇒ 若要让 `kernel.py` 承担任务分配，必须给它加一列 **`blocks`（本项阻塞谁）**，用现成的 `kernel.overdue()` 形态推优先级 —— 但那是**新工具**，在 A 组落地前不做（§2 停做清单第 1 条：不展开新发现）。
 ⇒ 现在的最小形态：本文件 + `Q-P0-x` 排序，人读即可。
+
+## 队尾（本文件自身欠账，带机械 revisit）
+
+| 条 | 判据 | 状态 |
+|---|---|---|
+| 代码路径 → 文档叶子映射缺口 | 无（形态未定，见 C-072 的撤回教训） | ⬜ 只登记不定形态；[revisit: `phyt-DNA` 面板仓建立 remote 且有人负责发布时 / 任何"代码反哺文档"提议] |
+| 队列完成判据列的引用**无消费方** | 现状：`check_ci144_profile.py` 只扫台账 evidence，**不扫本文件** ⇒ 符号改名不会有人收到断链信号。⇒ C3 **降级**为「断链靠人点开时看见」，**不写成已验真**。 | ⬜ 若要升级：让现有 checker 顺带扫本列（本批不做，避免改判据后要跑三形+重基线）；[revisit: 下一次改 `anaphase-helix/src/hitl.rs::enum ApprovalOutcome` 时] |

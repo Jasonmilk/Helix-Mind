@@ -469,3 +469,10 @@ tentacle-cli 执行 mock-filesystem.list_files → ✅ 成功返回结果
 - **D2 `commonintents` 不纳入扫描**：只读语料，我们明令不改 ⇒ 在它上面得到的红不是违规而是事实陈述，属不可归因的红。工具里是**独立的 `excluded` 计数器**（不是 exempt），并与 checked 分开打印。
   读数变化：`13593 -> 12584` RED 行；`excluded=20` 文件。
 - 后续（自治）：冻结基线 → 增量必绿 → 存量按仓分批清零；**复用 anaphase `check_line_budget.py` + `baseline.toml` 棘轮形态，勿增实体**。
+
+## 入口指针（只放指针，不复制正文）
+
+- 合拢签收位 → `governance/signoff.toml`
+- 已裁未做队列 → `docs/helixECO/execution-queue.md`
+- 一屏读数（7 仓/判据/环/队列/签收/H0） → `tools/convergence-screen.sh`
+- 编排仓入口（环/队列/触发器/术语） → `../thinking/phyt-DNA的任务编排思路/README.md`
