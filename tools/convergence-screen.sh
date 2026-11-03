@@ -40,7 +40,7 @@ row "Tuck 名单外失败" "${others} 条（其中 K32 基线 ${k32} 条）"
 [ "$others" = "$k32" ] || fail=1
 if ( cd "$HERE" && python3 ../anaphase-helix/ci/check_ci144_profile.py --root . --file docs/helixECO/consensus-ledger.md >/tmp/sc_lg.out 2>&1 ); then row "台账 evidence" "$(tail -1 /tmp/sc_lg.out)"; else row "台账 evidence" "★ RED"; fail=1; fi
 # S6 接线判据：判据存在 ≠ 判据被调用。pre-commit 里没有这一行 ⇒ 术语闸门实际不存在。
-if grep -q 'check-terms\.py"' "$HERE/tools/hooks/pre-commit" 2>/dev/null; then row "wire-terms(pre-commit)" "已接"; else row "wire-terms(pre-commit)" "★ RED 判据没被调用"; fail=1; fi
+if grep -q 'check-terms\.py"' "$HERE/tools/hooks/pre-commit" 2>/dev/null; then row "wire-terms(pre-commit)" "已接（接线 1/3：CI、triggers 未接）"; else row "wire-terms(pre-commit)" "★ RED 判据没被调用"; fail=1; fi
 if ( cd "$HERE" && python3 tools/check-terms.py >/tmp/sc_tm.out 2>&1 ); then row "术语准入（H2/H3）" "$(tail -1 /tmp/sc_tm.out)"; [ "$(grep -c 'admitted_unresolved 0' /tmp/sc_tm.out || true)" = 1 ] || { row "ADMITTED_UNRESOLVED" "★ RED（未决却 admitted）"; fail=1; }; else row "术语准入（H2/H3）" "★ RED"; fail=1; fi
 if ( cd "$HERE" && python3 tools/check-source-language.py --selftest >/dev/null 2>&1 ); then row "source-language selftest" "OK"; else row "source-language selftest" "★ RED"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --selftest >/dev/null 2>&1 ); then row "kernel selftest" "OK"; else row "kernel selftest" "★ RED"; fail=1; fi
@@ -52,7 +52,14 @@ echo "③ 两份**不能混**的读数"
 ( cd "$K" && python3 kernel.py --rings queue-rings.json --status 2>/dev/null | grep -E "^ready=|^blocked=" | sed 's/^/  队列（任务）        /' ) || true
 
 echo
-echo "④ 已知基线（不是红，也别读成绿）"
+echo "④ 签收（屏不自签：C-069；此段只读 governance/signoff.toml）"
+if grep -qE '^signed *= *true' "$HERE/governance/signoff.toml" 2>/dev/null; then
+  row "SIGNOFF" "$(grep -m1 '^signed_by' "$HERE/governance/signoff.toml" | tr -d ' ' | cut -d= -f2) · $(grep -m1 '^signed_at' "$HERE/governance/signoff.toml" | tr -d ' ' | cut -d= -f2)"
+else
+  row "SIGNOFF" "★ 未签（分项达标不等于合拢，见 C-069）"
+fi
+echo
+echo "⑤ 已知基线（不是红，也别读成绿）"
 row "anaphase K32" "2 条 caliber 口径红（基线，非本轮引入）"
 row "A 组 forensic" "0 条（9→0 靠修好，见 Tuck 的 expected-red）"
 echo

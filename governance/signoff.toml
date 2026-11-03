@@ -1,0 +1,9 @@
+# 合拢签收（机器可读）—— 屏不能自签（C-069：phyt-DNA DNA.md:44 守卫不自签），
+# 但"人签了"这件事必须**落成状态位**，否则签完机器侧零消费者：C-062 的
+# 「合拢完成 ⇒ 必须回来做 HITL 观测」就永远等不到原子条件。
+[convergence]
+signed      = true
+signed_by   = "gardener"
+signed_at   = "2026-11-03"
+scope       = "合拢达标（分项由 convergence-screen.sh 判；此文件只记录人签，不代替判据）"
+successor   = "进入 HITL 观测/就绪评估态（不是立刻实现应答者注册）；持久化是 ≥50 的前置"
