@@ -93,6 +93,7 @@
 | C-058 | **脚本报错而判据仍绿**（读数，2026-11-03）：`phyt-DNA` 的 `check-pool.sh` 跑出 **3 行 `fatal: -e option … empty (sub)expression`**（stderr），**rc 仍为 0**。⇒ 子命令失败被吞掉，判据在"有错但绿"的状态下发绿。未定位到具体调用点（只登记，不展开）。[revisit: 任何 check-pool / ci 脚本改动时] | adopted | `../phyt-DNA/tools/check-pool.sh::REG=` |
 | C-059 | **`--selftest` 绿 ≠ 真跑绿**：`check-pool.sh:50` 只跑 `regex-census.sh --selftest`（rc=0），而 `:49` 的真跑才是会出问题的那条（本地实测：真跑 rc=0 却打出 3 行 `fatal: -e option … empty (sub)expression`）。⇒ 判据必须验**「这条要跑的那次」**，不是「同类工具的样本集」。[revisit: 任何 `ci/*.py`、`tools/check-*.sh`、`tools/expected-red.py`、`phyt.yml` 改动时] | adopted | `../phyt-DNA/tools/check-pool.sh::REG=` |
 | C-060 | **`commit -m "…"` 双引号会把 `${var}` 展开成空串**：写进提交信息的技术文本会被 shell 吃掉（本轮实测：标题里 `\${var}` 变成空白）。⇒ 提交信息里出现 `${…}` 必须用单引号或 `-F` 从 heredoc 读。[revisit: 任何 git commit 写法变更时] | adopted | `../phyt-DNA/tools/deprecate.sh::参数不全` |
+| C-061 | **`ADR-20261012`「隔离夹具」在 /tmp 上结构上不可能成立**（实测三形）：① `/tmp/pt2`（decisions+archive 齐全）⇒ **rc=2** 但红因是 `ADR-20261011-derivation-must-carry-origin: 不在 git 工作区（出生日/证据不可量）`；② 删 `/tmp/pt2/archive` ⇒ 同样 rc=2、**同一条红**（不是那 4 条指针）；③ `/tmp/wt`（自己 `git init` 过）⇒ 换了红因：`scanned=0 · 无一门命中 ⇒ 覆盖面为零`（rc=4）。⇒ **绊住夹具的不是路径 bug，是 `git` 边界与 applies-to 覆盖**：`check-pool` 传外部目录时引擎拿不到出生日/证据，且外部路径不命中任何 post 闸门。⇒ 在 /tmp 造夹具**无论怎么修路径都不会成功**；要成立必须落在**本仓 git 工作区内**的临时目录（或 worktree）。[revisit: 任何 check-pool / ADR-20261012 夹具改动时] | adopted | `../phyt-DNA/tools/check-pool.sh::POOL_PATHS` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
