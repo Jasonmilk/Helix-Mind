@@ -162,3 +162,8 @@ revisit_when = { paths = ["anaphase-helix/src/hitl.rs"] }
 claim = "事件环不落盘（to_jsonl 只在测试里、events_log_path 无写盘点）⇒ 持久化未解决"
 owner = "pi"
 revisit_when = { paths = ["anaphase-helix/src/events.rs", "anaphase-helix/src/config.rs"] }
+
+[C-073]
+claim = "术语准入层（H2/H3）与编排仓生成段（docgen）必须**在 CI 也跑**，不能只靠 pre-commit 的入口漏斗（改 terms.toml 才触发）。接线 2/3 与 3/3。[revisit: 任何 check-terms / docgen / CI step 改动时]"
+owner = "pi"
+revisit_when = { paths = ["tools/check-terms.py", "governance/terms.toml", ".github/workflows/ci.yml", "../thinking/phyt-DNA的任务编排思路/tools/docgen.py"] }
