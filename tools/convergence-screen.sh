@@ -21,7 +21,9 @@ echo "① 仓状态（head / dirty）"
 for r in Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle phyt-DNA; do
   [ -d "$W/$r/.git" ] || { row "$r" "缺目录"; fail=1; continue; }
   h=$(git -C "$W/$r" rev-parse --short HEAD 2>/dev/null)
-  d=$(git -C "$W/$r" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  # 运行时 append-only 账本（ledger/hits-*.jsonl）每次跑判据都会追加一行 —— 它脏是
+  # **正常工作**，不是未提交的改动。排除它，否则每跑一次屏就自己把屏判红（自指）。
+  d=$(git -C "$W/$r" status --porcelain 2>/dev/null | grep -vE 'ledger/hits-[0-9]+\.jsonl$' | wc -l | tr -d ' ')
   row "$r" "${h}·dirty=${d}"
   [ "$d" = 0 ] || fail=1
 done
