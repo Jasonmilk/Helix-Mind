@@ -101,6 +101,8 @@
 | C-066 | **合拢的定义（写死，防止变成第二个 B2b）**：合拢 = **一屏读数达标**；**队列尾部项不阻塞合拢**（7 环 READY 是"合拢后做什么"的门槛）。可复跑输出必须把 K32 两条 caliber 红写成**已知基线**，否则一屏永远带红、判不了完成。[revisit: 任何"合拢/收口"定义或那一屏内容改动时] | adopted | `../Tuck/tools/expected-red.py::def judge` |
 | C-067 | **C-062「回来做应答者注册」的确切含义**：合拢完成唤回的是 **HITL 观测/就绪评估**，**不是立刻实现**；实现由撞门数据触发。⇒ 顺序 = 合拢（不阻塞）→ 观测态 → **持久化先落地**（否则 ≥50 不可达，C-064）→ 真实授权需求出现 ⇒ 才实现注册。[revisit: 任何 HITL 观测/实现边界改动时] | adopted | `../anaphase-helix/src/hitl.rs::HitlCounters` |
 | C-068 | **C-060/C-065 族第 4 次 ⇒ 升硬（机械判据，不是"不再靠记"）**：`tools/hooks/commit-msg` 新增方括号配对检查（`tools/hooks/check_brackets.py`），失衡即拒。实测：失衡消息 rc=1、配对消息 rc=0。[revisit: 任何 git commit 写法变更时] | adopted | `../helix-mind/tools/hooks/check_brackets.py::sys.exit` |
+| C-069 | **合拢由人签，不由屏自签**（`phyt-DNA/DNA.md:44` 守卫不自签 · `SPEC.md:112/228` 代行结论按例不可自签）：屏只能判**各分项达标**；"可声称合拢"这一句必须由人签。⇒ 我此前说"这是屏自己判的"踩了这条基因。[revisit: 任何"合拢/达标"结论的产出方式改动时] | adopted | `../phyt-DNA/DNA.md::守卫不自签` |
+| C-070 | **屏的三条补挂（2026-11-03）**：① 排除 `ledger/hits-*.jsonl` 已补**负样本**（在 Tuck 造一个非豁免脏文件 ⇒ 屏 rc=1，复原 ⇒ rc=0）；② 队列 6 条 blocked **逐条具名**（1 条 `red-or-dead`/mutation 未验证 + 5 条 `missing`/无收据 + 1 条 `upstream-not-done`）⇒ 空 ready 不是"没事做"，是"未跑"；③ 屏是**快照**，收据 7 天过期 ⇒ 复跑触发 = **每次 `kernel --run` 之后 / 每交付一批时人工跑一次**（谁跑：维护者；STALE 会自己现形，见屏③）。[revisit: 任何 convergence-screen / kernel 收据机制改动时] | adopted | `../helix-mind/tools/convergence-screen.sh::ledger/hits-` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
