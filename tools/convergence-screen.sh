@@ -70,7 +70,7 @@ mnmode=$(grep -m1 '^mode *=' "$HERE/governance/signoff.toml" 2>/dev/null | tr -d
 row "H0 managed_naming" "mode=${mnmode:-?} · status=${mn:-?}（未实现也可见，不判红、不阻塞）"
 echo
 echo "⑤ 已知基线（不是红，也别读成绿）"
-row "anaphase K32" "2 条 caliber 口径红（基线，非本轮引入）"
+row "anaphase K32" "实测 ${k32} 条（曾在基线里；现由 ② 行实测，不写死）"
 row "A 组 forensic" "0 条（9→0 靠修好，见 Tuck 的 expected-red）"
 echo
 if [ "$fail" != 0 ]; then echo "── 分项判定: ★ 未达标（rc=1）"; exit 1; fi
