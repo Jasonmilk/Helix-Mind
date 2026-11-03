@@ -147,3 +147,18 @@ revisit_when = { paths = ["Tuck/tools/expected-red.py", "Tuck/tools/verify.sh"] 
 claim = "**空集静默第四次**：`kernel.py --status` 的 `if fnd:` 守着输出 ⇒ 台账为空时什么都不打印，与"没有入口"不可区分。已改无条件打印「登记项 0 条」。（前三次：空名单判故障 / `ma"
 owner = "pi"
 revisit_when = { paths = ["kernel.py"] }
+
+[C-062]
+claim = "HITL 延后期纪律：禁 break-glass/豁免/事后补批 · 回归触发（合拢完成，或≥50 且持久化已落地）· 四态计数≠可用"
+owner = "pi"
+revisit_when = { paths = ["anaphase-helix/src/hitl.rs", "anaphase-helix/src/run_cycle/mod.rs"] }
+
+[C-063]
+claim = "A4 三时钟裁定：撤销不设 TTL · 授权 TTL 绑 RE 不新建第二轴 · 等人按风险档且 Catastrophic 不等"
+owner = "pi"
+revisit_when = { paths = ["anaphase-helix/src/hitl.rs"] }
+
+[C-064]
+claim = "事件环不落盘（to_jsonl 只在测试里、events_log_path 无写盘点）⇒ 持久化未解决"
+owner = "pi"
+revisit_when = { paths = ["anaphase-helix/src/events.rs", "anaphase-helix/src/config.rs"] }

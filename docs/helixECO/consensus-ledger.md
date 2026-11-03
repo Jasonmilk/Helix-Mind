@@ -97,6 +97,7 @@
 | C-062 | **HITL 延后期的三条纪律（含撞墙禁令）**：① **不许 break-glass / 豁免 / 事后补批** —— 永远拒绝的门会产生"缓存/共享首次批准"的组织压力，而那恰好废掉 `AllowedOnce`（一次授权）② **回归触发条件**：合拢完成 **或** 某类动作撞门累计 ≥ 50 ⇒ **必须**回来做应答者注册（不许变成"永远在下一步"，B2b 推迟六轮即此）③ 四态计数 ≠ HITL 可用：`[1,1,1,1]` 只证明状态机对，不证明门后面有人。★ **前置（2026-11-03 补）**：`≥50` 这条硬触发**以持久化落地为前提** —— 事件环不落盘（C-064）⇒ 累计值重启归零 ⇒ 在持久化落地前，触发**只用「合拢完成」**，`≥50` 不具备可判性。[revisit: 任何 HITL 状态/路由/计数器改动时] | adopted | `../anaphase-helix/src/hitl.rs::HitlCounters` |
 | C-063 | **A4 三时钟（裁定 2026-11-03）**：① 撤销**不设 TTL** —— 撤销是状态变更，不是租约；② 授权 TTL（5min one-shot）**绑定 RE，不新建第二个时钟** —— 两个新鲜度会漂移（`the_two_defaults_must_not_drift_apart` 投影后恒绿那次）；③ 等人时限**按风险档分档**，`Catastrophic` **不等待、仍 fail-closed**。★ **软登记**：`risk_tier` 在 Tuck 的 PFP 里、anaphase 本层取不到（C-046）⇒ ③ **目前只是裁定，不是可落地状态**，跨仓取值完成后才可实施。[revisit: 任何 HITL 时效/RE 轴改动时] | adopted | `../anaphase-helix/src/hitl.rs::AllowedOnce` |
 | C-064 | **事件环不落盘**（读数，2026-11-03）：`grep -rn 'to_jsonl' src/` ⇒ 只在 `src/events.rs` 的测试里出现；`events_log_path` 只被 `health.rs` 检查与 `config.rs` 声明，**没有任何写盘点**。⇒ 每周期那行 `hitl` 读数仍在内存，**重启归零** ⇒ 「持久化」**未**被结构解决，队列项保留（不是重复记账）。[revisit: 任何事件环/落盘改动时] | adopted | `../anaphase-helix/src/events.rs::fn to_jsonl` |
+| C-065 | **我自己"信息仍完整落入 commit"是假读数（实测推翻）**：`git log -1 --format=%B | grep -c revisit` 在 anaphase 那条带 `[revisit: …]` 的提交上 ⇒ **0**。⇒ commit body 里的方括号文本**没有落进提交信息**，而我当时报"仍完整"。⇒ 这是 `C-060`（`commit -m` 双引号吃特殊字符）同族**第四次**，且这次是**被读数推翻的断言**。[revisit: 任何 git commit 写法变更时] | adopted | `../Tuck/tools/expected-red.py::def judge` |
 <!-- profile-claims:end -->
 
 ## 当前读数（H0：我由哪条命令派生）
