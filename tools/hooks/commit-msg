@@ -33,7 +33,7 @@
 set -u
 
 # gate: 方括号失衡 ⇒ 拒（「特殊字符被 shell 吃掉」已四次，C-060/C-065 族）
-if ! python3 "$(git rev-parse --show-toplevel)/tools/hooks/check_brackets.py" "$1"; then
+if ! python3 "$(cd "$(dirname "$0")" && pwd)/check_brackets.py" "$1"; then
   echo "REJECT: 提交信息里方括号失衡 —— 大概率有文本被 shell 吃掉"
   echo "        改用：git commit -F - <<'MSG' … MSG（heredoc + 单引号），不要用 -m \"…\""
   exit 1
