@@ -25,8 +25,8 @@
 | Q-P3-A4 | 时效三档（形状先定死） | — | 三钟各自可设可测；撤销不依赖 TTL | 🟡 形状已裁（C-063）· 未实现：`anaphase-helix/src/hitl.rs:213` 注释即「本层拿不到 risk_tier」⇒ 分档做不了，等跨仓取用 |
 | Q-P4 | 补测一：真实工具名矩阵 | — | 用例来自真实调用，不是编的 | ⬜ |
 | Q-P5-B1 | Tuck 判定 / anaphase 执行分层 | — | 一套 HITL：Tuck 判定、anaphase 执行 | ✅ 已裁（C-046：Tuck gate 零生产调用者 ⇒ 废弃，不接路由） |
-| Q-P5-B2b | 把 B2 四条判据迁到 anaphase 侧 | Q-P5-B1 | 两仓不再各有一套状态语义。**迁移带走的是窄语义**：anaphase `Unavailable` 现为「无应答者**或**应答者失败」（合并）⇒ 必须收窄或另立变体，**不许沿用**；收窄会让 anaphase 既有测试变红（预期成本）。命名若回落到 `Unavailable` 需重评一次（变体名进哈希） | 🟡 部分：四态计数 + 生产读者（`phase=="hitl"` 进事件环）+ 屏可见已落；**`NoResponder` 未立**（`grep -rn NoResponder anaphase-helix/src/` = 0）⇒ 收窄未做 |
-| Q-P5-B2 | `NoResponder` + 应答者注册（乙打底 + 四行映射表） | Q-P5-B1 | `unanswered_...` 转绿；两值在链上可分 | ⬜ |
+| Q-P5-B2b | 把 B2 四条判据迁到 anaphase 侧 | Q-P5-B1 | 见 `../../anaphase-helix/src/hitl.rs:510::ApprovalOutcome`（收窄与否以该枚举为准；**本行不复述代码事实**） | ✅ 已落（B2b-1 收窄 `Unavailable`=「只指没人」· B2b-2 Tuck gate 标废弃 · 现状见上引用） |
+| Q-P5-B2 | 应答者注册（窄语义 + 映射表） | Q-P5-B1 | 见 `../../anaphase-helix/src/hitl.rs:510::ApprovalOutcome` 与 `../../anaphase-helix/src/hitl.rs::HitlCounters` | ⬜ 未做（`grep -rn ApproverRegistry anaphase-helix/src/` = 0） |
 | Q-P6-C1 | 反射归「做」+ 学习一等状态（候选 ≠ 已授权） | — | ADR-0054 补段落；§2 学习出口闸门 | ⬜ |
 | Q-P6-C2 | 档位真值源 = 后果探测（物理面 OR 资金面） | Q-P6-C1 | 声明与事实冲突时取高者可测 | ⬜ |
 | Q-P6-M | 判据 A 对应 CONVERGENCE 的 M 几 | — | 写进 `center/CONVERGENCE-M0-M7.md` 任务列表 | ⬜ |
