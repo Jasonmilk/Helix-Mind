@@ -1,0 +1,9 @@
+# 受管命名清单（H0=A2 实例化）—— 口径见 signoff.toml 的 [managed_naming]（形态 A 已裁）。
+# 清单**含代码公开命名**：mutation 原文即"清单内加一个不带 term_id 的 pub enum 变体 ⇒ 红"。
+# 路径相对**本文件自身位置**求根（C1），不用 cwd。
+# 只覆盖清单内路径；列不出的表面仍靠软记录，不宣称 100%（TERM-SPEC §9.1 同边界）。
+# term 必须真在 governance/terms.toml 里（H0-T），否则等于"起了名没定义"。
+surfaces = [
+  { path = "../../anaphase-helix/src/hitl.rs", symbol = "enum ApprovalOutcome", term = "absence-is-signal" },
+  { path = "../../anaphase-helix/src/irreversible.rs", symbol = "enum Family", term = "physical-fact-first" },
+]

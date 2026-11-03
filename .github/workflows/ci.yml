@@ -29,12 +29,12 @@ jobs:
       - name: ②·2 术语准入层（H2/H3 + admitted_unresolved=0）
         # ★ 为什么在 CI 而不只在前台：pre-commit 只在改 terms.toml 时触发（H4 的入口漏斗），
         #   而 CI 每次都会跑 ⇒ 准入层判据**在 CI 上不会恒绿**（它读真词表，违规即 rc=1）。
-        run: python3 tools/check-terms.py
-      - name: ②·3 编排仓生成段（docgen：L0 无不变量违规 / 索引覆盖 / 生成段新鲜）
-        # 跨仓只读：编排仓在本仓之外 ⇒ 不存在时**具名 skip**（不判绿、不判红）。
-        run: |
-          K="$GITHUB_WORKSPACE/../thinking/phyt-DNA的任务编排思路"
-          if [ -d "$K" ]; then ( cd "$K" && python3 tools/docgen.py ); else echo "SKIP: 编排仓不在检出范围内（跨仓，不可量）"; fi
+        run: python3 tools/check-terms.py --naming
+      - name: ②·3 编排仓生成段 —— **CI 不可量（具名）**
+        # 实测：GitHub Actions 只 checkout 本仓 ⇒ `../thinking/…` 恒不存在 ⇒ docgen 在此**永远 SKIP**。
+        # 恒 SKIP 的 step 是"绿着守非生产对象"，比不加更坏 ⇒ 本 step 只做一件事：把不可量说清楚。
+        # docgen 的真实消费方是**读时**：`thinking/phyt-DNA的任务编排思路/tools/docgen.py` + 合拢屏。
+        run: echo "UNMEASURABLE: 编排仓不在 CI 检出范围内 —— docgen 由读时（屏/docgen.py）执行，CI 不判"
       - name: ②·5 文档不得落后于代码（分支地图生成物比对）
         run: bash tools/branch-map.sh --check
       - name: ② 脚本语法自检

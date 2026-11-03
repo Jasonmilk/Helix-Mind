@@ -44,8 +44,8 @@ row "Tuck 名单外失败" "${others} 条（其中 K32 基线 ${k32} 条）"
 if [ "$rc_er" = 4 ]; then row "Tuck 可测性" "UNMEASURABLE（rc=4 · 不是绿）"; unmeas=$((unmeas+1)); elif [ "$rc_er" != 0 ] && [ "$others" = "$k32" ]; then row "Tuck 可测性" "★ RED rc=$rc_er 但解析不出具名条目（判据输出形状变了？）"; fail=1; fi
 if ( cd "$HERE" && python3 ../anaphase-helix/ci/check_ci144_profile.py --root . --file docs/helixECO/consensus-ledger.md --queue docs/helixECO/execution-queue.md >/tmp/sc_lg.out 2>&1 ); then row "台账 evidence" "$(tail -1 /tmp/sc_lg.out)"; else row "台账 evidence" "★ RED"; fail=1; fi
 # S6 接线判据：判据存在 ≠ 判据被调用。pre-commit 里没有这一行 ⇒ 术语闸门实际不存在。
-if grep -q 'check-terms\.py"' "$HERE/tools/hooks/pre-commit" 2>/dev/null; then row "wire-terms(pre-commit)" "已接（接线 1/3：CI、triggers 未接）"; else row "wire-terms(pre-commit)" "★ RED 判据没被调用"; fail=1; fi
-if ( cd "$HERE" && python3 tools/check-terms.py >/tmp/sc_tm.out 2>&1 ); then row "术语准入（H2/H3）" "$(tail -1 /tmp/sc_tm.out)"; [ "$(grep -c 'admitted_unresolved 0' /tmp/sc_tm.out || true)" = 1 ] || { row "ADMITTED_UNRESOLVED" "★ RED（未决却 admitted）"; fail=1; }; else row "术语准入（H2/H3）" "★ RED"; fail=1; fi
+if grep -q 'check-terms\.py"' "$HERE/tools/hooks/pre-commit" 2>/dev/null; then row "wire-terms(pre-commit)" "已接（接线 3/3：pre-commit ✅ · CI ✅ check-terms · triggers ✅ C-073；docgen 读时跑、CI 不可量）"; else row "wire-terms(pre-commit)" "★ RED 判据没被调用"; fail=1; fi
+if ( cd "$HERE" && python3 tools/check-terms.py --naming >/tmp/sc_tm.out 2>&1 ); then row "术语准入（H2/H3）" "$(tail -1 /tmp/sc_tm.out)"; [ "$(grep -c 'admitted_unresolved 0' /tmp/sc_tm.out || true)" = 1 ] || { row "ADMITTED_UNRESOLVED" "★ RED（未决却 admitted）"; fail=1; }; else row "术语准入（H2/H3）" "★ RED"; fail=1; fi
 if ( cd "$HERE" && python3 tools/check-source-language.py --selftest >/dev/null 2>&1 ); then row "source-language selftest" "OK"; else row "source-language selftest" "★ RED"; fail=1; fi
 # 文档反哺（verify 边）：L0 只放不变量 / 索引覆盖 / 生成段新鲜
 if ( cd "$K" && python3 tools/docgen.py >/tmp/sc_dg.out 2>&1 ); then row "文档反哺(docgen)" "$(tail -1 /tmp/sc_dg.out | cut -c1-60)"; else row "文档反哺(docgen)" "★ RED（见 /tmp/sc_dg.out）"; fail=1; fi

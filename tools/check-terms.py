@@ -75,6 +75,46 @@ def admission(t):
     return bad
 
 
+def check_naming(root_terms):
+    """H0=A2：清单内公开命名必须带 term_id，且 term 必须真在词表里。
+
+    清单为空 ⇒ 红（分母 0，读到空不是通过）；路径/符号不存在 ⇒ 红（可归因）。
+    只守清单内路径 —— 列不出的表面靠软记录，不宣称 100%。
+    """
+    # 不依赖 tomllib/tomli（本机 3.9 无、CI 3.12 有 ⇒ 两套行为会漂）：
+    # 清单是本项目自己定义的**极简形状**，用正则逐行读，读不到就具名。
+    import re as _re
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'governance', 'managed-naming.toml')
+    if not os.path.exists(p):
+        return ["H0 清单不存在: %s" % p]
+    txt = io.open(p, encoding='utf-8').read()
+    surfaces = [
+        {"path": m.group(1), "symbol": m.group(2), "term": m.group(3)}
+        for m in _re.finditer(r'\{\s*path\s*=\s*"([^"]*)"\s*,\s*symbol\s*=\s*"([^"]*)"\s*,\s*term\s*=\s*"([^"]*)"', txt)
+    ]
+    if not surfaces:
+        return ["H0-D 清单分母 0（读到空不是通过）"]
+    ids = {t.get('id') for t in root_terms}
+    bad = []
+    base = os.path.dirname(p)
+    for s in surfaces:
+        path = os.path.normpath(os.path.join(base, s.get('path', '')))
+        if not os.path.exists(path):
+            bad.append("H0-P 清单内路径不存在: %s" % s.get('path'))
+            continue
+        body = io.open(path, encoding='utf-8', errors='replace').read()
+        sym = (s.get('symbol') or '').strip()
+        name = sym.split()[-1] if sym else ''
+        if name and not re.search(r'^\s*(?:pub )?%s\b' % re.escape(name), body, re.M) and (
+                not re.search(r'^\s*(?:pub )?enum\s+%s\b' % re.escape(name), body, re.M)):
+            bad.append("H0-E 清单内符号不存在: %s::%s" % (s.get('path'), sym))
+        if not s.get('term'):
+            bad.append("H0-P 未登记 term_id: %s::%s" % (s.get('path'), sym))
+        elif s['term'] not in ids:
+            bad.append("H0-T term 不在词表: %s -> %r" % (sym, s['term']))
+    return bad
+
+
 def main():
     g, t = genes(), terms()
     if not g or not t:
@@ -98,6 +138,8 @@ def main():
             bad.append("J3': 双面之一为空: %s" % x.get("id"))
     for x in t:
         bad.extend(admission(x))
+    if '--naming' in sys.argv:
+        bad.extend(check_naming(t))
     print("terms %d · DNA genes %d · admitted_unresolved %d · draft_unresolved %d" % (
         len(t), len(g),
         sum(1 for x in t if x.get("ambiguity_status") == "unresolved" and x.get("status") == "admitted"),
