@@ -46,7 +46,7 @@ if ( cd "$HERE" && python3 tools/check-source-language.py --selftest >/dev/null 
 # 文档反哺（verify 边）：L0 只放不变量 / 索引覆盖 / 生成段新鲜
 if ( cd "$K" && python3 tools/docgen.py >/tmp/sc_dg.out 2>&1 ); then row "文档反哺(docgen)" "$(tail -1 /tmp/sc_dg.out | cut -c1-60)"; else row "文档反哺(docgen)" "★ RED（见 /tmp/sc_dg.out）"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --selftest >/dev/null 2>&1 ); then row "kernel selftest" "OK"; else row "kernel selftest" "★ RED"; fail=1; fi
-if ( cd "$K" && python3 kernel.py --overdue --triggers /tmp/sc_trig.toml >/tmp/sc_od.out 2>&1 ); then row "触发器 lint" "$(tail -1 /tmp/sc_od.out)"; else row "触发器 lint" "★ RED（见 /tmp/sc_od.out）"; fail=1; fi
+if ( cd "$K" && python3 kernel.py --overdue --triggers "$HERE/governance/triggers.toml" >/tmp/sc_od.out 2>&1 ); then row "触发器 lint" "$(tail -1 /tmp/sc_od.out)"; else row "触发器 lint" "★ RED（见 /tmp/sc_od.out）"; fail=1; fi
 
 echo
 echo "③ 两份**不能混**的读数"
@@ -59,6 +59,7 @@ if grep -qE '^signed *= *true' "$HERE/governance/signoff.toml" 2>/dev/null; then
   row "SIGNOFF" "$(grep -m1 '^signed_by' "$HERE/governance/signoff.toml" | tr -d ' ' | cut -d= -f2) · $(grep -m1 '^signed_at' "$HERE/governance/signoff.toml" | tr -d ' ' | cut -d= -f2)"
 else
   row "SIGNOFF" "★ 未签（分项达标不等于合拢，见 C-069）"
+  fail=1
 fi
 mn=$(grep -m1 '^status *=' "$HERE/governance/signoff.toml" 2>/dev/null | tr -d ' "' | cut -d= -f2)
 mnmode=$(grep -m1 '^mode *=' "$HERE/governance/signoff.toml" 2>/dev/null | tr -d ' "' | cut -d= -f2)
@@ -68,5 +69,5 @@ echo "⑤ 已知基线（不是红，也别读成绿）"
 row "anaphase K32" "2 条 caliber 口径红（基线，非本轮引入）"
 row "A 组 forensic" "0 条（9→0 靠修好，见 Tuck 的 expected-red）"
 echo
-echo "── 屏幕判定: $([ "$fail" = 0 ] && echo '达标（可声称合拢）' || echo '★ 未达标')"
+echo "── 分项判定: $([ "$fail" = 0 ] && echo '达标（合拢结论由 governance/signoff.toml 签发，屏不自签 · C-069）' || echo '★ 未达标')"
 exit "$fail"
