@@ -84,4 +84,34 @@ if git diff --cached --name-only 2>/dev/null | grep -qE '^governance/terms\.toml
   fi
 fi
 
+# ------------------------------------------------- gate: anaphase 行预算（拦，不是看）
+# 为什么在这里：上一轮我**先提交后看红**（2f6facf 推了 4 红）——屏只打印不拦。
+# 跨仓可达：anaphase 不在本机 ⇒ 具名 UNMEASURABLE（不判绿也不判红）。
+# 豁免不自签：已知基线**只认两条具名输出**（4 条过期豁免 / 300 阈值那份清单），
+#   其余任何 FAIL 行 ⇒ 拦住提交。改坏豁免或新增超标文件都会改变这两条的条数。
+ANAPHASE_DIR="$(cd "$(dirname "$0")/../../../anaphase-helix" 2>/dev/null && pwd)"
+if [ -n "${ANAPHASE_DIR:-}" ] && [ -f "$ANAPHASE_DIR/ci/check_line_budget.py" ]; then
+  out=$( cd "$ANAPHASE_DIR" && python3 ci/check_line_budget.py 2>&1 ); rc=$?
+  fails=$(printf '%s\n' "$out" | grep -c '^FAIL' || true)
+  # 已知基线是**数值**，不是模式：只写模式会把"1 file over 300"也当已知（实测踩过）。
+  known=0
+  printf '%s\n' "$out" | grep -qE '^FAIL +[0-9]+ file\(s\) over 300' && known=$((known+1))
+  printf '%s\n' "$out" | grep -qE '^FAIL +[0-9]+ waiver\(s\) are past due' && known=$((known+1))
+  exp_over=$(printf '%s\n' "$out" | grep -oE '^FAIL +([0-9]+) file\(s\) over 300' | grep -oE '[0-9]+' | head -1)
+  exp_wv=$(printf '%s\n' "$out" | grep -oE '^FAIL +([0-9]+) waiver\(s\) are past due' | grep -oE '[0-9]+' | head -1)
+  if [ "${exp_over:-0}" != "9" ] || [ "${exp_wv:-0}" != "4" ]; then
+    echo "REJECT: 行预算基线漂移（over300=${exp_over:-缺} 期望 9 · 过期豁免=${exp_wv:-缺} 期望 4）"
+    printf '%s\n' "$out" | grep '^FAIL' | sed 's/^/        /'
+    exit 1
+  fi
+  if [ "$fails" != "$known" ]; then
+    echo "REJECT: anaphase 行预算出现**新增** FAIL（已知基线 $known 条，实际 $fails 条）"
+    printf '%s\n' "$out" | grep '^FAIL' | sed 's/^/        /'
+    exit 1
+  fi
+  echo "        anaphase 行预算：已知基线 $known 条（rc=$rc），无新增"
+else
+  echo "        anaphase 行预算：UNMEASURABLE（兄弟仓不在本机，不判绿也不判红）"
+fi
+
 exit $fail
