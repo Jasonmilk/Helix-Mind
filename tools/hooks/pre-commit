@@ -93,10 +93,17 @@ fi
 ANAPHASE_DIR="$(cd "$(dirname "$0")/../../../anaphase-helix" 2>/dev/null && pwd)"
 BASE_LIST="$(cd "$(dirname "$0")/../.." && pwd)/governance/anaphase-line-budget-baseline.txt"
 if [ -n "${ANAPHASE_DIR:-}" ] && [ -f "$ANAPHASE_DIR/ci/check_line_budget.py" ]; then
-  out=$( cd "$ANAPHASE_DIR" && python3 ci/check_line_budget.py 2>&1 )
+  out=$( cd "$ANAPHASE_DIR" && python3 ci/check_line_budget.py 2>&1 ); rc=$?
   now=$(printf '%s\n' "$out" | grep '^FAIL' | grep -oE 'src/[A-Za-z0-9_/.-]+\.rs' | sort -u)
   if [ ! -f "$BASE_LIST" ]; then
     echo "REJECT: 行预算基线清单缺失（$BASE_LIST）—— 读到空不是通过"; exit 1
+  fi
+  # 洞：检查器自身报错（新文件缺 seed）时**一条 FAIL 行都没有** ⇒ 空集 ⊆ 基线 ⇒ 假绿。
+  # 读到空必须是具名故障，不是通过。
+  if [ "$rc" != 0 ] && [ -z "$now" ]; then
+    echo "REJECT: 行预算检查器报错且无 FAIL 行（读到空不是通过）"
+    printf '%s\n' "$out" | head -3 | sed 's/^/        /'
+    exit 1
   fi
   extra=$(comm -13 "$BASE_LIST" <(printf '%s\n' "$now") | sed '/^$/d')
   if [ -n "$extra" ]; then
