@@ -17,23 +17,20 @@ row(){ printf '  %-30s %s\n' "$1" "$2"; }
 
 echo "═══ 合拢一屏（$(date -u +%Y-%m-%dT%H:%MZ)）════════════════════════════"
 echo
-echo "⓪ 当前未闭合段读数（非方向；机械每轮必读）"
-DIRF="$HERE/governance/direction.md"
-if [ ! -s "$DIRF" ]; then
-  row "DIRECTION" "★ RED 常驻方向缺失或为空（读到空不是通过；不等人提醒）"; fail=1
+echo "⓪ 方向（唯一来源；本屏只指向，不承载）"
+row "光（方向）" "Cellrix/docs/VISION.md（必要时人在此修正）"
+row "生态合拢锚" "helixECO/center/SESSION-DAG-IS-THE-CENTER.md（改它须人裁定）"
+Q="$HERE/docs/helixECO/execution-queue.md"
+if [ ! -s "$Q" ]; then
+  row "未闭合段" "★ RED 编排卷缺失或为空（读到空不是通过；不等人提醒）"; fail=1
+elif ! grep -q '## 当前管道段' "$Q"; then
+  row "未闭合段" "★ RED 编排卷里没有「当前管道段」格（判据在，对象不在）"; fail=1
 else
-  row "光（方向）" "Cellrix/docs/VISION.md（必要时人在此修正）"
-  row "生态合拢锚" "helixECO/center/SESSION-DAG-IS-THE-CENTER.md（改它须人裁定）"
-  row "当前未闭合段" "$(grep -m1 '^\*\*当前管道段' "$DIRF" | tr -d '*' | cut -c1-56)"
-  nopen=$(grep -c '^| ' "$DIRF")
-  n=$((nopen-1))
-  if [ "$n" -le 0 ]; then
-    row "未闭合项" "0 项 —— 须**人工确认**是全闭合还是误删（两者在屏上不可区分）"
-  else
-    row "未闭合项" "$n 项（见 governance/direction.md，闭合后删行，删前先把读数追加进台账）"
-  fi
+  n=$(grep -c '^| L2 \|^| D3 \|^| `web/`' "$Q")
+  if [ "$n" -le 0 ]; then row "未闭合段" "★ RED 管道段为空 ⇒ 须人工确认是全闭合还是误删"; fail=1
+  else row "未闭合段" "$n 项（见 execution-queue.md「当前管道段」，闭合后删行）"; fi
 fi
-echo
+
 echo "① 仓状态（head / dirty）"
 for r in Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle phyt-DNA; do
   [ -d "$W/$r/.git" ] || { row "$r" "缺目录"; fail=1; continue; }
