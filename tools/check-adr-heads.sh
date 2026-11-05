@@ -6,7 +6,16 @@
 #     ① 20 个编号**撞号**（每个文件被加了第二个 `# ADR-00NN`）② 新头标题是**文件名 slug**而非文件自己的标题。
 #   ⇒ 单文件检查**看不见**"集合里撞号"与"同一文件双头"，故必须在这里判。
 set -uo pipefail
-root=$(cd "$(dirname "$0")/.." && pwd)
+# root 可注入（--root DIR）：不可注入的判据**无法喂夹具** ⇒ 永远证明不了"改坏会红"。
+# 这也是上面集合级三条的教训之一：单文件判据的盲区，只能在夹具里复现。
+root=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --root) shift; root="${1:-}"; shift ;;
+    *) shift ;;
+  esac
+done
+[ -n "${root:-}" ] || root=$(cd "$(dirname "$0")/.." && pwd)
 fail=0
 _internal_error() { echo "★ 检查内部错误（不是仓库的问题，是判据的问题）: $*" >&2; exit 3; }
 trap '_internal_error "$BASH_COMMAND"' ERR
