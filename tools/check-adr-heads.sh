@@ -17,11 +17,16 @@ for f in "$root"/docs/decisions/*.md; do
     || { echo "★ ADR 头不可解析（头必须在第 0 行）: $(basename "$f")"; fail=1; }
 done
 echo "--- 集合级检查（单文件判据的盲区）---"
-dup=$(grep -h '^# ADR-' "$root"/docs/decisions/*.md 2>/dev/null | sed -E 's/^(# ADR-[0-9]{4}).*/\1/' | sort | uniq -d || true)
+# `|| true` 把"grep 失败"变成"没有重复" ⇒ 集合级判据静默通过（第三处同族）。
+if ! dup=$(grep -h '^# ADR-' "$root"/docs/decisions/*.md 2>/dev/null | sed -E 's/^(# ADR-[0-9]{4}).*/\1/' | sort | uniq -d); then
+  rc=${PIPESTATUS[0]:-0}
+  if [ "$rc" -gt 1 ]; then echo "★ grep 失败（rc=$rc）⇒ 编号撞号检查不可量（不是通过）"; fail=1; fi
+fi
 if [ -n "$dup" ]; then echo "★ 编号撞号（同一编号出现多次）:"; printf '%s\n' "$dup" | sed 's/^/    /'; fail=1; fi
 for f in "$root"/docs/decisions/*.md; do
   [ -e "$f" ] || continue
-  n=$(grep -c '^# ADR-' "$f" || true)
+  n=$(grep -c '^# ADR-' "$f"); rcg=$?
+  if [ "$rcg" -gt 1 ]; then echo "★ grep 失败（rc=$rcg）: $(basename "$f") ⇒ 双头检查不可量（不是通过）"; fail=1; continue; fi
   if [ "${n:-0}" -gt 1 ]; then echo "★ 双头: $(basename "$f")（${n} 个 # ADR- 行）"; fail=1; fi
 done
 for f in "$root"/docs/decisions/*.md; do
