@@ -43,7 +43,9 @@ for f in "$root"/docs/decisions/*.md; do
   b=$(basename "$f")
   fn=$(printf '%s' "$b" | grep -oE '^[0-9]{4}' || true)
   if [ -z "$fn" ]; then fn=$(printf '%s' "$b" | grep -oE 'ADR-[0-9]{4}' | grep -oE '[0-9]{4}' || true); fi
-  hn=$(sed -nE 's/^#\s*ADR-([0-9]{4})\s*[:：].*/\1/p' "$f" | head -1 || true)
+  # `\s` 是 GNU sed 扩展，BSD/macOS sed 不认 ⇒ 本地恒空、判据**恒不触发**（实测形5 不响）。
+  # 用 POSIX 字符类，两侧方言都成立。
+  hn=$(sed -nE 's/^#[[:space:]]*ADR-([0-9]{4})[[:space:]]*[:：].*/\1/p' "$f" | head -1 || true)
   if [ -n "$fn" ] && [ -n "$hn" ] && [ "$fn" != "$hn" ]; then
     echo "★ 编号与文件名不一致: ${b}（文件名 ${fn} vs 头 ${hn}）"; fail=1
   fi
