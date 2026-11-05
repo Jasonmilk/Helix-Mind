@@ -17,6 +17,16 @@ row(){ printf '  %-30s %s\n' "$1" "$2"; }
 
 echo "═══ 合拢一屏（$(date -u +%Y-%m-%dT%H:%MZ)）════════════════════════════"
 echo
+echo "⓪ 常驻方向（用户注入一次；机械每轮必读）"
+DIRF="$HERE/governance/direction.md"
+if [ ! -s "$DIRF" ]; then
+  row "DIRECTION" "★ RED 常驻方向缺失或为空（读到空不是通过；不等人提醒）"; fail=1
+else
+  row "DIRECTION" "$(grep -m1 '^\*\*' "$DIRF" | tr -d '*' | cut -c1-56)"
+  nopen=$(grep -c '^| ' "$DIRF" || true)
+  row "未闭合项" "$((nopen-1)) 项（见 governance/direction.md，闭合后删行）"
+fi
+echo
 echo "① 仓状态（head / dirty）"
 for r in Cellrix Tuck anaphase-helix helix-mind FlowModus helix-tentacle phyt-DNA; do
   [ -d "$W/$r/.git" ] || { row "$r" "缺目录"; fail=1; continue; }
