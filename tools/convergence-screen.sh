@@ -34,8 +34,18 @@ echo "② 判据（本屏实跑，非引用）"
 # 除这两条之外还有「名单外失败」⇒ 才判红。只写"已基线"而不判，就是给它豁免权。
 unmeas=0
 ( cd "$W/Tuck" && python3 tools/expected-red.py >/tmp/sc_er.out 2>&1 ); rc_er=$?
-others=$(grep -c '名单外失败' /tmp/sc_er.out || true)
-k32=$(grep -c '名单外失败：.*ci_line_budget\|名单外失败：the_line_budget\|名单外失败：the_override' /tmp/sc_er.out || true)
+# `grep -c` 在"文件不存在"与"0 命中"两种情况下都给空/0，而 `|| true` 把 rc 也吞了
+# ⇒ 输出文件缺失时 others=""、k32=""，两者相等 ⇒ **判据通过**（假绿，实测确认）。
+# 分三步：文件在不在 → 命令 rc 是否合法（0/1）→ 再取数。
+if [ ! -f /tmp/sc_er.out ]; then
+  row "Tuck 可测性" "★ RED 判据输出文件不存在（读到空不是通过）"; fail=1; others=0; k32=0
+else
+  others=$(grep -c '名单外失败' /tmp/sc_er.out); rco=$?
+  k32=$(grep -c '名单外失败：.*ci_line_budget\|名单外失败：the_line_budget\|名单外失败：the_override' /tmp/sc_er.out); rck=$?
+  if [ "$rco" -gt 1 ] || [ "$rck" -gt 1 ]; then
+    row "Tuck 可测性" "★ RED grep 异常（rc=$rco/$rck）⇒ 不可量不是通过"; fail=1
+  fi
+fi
 row "Tuck KNOWN-LIVE" "$(grep -m1 '^KNOWN-LIVE' /tmp/sc_er.out)"
 row "Tuck 名单外失败" "${others} 条（其中 K32 基线 ${k32} 条）"
 [ "$others" = "$k32" ] || fail=1
