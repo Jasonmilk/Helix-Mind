@@ -91,14 +91,20 @@ if grep -q '\[large\]' "$MSG_FILE" 2>/dev/null; then
   exit 0
 fi
 
-stat="$(git diff --cached --shortstat 2>/dev/null || true)"
+# `|| true` 会把"git diff 失败"变成"没有改动" ⇒ 门放行（不可量当通过）。
+# 分两步：先判命令成不成，再判空不空。
+if ! stat="$(git diff --cached --shortstat 2>/dev/null)"; then
+  echo "REJECT: git diff 失败 ⇒ 读不到暂存区（不可量不是通过）"; exit 1
+fi
 [ -n "$stat" ] || exit 0
 
 # --numstat is a machine format (added, deleted, path) — no human text to parse
 # and no dialect to get wrong. The previous version used --shortstat plus sed,
 # and macOS sed silently matched nothing (BRE treats \+ as a literal), so the
 # gate computed 0 and passed everything for as long as it existed.
-numstat="$(git diff --cached --numstat 2>/dev/null || true)"
+if ! numstat="$(git diff --cached --numstat 2>/dev/null)"; then
+  echo "REJECT: git diff --numstat 失败 ⇒ 读不到行数（不可量不是通过）"; exit 1
+fi
 
 # Only GUARDED paths count. Tests, fixtures and inline test data are data, not
 # logic, and being large is their nature — the gate kept firing on exactly the
