@@ -17,14 +17,21 @@ row(){ printf '  %-30s %s\n' "$1" "$2"; }
 
 echo "═══ 合拢一屏（$(date -u +%Y-%m-%dT%H:%MZ)）════════════════════════════"
 echo
-echo "⓪ 常驻方向（用户注入一次；机械每轮必读）"
+echo "⓪ 当前未闭合段读数（非方向；机械每轮必读）"
 DIRF="$HERE/governance/direction.md"
 if [ ! -s "$DIRF" ]; then
   row "DIRECTION" "★ RED 常驻方向缺失或为空（读到空不是通过；不等人提醒）"; fail=1
 else
-  row "DIRECTION" "$(grep -m1 '^\*\*' "$DIRF" | tr -d '*' | cut -c1-56)"
-  nopen=$(grep -c '^| ' "$DIRF" || true)
-  row "未闭合项" "$((nopen-1)) 项（见 governance/direction.md，闭合后删行）"
+  row "光（方向）" "Cellrix/docs/VISION.md（必要时人在此修正）"
+  row "生态合拢锚" "helixECO/center/SESSION-DAG-IS-THE-CENTER.md（改它须人裁定）"
+  row "当前未闭合段" "$(grep -m1 '^\*\*当前管道段' "$DIRF" | tr -d '*' | cut -c1-56)"
+  nopen=$(grep -c '^| ' "$DIRF")
+  n=$((nopen-1))
+  if [ "$n" -le 0 ]; then
+    row "未闭合项" "0 项 —— 须**人工确认**是全闭合还是误删（两者在屏上不可区分）"
+  else
+    row "未闭合项" "$n 项（见 governance/direction.md，闭合后删行，删前先把读数追加进台账）"
+  fi
 fi
 echo
 echo "① 仓状态（head / dirty）"

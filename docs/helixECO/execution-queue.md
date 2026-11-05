@@ -11,11 +11,11 @@
 > **当前格**：合拢已签（`governance/signoff.toml`）→ HITL 观测/就绪评估态（**不是**实现应答者注册）
 > **起跑**：真实任务；撞到不适应 ⇒ 先入册带机械 revisit（记录 ≠ 立刻修）；可逆可观测 ⇒ 当场修带 mutation，不可逆（购买/转账/动历史）⇒ 先验 hazard、不试错
 > **回来判据**：真实授权需求出现 / 某类撞门 ≥50（**前置已落**：hitl 行镜像进落盘流（C-076/C-078）；累计与 cap 边界待真实流量举证）
-> **界面三层（2026-11-05 并入坐标，不新建文件）**：`L1 = Cell-Manifest 索引薄侧栏（不建模板库、默认进最近项目、项目自报即出现）` · `L2 = 选中后才开的 AG-UI additive 出口（只映射真实骨架里有的 RUN_STARTED / TEXT_MESSAGE_* / RUN_FINISHED；metadata 带 verdict/criteria/trace 且验收拆线层/语义层/渲染层三层；CUSTOM 只做自家扩展；TOOL_CALL_* 等到真走工具段的周期再长）` · `L3 = 可删本地偏好（栏宽/展开/最近项目，不写回 manifest 或账本）`。切换属导航层，**不进 AG-UI**（interrupt/resume 是 run 内语义，混用会被客户端误认成对当前 run 的答复）。
+> **界面三层（2026-11-05 并入坐标，不新建文件）**：`L1 = Cell-Manifest 索引薄侧栏（不建模板库、默认进最近项目、项目自报即出现）` · `L2 = 选中后才开的 AG-UI additive 出口（只映射真实骨架里有的 RUN_STARTED / TEXT_MESSAGE_* / RUN_FINISHED；metadata **只挂 verdict**（criteria/trace 不进 metadata；验收拆 D1/D2/D3 三层）；CUSTOM 只做自家扩展；TOOL_CALL_* 等到真走工具段的周期再长）` · `L3 = 可删本地偏好（栏宽/展开/最近项目，不写回 manifest 或账本）`。切换属导航层，**不进 AG-UI**（interrupt/resume 是 run 内语义，混用会被客户端误认成对当前 run 的答复）。
 > **脱落触发条件（不是闹钟，是事实）**：任何标了「待脱落」的东西，**触发条件写在自己的死亡证明里**；条件满足 ⇒ 出 `docs/deaths/DEATH-CERT-*.md`（8 字段）+ 留腐殖质 + 写受体，然后才删代码。不满足 ⇒ 坐标里只留一行指针，不预排。
 > **不阻塞**：队尾三条（`risk_tier` 跨仓 · 代码→文档映射 · `upstream-manifest` 空分母）+ 两条依赖人（`EXPECTED-RED` 到期换基线 · signoff 的 successor 阶段）；不新开批，不出现「等你签/等你拍/无法推进」
 
-`last-synced: 2026-11-04`（逐条核过；读数以 §0 三条命令为准，本文件不复述）
+`last-synced: 2026-11-05`（逐条核过；读数以 §0 三条命令为准，本文件不复述）
 
 ## 队列（按依赖排，不按发现顺序）
 
