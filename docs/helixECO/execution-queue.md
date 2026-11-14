@@ -63,3 +63,15 @@
 | `web/` 待删 | 卡在 D3 | D1/D2/D3 各自单独有红有绿 ⇒ 出正式死亡证明 + `git rm` 读数 |
 
 > 闭合由**读数**签，不由交接语签：删行前把机检读数（命令 + rc + 关键行）追加进台账。
+
+### L2 真跑撞出的缺口（2026-11-05，读数来自 `Cellrix/tools/l2_casefile.js`）
+
+| 案卷四件 | 取到? | 读不到的**原因**（不是"没写代码"） |
+|---|---|---|
+| ① 选中边 | ✅ 5 条（`Perception --Success--> PreAssessment` …） | 来自 ring 的 `state` 迁移 |
+| ② 候选边 | ❌ UNMEASURABLE | tape 只记**被选中**的那条；**兄弟条件未落盘** |
+| ③ 支撑读数 | ✅ `by_from` + `verdict=null` + `session_rows=10` | — |
+| ④ 未选原因 | ❌ UNMEASURABLE | tape 里**没有任何字段**记录"为什么没走另一条边" |
+
+⇒ 缺口在**记录面**（anaphase 的 state 事件只写 `from/condition/to`），不在展示面。
+⇒ 补法属「新语义面」（要给事件加兄弟条件 / 未选原因字段）⇒ **走门**，本轮只登记。
