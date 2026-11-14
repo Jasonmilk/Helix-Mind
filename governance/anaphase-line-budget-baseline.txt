@@ -1,4 +1,17 @@
 src/adapters/http_reasoning.rs
 src/adapters/mind.rs
+src/agui.rs
+src/bin/up.rs
 src/bind.rs
+src/capability.rs
+src/contract/mod.rs
+src/gate.rs
+src/governance.rs
+src/hitl.rs
+src/judge.rs
+src/main.rs
+src/pipeline/mod.rs
 src/rails.rs
+src/session_events/convergence.rs
+src/session_events/gc.rs
+src/session_events/query.rs
