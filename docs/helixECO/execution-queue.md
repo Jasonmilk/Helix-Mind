@@ -87,3 +87,14 @@
 **为什么不自行补**：`未选原因` 只能来自模型自述 ⇒ 写进审计链＝让模型的话成为证据。
 `ADR-0048:11505` 要的是"选择了什么、为什么没成"，但"为什么"必须由**人或确定性规则**给。
 ⇒ 补字段属改外部事件契约（新语义面）⇒ 门；本轮只登记，不动 anaphase。
+
+### L2 的「出口」证据（未闭合；2026-11-05 桩上游真跑一轮）
+
+| 项 | 读数 |
+|---|---|
+| 真跑一轮 | `job_id=run-8451798a882701d7` · `model=stub` · jsonl **10 行** · `bin/agui` 产出 **5 条**标准事件 |
+| D1/D2 | `tools/d1_d2_check.js <tape>` ⇒ `rc=0`（D1 线层真绿；D2 是 schema 快照替代，**不算闭合**） |
+| 四条反样本 | 缺 tape 目录 `rc=1` · 空事件流 `rc=1` · `metadata` 多键 ⇒ D2 `rc=1` · 删 `turn/end` ⇒ D1 `rc=1` |
+| 一键入口 | `Cellrix/tools/accept_all.sh` ⇒ `rc=0`（正样本）；藏起 tape ⇒ `rc=1`（反样本） |
+| 不算闭合的三件 | 桩通路（`model=stub`）· `schema 快照 agui-1.0-min/2026-11-05` · 冻结 baseline `269f2b7e` |
+| **仍缺** | 真上游一轮（端点/凭据四问已列在 `Cellrix/docs/observations/real-upstream-checklist-2026-11-05.md`） |
