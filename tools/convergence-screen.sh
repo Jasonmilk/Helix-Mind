@@ -72,6 +72,24 @@ if grep -q 'check-terms\.py"' "$HERE/tools/hooks/pre-commit" 2>/dev/null; then r
 if ( cd "$HERE" && python3 tools/check-terms.py --naming >/tmp/sc_tm.out 2>&1 ); then row "术语准入（H2/H3）" "$(tail -1 /tmp/sc_tm.out)"; [ "$(grep -c 'admitted_unresolved 0' /tmp/sc_tm.out || true)" = 1 ] || { row "ADMITTED_UNRESOLVED" "★ RED（未决却 admitted）"; fail=1; }; else row "术语准入（H2/H3）" "★ RED"; fail=1; fi
 if ( cd "$HERE" && python3 tools/check-source-language.py --selftest >/dev/null 2>&1 ); then row "source-language selftest" "OK"; else row "source-language selftest" "★ RED"; fail=1; fi
 # 文档反哺（verify 边）：L0 只放不变量 / 索引覆盖 / 生成段新鲜
+# 证轨三层判据的**调用点**（C-073：判据在没人调用 = 装饰品）。
+# Cellrix 侧三个检查器只有被调用才算数；兄弟仓不在 ⇒ 具名 UNMEASURABLE（不判绿也不判红）。
+CX="$W/Cellrix"
+if [ -d "$CX/tools" ]; then
+  tape=$(ls -t /tmp/l2/events/*.jsonl 2>/dev/null | head -1)
+  if [ -n "$tape" ] && ( cd "$CX" && node tools/d1_d2_check.js "$tape" >/tmp/cx_d12.out 2>&1 ); then
+    row "证轨 D1/D2" "$(tail -1 /tmp/cx_d12.out | cut -c1-56)"
+  else
+    row "证轨 D1/D2" "UNMEASURABLE（无 tape 夹具或检查器失败；不判绿）"; unmeas=$((unmeas+1))
+  fi
+  if ( cd "$CX" && node tools/d3_compare.js /tmp/l2/case.json >/tmp/cx_d3.out 2>&1 ); then
+    row "证轨 D3 对照" "$(tail -1 /tmp/cx_d3.out | cut -c1-52)"
+  else
+    row "证轨 D3 对照" "UNMEASURABLE（缺案卷/对照表；不判绿）"; unmeas=$((unmeas+1))
+  fi
+else
+  row "证轨三层" "UNMEASURABLE（Cellrix 不在本机）"; unmeas=$((unmeas+1))
+fi
 if ( cd "$K" && python3 tools/docgen.py >/tmp/sc_dg.out 2>&1 ); then row "文档反哺(docgen)" "$(tail -1 /tmp/sc_dg.out | cut -c1-60)"; else row "文档反哺(docgen)" "★ RED（见 /tmp/sc_dg.out）"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --selftest >/dev/null 2>&1 ); then row "kernel selftest" "OK"; else row "kernel selftest" "★ RED"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --overdue --triggers "$HERE/governance/triggers.toml" >/tmp/sc_od.out 2>&1 ); then row "触发器 lint" "$(tail -1 /tmp/sc_od.out)"; else row "触发器 lint" "★ RED（见 /tmp/sc_od.out）"; fail=1; fi
