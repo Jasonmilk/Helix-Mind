@@ -210,7 +210,7 @@ tool_calls 在适配器层就被丢弃。要回答它，必须先让适配器解
 条件1 M2–M6 全完成          ❌（M6 = B18 未完成）
 条件2 孤根 83→可接受         ❌ 现网 668 period / 孤根 484（72%），基线是 139/83（60%）
 条件3 slice 可用且不混用     ✅ slice_of / slice_from / /v1/sessions?root= / chain_of 另名
-条件4 无新增「面」           ⚠️ 路由计数 19，缺基线 ⇒ 具名 UNMEASURABLE
+条件4 无新增「面」           ✅ 基线已建（19 个面逐条列名，`observations/2026-11-16/m7-condition4-face-baseline.md`）；本轮 grep=19 且集合一致
 ⇒ M7 保持冻结（原文：任意一条不满足 ⇒ 不"先做起来看看"）
 ```
 详见 `observations/2026-11-16/m7-gate-readings.md`。
