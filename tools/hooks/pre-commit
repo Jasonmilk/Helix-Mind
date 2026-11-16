@@ -100,9 +100,14 @@ if [ -n "${ANAPHASE_DIR:-}" ] && [ -f "$ANAPHASE_DIR/ci/check_line_budget.py" ];
   if [ ! -f "$BASE_LIST" ]; then
     echo "REJECT: 行预算基线清单缺失（$BASE_LIST）—— 读到空不是通过"; exit 1
   fi
-  # 洞：检查器自身报错（新文件缺 seed）时**一条 FAIL 行都没有** ⇒ 空集 ⊆ 基线 ⇒ 假绿。
-  # 读到空必须是具名故障，不是通过。
-  if [ "$rc" != 0 ] && [ -z "$now" ]; then
+  # rc≠0 有两种：① 真 FAIL（增长 / 未签名 seed / 超签）② 检查器自身报错。
+  # 先按输出区分，别把"有 FAIL 行但文件名在下一行"误读成"没有 FAIL"（实测踩过）。
+  if [ "$rc" != 0 ]; then
+    if printf '%s\n' "$out" | grep -q '^FAIL'; then
+      echo "REJECT: 行预算 FAIL（增长/未签名 seed/超签 —— 这是真红，不是阈值）"
+      printf '%s\n' "$out" | grep -A3 '^FAIL' | head -8 | sed 's/^/        /'
+      exit 1
+    fi
     echo "REJECT: 行预算检查器报错且无 FAIL 行（读到空不是通过）"
     printf '%s\n' "$out" | head -3 | sed 's/^/        /'
     exit 1
