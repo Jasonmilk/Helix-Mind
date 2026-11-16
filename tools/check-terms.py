@@ -18,6 +18,10 @@ DNA = os.path.join(ROOT, "..", "phyt-DNA", "DNA.md")
 
 
 def genes():
+    # 物理事实：CI 只 checkout 本仓 ⇒ `../phyt-DNA/DNA.md` 不存在。
+    # 不可量 ≠ 违规：返回 None 表示"这项在这里测不了"，由调用方具名打印、不判红。
+    if not os.path.exists(DNA):
+        return None
     text = io.open(DNA, encoding="utf-8").read()
     blocks = {}
     for m in re.finditer(r"^\*\*(.+?)\*\*\s*\n(.*?)(?=^\*\*|\Z)", text, re.M | re.S):
@@ -97,9 +101,16 @@ def check_naming(root_terms):
     ids = {t.get('id') for t in root_terms}
     bad = []
     base = os.path.dirname(p)
+    repo_root = os.path.abspath(os.path.join(base, '..'))
     for s in surfaces:
         path = os.path.normpath(os.path.join(base, s.get('path', '')))
         if not os.path.exists(path):
+            # 物理事实：CI 只 checkout 一个仓 ⇒ 兄弟仓里的受管命名**本机可验、CI 不可验**。
+            # 不可量 ≠ 违规（C-043 同族）；出仓引用缺失 ⇒ 具名 UNMEASURABLE，不计入 bad。
+            if not os.path.abspath(path).startswith(repo_root + os.sep):
+                print("UNMEASURABLE: H0 清单项指向仓外且当前不存在: %s（单仓检出不可验，不算通过）"
+                      % s.get('path'), file=sys.stderr)
+                continue
             bad.append("H0-P 清单内路径不存在: %s" % s.get('path'))
             continue
         body = io.open(path, encoding='utf-8', errors='replace').read()
@@ -117,15 +128,22 @@ def check_naming(root_terms):
 
 def main():
     g, t = genes(), terms()
-    if not g or not t:
-        print("CHECKER DEAD: genes=%d terms=%d -> read nothing" % (len(g), len(t)))
+    if not t:
+        print("CHECKER DEAD: terms=0 -> read nothing")
         return 3
+    dna_measurable = g is not None
+    if not dna_measurable:
+        # 单仓检出（CI）里 `../phyt-DNA/DNA.md` 不存在 ⇒ J1 双向比对**不可量**。
+        # 具名打印、不判红；本机有兄弟仓时这段不触发（J1 照常双向比对）。
+        print("UNMEASURABLE: J1 双向比对（缺 %s，单仓检出不可验）" % os.path.relpath(DNA, ROOT), file=sys.stderr)
+        g = set()
     bad = []
     by_zh = {x.get("zh") for x in t}
-    for name in sorted(g - by_zh):
-        bad.append("J1: DNA 里的基因名没有 entry: %s" % name)
-    for name in sorted(by_zh - g):
-        bad.append("J1: entry 发明了 DNA 里没有的名: %s" % name)
+    if dna_measurable:
+        for name in sorted(g - by_zh):
+            bad.append("J1: DNA 里的基因名没有 entry: %s" % name)
+        for name in sorted(by_zh - g):
+            bad.append("J1: entry 发明了 DNA 里没有的名: %s" % name)
     seen_zh, seen_en = {}, {}
     for x in t:
         if x.get("zh") in seen_zh:
