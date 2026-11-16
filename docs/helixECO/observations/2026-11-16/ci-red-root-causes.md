@@ -64,5 +64,5 @@ Cellrix         f2cb52f  success
 Tuck            c833034  success（11-03）
 FlowModus       9359a8f  success（10-25）
 phyt-DNA        5f017fa  success（11-03）
-helix-tentacle  no runs（无 workflow 触发）
+helix-tentacle  **UNMEASURABLE**：本仓无 workflow ⇒ 无对象可跑（按 C-087 口径：不算缺口、不补门、不扩覆盖率）
 ```
