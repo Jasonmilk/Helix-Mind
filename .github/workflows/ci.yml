@@ -34,7 +34,9 @@ jobs:
         # 实测：GitHub Actions 只 checkout 本仓 ⇒ `../thinking/…` 恒不存在 ⇒ docgen 在此**永远 SKIP**。
         # 恒 SKIP 的 step 是"绿着守非生产对象"，比不加更坏 ⇒ 本 step 只做一件事：把不可量说清楚。
         # docgen 的真实消费方是**读时**：`thinking/phyt-DNA的任务编排思路/tools/docgen.py` + 合拢屏。
-        run: echo "UNMEASURABLE: 编排仓不在 CI 检出范围内 —— docgen 由读时（屏/docgen.py）执行，CI 不判"
+        run: |
+          # YAML 坑：plain scalar 里出现 ": " 会被当成映射 ⇒ 整个 workflow 无效（GitHub 表现为 jobs=0、每次必红）
+          echo "UNMEASURABLE: 编排仓不在 CI 检出范围内 —— docgen 由读时（屏/docgen.py）执行，CI 不判"
       - name: ②·5 文档不得落后于代码（分支地图生成物比对）
         run: bash tools/branch-map.sh --check
       - name: ② 脚本语法自检
