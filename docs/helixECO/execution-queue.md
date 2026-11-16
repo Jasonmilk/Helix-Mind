@@ -123,3 +123,18 @@ tool/call 事件只在**已执行的调用**上发射（run_cycle/mod.rs:1340，
 
 **⇒ 要走到授权段，需要两个 endpoint 同时在位**：`reasoning_endpoint` + `tentacle_endpoint`。
 （当前 config.toml 两者都没有；桩模式只能验①的"给了会怎样"，验不了②。）
+
+### 第三道门（2026-11-16 实测，比"两道前置"更准）
+
+```
+按"两道前置"配好（reasoning_endpoint=桩 · tentacle_endpoint=grpc://127.0.0.1:1 故意不可达）
+真跑一轮读数：impasse=False · model=stub · **tool/call = 0** · 日志里没有 execution pipeline refused
+⇒ 工具调用**根本没走到执行点** ⇒「配置了但不可达」这条分支本轮**没被触发**，不可作结论
+⇒ 说明在"上游给 tool_calls"与"执行点"之间还有一道**装配门**（未命名、未定位）
+```
+
+**登记（不处置）**：第三道门 = tool_calls → 执行点 之间的装配。定位它之前，
+「tentacle 可不可达」都只是静态配置读数，不能当作工具段走通或走不通的证据。
+
+**顺带的真 bug**：`cp config.toml + 追加 reasoning_model` ⇒ `TomlError: duplicate key`（服务直接退出）。
+⇒ 配置是 fail-closed 的（好事），但也说明"追加一行"这种操作必须先看原文件有没有该键。
