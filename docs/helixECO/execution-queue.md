@@ -109,3 +109,17 @@
 | 曾经的真 bug | `env "$A=1 B=2"` 被当成单变量 ⇒ endpoint 丢失 ⇒ `builder error`；已改数组传参 |
 
 **结论边界**：以上全部是**桩**读数，不构成「真上游一轮」；L2 仍保持未闭合。
+
+### 工具段的两道前置（2026-11-16 读码确认，解释 tool/call=0）
+
+```
+① 上游必须给 tool_calls           —— 由 reasoning_endpoint 的模型行为决定
+② execution pipeline 必须 Bound   —— pipeline/mod.rs:557 resolve_binding：endpoint 为空 ⇒ Unbound
+                                     ⇔ config.rs:98 tentacle_endpoint / env ANAPHASE_TENTACLE_ENDPOINT
+Unbound 时 run_cycle/mod.rs:317 ring_execution_refusal ⇒ "no tool call"（fail-closed，只读继续）
+tool/call 事件只在**已执行的调用**上发射（run_cycle/mod.rs:1340，遍历 records）
+⇒ ①②缺任一：tool/call 恒 0，HITL 门（挂在组装之后）都轮不到
+```
+
+**⇒ 要走到授权段，需要两个 endpoint 同时在位**：`reasoning_endpoint` + `tentacle_endpoint`。
+（当前 config.toml 两者都没有；桩模式只能验①的"给了会怎样"，验不了②。）
