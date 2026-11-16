@@ -138,3 +138,23 @@ tool/call 事件只在**已执行的调用**上发射（run_cycle/mod.rs:1340，
 
 **顺带的真 bug**：`cp config.toml + 追加 reasoning_model` ⇒ `TomlError: duplicate key`（服务直接退出）。
 ⇒ 配置是 fail-closed 的（好事），但也说明"追加一行"这种操作必须先看原文件有没有该键。
+
+### 第三道门已定位（2026-11-16 读码 + 实跑）
+
+```
+src/adapters/http_reasoning.rs:143   非流式只取 choices[0].message.content
+grep -c tool_calls src/adapters/     = 0        ← 适配器**从未读取** tool_calls
+实跑（桩返回 tool_calls）：日志 "empty reply … retry" → "Unstructured output (no calls plan)"
+⇒ sig.calls 恒空 ⇒ NoToolNeeded；tool/call 恒 0
+⇒ 与 tentacle_endpoint **无关**（那是第二道：执行点 Bound）
+```
+
+**结论（修正对外口径）**：当前实现下「上游会不会自己发起 tool_calls」**无法回答**——
+tool_calls 在适配器层就被丢弃。要回答它，必须先让适配器解析 tool_calls（改行为面 ⇒ 需裁定）。
+
+三道门（现在有名字了）：
+```
+① 适配器解析 tool_calls        缺 ⇒ calls 恒空（现状：缺）
+② pipeline Bound（tentacle）   缺 ⇒ job 不组装、执行点 refuse
+③ 执行点通过（HITL 安全门）    缺 ⇒ 不执行、无 tool/call 事件
+```
