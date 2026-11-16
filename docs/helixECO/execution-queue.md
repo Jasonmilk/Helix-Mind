@@ -98,3 +98,14 @@
 | 一键入口 | `Cellrix/tools/accept_all.sh` ⇒ `rc=0`（正样本）；藏起 tape ⇒ `rc=1`（反样本） |
 | 不算闭合的三件 | 桩通路（`model=stub`）· `schema 快照 agui-1.0-min/2026-11-05` · 冻结 baseline `269f2b7e` |
 | **仍缺** | 真上游一轮（端点/凭据四问已列在 `Cellrix/docs/observations/real-upstream-checklist-2026-11-05.md`） |
+
+### 出口链的新读数（2026-11-16，桩模式，非生产）
+
+| 事实 | 读数 |
+|---|---|
+| 桩上游跑一轮（修好 env 传参后） | `impasse=False · model=stub · agui 5 条 · D1/D2 rc=0` |
+| **上游返回 tool_calls 时本仓仍 `tool/call=0`** | ⇒「模型会不会发起工具调用」不是唯一条件，工具段另有装配门（具名，未处置） |
+| rail 命中会绕过上游 | `bypass=rail` ⇒ 该轮 **上游未被调用**（读数会因此假"通"）——`run_one_cycle` 现已打印 |
+| 曾经的真 bug | `env "$A=1 B=2"` 被当成单变量 ⇒ endpoint 丢失 ⇒ `builder error`；已改数组传参 |
+
+**结论边界**：以上全部是**桩**读数，不构成「真上游一轮」；L2 仍保持未闭合。
