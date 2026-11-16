@@ -158,3 +158,19 @@ tool_calls 在适配器层就被丢弃。要回答它，必须先让适配器解
 ② pipeline Bound（tentacle）   缺 ⇒ job 不组装、执行点 refuse
 ③ 执行点通过（HITL 安全门）    缺 ⇒ 不执行、无 tool/call 事件
 ```
+
+### 纠正（2026-11-16 晚）：只有两道门，"适配器不读 tool_calls"是我的桩形状错
+
+```
+本仓契约（contract/mod.rs:92）：模型在 **content** 里回 JSON 计划
+  {"calls":[{"tool":…,"args":{…},"expect":"ok"}]}
+我此前的桩回 OpenAI 风格 message.tool_calls ⇒ 本仓从不读它 ⇒ 误判成"适配器缺功能"
+
+把桩改成契约形状后同一轮真跑：
+  [Reasoning] 1 tool call(s) parsed but pipeline UNBOUND (tentacle_endpoint missing) ⇒ job NOT assembled
+  ⛔ tool calls parsed (n=1) but execution pipeline is unbound ⇒ not executed, no tool/call event
+⇒ ① 解析成立（n=1）；② 缺 tentacle_endpoint ⇒ job 不组装（昨日新增的 warn 首次真触发）
+```
+
+**门只剩两道**：`reasoning_endpoint`（上游给计划）+ `tentacle_endpoint`（pipeline Bound）。
+`accept_all` 预检已从三道改回两道，并删掉那条误导性 grep。
