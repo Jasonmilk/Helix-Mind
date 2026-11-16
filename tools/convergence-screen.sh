@@ -96,6 +96,14 @@ if [ -d "$CX/tools" ]; then
 else
   row "证轨三层" "UNMEASURABLE（Cellrix 不在本机）"; unmeas=$((unmeas+1))
 fi
+# 出口上游是否真的配了（读文件，不猜；缺就具名，不判绿也不判红）
+CFG="$W/anaphase-helix/config.toml"
+if [ -f "$CFG" ] && grep -qE '^[[:space:]]*reasoning_endpoint[[:space:]]*=' "$CFG"; then
+  ep=$(grep -m1 -E '^[[:space:]]*reasoning_endpoint[[:space:]]*=' "$CFG" | sed -E 's/^[^=]*=[[:space:]]*"//; s/"[[:space:]]*$//; s#(https?://)[^/]*@#\1***@#')
+  row "出口上游" "已配置（脱敏）：${ep:0:60}"
+else
+  row "出口上游" "UNMEASURABLE（config.toml 无 reasoning_endpoint）⇒ L2 保持未闭合"
+fi
 if ( cd "$K" && python3 tools/docgen.py >/tmp/sc_dg.out 2>&1 ); then row "文档反哺(docgen)" "$(tail -1 /tmp/sc_dg.out | cut -c1-60)"; else row "文档反哺(docgen)" "★ RED（见 /tmp/sc_dg.out）"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --selftest >/dev/null 2>&1 ); then row "kernel selftest" "OK"; else row "kernel selftest" "★ RED"; fail=1; fi
 if ( cd "$K" && python3 kernel.py --overdue --triggers "$HERE/governance/triggers.toml" >/tmp/sc_od.out 2>&1 ); then row "触发器 lint" "$(tail -1 /tmp/sc_od.out)"; else row "触发器 lint" "★ RED（见 /tmp/sc_od.out）"; fail=1; fi
