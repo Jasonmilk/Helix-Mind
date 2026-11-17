@@ -175,3 +175,32 @@ tape: 9 行（turn/start · user/message · context/inject · usage · think · 
 
 ⇒ 结论：**工具段卡在"模型输出的形状"与"契约接受的形状"之间**，不是模型不会、也不是 tentacle 不通。
 下一步（下一轮，不需要人）：读 `contract::parse_tool_fence` 的接受形状，与上面两条原文对差。
+
+---
+
+## ★★ 第一次端到端：计划 → 执行 → tool/result → verdict → HITL 计数非零（2026-11-18）
+
+**环境**：llama-swap(coder-3b @8080) · tentacle 重启时带 `--plugins-dir ./fixtures`
+（原进程 `--transport grpc --grpc-port 50051` 没带插件目录 ⇒ 注册 0 个工具 ⇒ 上一轮 gRPC NotFound）。
+重启后 `插件扫描完成: 扫描 5 个, 成功注册 5 个`。
+
+**tape（14 行）**：
+```
+turn/start · user/message · context/inject · usage · think · attempt(planned calls: numbers)
+tool/call      {"tool":"numbers","index":0,"expect":"ok"}
+tool/result    {"ok":true,"duration_ms":26,"outcome":"{\"series\":[1,2,3,4,5,6,7,8,9,10]}","outcome_sha":"e7878edb"}
+check/status   exec_ok        actual=ok=false
+check/status   answer.delivered  actual="no business result in tool return"
+verdict/status {"status":"Unmet","checks":2,"reason":"failed: exec_ok, answer.delivered"}
+reply "9**9 = 387420489" · turn/end success=false
+check/status(phase=hitl) {"allowed_once":1,"rejected":0,"cancelled":0,"unavailable":0}   ★
+```
+
+**三条读数，各自独立**：
+1. **工具段走通了**：`tool/call` 与 `tool/result` 首次出现，执行 26ms、`ok=true`。
+2. **HITL 四态首次非零**：`allowed_once=1`（此前几十轮一直是 0）。
+3. **verdict Unmet 是因为夹具工具**：`numbers` 的 fixture 返回固定 `series`，不认 `expression`
+   ⇒ `exec_ok` 假、`answer.delivered` 假。**不是链路坏，是工具语义与判据不匹配。**
+
+⇒ 这同时回答了两个长期问题：「授权段能不能被撞到」= 能（本次 allowed_once=1）；
+  「工具段为什么一直 0」= 模型形状（已修 parse_json_fence）+ tentacle 无插件（已带目录重启）。
