@@ -204,3 +204,31 @@ check/status(phase=hitl) {"allowed_once":1,"rejected":0,"cancelled":0,"unavailab
 
 ⇒ 这同时回答了两个长期问题：「授权段能不能被撞到」= 能（本次 allowed_once=1）；
   「工具段为什么一直 0」= 模型形状（已修 parse_json_fence）+ tentacle 无插件（已带目录重启）。
+
+---
+
+## ★★★ 第一次全绿端到端（verdict=Met，2026-11-18）
+
+**换成会算的工具就没问题**——`fixtures/numbers.js` 是"固定序列"夹具（设计如此，不该为了过判据去改它），
+`fixtures/calc.js` 才返回 `{ok:true,result:…}`。用 calc 跑同一句话：
+
+```
+tool/call     {"tool":"calc","index":0,"expect":"ok"}
+tool/result   {"ok":true,"duration_ms":55,"outcome":"{\"ok\":true,\"result\":\"387420489\"}","outcome_sha":"62d7a55f"}
+check exec_ok          actual=ok=true
+check answer.delivered actual="result produced, delivery confirmed at tool edge"
+verdict/status         {"status":"Met","checks":2,"reason":"all checks passed"}
+turn/end               success=true · verdict=Met · model=coder-3b
+reply                  'calc: {"ok":true,"result":"387420489"}'
+check(phase=hitl)      {"allowed_once":1,…}
+```
+
+**配套三条验证（同一份 tape）**：
+```
+bin/agui 标准事件 = 5 条（RUN_STARTED / TEXT_MESSAGE_* / RUN_FINISHED）
+D1/D2 判据 rc=0（线层 + 语义层）
+案卷重放：同 tape 跑两遍 diff=0（可重放）
+```
+
+⇒ 「真上游一轮 ⇒ 标准事件 ⇒ 证轨可查可重放」三件事第一次**同时**成立。
+仍按 C-069：闭合由园丁签，本文件只交读数。
