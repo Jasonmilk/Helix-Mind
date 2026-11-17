@@ -90,3 +90,22 @@ docgen     --check                                              rc=0
 `--root ..` 指向工作区根、而 `docs/helixECO/…` 只在 helix-mind 下 ⇒ rc=1。
 **那是我的调用错了，不是台账红了**；在 helix-mind 里用 `--root .` 跑 ⇒ rc=0 + selftest 13/13。
 ⇒ 判据的 rc 只有**在正确坐标下**才有意义（与前几轮"分母/对象/管道读 rc"同一族）。
+
+---
+
+## 「可审计」这条光的机械读数（2026-11-17）
+
+VISION 说证轨要「可审计」；审计的篡改可见性住在 **Tuck 的哈希链**（`tuck-audit`），不在 anaphase。
+本轮把它真跑了一遍：
+
+```
+cargo test -p tuck-audit --lib ⇒ 7 passed / 0 failed
+  append_and_verify_roundtrip · deterministic_byte_identical · seq_recovers_from_tail
+  tamper_edit_payload_breaks_chain · tamper_delete_row_breaks_chain · tamper_reorder_breaks_chain
+  empty_chain_verifies
+⇒ 三种篡改（改内容 / 删行 / 换序）各有具名测试，且都绿
+```
+
+**又一次"读到空"**：第一次跑 `cargo test -q -p tuck-audit | tail -4` 显示 `running 0 tests`，
+我差点记成"这个 crate 没有测试"。实际是 tail 截到了**doc-test 那个二进制**（它确实 0 个）；
+`--lib` 才是那 7 个。⇒ 与"分母/对象/管道/坐标"同族第 5 种形态：**读到的是另一个测试二进制**。
