@@ -126,6 +126,10 @@ tool/call 事件只在**已执行的调用**上发射（run_cycle/mod.rs:1340，
 
 ### 第三道门（2026-11-16 实测，比"两道前置"更准）
 
+> ⚠️ **本节结论已被后文《纠正（2026-11-16 晚）：只有两道门》推翻。**
+> 保留原文是为了记住"我当时怎么错的"：不是适配器缺功能，是**我的桩返回形状错了**。
+> 读到本节请直接跳到后文《纠正》，以那节为准。
+
 ```
 按"两道前置"配好（reasoning_endpoint=桩 · tentacle_endpoint=grpc://127.0.0.1:1 故意不可达）
 真跑一轮读数：impasse=False · model=stub · **tool/call = 0** · 日志里没有 execution pipeline refused
