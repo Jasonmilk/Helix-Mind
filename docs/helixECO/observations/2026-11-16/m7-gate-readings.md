@@ -109,3 +109,25 @@ cargo test -p tuck-audit --lib ⇒ 7 passed / 0 failed
 **又一次"读到空"**：第一次跑 `cargo test -q -p tuck-audit | tail -4` 显示 `running 0 tests`，
 我差点记成"这个 crate 没有测试"。实际是 tail 截到了**doc-test 那个二进制**（它确实 0 个）；
 `--lib` 才是那 7 个。⇒ 与"分母/对象/管道/坐标"同族第 5 种形态：**读到的是另一个测试二进制**。
+
+---
+
+## M6 / C1 的前置：中心卷那条「Tuck 无 model 字段」需要更正（2026-11-17 读码）
+
+`CONVERGENCE-M0-M7.md §4.3` 记：C1 的 `model/status` 两腿被两条缺陷卡住，其一是「Tuck 无 model 字段」。
+读码结果比这句更精确：
+
+```
+Tuck 的审计记录 `tuck-audit::AuditRecord.payload` 是**不透明 JSON**（`crates/tuck-audit/src/lib.rs:106`）
+   ⇒ 链本身不限制字段，model/status 无需改链结构即可承载
+而且 `tuck-gateway/src/gov.rs:94/:112` **已经在写**：
+   {"action":"access_deny","supplier":…,"model":…,"scope":…,"rule_id":…}
+   —— 但只在 `verdict.effect == Deny` 这一支里写
+```
+
+⇒ 准确说法不是「Tuck 无 model 字段」，而是「**Tuck 只在拒绝类记录上带 model/supplier**」。
+这对 M6 的影响是决定性的：它不是"加字段"，而是**要不要把记录条件从 Deny 扩到全量请求**——
+前者是结构变更（门），后者是行为面变更（也是门），但两者代价差一个量级。
+
+**结论**：M6 仍是门，但门的形状变了（从"加字段的契约变更"变成"扩记录条件的行为面变更"）。
+本条只更正前提，不改任何代码；`center` 的 §4.3 措辞若要改，须人裁定（方向层）。
