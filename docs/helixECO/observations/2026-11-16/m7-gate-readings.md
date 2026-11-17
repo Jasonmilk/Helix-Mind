@@ -47,3 +47,25 @@ M7 保持冻结：条件 1（M6/B18 未完成）与条件 2（孤根 72%）明�
 
 **建议（不自行改条件 2 的口径）**：在 center 的 M7 条件 2 旁加一句"分母 = 去除已具名
 自动化输入族后的真实对话 period"，由园丁裁定；本轮只在观测里留数与口径提议。
+
+---
+
+## 端到端复验（2026-11-17，M5 删除之后 —— 行而后知）
+
+```
+bash Cellrix/tools/accept_all.sh                      ⇒ rc=0
+  ① 重放 diff=0 · sha faba6d6a81262328
+  ② 出口 5 条 · D1/D2 rc=0
+  ②b 页面缺口 2 处 · 2930 字节 · 反向检查通过
+  ③ git ls-files web = 0 · test -d web ⇒ 1
+bash Cellrix/tools/run_one_cycle.sh --config-upstream ⇒ rc=4
+  UNMEASURABLE: config.toml 里没有 reasoning_endpoint ⇒ 无法接真上游（不是通过）
+bash Cellrix/tools/run_one_cycle.sh（桩）             ⇒ rc=0 · impasse=False · model=stub
+  ⇒ M5 删除 FlowModus 转发面**没有**伤到桩通路
+convergence-screen.sh                                 ⇒ rc=0（分项判定达标）
+anaphase cargo test --all-features                    ⇒ rc=0（M5 删除后全量仍绿）
+```
+
+**本轮的自我提醒（又是同一族）**：第一次读 `run_one_cycle --config-upstream` 的 rc 时写成
+`bash … | tail -3; echo rc=$?` ⇒ 取到的是 `tail` 的 0，误报"期望 4 却得 0"。
+去掉管道后 rc=4 正确。⇒ **rc 永远不能穿过管道读**（第 N 次，记在案上）。
