@@ -219,3 +219,17 @@ tool_calls 在适配器层就被丢弃。要回答它，必须先让适配器解
 其中 456 条（94%）是脚本化/测试口令（263×「只回答两个字:你好」· 128×「S303 HTTP 判据」· 58× 空）。
 按真实对话口径过滤后：**period 51 · 孤根 19（37%）**。
 ⇒ 条件 2 若要可判，分母须具名剔除自动化输入族；**口径改动属 center，须园丁裁定**，本轮只留数与提议。
+
+### CI 的两个真缺口（2026-11-17，都已修）
+
+```
+① anaphase：M5 删除后**测试编译不过**（tests 仍引用 cfg.flowmodus_endpoint）
+   ⇒ 我此前"全量 0 红"是假读数：`cargo test | grep -c FAILED` 在**编译失败**时读到空
+   修：端点表 5→4 · 删该断言 · glove 名单去掉 flowmodus ⇒ `cargo test rc=0`（判据改成退出码）
+② Cellrix：引擎清单未重签（新增/改动的三个 tools/*.sh）⇒ shasum -c 3 个 FAILED
+   修：正门 `--write`（7 个引擎文件）⇒ rc=0
+读数：anaphase cc9ac21 success · Helix-Mind 8a7a43e success · Cellrix（重签后待跑）
+```
+
+**wart 具名**：`upstream-manifest.sh` 用 `tools/*.sh` 全收 ⇒ 项目本地脚本被算成"引擎副本"，
+每次改动都要重签。摘除需移出 `tools/*.sh`（牵动入口路径），本轮不动。
