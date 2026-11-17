@@ -131,3 +131,47 @@ Tuck 的审计记录 `tuck-audit::AuditRecord.payload` 是**不透明 JSON**（`
 
 **结论**：M6 仍是门，但门的形状变了（从"加字段的契约变更"变成"扩记录条件的行为面变更"）。
 本条只更正前提，不改任何代码；`center` 的 §4.3 措辞若要改，须人裁定（方向层）。
+
+---
+
+## ★ 第一个**真上游**一轮（2026-11-18，本地 llama-swap，非桩）
+
+**怎么接上的**（全部本地，无需外部凭据）：
+```
+chain.json 说 Tuck 是 "the only LLM door" ⇒ 探 60052 /v1/chat/completions ⇒ 401（要求上级供应商 key）
+FlowModus supplier list ⇒ local-llama（coder-3b，llama-swap @8080）· agnes-ai（外部，需网络）
+≫ 选本地：llama-swap --config ~/llama-swap/config.yaml，8080 /v1/models 立即可用
+anaphase config（本地，gitignored）：
+   reasoning_endpoint = "http://127.0.0.1:8080/v1"
+   tentacle_endpoint  = "http://127.0.0.1:50051"   ← chain.json 的 anaphase_value
+```
+
+**读数（真模型，不是桩）**：
+```
+POST /v1/chat "…compute 9^9…" ⇒ {"impasse":false,"model":"coder-3b",
+  "reply":"The exact integer value of \(9^9\) is 387,420,489."}
+tape: 9 行（turn/start · user/message · context/inject · usage · think · attempt · reply · turn/end · check/status）
+/health: tentacle ok=true detail=reachable  ⇒ pipeline **Bound**
+/health: reasoning ok=true detail=not configured ← 注意：健康检查按 config 字段名判，端点在却报 not configured
+```
+
+**⇒ 门① 与 门② 同时满足**（上游真跑 + pipeline Bound）—— 这是本项目第一次。
+
+## 但工具段仍未走通：解析器比文档写的更严（三个形状都不认）
+
+```
+① 让模型直接回 JSON 计划 → 它回 ```json 围栏包着的计划
+   attempt: "no calls planned — answered directly"  ⇒ 围栏没被 parse_tool_fence 接受
+② 让它回 ```tool 围栏 + numbers({"expression":"9**9"})
+   attempt: 同上 ⇒ 仍未解析
+③ 三个形状下 tool/call 计数都是 0
+```
+
+**复现材料**（两条原文 reply）：
+```
+"```json\n{\"calls\":[{\"tool\":\"numbers\",...}]}\n```"
+"```tool\nnumbers({\"expression\":\"9**9\"})\n```"
+```
+
+⇒ 结论：**工具段卡在"模型输出的形状"与"契约接受的形状"之间**，不是模型不会、也不是 tentacle 不通。
+下一步（下一轮，不需要人）：读 `contract::parse_tool_fence` 的接受形状，与上面两条原文对差。
