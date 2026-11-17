@@ -69,3 +69,24 @@ anaphase cargo test --all-features                    ⇒ rc=0（M5 删除后全
 **本轮的自我提醒（又是同一族）**：第一次读 `run_one_cycle --config-upstream` 的 rc 时写成
 `bash … | tail -3; echo rc=$?` ⇒ 取到的是 `tail` 的 0，误报"期望 4 却得 0"。
 去掉管道后 rc=4 正确。⇒ **rc 永远不能穿过管道读**（第 N 次，记在案上）。
+
+---
+
+## 文档判据全量跑一遍（2026-11-17，行而后知）
+
+```
+anaphase  ci/check_adr_refs.py                                  rc=0
+anaphase  ci/check_line_budget.py                               rc=0
+helix-mind tools/check-adr-heads.sh                             rc=0
+helix-mind tools/check-terms.py --naming                        rc=0
+helix-mind tools/convergence-screen.sh                          rc=0
+kernel     --overdue --triggers …                               rc=0
+docgen     --check                                              rc=0
+台账+队列  check_ci144_profile.py --root . --file … --queue …    rc=0（selftest 13/13）
+```
+
+**又一次"在错的对象上量"**：第一次跑台账判据时我写的是
+`cd anaphase-helix && python3 ci/check_ci144_profile.py --root .. --file docs/helixECO/…`，
+`--root ..` 指向工作区根、而 `docs/helixECO/…` 只在 helix-mind 下 ⇒ rc=1。
+**那是我的调用错了，不是台账红了**；在 helix-mind 里用 `--root .` 跑 ⇒ rc=0 + selftest 13/13。
+⇒ 判据的 rc 只有**在正确坐标下**才有意义（与前几轮"分母/对象/管道读 rc"同一族）。
