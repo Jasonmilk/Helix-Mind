@@ -64,3 +64,24 @@ curl -s -X POST http://127.0.0.1:50061/v1/chat -H 'content-type: application/jso
 2. M7 条件 1 仍差 M6/B18；条件 2 待园丁定分母口径（见 m7-gate-readings.md）
 3. L2 行：读数齐备，等园丁签（C-069）；签之前不删行、不写「已确认」
 ```
+
+---
+
+## 附：关于「goal 仍被记为 blocked」的更正（2026-11-18）
+
+```
+goal 的 blocker 原文：config.toml 未被修改（mtime Oct 9 13:48 · reasoning_endpoint 计数 0）
+现在的读数（同一条命令）：YES  reasoning_endpoint=http://127.0.0.1:8080/v1 ·
+                          tentacle_endpoint=http://127.0.0.1:50051 · mtime=Nov 18 03:11
+⇒ **blocker 的前提已经不成立**（端点已落盘、已真跑出 Met）。
+```
+但解除它需要园丁 `/goal-resume`（goal 状态不由我改）。⇒ 我只更正**事实**，不改 goal 状态。
+
+## 附：不把真跑冻成静态样本（吸收审查意见）
+
+```
+原本想：把这一圈存成 fixtures/l2-tape-* 让 accept_all 覆盖它
+否决理由：**真跑一旦冻成静态样本，就成了新的桩** —— 验收要交的是"能重跑真上游的命令"，
+          不是存下来的 tape。完成口径仍是「真上游一轮 ⇒ 标准事件 ⇒ 证轨可查可重放」。
+⇒ fixtures 里的 l2-tape-2026-11-05（桩样本）保留原样，不并列"两棵树"。
+```
