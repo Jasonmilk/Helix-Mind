@@ -588,3 +588,17 @@ anaphase-helix/target/debug/agui <tape> | RUN_FINISHED          ⇒ metadata={}
 本轮只把判断收窄，不擅自动 schema（K-134 仍待裁）。
 
 **连续无 B1/B2 计数**：上一轮有 B1 ⇒ 已归零；本轮无 B1/B2 ⇒ **N = 1**（N=2 才 pause）。
+
+### 本批三个 B1 —— 同一族的三个「有产出、无消费者 / 消费错源」
+
+| # | 撞到什么 | 证据（命令级） | 修 | 反样本 |
+|---|---|---|---|---|
+| B1-a | `TOOL_CALL_*` 有产出、页面无消费点 | `grep -c TOOL_CALL tools/l2_render.js tools/l2_casefile.js` ⇒ 0 / 0 | casefile 增 `tool_calls`（读当轮 tape）+ 页面「工具段」一栏 | 移除该栏 ⇒ 同页面 `grep 'calc · ok=true'`=0 |
+| B1-b | `verdict/status` 零消费者（页面看不到 Met/Unmet 与原因） | `grep -c 'verdict/status' Cellrix/tools/*.js anaphase-helix/src/agui.rs` ⇒ 全 0 | casefile 增 `verdict_status` + 页面「判定」一栏 | 唯一串 `all checks passed`：有栏=1 · 移除=0 · 复原=1 |
+| B1-c | 页面 HITL 四态**只认 ring（易失）**；ring 空即丢，而 tape 里有 | ring 置空 ⇒ `casefile.hitl=null`，而 `grep -c '"phase":"hitl"' tape` ≥1 | ring 缺 ⇒ 回落 tape，标 `_source: ring/tape`；页面写「HITL 四态（源=…）」 | ring 空 ⇒ 源=tape 且四态可见；ring 有 ⇒ 源=ring；渲染测试 rc=0 |
+
+**B1-c 为什么最重要**：前两个是「没人显示」，第三个是「**显示的是错源**」——易失的 ring 替代了持久的 tape。
+与 C-076（hitl 只进内存环）、C-064 同族，但方向相反：那次是「写不进去」，这次是「读错了地方」。
+
+**计数**：本批有 B1 ⇒ 连续无 B1/B2 计次归零。
+**口径未动**：K-134 仍待裁、仍非基线；三处都是给我们自己的渲染链补消费点/换源，未改协议语义。
