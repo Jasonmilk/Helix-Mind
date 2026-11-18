@@ -561,3 +561,30 @@ l2_render.js 增一栏「工具段（tool/call → TOOL_CALL_*）」
 **连续无 B1/B2 计数**：本轮有 B1 ⇒ **N 归零**（上一轮 N=1 作废，不叠加）。
 
 **口径**：`tool_calls` 是**当轮 tape 的读数**，不改判据、不动共享验具（K-134 仍待裁、仍非基线）。
+
+### A 轮次 · 2026-11-19 05:08（check/status 的"待判"收窄成一条具体事实）
+
+**核对方式**（两条命令，各给读数）：
+```bash
+# ① 我们的页面能不能看见 HITL 四态（渲染器直读 ring）
+grep -o 'HITL 四态</dt><dd>[^<]*' /tmp/r_notool.html
+⇒ HITL 四态</dt><dd>{"allowed_once":0,"cancelled":0,"kinds":{},"rejected":0,"unavailable":0}
+
+# ② 标准 AG-UI 事件流里有没有 HITL 读数
+grep -cE 'hitl|allowed_once' anaphase-helix/src/agui.rs        ⇒ 1（只出现在单元测试的 fixture 行 :90）
+anaphase-helix/target/debug/agui <tape> | RUN_FINISHED          ⇒ metadata={}
+```
+
+**A：判断从"待判"收窄成**：
+```
+`check/status`（HITL 四态）**在我们自己的渲染器里可见**（直读 ring，页面有那一栏），
+**在标准 AG-UI 事件流里不可见**（`agui.rs` 只把 verdict 挂 metadata，hitl 无映射）。
+⇒ 它不是"两处都不可见"的缺口，而是"**自渲染器可见、通用客户端不可见**"的产品取舍。
+```
+
+**没有 B1**：这不是"本应映射却未映射"——仓内 8 类里没有承载 HITL 读数的类型，
+所以"该不该映射"是**产品/协议面的取舍**，不是缺失。
+**没有 B2 新登记**：真要让它进标准事件流（如新增 `STATE_DELTA` 类），属**扩协议类型** ⇒ 门；
+本轮只把判断收窄，不擅自动 schema（K-134 仍待裁）。
+
+**连续无 B1/B2 计数**：上一轮有 B1 ⇒ 已归零；本轮无 B1/B2 ⇒ **N = 1**（N=2 才 pause）。
