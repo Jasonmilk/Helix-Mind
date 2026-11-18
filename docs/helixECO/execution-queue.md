@@ -333,9 +333,13 @@ ring5 的 A/B 不改 rings.json 与 chain.json，等真撞到该边再上移；
 
 ### 真链轮次读数 · 2026-11-19 01:54（A 类：新增真读数）
 
-**启动**：探测复用（未重启）——`Cellrix/tools/check_upstream.sh` ⇒ `YES` rc=0（reasoning 8080/v1 · tentacle 50051）；
-`/v1/health` ⇒ tentacle `ok=true detail=reachable`。仅因 `config.toml` 无 `session_events_path`（当轮需要 jsonl）
-才以 env 正门重起实例，理由记录在此。
+**启动（两层，别混成一句）**：
+```
+① 未做第⑤节整链冷启动；探测通过 ⇒ **复用现有链**（tentacle 50051 / llama-swap 8080 未动）
+② 但 `config.toml` 无 `session_events_path`，当轮需要 jsonl ⇒ **以 env 正门重起 anaphase 实例一次**
+   （`ANAPHASE_SESSION_EVENTS_PATH=… HELIX_CODEX=… ./target/debug/anaphase --config config.toml`）
+读数：check_upstream `YES` rc=0 · /v1/health tentacle `ok=true detail=reachable`（重起后同一组）
+```
 
 **当轮真跑**（自然提示，不指示 JSON）：
 ```
@@ -360,3 +364,24 @@ POST /v1/chat  "What is 1234 times 5678? Use a tool if you have one."
 ⇒ 本地 coder-3b 在"是否自发用工具"上**非确定**；因此"模型会自己发起工具调用"不能写成能力断言，
   只能写成逐轮读数；也说明 L2 的验收不能依赖某一次 Met。
 ```
+
+#### 追加核对（2026-11-19，回应"job_id 同名但行数不同"）
+
+**同名不是同一轮**：`job_id` 是**输入内容派生**的（ADR-0041 D1 的反面：它可重复），身份是 `period_id`。
+
+```
+/tmp/t4/events/run-bda2600a6944d63e-p006afd7831000002.events.jsonl   行=15 · tool/call=1 · 答对
+/tmp/t2round/events/run-bda2600a6944d63e-p006afde647000001.events.jsonl 行=9 · tool/call=0 · 答错
+两份 job_id 相同（同一提示），period_id 不同（两次真跑）⇒ 不是同一轮的切片，也不是行数口径差
+```
+
+**命令级 evidence（t2 用到的两条）**：
+```bash
+F=/tmp/t2round/events/run-bda2600a6944d63e-p006afde647000001.events.jsonl
+cd Cellrix && node tools/l2_casefile.js /tmp/t2round/ring.json /tmp/t2round/events ../anaphase-helix/src/run_cycle/mod.rs > /tmp/cf_a.json 2>/dev/null
+            node tools/l2_casefile.js /tmp/t2round/ring.json /tmp/t2round/events ../anaphase-helix/src/run_cycle/mod.rs > /tmp/cf_b.json 2>/dev/null
+diff /tmp/cf_a.json /tmp/cf_b.json && echo diff=0      # ⇒ diff=0
+```
+
+**因此本轮结论更硬**：同一输入（同 job_id）在两个 period 里行为不同（15 行/用了工具/答对 vs 9 行/未用工具/答错）
+⇒ 「自发调用工具」是**逐轮读数**，不是能力断言；L2 验收不能依赖某一次 Met。
