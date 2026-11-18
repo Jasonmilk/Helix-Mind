@@ -308,3 +308,25 @@ L2 签字只承认读数成立，不触发删队列 3 行 / DEATH-CERT 转正式
 ring5 的 A/B 不改 rings.json 与 chain.json，等真撞到该边再上移；
 /goal-focus 不是现在的一步。留白不算闭合，也不算欠着。
 ```
+
+### 探针结论的两条口径 + 环境现状（2026-11-18 收口）
+
+```
+① 「占位符假 Met」与「unbound 三因混一句」**只登记，不拆**：
+   拆报错文案只是措辞；真问题是「存在性 ≠ 生效性」。A/B 都不裁，rings.json / chain.json 不动。
+② `Met` / `exec_ok` / `success=true` **不构成完成**：
+   fixtures/calc 那圈是真执行面；学出来的 MCP 工具当前是**占位符执行面** ⇒ 换成它时 Met 是假绿，
+   不得升格为「真上游一轮」。完成口径仍是：真上游一轮 ⇒ 标准事件 ⇒ 查可重放。
+③ 真要动 anaphase 诊断面时，顺手把三因（没配 / codex 缺 / 连不上）拆开，不单开一轮；
+   "便宜"不是自裁理由 —— 两条都属门。
+```
+
+**当前环境（探针已清，避免下次搞混）**：
+
+| 端口 | 服务 | 状态 |
+|---|---|---|
+| 50051 | tentacle（`--plugins-dir ./fixtures`，注册 5 个） | 保留 |
+| 50061 | anaphase（config.toml：reasoning 8080 / tentacle 50051） | 保留 |
+| 8080 | llama-swap（coder-3b） | 保留 |
+| 50050 / 50052 / 60052 / 60053 / 60054 | cellrix-web / helix-mind / tuck / flowmodus serve / flowmodus reason | 保留 |
+| ~~50059 / 50062~~ | 探针专用（learned plugins 的 tentacle + 临时 anaphase） | **已 kill**；/tmp/learned* 已删 |
