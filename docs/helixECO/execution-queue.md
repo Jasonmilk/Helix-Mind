@@ -536,3 +536,28 @@ reply「The calculation of 13 to the power of 6 is 4826809.」（**对，但未�
 
 **没有 B1**：本轮没有出现"本应映射却未映射"（0 类），不制造修理项。
 **没有 B2 新登记**：`check/status` 的未定性只是把既有判断改准，未新增门后项（K-134 已在前一轮登记）。
+
+### B1 轮次 · 2026-11-19 05:06（工具段"有产出、无消费点"）
+
+**撞到**：上一轮刚让 `bin/agui` 能产 `TOOL_CALL_START/END/RESULT`，而
+`grep -c TOOL_CALL tools/l2_render.js tools/l2_casefile.js` ⇒ **0 / 0** ⇒
+**事件有产出、页面没有消费点**：看页面看不出"这一轮调没调工具"（C-073 同族：判据在没人调用 → 事件在没人显示）。
+
+**修**（`Cellrix 0e18069`，additive、只读当轮 tape、不新增数据源）：
+```
+l2_casefile.js 增 casefile.tool_calls：
+  有工具 ⇒ ['index=0 · calc · ok=true · 55ms']；无工具 ⇒ '本轮无工具段（tape 里 0 条 tool/call）'
+l2_render.js 增一栏「工具段（tool/call → TOOL_CALL_*）」
+```
+
+**反样本（改前/改后同一输入）**：
+```
+有工具 tape：加栏后页面出现 'calc · ok=true'（grep=1）
+把该栏从渲染器移除 ⇒ 同页面 grep=0  ⇒ 这一栏不是装饰，是唯一载体
+无工具 tape：页面显示「本轮无工具段」（grep=1），不假装有工具
+原渲染测试 l2_render_test.js 仍 rc=0
+```
+
+**连续无 B1/B2 计数**：本轮有 B1 ⇒ **N 归零**（上一轮 N=1 作废，不叠加）。
+
+**口径**：`tool_calls` 是**当轮 tape 的读数**，不改判据、不动共享验具（K-134 仍待裁、仍非基线）。
