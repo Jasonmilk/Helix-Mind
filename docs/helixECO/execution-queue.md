@@ -436,3 +436,24 @@ agui=5 · D1/D2 rc=0 · tool/call=0 · HITL 全部 0（kinds={}）
 ```
 
 **下轮纪律（写死）**：`blockCompletion:true` 下，合约缺项**不结**；缺什么就具名登记什么，不代为补全、不重跑凑绿。
+
+### 三仓健康快照 · 2026-11-19 03:37（A 类读数；phyt-DNA 红且**不自动续期**）
+
+| 仓 | 命令 | rc | 读数 |
+|---|---|---|---|
+| Cellrix | `bash tools/accept_all.sh` | **0** | 三项均通过（重放 diff=0 / 出口 5 条 / web=0） |
+| Tuck | `bash tools/verify.sh` | **0** | clippy 0 条存量 · 4 crate 各自 `--all-features` 可编译 · gateway feature 真拉进编译 |
+| phyt-DNA | `bash tools/ci-local.sh --fast` | **1** | 唯一红因：**DEBTS 逾期未销 4 条**（`d-phyt-pre-gap-a/b/c` · `d-phyt-phantom-complete`，日落 2026-11-08，今天已过 **11 天**）；其余步骤 OK（3b 基线红作数 · 4 全仓扫描 绿17/红0/不可量0/时序跳2） |
+
+**这 4 条为什么仍是红（不是新发现）**：2026-10-25 跨仓对账结论是「`pre-gap-a/b/c` 与 `phantom-complete` **仍真** ⇒ 日落重定 2026-11-08」。
+⇒ 现在到期即红，**这是审计按设计工作**，不是回归。
+
+**为什么不自动续期**：续期＝改口径（把到期日往后挪），连续续期就是"温水煮"。
+四条各自的真解都要动**权威卷或引擎面**：
+```
+pre-gap-a/b/c：需 README/采用者启用包（权威卷）+ CI 步骤（引擎面）
+phantom-complete：需新增"声明 vs git diff"判据（引擎面，且 phyt 冻结中）
+⇒ 属门；本轮只登记读数，不改日落、不动 DEBTS 状态、不动引擎。
+```
+
+**恢复命令（下次要判时用）**：`cd phyt-DNA && bash tools/ci-local.sh --fast`（红因在输出第 3c 段，会逐条列 id 与日落日）。
