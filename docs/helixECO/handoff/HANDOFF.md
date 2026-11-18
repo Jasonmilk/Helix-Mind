@@ -48,3 +48,20 @@ cd phyt-DNA && bash tools/validate.sh --index
 **❌ 不新建状态文件**：②③④ 都现量（见上）；**加闸门/判据前先跑 `bash tools/validate.sh --index`**。
 
 **更新规则**：只有本节的"下一件/批次"需要人写；其余三节每次现量（量出来的不会腐）。
+
+### 现量（2026-11-18，不改上面的批次表，只补读数）
+
+> 上面那张批次表写于 2026-10-27。**本节只报"现在量到的状态"**，不重写"下一件"（那是人写的）。
+
+| 项 | 现在量到 | 证据（可复跑） |
+|---|---|---|
+| **K22** 危险动作形状判据 | **仍缺** | `DEBTS.md` 的 `d-dangerous-gate-never-installed` 仍在（问题类=K22 部署面残留）；hooks 只有 pre-commit/pre-push/post-commit，没有"危险形状"判据 |
+| **K16** 给「做」装门 | **已装（观察态可翻）** | `anaphase-helix/src/main.rs:1080-1090`：`gate_url(...)` → `pipeline.with_security_gate(Some(HttpSecurityGate…))`；K-133 的"门只在 crate 里"已不再成立 |
+| **K17** 并发上限/背压 | **未做** | `grep -rn 'Semaphore\|max_concurrent' anaphase-helix/src` ⇒ 0；流式路径用的是 `UnboundedSender`（`adapters/http_reasoning.rs:154`） |
+| **K19** `GateVerdict` 改名 | **未做（名字仍在或已无引用，需一次定向核对）** | `grep -rn 'GateVerdict' Tuck/crates` ⇒ 0 命中 ⇒ 要么已改名、要么该符号从未落地；下次动到 verdict 面时同批核对，不单开 |
+
+**顺带两个读数（与上表相关，供判断顺序）**：
+```
+· 本文件已 50 行，超过它自己写的「≤40 行」——超标是事实，不是待办（压缩会删掉不可导出的那节）
+· 当前真链路已跑通到 verdict=Met（真工具 calc）：见 observations/2026-11-18/first-green-cycle.md
+```
