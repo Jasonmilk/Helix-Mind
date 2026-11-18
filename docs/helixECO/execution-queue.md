@@ -385,3 +385,37 @@ diff /tmp/cf_a.json /tmp/cf_b.json && echo diff=0      # ⇒ diff=0
 
 **因此本轮结论更硬**：同一输入（同 job_id）在两个 period 里行为不同（15 行/用了工具/答对 vs 9 行/未用工具/答错）
 ⇒ 「自发调用工具」是**逐轮读数**，不是能力断言；L2 验收不能依赖某一次 Met。
+
+### AG-UI 出口轮次 · 2026-11-19 02:26（B1 类：撞到自裁层缺陷并当场修）
+
+**启动**：探测复用，未冷启动 —— `Cellrix/tools/check_upstream.sh` ⇒ `YES` rc=0；`/v1/health` ⇒ tentacle `ok=true detail=reachable`。
+
+**当轮真跑**（自然提示）：
+```
+POST /v1/chat  "What is 21 times 43? Use the calc tool if you have one."
+⇒ job_id=run-892e91c467485a45 · period_id=run-892e91c467485a45-p006afded63000003
+   reply="21 times 43 equals 903."（对，但**未用工具**）
+tape=/tmp/t2round/events/run-892e91c467485a45-p006afded63000003.events.jsonl · 9 行
+agui=5 · D1/D2 rc=0 · tool/call=0 · HITL 全部 0（kinds={}）
+```
+
+**② 逐类型核对"投影是否漏事件"（本轮 B1 的入口）**
+```
+未被投影的 jsonl 类型（两份真实 tape 并集）：
+  check/status 4 · assistant/usage 3 · user/message 2 · context/inject 2 ·
+  assistant/think 2 · assistant/attempt 2 · tool/call 1 · tool/result 1 · verdict/status 1
+判定：前六类按设计不映射（display-only / AG-UI 无对应标准事件）；
+      **tool/call + tool/result 属自裁层缺陷** —— AG-UI 1.0 本就有 TOOL_CALL_*，且真跑已产生它们。
+```
+
+**修（`anaphase 8ba433d` · `Cellrix 4f2f883`）**
+```
+改前：同一 tape（含 tool/call、tool/result）⇒ bin/agui 只出 5 条，工具段**整段消失**
+改后：同一 tape ⇒ 8 条：+ TOOL_CALL_START / TOOL_CALL_END / TOOL_CALL_RESULT（只映射标准类型）
+反样本：把映射改名禁用后重建 ⇒ Cellrix 判据
+        `RED D1: 缺 TOOL_CALL_*（tape 里有 tool/call，投影把它丢了）` rc=1；复原 rc=0
+判据双向化（原本只有"无工具段不得伪造"的反向守卫，现在补正向）：都绿；
+单测 `tool_events_are_projected_and_not_invented`；lib agui 5/5；全量 cargo test rc=0；预算 rc=0
+```
+
+**边界**：`TOOL_CALL_*` 仍是 AG-UI 标准类型，未新造语义、未改协议、未新开格子；页面留白数仍以当轮命令为准。
