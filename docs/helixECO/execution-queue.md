@@ -475,3 +475,17 @@ phantom-complete：需新增"声明 vs git diff"判据（引擎面，且 phyt �
   "could not find Cargo.toml" 而 **rc 仍是 0**（管道吃 rc）⇒ 必须 cd flowmodus-rs
 · helix-tentacle 有 2 个空套件（0 passed）⇒ 若只 grep 一个 test result 会读成"没测试"
 ```
+
+### phyt 逾期 4 条的拆读 · 2026-11-19 04:36（A 类读数，不改日落、不改状态）
+
+把「逾期」拆成"事实是否已具备"与"还差什么"，避免把已做的事再做一遍：
+
+| 债 | 它自己写的真解 | 现在实况（可复跑） | 还差 |
+|---|---|---|---|
+| `d-phyt-pre-gap-a`（git commit 走非工具路径 ⇒ pre 面无入口） | README 讲清 + 承认 silent | ✅ `README.md:483-495` 有「pre face has exactly one entry」表 + 明写「bash/git apply/merge/hand-edit 都不经过执行闸 ⇒ pre face 在那条路径上 silent」 | 无缺口（**事实已承认并落 README**） ⇒ 该条可议销账，不必等到"入口补上" |
+| `d-phyt-pre-gap-b`（未装钩子的克隆） | 写进 README + 采用者启用包 | ✅ `README.md:459-465` 给出一行启用命令（`git config core.hooksPath tools/hooks`）+ 明写 measured | 「采用者启用包」（若指脚本）仍无；若一行命令即为包 ⇒ 该条可议销账 |
+| `d-phyt-pre-gap-c`（CI 只跑 post 面） | CI 里加 pre 面 | ✅ `README.md:491-495` 明确「pre 的唯一入口是 pretooluse-gate.sh，covered by: nothing else」+ 承认 CI 只跑 post | pre 面进 CI 需 Claude 工具调用（CI 无）⇒ **结构上做不到**，宜改口径为具名局限 |
+| `d-phyt-phantom-complete`（声明 vs git diff 门） | 新增判据 | ❌ `grep -rln 'diff --name-only' tools/*.sh tools/hooks/*` ⇒ 0 命中 | **判据不存在** ⇒ 真未做（且属引擎面/冻结） |
+
+**结论（不改任何东西）**：4 条里 **1 条真未做**（phantom-complete）、**2 条事实已落 README 可议销账**（pre-gap-a/b）、
+**1 条结构上做不到、宜改口径**（pre-gap-c）。⇒ 下一次裁"续期还是销账"时，分母不是"4 条都欠着"，而是"1 条欠 + 3 条待定性"。
