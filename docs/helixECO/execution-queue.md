@@ -489,3 +489,33 @@ phantom-complete：需新增"声明 vs git diff"判据（引擎面，且 phyt �
 
 **结论（不改任何东西）**：4 条里 **1 条真未做**（phantom-complete）、**2 条事实已落 README 可议销账**（pre-gap-a/b）、
 **1 条结构上做不到、宜改口径**（pre-gap-c）。⇒ 下一次裁"续期还是销账"时，分母不是"4 条都欠着"，而是"1 条欠 + 3 条待定性"。
+
+### 出口链轮次 · 2026-11-19 04:56（A 类：**改变了一条判断**）
+
+**启动**：探测复用，未冷启动 —— `check_upstream.sh` ⇒ YES rc=0（reasoning 8080/v1 · tentacle 50051）· `/v1/health` tentacle `ok=true reachable`。
+
+**当轮读数**（period `run-c21a0fdbc86702ba-p006afe10ce000004`）：
+```
+POST /v1/chat「Use the calc tool to compute 13 to the power of 6, then tell me the number.」
+job_id=run-c21a0fdbc86702ba · period_id=run-c21a0fdbc86702ba-p006afe10ce000004
+jsonl=/tmp/t2round/events/run-c21a0fdbc86702ba-p006afe10ce000004.events.jsonl · 9 行
+bin/agui 5 条 · D1/D2 rc=0（量在 **8 类 schema 口径**、本 period）· tool/call=0
+HITL allowed_once=0 rejected=0 cancelled=0 unavailable=0 kinds={}
+reply「The calculation of 13 to the power of 6 is 4826809.」（**对，但未用工具**）
+两次 l2_casefile：run1 rc=0 · run2 rc=0 · diff 无输出（rc=0）· sha256 同为 296146d1…
+```
+
+**A：改变了哪一条判断**
+```
+原判断（上一轮写的）："前六类【按设计】不映射"。
+本轮核对：该判断对其中五类有仓内锚点（Cellrix schema 8 类里无对应类型）；
+          但对 `check/status`（含 HITL 四态）**没有锚点**——它承载授权读数，
+          而"它不应映射"这句话从未被任何仓内文件支撑过。
+⇒ 改判：`check/status` 从「按设计不映射」→「**待判**」；其余五类维持 by-design。
+⇒ 一句可被下轮推翻的判断：**截至本 period，投影覆盖所有仓内已登记的标准类型；
+   唯一未定性的是 check/status（HITL 读数出口），它既未被证明该映射，也未被证明不该映射。**
+```
+（`check/status` 是否该进 `STATE_DELTA` 之类：仓内没有该类型的登记 ⇒ 不擅自补，属门。）
+
+**没有 B1**：本轮没有出现"本应映射却未映射"（0 类），不制造修理项。
+**没有 B2 新登记**：`check/status` 的未定性只是把既有判断改准，未新增门后项（K-134 已在前一轮登记）。
