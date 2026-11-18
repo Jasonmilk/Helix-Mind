@@ -637,3 +637,40 @@ ring 别轮 + tape 无 hitl  ⇒ 源=UNMEASURABLE·ring-stale 且 tape 无本 pe
 **计数（按 YB①）**：本批真新 B1 = **b / c / d 三笔**；**a 不计**（上一轮已修）。
 **不互相销账**：B1-d 只证明"读错源已拦"，**C-076（hitl 只进内存环、写不进盘）仍未解**，两件不同。
 **口径未动**：K-134 待裁、非基线；L2 读数齐备未签；未归档、未改 center、队列 3 行未删、DEATH-CERT 未动。
+
+### A 轮次 · verdict/status 历史构成核对（**历史构成核对，不拿历史值补当轮**）
+
+**当轮（period `run-ec4a823828809dcc-p006afe15b9000005`）仍是 `UNMEASURABLE（tape 里 0 条 verdict/status）`** ——
+历史里有 Met/Unmet，**不影响**当轮那条读数；两者不混写。
+
+**历史构成（读 `/tmp/**/*.events.jsonl` 全量 75 份，逐条带 period_id）**：
+```
+含 verdict/status 的 tape = 5 / 75，每份恰 1 条：
+  run-221afcfe7567c353-p006afcacc2000002 · Unmet · checks=2 · failed: exec_ok, answer.delivered
+  run-221afcfe7567c353-p006afcaccc000001 · Unmet · checks=2 · failed: exec_ok, answer.delivered
+  run-605c9e5003508d92-p006afcae90000001 · Met   · checks=2 · all checks passed
+  run-605c9e5003508d92-p006afcae90000001' · Met  · checks=2 · all checks passed（同 period 名下另一份 tape 副本）
+  run-bda2600a6944d63e-p006afd7831000002 · Met   · checks=2 · all checks passed
+```
+
+**交叉条件（决定"偶尔有 vs 没有生产路径"）**：
+```
+verdict/status=有 · 有 tool/result=有  ⇒ 5 份
+verdict/status=无 · 有 tool/result=无  ⇒ 70 份
+有 tool/result 却无 verdict/status   ⇒ **0 例**
+无 tool/result 却有 verdict/status   ⇒ **0 例**
+```
+
+**A：判断从「偶发/可能缺失」改成**：
+```
+`verdict/status` **不是偶发，也不是缺失**：它是**工具执行段的条件产出** ——
+走到 `tool/result` 才会有（reason 里的 `exec_ok` / `answer.delivered` 正是执行段两条检查）。
+75 份历史 tape 与这条条件**完全吻合，两个方向都没有反例**。
+⇒ 本轮的 `UNMEASURABLE` 因此有了解释：**本轮 tool/call=0 ⇒ 未进入执行段 ⇒ 本就不该有判定行**。
+```
+
+**没有 B1 / 没有 B2**：这是一条**机制读数**，不构成"该映射却未映射"（渲染链已能显示三种形态）。
+**反样本值不混写**：上文 `allowed_once=3` 之类是**构造值**（只为证明判据会红/会对），不与任何真跑读数并列。
+**计数**：本批无 B1/B2 ⇒ **N = 1**（N=2 才 pause）。
+**门后项具名不销账**：C-076（hitl 只进内存环）· K-134（schema 快照待裁、非基线）· L2（读数齐备未签）—— 均未动。
+**本件不成覆盖率表**：只回答"verdict/status 何时出现"，不扩成"逐类型补消费点"的清单。
