@@ -237,3 +237,26 @@ tool_calls 在适配器层就被丢弃。要回答它，必须先让适配器解
 
 **wart 具名**：`upstream-manifest.sh` 用 `tools/*.sh` 全收 ⇒ 项目本地脚本被算成"引擎副本"，
 每次改动都要重签。摘除需移出 `tools/*.sh`（牵动入口路径），本轮不动。
+
+### 环收据刷新读数（2026-11-18）—— 让针跟着转，不预设全绿
+
+```
+刷新：kernel --run ring0..ring6 逐条跑 ⇒ 收据新鲜度 STALE 0（最旧 0.00 天）
+结果：ready = ring0,1,2,3,4,6 ／ blocked = ring5
+```
+
+**两条红的归因（都具名，都不是"没达标"）**：
+
+| 环 | 红因 | 证据 | 处置 |
+|---|---|---|---|
+| `ring4`（cellrix ← anaphase） | **环境**：anaphase 没在跑 ⇒ `live_snapshot_roundtrip` 在 `ANAPHASE_REQUIRED=1` 下按设计 panic | 启动 anaphase 后重跑 ⇒ `[绿] ring4/c1`，ready 里出现 ring4 | 已解（环境依赖，不是缺陷） |
+| `ring5`（anaphase ← flowmodus） | **M5 后果**：flowmodus 转发面已退役 ⇒ 差分判据 `sensitive=False`（`diff_lines` 为空）⇒ 该环的依赖对象不存在 | `[红] ring5/c2 diff_lines=[] sensitive=False expect_sensitive=True` | **待裁定**：改指向（anaphase ← llama-swap HTTP 8080）或作废该环；我不自改 `rings.json` |
+
+**口径（吸收审查意见，写死在这里）**：
+
+```
+① 签字只承认「这一圈读数成立」，**不触发**删队列 3 行 / DEATH-CERT 转正式 / git rm
+   ——「待确认」与页面 4 处「本 tape 未记录」是**留白**，不是待清的债
+② 刷新收据的判据是「收据新鲜、读数如实」，**不预设 ready 全绿**；仍 blocked 就具名登记
+③ 五跳工具供给链是**图**，不是路线等级 —— 不从中长出「还差几跳／覆盖率／每环补判据」
+```
