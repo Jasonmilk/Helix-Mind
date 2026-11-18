@@ -674,3 +674,48 @@ verdict/status=无 · 有 tool/result=无  ⇒ 70 份
 **计数**：本批无 B1/B2 ⇒ **N = 1**（N=2 才 pause）。
 **门后项具名不销账**：C-076（hitl 只进内存环）· K-134（schema 快照待裁、非基线）· L2（读数齐备未签）—— 均未动。
 **本件不成覆盖率表**：只回答"verdict/status 何时出现"，不扩成"逐类型补消费点"的清单。
+
+### C 轮次 · 2026-11-19（当轮读数与已落盘判断无差）
+
+**t1 当轮最小读数集**（探测复用，未冷启动）
+```
+check_upstream.sh ⇒ YES rc=0（reasoning 8080/v1 · model=coder-3b · key=none）
+/v1/health        ⇒ tentacle ok=True detail=reachable
+POST /v1/chat 「Use the exec tool to run: echo hi-from-round; then report exactly what the command printed.」
+reply 原文 ⇒ {"done":true,"impasse":false,"model":"coder-3b","reason":"completed",
+              "reply":"hi-from-round","success":true}
+job_id=run-7bc05e4fa668578c
+period_id=run-7bc05e4fa668578c-p006afe1851000006
+jsonl=/tmp/t2round/events/run-7bc05e4fa668578c-p006afe1851000006.events.jsonl
+LINES=9 · AGUI=5 · D1/D2 rc=0（**8 类口径**、量在本 period_id、**K-134 改过快照、非基线**）
+TOOLCALL=0 · TOOLRESULT=0
+HITL={allowed_once:0,rejected:0,cancelled:0,unavailable:0,kinds:{}} · _source=**tape(ring-stale)**
+两次 l2_casefile（同一命令）run1 rc=0 · run2 rc=0 · diff 无输出 rc=0 ·
+sha256 均 19d451f18585c5f8f56fb11a0d6c726c9dc6de8c8b2cfa99fd779b58c09938f8
+```
+
+**t2 核的是哪一条判断 · 为何对不上 ⇒ 结论是「对得上」**
+```
+候选① execution-queue.md:317 「Met / exec_ok / success=true **不构成完成**」
+  当轮：success=true 而 tool/call=0、无 exec_ok、无 verdict/status
+  ⇒ **不矛盾，反而同向**（success=true 确实什么都没证明）
+候选② execution-queue.md:667 「verdict/status 是执行段的条件产出」
+  当轮：未进执行段 ⇒ 无判定行 ⇒ **完全吻合**
+候选③ C-085「根因是 reasoning_endpoint 未配置」
+  当轮：endpoint 已配（YES）且 attempt 原文 = "no calls planned — answered directly"
+  ⇒ 不推翻 C-085：C-085 说的是「空回复 ⇒ impasse」那条症状；本轮 attempt 非空、无 impasse，
+     symptom 不同。而"同一配置下有时 tool/call=1、有时 0"**已在前轮落盘**（逐轮读数，非能力断言）。
+⇒ 无差。不制造核对对象。
+```
+
+**C：本轮无新增真读数**
+```
+唯一新增的可量化面：`assistant/attempt` 现在给出模型自述（"no calls planned — answered directly"），
+但它是**读数**不是**判断变化**；按「纯数字变化记 C」⇒ 记 C。
+一句可被下轮推翻的判断：**在 endpoint 已配置、prompt 明确要求用 exec 的情况下，
+本轮模型自述"未规划调用"、reply 却直接给出一段看似命令输出的文本，且 success=true；
+tape 自身自洽（attempt 与 reply 一致），出口无法从 reply 区分"真执行"与"未执行"。**
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：K-134（待裁、非基线）· C-076（不销账）· L2（读数齐备未签）· center · 队列 3 行 · DEATH-CERT · 页面留白。
