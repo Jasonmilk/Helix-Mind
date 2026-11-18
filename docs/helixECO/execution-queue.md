@@ -260,3 +260,31 @@ tool_calls 在适配器层就被丢弃。要回答它，必须先让适配器解
 ② 刷新收据的判据是「收据新鲜、读数如实」，**不预设 ready 全绿**；仍 blocked 就具名登记
 ③ 五跳工具供给链是**图**，不是路线等级 —— 不从中长出「还差几跳／覆盖率／每环补判据」
 ```
+
+#### ring5 的精确归因（补，2026-11-18）——**是我 M5 那次编辑把被测对象拿掉了**
+
+```
+ring5 判据对象：`ANAPHASE_UPSTREAM_ONLY=flowmodus` 跑 tests/upstream_live.rs（端口读 chain.json）
+M5 时我做了两件**各自都对、合起来让环失去对象**的事：
+  ① 退役 flowmodus 转发面（center M5 要求）
+  ② 把 upstream_live 的 `NAMES` 从 5 个改为 4 个（删掉 "flowmodus"）
+⇒ 现在 `ONLY=flowmodus` 过滤出空集 ⇒ c2/c3 的 down/up 差分**恒不敏感**
+⇒ 工具报的正是它该报的：`sensitive=False · diff_lines=[] · 判【无依赖断言】并阻塞`
+   —— 这不是判据坏，是**判据的对象不存在**（C-087 同族）。
+```
+
+**两条候选处置（都不由我拍）**：
+
+| 选项 | 做法 | 代价 |
+|---|---|---|
+| **A 改指向** | ring5 从 "anaphase ← flowmodus" 改为 "anaphase ← reasoning"（llama-swap HTTP 8080），`NAMES` 里已有 `reasoning`，差分为「停 llama-swap ⇒ 上游测试红」 | 需要改 `rings.json` 的 edge 与两条判据命令（编排层改动） |
+| **B 作废** | ring5 标退役（M5 已把该边从链上摘掉），登记死亡证明式记录 | 少一个环；`ring5` 空出来的位置不再被覆盖 |
+
+**顺带一处 SSOT 漂移（具名，不改）**：
+```
+ecosystem/chain.json 的 flowmodus-reason 组件仍声明
+  anaphase_env = "ANAPHASE_FLOWMODUS_ENDPOINT" · value = grpc://127.0.0.1:60054
+而 anaphase 已不再读该 env（`grep -c ANAPHASE_FLOWMODUS_ENDPOINT src/config.rs` = 0）
+⇒ launcher 若照 chain.json 注入，注入的是一个**已被忽略**的变量。
+  chain.json 是接线 SSOT（ADR-0046），改它属编排层事实更正 —— 与 ring5 的 A/B 同批决定更省事。
+```
