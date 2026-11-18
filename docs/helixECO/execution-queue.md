@@ -602,3 +602,38 @@ anaphase-helix/target/debug/agui <tape> | RUN_FINISHED          ⇒ metadata={}
 
 **计数**：本批有 B1 ⇒ 连续无 B1/B2 计次归零。
 **口径未动**：K-134 仍待裁、仍非基线；三处都是给我们自己的渲染链补消费点/换源，未改协议语义。
+
+### B1-d + 当轮三栏验证（同一笔，不改口径）
+
+**当轮真跑读数**（`check_upstream.sh` YES rc=0，未冷启动、未挑样本）：
+```
+POST「What is 19 times 23? Use the calc tool if available.」
+job_id=run-ec4a823828809dcc · period_id=run-ec4a823828809dcc-p006afe15b9000005 · 9 行
+tool/call=0 · reply「19 times 23 is 437.」（对，但没用工具）
+三栏按「0 就是 0」如实：判定=UNMEASURABLE（tape 里 0 条 verdict/status）·
+                          工具段=本轮无工具段 · HITL 源=ring（**当轮是别的 period**，见下）
+```
+
+**B1-d（本批第 3 笔新缺陷，a 不重计）**：页面「HITL 四态（源=ring）」显示的是
+```
+trace_id=run-8bba24c5ee368a4a-p006afde646000000 · ts=2026-11-18T17:54:14Z
+本轮 period_id = run-ec4a823828809dcc-p006afe15b9000005   ⇒ **不是同一个 period**
+```
+ring 是跨 period 全局环，`find(phase==='hitl')` 不校验身份 ⇒ 违反 **I1（身份是 period_id）**；
+"0" 与"别轮的 0"不是同一个 0。
+
+**修**（`Cellrix 5e547b1`，只动渲染链）：从 tape 首行取 period_id，只接受 `trace_id === periodId` 的 ring 事件；
+不匹配 ⇒ 回落 tape 标 `_source: tape(ring-stale)`；两处皆无 ⇒ `UNMEASURABLE·…`（**不**回落顶层旧 hitl）。
+
+**四形反样本**（同一 tape，只换 ring）：
+```
+ring 只有别轮 hitl        ⇒ 源=tape(ring-stale) · allowed_once=0（本轮 tape 值）
+ring 有本 period hitl     ⇒ 源=ring · allowed_once=3（原行为不变）
+ring={}                   ⇒ 源=tape
+ring 别轮 + tape 无 hitl  ⇒ 源=UNMEASURABLE·ring-stale 且 tape 无本 period hitl 行
+原渲染测试 l2_render_test.js rc=0
+```
+
+**计数（按 YB①）**：本批真新 B1 = **b / c / d 三笔**；**a 不计**（上一轮已修）。
+**不互相销账**：B1-d 只证明"读错源已拦"，**C-076（hitl 只进内存环、写不进盘）仍未解**，两件不同。
+**口径未动**：K-134 待裁、非基线；L2 读数齐备未签；未归档、未改 center、队列 3 行未删、DEATH-CERT 未动。
