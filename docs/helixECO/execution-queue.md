@@ -457,3 +457,21 @@ phantom-complete：需新增"声明 vs git diff"判据（引擎面，且 phyt �
 ```
 
 **恢复命令（下次要判时用）**：`cd phyt-DNA && bash tools/ci-local.sh --fast`（红因在输出第 3c 段，会逐条列 id 与日落日）。
+
+### 十仓健康快照（续）· 2026-11-19 04:02（A 类读数）
+
+补齐上一份快照缺的三仓（都已实跑，不是引述）：
+
+| 仓 | 命令（在仓根或子目录） | rc | 读数 |
+|---|---|---|---|
+| helix-tentacle | `cargo test -q --all-features` | **0** | **58 + 6** 通过（另有 2 个空套件 0 项）；含插件装载路径 |
+| FlowModus | `cd flowmodus-rs && cargo test -q --all-features` | **0** | **96 + 4 + 3 + 4 + 2** 通过（注意：**仓根没有 Cargo.toml**，worktree 在 `flowmodus-rs/`） |
+| Helix-MCP-Learner | `cargo test --all-features` | **0** | 64 + 3 + 1（上一轮已测） |
+| HelixECO-Glove | `cargo test --all-features` | **0** | 30 + 13 + 8 + 7（上一轮已测） |
+
+**两个"会在错的对象上量"的坑（写下来，下次别再踩）**：
+```
+· FlowModus 的仓根没有 Cargo.toml ⇒ 在仓根跑 cargo test 会得到
+  "could not find Cargo.toml" 而 **rc 仍是 0**（管道吃 rc）⇒ 必须 cd flowmodus-rs
+· helix-tentacle 有 2 个空套件（0 passed）⇒ 若只 grep 一个 test result 会读成"没测试"
+```
