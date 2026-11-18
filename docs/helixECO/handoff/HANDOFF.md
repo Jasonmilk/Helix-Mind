@@ -55,10 +55,10 @@ cd phyt-DNA && bash tools/validate.sh --index
 
 | 项 | 现在量到 | 证据（可复跑） |
 |---|---|---|
-| **K22** 危险动作形状判据 | **仍缺** | `DEBTS.md` 的 `d-dangerous-gate-never-installed` 仍在（问题类=K22 部署面残留）；hooks 只有 pre-commit/pre-push/post-commit，没有"危险形状"判据 |
+| **K22** 危险动作形状判据 | **判据已实现且真跑绿；部署面未安装**（两者要分开说） | 判据：`phyt-DNA/examples/claude-code/hooks/pretooluse-gate.sh` + `hook_test.sh` ⇒ 本轮实跑 **9 passed / 0 failed**（含「`rm -rf` 形状 ⇒ exit=2」「写 `DNA.md` 权威卷 ⇒ exit=2」「`--force-with-lease` ⇒ 放行」）；但 `grep pretooluse tools/hooks/pre-commit` = **0**，生态各仓也**没有** `.claude/` ⇒ `d-dangerous-gate-never-installed` 仍成立，缺的是**安装**不是判据 |
 | **K16** 给「做」装门 | **已装（观察态可翻）** | `anaphase-helix/src/main.rs:1080-1090`：`gate_url(...)` → `pipeline.with_security_gate(Some(HttpSecurityGate…))`；K-133 的"门只在 crate 里"已不再成立 |
 | **K17** 并发上限/背压 | **未做** | `grep -rn 'Semaphore\|max_concurrent' anaphase-helix/src` ⇒ 0；流式路径用的是 `UnboundedSender`（`adapters/http_reasoning.rs:154`） |
-| **K19** `GateVerdict` 改名 | **未做（名字仍在或已无引用，需一次定向核对）** | `grep -rn 'GateVerdict' Tuck/crates` ⇒ 0 命中 ⇒ 要么已改名、要么该符号从未落地；下次动到 verdict 面时同批核对，不单开 |
+| **K19** `GateVerdict` 改名 | **已无该符号；现存类型叫 `Verdict`** | `grep -rn 'GateVerdict' Tuck/crates` ⇒ **0**；`tuck-gateway/src/matrix.rs:138 pub struct Verdict` ⇒ 改名事实上已完成（或该符号从未以该名落地）⇒ 本条可视为结项，不单开一轮 |
 
 **顺带两个读数（与上表相关，供判断顺序）**：
 ```
