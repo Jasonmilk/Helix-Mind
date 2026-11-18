@@ -419,3 +419,20 @@ agui=5 · D1/D2 rc=0 · tool/call=0 · HITL 全部 0（kinds={}）
 ```
 
 **边界**：`TOOL_CALL_*` 仍是 AG-UI 标准类型，未新造语义、未改协议、未新开格子；页面留白数仍以当轮命令为准。
+
+### 归档工单的事实更正 · 2026-11-19 03:19（append-only，不追改回执）
+
+> 已归档 goal `mwmgamh3-vx0ntq` 的 `status:complete` **不追改**（append-only）。但事实必须落盘：
+
+```
+① 该工单的 t1/t2 **标早了**：objective 要求每轮交「两次 l2_casefile 的 diff 实际输出」，
+   而当轮回执里缺这一项就标了 complete。缺项 = replay diff 的输出（不是命令）。
+   事后补跑（当轮 period_id=run-892e91c467485a45-p006afded63000003）：
+     run1 rc=0 · run2 rc=0 · diff 无输出 ⇒ rc=0
+   ⇒ 读数有了，但"当时缺"这件事不改写。
+② "改后 8 条"与反样本 rc=1 都量在 period_id=run-bda2600a6944d63e-p006afd7831000002；
+   当轮 tool/call=0 仍是 0，未用别轮补本轮。
+③ schema 快照/判据口径的改动已按 B2 记入 DEBTS（`d-agui-schema-snapshot-modified` · K-134，**待裁不进基线**）。
+```
+
+**下轮纪律（写死）**：`blockCompletion:true` 下，合约缺项**不结**；缺什么就具名登记什么，不代为补全、不重跑凑绿。
