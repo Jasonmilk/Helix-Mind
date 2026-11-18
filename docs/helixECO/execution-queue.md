@@ -330,3 +330,33 @@ ring5 的 A/B 不改 rings.json 与 chain.json，等真撞到该边再上移；
 | 8080 | llama-swap（coder-3b） | 保留 |
 | 50050 / 50052 / 60052 / 60053 / 60054 | cellrix-web / helix-mind / tuck / flowmodus serve / flowmodus reason | 保留 |
 | ~~50059 / 50062~~ | 探针专用（learned plugins 的 tentacle + 临时 anaphase） | **已 kill**；/tmp/learned* 已删 |
+
+### 真链轮次读数 · 2026-11-19 01:54（A 类：新增真读数）
+
+**启动**：探测复用（未重启）——`Cellrix/tools/check_upstream.sh` ⇒ `YES` rc=0（reasoning 8080/v1 · tentacle 50051）；
+`/v1/health` ⇒ tentacle `ok=true detail=reachable`。仅因 `config.toml` 无 `session_events_path`（当轮需要 jsonl）
+才以 env 正门重起实例，理由记录在此。
+
+**当轮真跑**（自然提示，不指示 JSON）：
+```
+POST /v1/chat  "What is 1234 times 5678? Use a tool if you have one."
+⇒ job_id=run-bda2600a6944d63e · model=coder-3b · impasse=false
+   reply="1234 multiplied by 5678 is 70,148,12."      ← **答复算错**
+```
+
+| 读数 | 值 |
+|---|---|
+| tape 行数 | 9 |
+| ring 事件 | 8 |
+| `bin/agui` 标准事件 | 5（RUN_STARTED / TEXT_MESSAGE_* / RUN_FINISHED） |
+| D1/D2 判据 | rc=0 |
+| HITL 四态（本轮） | `allowed_once=0 rejected=0 cancelled=0 unavailable=0 kinds={}` |
+| `tool/call` | **0** |
+| 案卷重放（对**这一轮** jsonl 跑两遍） | `diff=0` |
+
+**本轮的真发现（不是"又跑了一次"）**：
+```
+同一提示形状的上一轮是 tool/call=1 且答对（7,006,652）；本轮 tool/call=0 且答错。
+⇒ 本地 coder-3b 在"是否自发用工具"上**非确定**；因此"模型会自己发起工具调用"不能写成能力断言，
+  只能写成逐轮读数；也说明 L2 的验收不能依赖某一次 Met。
+```
