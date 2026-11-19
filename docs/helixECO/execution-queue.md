@@ -1982,3 +1982,47 @@ casefile：tool_calls=本轮无工具段（0 条）· verdict=UNMEASURABLE（未
 未销账；`d-rail-bypass-ignores-request-intent` / `d-ring-only-holds-wakeup-period` 同样未动。
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+
+### A 轮次 + B2 登记 · 两个「ok」不是同一件事：工具成功却判 Unmet · 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES · /v1/health 全 ok）**
+```
+prompt「Please call the numbers tool and report exactly what it returns.」
+job_id=run-cf208fb4baf29a73 · period_id=run-cf208fb4baf29a73-p006afefdf600000c
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006afefdf600000c.events.jsonl
+LINES=15 · AGUI=8 · USAGE=2 · TOOLCALL=1 · D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+两次 l2_casefile（--expect run-cf208fb4baf29a73）rc=0/0 · diff 无输出 rc=0 · sha=acbd5c81…
+tool/call {index:0, tool:"numbers"} → tool/result {ok:**true**, 27ms, outcome:"{\"series\":[1,…,10]}"}
+check/status exec_ok          actual=**"ok=false"**  ← 与上面 ok=true 矛盾
+check/status answer.delivered actual="no business result in tool return"
+verdict/status                **Unmet** · checks=2 · reason="failed: exec_ok, answer.delivered"
+HITL allowed_once=1 · unavailable=0 · kinds={}
+casefile：tools=['index=0 · numbers · ok=true · 27ms'] · verdict={Unmet, checks:2, …}
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘（:667 起那批）：`verdict/status` 是执行段的条件产出，Met/Unmet 反映"检查是否通过"。
+当轮把"两个 ok"拆开了：
+  ① `tool.result.ok=true` = **工具调用成功**（gRPC 返回 ok）
+  ② `exec_ok` 的 actual="ok=false" = **没在 outcome 里找到与 expect 对齐的 `ok` 字段**
+     （numbers 返回 `{"series":[…]}`，没有 `ok`；expect 是 "ok"）
+⇒ 同一轮里"执行成功"与"检查失败"同时成立，verdict 取后者 ⇒ **工具正常返回被判 Unmet**。
+```
+
+**A：判断改成**
+```
+`exec_ok` **不是"执行是否成功"**，而是"outcome 是否满足本次调用的 expect"；
+`tool/result.ok` 与 `exec_ok.actual` 是两个不同的量，可以一个 true 一个 false。
+⇒ 可被下轮推翻的一句：**凡 verdict=Unmet 且 tool/result.ok=true，必须先看 expect 与 outcome 形状是否对得上，
+   才能说"工具坏了"；把 Unmet 直接读成"执行失败"是错的。**
+```
+
+**B2（撞门：只登记，不自裁）**
+```
+"检查失败时 verdict 该怎么命名/措辞"（exec_ok 这个词本身会误导）属 anaphase 的**判据面/行为面** ⇒ 门。
+`DEBTS.md` 增 `d-exec-ok-names-expect-match-not-success`（带 revisit-on）；本轮**未改**任何检查逻辑。
+```
+
+**计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 14 条（含上一轮登记那条）一项未动、未互相销账。
