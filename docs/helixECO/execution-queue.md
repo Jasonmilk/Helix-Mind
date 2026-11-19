@@ -2026,3 +2026,46 @@ casefile：tools=['index=0 · numbers · ok=true · 27ms'] · verdict={Unmet, ch
 
 **计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 14 条（含上一轮登记那条）一项未动、未互相销账。
+
+### A 轮次 + B2 登记 · 裸 JSON 计划不会被解析：同形回复有两种完全不同的成因 · 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES · /v1/health 全 ok）**
+```
+prompt「Call the numbers tool, and in your plan set expect to "series" (not "ok"). Then report the returned series.」
+job_id=run-f3003122d008a17b · period_id=run-f3003122d008a17b-p006afefe1600000d
+jsonl=/tmp/t2round/events/run-f3003122d008a17b-p006afefe1600000d.events.jsonl
+LINES=**9** · TOOLCALL=**0** · USAGE=1 · HITL 四态全 0（gate 未到）
+attempt = **"no calls planned — answered directly"**
+reply 原文 = {"calls":[{"tool":"numbers","args":{"series":10},"expect":"series"}]}（chars=69，**裸 JSON，无围栏**）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+上一轮 B2（d-gate-refusal-replies-with-raw-plan）把"reply 是计划 JSON"当作**被闸拦下**的签名。
+当轮给出反例：这一轮 gate 根本没到（四态全 0），reply 仍是计划 JSON —— 因为**计划没被解析**：
+  attempt 说"no calls planned"，而 reply 里躺着一条完整的 calls 计划 ⇒ 引擎没把它当成计划。
+与两次**被解析**的对照（同链、同模型）：
+  calc 轮  run-00c676c26f5ec20c…  15 行 · attempt="planned calls: calc" · tool/call=1
+  numbers 轮 run-cf208fb4baf29a73… 15 行 · attempt="planned calls: numbers" · tool/call=1
+  exec 轮  run-65ac6520dbb36978…   9 行 · attempt="planned calls: exec" · tool/call=0（闸拦）
+  **本轮**                            9 行 · attempt="no calls planned" · tool/call=0（**没解析**）
+```
+
+**A：判断改成**
+```
+「reply 是计划 JSON」有**两种成因**，形状相同、含义相反：
+  (a) 计划**被解析**但被闸拦下（attempt="planned calls: X" · HITL unavailable=1）
+  (b) 计划**没被解析**（attempt="no calls planned" · HITL 全 0 · 计划原文被当答案回给用户）
+⇒ 可被下轮推翻的一句：**判 (a)/(b) 只看 `assistant/attempt` 的第一词（planned calls / no calls planned），
+   不能看 reply 的形状；两者 reply 都是计划 JSON。**
+```
+
+**B2（撞门：只登记，不自裁）**
+```
+"裸 JSON（无 ```json``` 围栏）的计划要不要被解析"属 anaphase 的**解析面/行为面** ⇒ 门。
+`DEBTS.md` 增 `d-bare-json-plan-not-parsed`；同时给上一轮那条 B2 补限定：
+`d-gate-refusal-replies-with-raw-plan` 的签名**必须加上 attempt 佐证**，否则会把它跟"没解析"混为一谈。
+```
+
+**计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 15 条一项未动、未互相销账。
