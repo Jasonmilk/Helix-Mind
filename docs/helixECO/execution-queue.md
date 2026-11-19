@@ -3110,3 +3110,32 @@ B1-u / v / y 三次把 casefile 的"多来源静默选一个"改成"多个就标
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134 · 门后 23 条（含本轮前登记的 d-tool-call-id-scoped-to-job-not-period）一项未动、未互相销账。
+
+### C 轮次 · 端到端回归（`run_one_cycle --config-upstream`）+ 环境清场验证 · 2026-11-19
+
+**工具自跑一轮（不是手敲 curl；走的是我这几轮改过的工具链）**
+```
+bash tools/run_one_cycle.sh --config-upstream --prompt '…4*4…' /tmp/roc4   ⇒ rc=0
+  tape 按 job_id 钉住（run-fcfc00f9ce1edeae）   ← B1-o/B1-n 的钉轮在生产调用里生效
+  本目录 period 数=2（>1 表示含苏醒轮）          ← B1-o 新增的读数在场
+  行数=6 · agui 标准事件=5 · D1/D2 rc=0          ← B1-w/x/z/aa/ab 的新判据不误伤真跑
+  ⑤c impasse=False · bypass=**rail**（上游未被调用 ⇒ 通路未验证）  ← 工具自己把"rail 吞请求"标出来了
+  ⑤b tool/call=0 · tool/result=0 · model=none
+退出后 50061 监听数 = **0**                      ← B1-p 的 cleanup 端口补杀生效
+```
+
+**环境读数（顺手做，有读数）**
+```
+清场后发现 tentacle(50051) 与 reasoning(8080) 都已退出 ⇒ /v1/health「不 ok: tentacle, reasoning」
+按第⑤节冷启动两者；恢复后 /v1/health「不 ok 的检查: 无」· check_upstream YES src=config
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：这几个修复（钉轮 / period 数 / 生命周期与配对判据 / 端口补杀）
+在**工具自跑的整轮路径**上都不误伤、也都生效；但它们对 rail 轮只证明"不误伤"，
+不证明"工具轮也通过"——工具轮的证据仍是手敲 curl 那几轮（run-ab71a0c4… / run-864bf725…）。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：K-134 · 门后 23 条一项未动、未互相销账。
