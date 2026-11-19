@@ -3732,3 +3732,47 @@ pre-commit 行预算 ratchet：`src/agui.rs 113 -> 137`（ncloc 增长 24）⇒ 
 ```
 
 **边界**：未并入 rs · 未改基线 · 未写「已确认」· 章 A 签字与 HITL 仍另线未捆入 · 门后项未销账。
+
+### 章 B 第一步落地（先记坑、后 fix，两次提交）· 2026-11-20
+
+**执行（按 gardener 补签：走 A，k_id=C-083，pit 与 fix 不同提交）**
+```
+提交 1（只含坑）：anaphase-helix **17066c0**「记坑（先）· C-083」
+  ci/pits.toml 追加 [[pit]] id="C-083"（reason 描述**坑**：工具段消失 / TOOL_CALL_RESULT 缺 messageId /
+  多挂 runId/threadId/metadata 被官方 unevaluatedProperties:false 明文拒）
+  sha：ci/pits.toml → **3755a3ffd0383e69**；ci/check_line_budget.py **rc=0**
+提交 2（只含 fix）：anaphase-helix **5d71a05**「fix（后）· 章 B 第一步」
+  ci/baseline.toml 加 [[fix_window]] target=src/agui.rs cap=24 k_id="C-083"（cap ≤ FIX_CAP_FLOOR=36）
+  src/agui.rs 打补丁（patch sha256_16 b07cd19a7e74312c）
+  sha：ci/baseline.toml dfe37fb69a5a1e25 → **814dff28e75f7890**；src/agui.rs 78f7273c8ec3ed20 → **33ff863dc597993d**
+远端：origin/rs = **5d71a058** · dirty=0
+```
+
+**读数（两套验具并列，不互相判死）**
+```
+官方副本（Cellrix/tools/agui_conformance.js · 命令 node tools/agui_conformance.js <bin/agui 输出.jsonl> ·
+  schema sha256_16=4b5c93226838a0e7）：
+    tool 轮 period run-93f71d7d5c9b397a-p006aff38c3000008（8 条）  1/8 → **8/8**
+    rail 轮 period run-6ce28faed7aa8e1f-p006aff379a000006（5 条）  1/5 → **5/5**
+自家判据（预期红，连带未裁）：Cellrix d1_d2 **rc=1** · d2_fail **13 条**（TEXT_MESSAGE_*/TOOL_CALL_* 缺 threadId/runId
+  + TOOL_CALL_RESULT 旧快照无 messageId 之外的差异）· accept_all **rc=1**
+构建/测试：cargo test --lib **320 passed / 0 failed** · ci/check_line_budget.py **rc=0**
+```
+
+**四连带（逐项落点，仍待裁、不销账）**
+```
+① 自有 agui-1.0-min 存废 → Cellrix/docs/observations/agui-1.0-min.schema.json（未改）
+② 78227a6 守卫退位      → Cellrix/tools/d1_d2_check.js（未改；现红 13 条）
+③ K-134 裁定            → helix-mind/docs/helixECO/DEBTS.md:19（仍 ⏳ 待裁、非基线）
+④ D1/D2 对象是否整体改  → 落点同 ①+②；未动
+```
+
+**顺带撞出的新缺陷（只具名，不自裁修）**
+```
+`ci/allowances.py:159` 的 pits 加载器只认以 `id` 开头的行；
+而 `ci/pits.toml` 有 **2 条**用 `k_id =` 格式（K128-CI144-PROFILE-GATE · C3-IRREVERSIBLE）
+⇒ 那两条**永远不可被 fix_window 引用**（引用即 CHECKER ERROR）。
+属自裁层工具缺陷，但改它=改判据加载口径 ⇒ 先具名，待裁定。
+```
+
+**边界**：未写「已确认」· 未归档 · 章 A 三下签字 / signoff 矛盾 / HITL 各是各未捆入 · phyt 护栏维持 · 门后项未销账。
