@@ -4161,3 +4161,36 @@ HANDOFF 的 2026-10-27 批次表未动（上一轮已确认，继续维持）。
 
 **维持边界**：8/8 只认「实现落地 + 官方副本校验通过」· 不写「已对齐官方 / 已交付 / 已确认」·
 UNCOVERED / drift / validator 基准维持门后 · 章 B 与 HITL 不捆入 · phyt 护栏 · dirty=0 · 未归档。
+
+### 裁签字口径 + 章 A 验收包备料（不代签）· 2026-11-20
+
+**① 裁（gardener 2026-11-20）：queue 是唯一作数账**
+```
+唯一作数：`execution-queue.md` 的「L2 读数齐备未签」。
+`governance/signoff.toml`（signed=true · signed_by=gardener · 2026-11-03）：
+  标为**历史快照、不覆盖 queue 口径**；只补限定、**文件未改**、不判日期含义、不删历史件。
+此后**章 A 的签字只落 queue 这一本账**。
+```
+
+**② 章 A 可复跑验收包（备料，不代签）**
+```
+落点：`helix-mind/docs/helixECO/agui-chapter-a-acceptance.md`（93 行）
+内容：<ROUND> 取法 + 三下逐条命令与期望形态 + 口径限定 + 2026-11-20 样张读数
+  第一下 重放带身份：同一 period 两次 diff=0（rc、字节数、sha）× 不同 period sha 必不同
+  第二下 页面留白：页面生成 + `UNMEASURABLE` 计数 = 真实缺项数 + 缺口声明在
+  第三下 地面变化：`git ls-files web`=0 · `test -d web` ⇒ 1 · accept_all 默认跑**冻结夹具**（只证确定性）
+  附：agui_conformance 8/8（章 B 口径，不并入章 A 签字）
+明确写死：**三下判不出 8/8**；三下由 gardener 自己按，本包不代签、不写「已确认」。
+```
+
+**③ 样张读数（今日实跑，供对照形态，不是通过证明）**
+```
+<ROUND>=/tmp/chapterA · tape run-93f71d7d5c9b397a-p006aff38c3000008
+第一下：diff rc=0 · 0 字节 · sha=36c766bccd70201b；另一 period（run-6ce28faed7aa8e1f-p006aff379a000006）sha=4678ec0fbb2fd626 ⇒ 不同
+第二下：缺口标注 2 处 · UNMEASURABLE 0 处 · D3 行 6
+第三下：git ls-files web=0 · test -d web ⇒ 1
+附：agui_conformance **8/8**（官方副本 sha 4b5c93226838a0e7）
+```
+
+**边界**：8/8 只认章 B 实现落地，不升格「已交付」· UNCOVERED / drift / validator 基准维持门后 ·
+章 B 与 HITL 不捆入 · phyt 护栏 · dirty=0 · 未归档 · 不写「已确认」。
