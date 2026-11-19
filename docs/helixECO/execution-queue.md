@@ -2442,3 +2442,55 @@ DEBTS 当前共 28 行 `d-`；其中门后项实体 = **19**：
 ⇒ 更正上一段"16 条"与"18 条"两种口述：**19 条实体 + 1 行更正**。数字只作对账，不立阈值。
 "动 ring 写入面属门"成立，但不写成下轮去动它、也不去造 `_source=ring` 的真跑。
 ```
+
+### AG-UI 对齐登记 · 材料状态更正 + 三件并列事实 + 官方 JSON Schema 首次对照 · 2026-11-19
+
+**⓪ 材料状态更正（append-only）**
+```
+上一轮我写「外部链接·内容未取到·待验」⇒ **解除**：本轮已取到官方 README 正文、官方事件枚举与
+**官方 JSON Schema**（`https://docs.ag-ui.com/spec/1.0/schema.json` · 94,359 字节 · `$defs` 98 个）。
+因此「类型级是否对齐」从**不可量**变成**可量**，下面是实测对照，不是推断。
+```
+
+**① 三件并列事实（不代为裁定谁覆盖谁）**
+```
+(1) 用户记忆中的约定：薄适配层，借用 ag-ui-protocol/ag-ui，不自造协议；
+(2) 本会话可复跑读数：anaphase:src/agui.rs 纯函数投影 → bin/agui → 自有
+    `agui-1.0-min.schema.json`（自称最小子集）+ 仓内 D1 守卫；无官方 connector/middleware 接线读数；
+    K-134「schema 快照被改、待裁、非基线」；
+(3) 具名对齐缺口：真源未引用官方 —— 直到本轮才第一次拿官方 schema 对照。
+```
+
+**② 官方事实（本轮实测，均可复跑）**
+```
+官方事件枚举（sdks/.../EventType.java）：RUN_STARTED/RUN_FINISHED/RUN_ERROR · STEP_STARTED/FINISHED ·
+TEXT_MESSAGE_START/CONTENT/END/CHUNK · TOOL_CALL_START/ARGS/END/CHUNK/RESULT ·
+REASONING_START/END/MESSAGE_* /ENCRYPTED_VALUE · STATE_SNAPSHOT/STATE_DELTA/MESSAGES_SNAPSHOT ·
+ACTIVITY_SNAPSHOT/DELTA · RAW/CUSTOM/META_EVENT  （约 30 个）
+官方 schema 必填键（逐条核对）：
+  RunStartedEvent      required=[type,threadId,runId]                        我们：一致 ✅
+  RunFinishedEvent     required=[type,threadId,runId]                        我们：一致 ✅（但多挂 `metadata`，非官方属性）
+  TextMessageStart     required=[type,messageId]                             我们：多挂 threadId/runId/role（多余键，官方未禁）
+  ToolCallStartEvent   required=[type,toolCallId,toolCallName]               我们：一致 ✅
+  ToolCallEndEvent     required=[type,toolCallId]                            我们：一致 ✅
+  ToolCallResultEvent  required=[type,messageId,toolCallId,content]          **我们缺 `messageId`** ❌
+```
+
+**③ 由此产生的两处判断更正**
+```
+(a) 我此前写「TOOL_CALL_* 属官方标准类型，锚点是仓内守卫反推」⇒ **锚点换成官方枚举**（已证实，非推断）。
+(b) 我此前写「仓内 8 类里没有承载 HITL/check 读数的类型 ⇒ 按设计不映射」⇒ **不成立**：
+    官方有 STATE_SNAPSHOT / STATE_DELTA / MESSAGES_SNAPSHOT / CUSTOM / META_EVENT，
+    所以那是**我们未覆盖**，不是"协议没位置"。同一条更正适用于 `assistant/attempt`、`assistant/usage`。
+```
+
+**④ 给方向层的建议（不自行裁）**
+```
+若「以官方为真源重做薄适配层」：真源 = 官方 `spec/1.0/schema.json`（钉版本 + 存 sha），
+  我们保留 `agui.rs` 的纯函数形状，把"自有 schema + 仓内守卫"换成"官方 schema 校验 + 差异标未覆盖"；
+  先修的三处差异是：TOOL_CALL_RESULT 缺 messageId · RUN_FINISHED 的 metadata 非官方属性 ·
+  未覆盖 STATE_*/CUSTOM（HITL/check/attempt 的落点）。
+这属**跨仓契约·方向层**（真源 / schema / 守卫 / K-134 一起裁）⇒ 只具名，不进自裁任务、不列可点菜单。
+```
+
+**计数**：本登记不改 goal 状态；新增 1 条门后项（见 DEBTS），不计入「连续无 B1/B2」的 A/C 序列。
