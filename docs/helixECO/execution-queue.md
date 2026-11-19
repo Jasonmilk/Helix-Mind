@@ -3079,3 +3079,34 @@ toolCallId 的身份范围是 **job 级**（`job_id#index`），不是 period �
 ```
 
 **计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）· 门后项 22 → **23 条**。
+
+### C 轮次 · 真跑一轮：新增的歧义标注在真数据上不出现（0 次）· 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+prompt「Please call the calc tool with expression 6*6 and report the result.」
+job_id=run-ab71a0c436476d5e · period_id=run-ab71a0c436476d5e-p006aff1e87000014
+jsonl=/tmp/t2round/events/run-ab71a0c436476d5e-p006aff1e87000014.events.jsonl
+LINES=15 · AGUI=8 · USAGE=2 · TOOLCALL=1 · D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+两次 l2_casefile（--expect run-ab71a0c436476d5e）rc=0/0 · diff 无输出 rc=0 · sha=（见下）
+casefile：hitl._source=tape(ring-stale) · verdict={Met, checks:2} · tools=['index=0 · calc · ok=true · …']
+**歧义标注出现次数 = 0**（`_ambiguous_n` 在真数据上一次都没出现）
+```
+
+**核的是哪条判断 / 结论**
+```
+B1-u / v / y 三次把 casefile 的"多来源静默选一个"改成"多个就标 ambiguous"。
+当轮问：这套新标注在**真跑数据**上会不会误报？
+读数：真跑 tape 的单来源结构 ⇒ `_ambiguous_n` 出现 **0 次**，且两次 casefile 字节一致。
+⇒ 新标注对真数据是**惰性**的（只在构造的多来源输入上出现），没有把噪声带进每一轮读数。
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：真实链上"一个 period 只有一条 hitl / 一条 verdict / 一条 user·turn 对"，
+因此歧义标注不会出现在真跑读数里；若某轮真跑出现 `_ambiguous_n`，说明链本身产生了多来源，
+那是**新形态**，必须重判（而不是把它当噪声忽略）。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134 · 门后 23 条（含本轮前登记的 d-tool-call-id-scoped-to-job-not-period）一项未动、未互相销账。
