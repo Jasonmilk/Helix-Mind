@@ -2069,3 +2069,45 @@ reply 原文 = {"calls":[{"tool":"numbers","args":{"series":10},"expect":"series
 
 **计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 15 条一项未动、未互相销账。
+
+### A 轮次 · 围栏不是解析开关：`attempt` 由**同一次调用**产出，reply 只是它的文本 · 2026-11-19
+
+**判别实验（上一轮判断的直接检验）**
+```
+上一轮判：「计划没被解析」⇒ 推测加 ```json 围栏就能变成计划。
+本轮真跑（同请求 + 围栏）：
+  job=run-0235f80b25383b84 · period=run-0235f80b25383b84-p006afefe3200000e · 9 行 · usage=1 · tool/call=0
+  attempt = **"no calls planned — answered directly"**（**仍然没有计划**）
+  reply   = ```json {"calls":[{"tool":"numbers","args":{"series":10},"expect":"series"}]}```
+⇒ 围栏**没有**把"文本"变成"计划" ⇒ 上一轮的因果解释被推翻。
+```
+
+**五轮对照（同链、同模型；usage 条数是关键）**
+```
+run-f3003122…  9 行  usage=1  tool=0  attempt="no calls planned"      reply=裸 JSON 计划
+run-0235f80b…  9 行  usage=1  tool=0  attempt="no calls planned"      reply=**```json** 围栏计划
+run-65ac6520…  9 行  usage=1  tool=0  attempt="**planned calls: exec**" reply=裸 JSON 计划（闸拦 unavailable=1）
+run-00c676c2… 15 行  usage=**2** tool=**1** attempt="planned calls: calc"   reply="441"
+run-cf208fb4… 15 行  usage=**2** tool=**1** attempt="planned calls: numbers" reply="The numbers tool returns the series […]"
+```
+
+**A：判断改成（把因果换成调用次数）**
+```
+引擎没有"从 reply 解析计划"这一步。`attempt` 与 `reply` 来自**同一次 LLM 调用**（usage=1）：
+  attempt 说"planned calls: X" ⇒ 计划存在 ⇒ 过闸 →（放行则第二次调用产出答案，usage=2；被拦则停在 usage=1）
+  attempt 说"no calls planned" ⇒ 没有计划 ⇒ 该次调用的文本直接成为 reply（常是模型复述的 JSON）
+⇒ 可被下轮推翻的一句：**usage=1 的轮次里 reply 出现什么形状都不代表"计划"；
+   是否有计划只看 `attempt`；`tool/call>0` 必然伴随 usage=2（规划一次 + 作答一次）。**
+```
+
+**更正 · 上一轮那条 B2 归类错了（append-only，不删行）**
+```
+`d-bare-json-plan-not-parsed` 的前提"reply 里裸 JSON 计划没被解析"**不成立** —— 引擎根本没去解析 reply。
+该行的现象（reply 是计划 JSON）真实，但归因错误；以本行为准：
+  · 真实现象 = "计划为空时，该次调用的文本会成为 reply"（不是解析失败）
+  · 是否需要"把计划文本当答案"的处属**行为面**，仍属门，但**不再叫"解析失败"**
+上一轮的 (a)/(b) 区分（看 attempt 首词）**仍然有效**，只是 (b) 的成因从"没解析"改为"本就没有计划"。
+```
+
+**没有 B1**：本轮无自裁层缺陷；**没有新增 B2**（只是更正已登记那条的归因）。
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
