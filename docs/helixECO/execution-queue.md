@@ -1353,3 +1353,46 @@ C 指纹漂移时          改前 accept_all「三项均通过」rc=0（当时�
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+
+### A 轮次 · 「启动即产生一轮」：一次 `run_one_cycle` 落了两个 period · 2026-11-19
+
+**对表读数（用改后的 `run_one_cycle.sh --config-upstream`，第一次工具自证 vs 手跑）**
+```
+bash tools/run_one_cycle.sh --config-upstream /tmp/roc1   ⇒ rc=0
+  ③ {"done":true,"job_id":"run-752d73d3ed4afb18","model":"coder-3b",
+     "reply":"9 raised to the power of 9 is 387,420,489.","reason":"completed"}
+  ⑤ job_id=run-752d73d3ed4afb18 · 行数=9 · agui 标准事件=5 · D1/D2 rc=0 · tool/call=0
+独立复核（同目录）：LINES=9 · AGUI=5 · casefile rc=0 · period=run-752d73d3ed4afb18-p006afe9f1e000001
+⇒ 工具自报与手跑**一致**（这本身是第一次对表成功）
+```
+
+**但同目录里有两份 tape（这才是差）**
+```
+run-8bba24c5ee368a4a-p006afe9f1e000000.events.jsonl  6 行  15:02:54
+   user/message = "Calculate 2 to the power of 10" · bypass=rail · model=null
+run-752d73d3ed4afb18-p006afe9f1e000001.events.jsonl  9 行  15:02:55
+   user/message = "compute 9^9"（脚本唯一那一次 POST）· model=coder-3b
+两份都含 turn/start ⇒ `run_one_cycle` 的选法（`grep -l turn/start | head -1`，字典序）
+与我给 `l2_casefile` 定的选法（mtime 最新）**这一次碰巧选中同一个**，但没有规则保证。
+```
+
+**成因（代码事实）**：`anaphase-helix/session_notes.json`（2026-10-09，工作区干净）
+  被 `config.rs:114` 描述为「纪元会话笔记路径（**P10c T1 强制苏醒/认知脱水**）」
+⇒ **进程启动时就会产生一个"苏醒" period**，其输入来自 session_notes 里的旧 briefing，
+   period 序号 000000（新事件目录的第一轮），而用户那一轮才是 000001。
+
+**A：判断改成（同时修正 B1-f 的诊断）**
+```
+"一轮 = 一个 period" 不成立：**启动 anaphase 本身会写一个苏醒 period**。
+⇒ B1-f 里那个"ring 的 begin 还是更早的 'Calculate 2 to the power of 10'"不是随机的 ring 残留，
+   而是**苏醒轮**——它先被写进 ring，且序号是 000000。
+⇒ 可被下轮推翻的一句：**凡新建事件目录跑一轮，目录里 period 数 ≥ 2 时，
+   序号最小的那个很可能是苏醒轮；"这一轮"必须用当次 POST 的 job_id 去认，不能用"最新/首个"去猜。**
+```
+
+**没有 B1**：把苏醒轮从工具读数里排掉属于"策略选择"（排掉≠它不存在），
+按"不预先固定"不做；本轮只把成因与认轮规则写清。
+**没有 B2 新增**：苏醒机制是 anaphase 的既有行为面（P10c T1），不属本轮门后清单，未动、未登记新行。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
