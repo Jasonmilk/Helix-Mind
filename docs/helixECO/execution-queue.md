@@ -4050,3 +4050,32 @@ unevaluatedProperties:false 73 处）与 README 原文。
 与 README 原文 = gardener 独立核过；`EventType.java`（29 常量）与两个 sha = **Pi 侧落仓读数**。
 两边分列保留，不再合称"已复核"。
 ```
+
+### 补限定 · 三条（append-only，覆盖 8d28cdb 那节，旧件不删不回改）· 2026-11-20
+
+**① 覆盖类口述：一律以「schema 无 · java 有 · 两工件不同步 · 基准以 schema 为准」为准**
+```
+本更正同时覆盖此前所有「官方不存在 / 原厂根本没有 / 幻影」一类说法（含双方各一处）：
+  · gardener 侧曾写「META_EVENT 原厂根本没有 / schema 与 java 均无」——该断言超出其独立核过的范围
+    （独立核 = schema 与 README；从未独立取 EventType.java）⇒ 按证据等级作废；
+  · Pi 侧曾写「我方凭空多列」——同族，一并作废。
+正确表述（此后统一）：**META_EVENT 在 1.0 schema enum 里没有、在 java 枚举里有 ⇒ 两个官方工件不同步；
+相对 schema 记「本方多列 1」；基准以 schema（sha 4b5c93226838a0e7）为准。**
+```
+
+**② 判据首例（行 3982 的「不得由 EventType.java 单独充当依据」第一次真命中）**
+```
+行 3982 判据（「引用官方事件/required 须落 $defs；java 不得单独充当依据」）的**首个真实命中**正是 META_EVENT：
+若当初拿 java 单独当依据，就会把 META_EVENT 记成"官方事件"，而它在 1.0 schema enum 里并不存在。
+⇒ 记录为判据首例；不写成整改工单、不新开实体。
+```
+
+**③ 归类：不新开类目**
+```
+「正则方言把有读成没有」归入既有 **C-059 读到空家族**（本次是：`^\s{4}([A-Z_]+,)` 漏掉分号结尾的 `META_EVENT;`）。
+现象不变、只更正解释：`d-uncovered-list-drift-vs-official` 仍记「本方多列 1」，
+行 3982 的基准与口径**均不变**。
+```
+
+**维持边界**：不补 SUBAGENT_* · 不删 META_EVENT · 不换 validator 基准 · 不自行唤醒 ·
+8/8 只认「实现落地 + 官方副本校验通过」· 章 A 三下签字 / signoff 矛盾 / HITL 不捆入 · phyt 护栏 · dirty=0 · 未归档。
