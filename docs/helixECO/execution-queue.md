@@ -1396,3 +1396,30 @@ run-752d73d3ed4afb18-p006afe9f1e000001.events.jsonl  9 行  15:02:55
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+
+### B1-n 轮次 · 选"当轮"靠 mtime 猜 ⇒ 苏醒轮顶掉真轮 · 2026-11-19
+
+**上一轮判断的机械验证（A→可执行）**
+```
+A（1be38b2）："这一轮必须用当次 POST 的 job_id 认，不能用最新/首个去猜"
+验证：构造 /tmp/sel/events（苏醒轮 8bba…000000 · 6 行；真轮 752d…000001 · 9 行），
+      把苏醒轮 mtime 改新 ⇒ 改前 l2_casefile 选中 **000000**（rows=6）⇒ 静默选错 ⇒ 判断被证实需要机械支持
+```
+
+**修（`Cellrix 9c7f3c1` 等级：additive）**
+```
+--expect <job_id|period_id>（或 EXPECT_PERIOD）按 tape 首行 id 钉住当轮
+钉不到 ⇒ UNMEASURABLE rc=4（不猜）；不钉 ⇒ mtime 规则但输出 selection=mtime-newest(unpinned)
+页面同步显示「选轮规则」
+```
+
+**反样本（三形，构造已标注）**
+```
+1) --expect run-752d73d3ed4afb18（苏醒轮 mtime 更新）⇒ 选中 752d…000001 · rows=9
+2) --expect run-nope ⇒ rc=4「找不到对应 tape（不猜）」
+3) 不钉 ⇒ 选中 000000 · selection=mtime-newest(unpinned) · tapes=2（规则可见，不再隐形）
+回归：l2_render_test.js rc=0 · accept_all.sh rc=0
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
