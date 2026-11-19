@@ -886,3 +886,32 @@ casefile 增 ring_period_ids / ring_mismatch（ring 事件全都不等于当轮 
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · d-context-inject-chars-is-budget · d-rail-bypass-ignores-request-intent。
+
+### C 轮次 · HITL 四态恒 0 是不是"没人写"？—— 不是 · 2026-11-19
+
+**核的是哪条判断 / 为何对不上（假设）**
+```
+观察：近若干轮 `check/status` 的 HITL 四态恒为 0（历史只出现过一次 allowed_once=1）。
+假设（可被推翻）："计数器没有写入路径 ⇒ 0 是假读数"。
+```
+
+**核对（代码级，逐条给位置）**
+```
+src/hitl.rs:484  `self.counters.record_for(outcome, kind);`  ← 写入路径**存在**
+src/hitl.rs:482  `pub fn check_approval(...)` 每次都记（uncounted 版本只在测试里用）
+src/run_cycle/safety_gate.rs:75 `hitl.check_approval(tool, actions)` ← 生产唯一调用点
+src/run_cycle/mod.rs:742 / :990 读 snapshot 写进 tape
+```
+⇒ 写入路径存在且唯一调用点在工具执行闸上。**本轮及近几轮 tool/call=0**（模型未规划调用）
+⇒ 闸从未被经过 ⇒ 计数**本来就该是 0**。0 就是 0，不是假读数。
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：**HITL 四态为 0 的原因不是"没人记"，
+而是"闸没被经过"——只要 tool/call>0 且动作被判高风险，四态就会动（历史 allowed_once=1 即此形）。**
+```
+
+**口径未动**：`d-rail-bypass-ignores-request-intent` 与 `d-context-inject-chars-is-budget` 仍待真撞；
+K-134 · C-076 · L2 一项未动。
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**（N=2 才 pause）。
