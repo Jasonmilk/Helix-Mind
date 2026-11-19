@@ -2227,3 +2227,41 @@ AGUI=8 / Met / allowed_once=1 / D1·D2 rc=0 —— 只认当轮；
 不动 DEATH-CERT · 页面留白；AGUI=8 / Met / allowed_once=1 只认当轮读数、不升格；
 K-134 待裁非基线；`accept_all` 默认跑**冻结夹具**（已声明），其 rc=0 **不是**真跑验收，
 真跑验收要用 `ROUND_DIR=<当轮目录>`。
+
+### A 轮次 + B2 登记 · `verdict/status.job_id` 装的是 **period_id**（字段名又说谎）· 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+prompt「Please call the calc tool with expression 9*9 and report the result.」
+job_id=**run-43d0fd88e73c639a** · period_id=**run-43d0fd88e73c639a-p006aff031c000010**
+jsonl=/tmp/t2round/events/run-43d0fd88e73c639a-p006aff031c000010.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+reply「9*9 equals 81」· HITL allowed_once=1 · unavailable=0 · kinds={}
+两次 l2_casefile（--expect run-43d0fd88e73c639a）rc=0/0 · diff 无输出 rc=0 · sha=06e7e113…
+verdict/status = {checks:2, job_id:"run-43d0fd88e73c639a-p006aff031c000010", status:Met}
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+I1（身份是 period_id，job_id 与 period_id 不是一个东西）已落盘；B1-q 也刚修过"字段名装别的对象"。
+当轮读数：
+  verdict.job_id == **period_id**（True）· verdict.job_id == job_id（False）
+⇒ 字段名写 `job_id`，内容是**period_id**。任何按 `verdict.job_id` 去 join job 级表的消费者都会拿到 period 键。
+```
+
+**A：判断改成**
+```
+`verdict/status.job_id` 是 **period 标识**（与本轮 period_id 相等），不是 job 标识；
+判"这条判定属于哪一轮"应使用 `period_id`（或该字段本身，但要知道它装的是 period）。
+⇒ 可被下轮推翻的一句：**若某轮 `verdict/status.job_id != 该轮 period_id`，则字段语义另有约定，
+   必须重判（目前 3 例：run-43d0f…/cf208…/bda26… 都是 period_id）。**
+```
+
+**B2（撞门：只登记，不自裁）**
+```
+改载荷字段名/语义 = 动 tape 消费面（schema 口径未裁 K-134）⇒ 门。
+`DEBTS.md` 增 `d-verdict-job-id-holds-period-id`（带 revisit-on）；本轮**未改**任何载荷。
+```
+
+**计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 18 条一项未动、未互相销账。
