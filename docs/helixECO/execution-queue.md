@@ -3865,3 +3865,42 @@ accept_all **rc=0**（分项全绿）· fingerprint rc=0
 
 **边界**：四连带按裁定执行但**不销账**（K-134 行仍留在 DEBTS，追加改判记录）·
 未写「已对齐官方 / 已交付 / 已确认」· 章 A 三下签字 / signoff 矛盾 / HITL 未捆入 · phyt 护栏维持 · 未归档。
+
+### 口径更正 · 四条（append-only，不动实现）· 2026-11-20
+
+**① 同源转针：D2 与 agui_conformance 现在是同一真源的两个读法**
+```
+D2 的 SCHEMA 已指向 `Cellrix/docs/observations/refs/agui-1.0-schema.json`（sha 4b5c9322…），
+`agui_conformance.js` 读的也是同一份 ⇒ 两者**同源**：
+  · 同源部分（D2 的 required/额外键口径）⇒ **会一起绿、一起红**，不是"两套验具并列"；
+  · 仍独立的部分 = D1（序列完整性 / 生命周期恰好一次 / 工具事件配对与 toolCallId 唯一）——那是自研不变式，与官方无关。
+⇒ 「两套验具并列、不互相判死」收窄为：**D1 与 (D2≡conformance) 并列**；D2 与 conformance 之间是**同源**，双绿不构成双重保险。
+⇒ 可推翻点同步收窄：若出现 D2 绿而 conformance 红（或反之）⇒ 说明有一条已经改读别处，必须重判。
+```
+
+**② 落点具名（改正我此前的 `DEBTS.md:19`）**
+```
+K-134 的历史行在 **DEBTS.md 行 106**（`d-agui-schema-snapshot-modified`，原始 ⏳ 行，未改）；
+我上一轮写的「DEBTS.md:19」是**错的**（同一文件里该行一直在 106，行号会随追加漂移，引用以该行为准）。
+本次改判记录**追加在行 123**（`| d-agui-schema-snapshot-modified（K-134 改判记录） | … | ✅ 已裁 |`），
+历史行 106 **未删未改**。
+「21 个官方类型未覆盖清单」与 `anaphase-helix:src/agui.rs` 的 `pub const UNCOVERED`：
+**是同一份**（实测：两边各 21 项、集合相等、无差集）——
+  落点 A：`Cellrix/docs/observations/agui-1.0-min.schema.json` → `uncovered_official_types[21]`
+  落点 B：`anaphase-helix/src/agui.rs` → `pub const UNCOVERED: &[&str]`（21 项）
+  （两份内容相同但**不共源**：一处改另一处不会自动跟，属已知的重复，未合并。）
+```
+
+**③ 状态转针：清单乙 K-134 两态分开**
+```
+「执行完毕」≠「仍待裁」。写法：清单乙里的 K-134 状态由「⏳ 待裁」**补限定**为
+**「已裁（2026-11-20）· 执行落点：Cellrix 6d91208 · anaphase-helix 5d71a05」**；
+历史行 106 保持原样不删、不销账；两态并列写明。
+```
+
+**④ `accept_all rc=0` 必须标输入**
+```
+上一轮与本次的 `accept_all rc=0` 用的是**默认冻结夹具**（首行自报：`输入：**冻结夹具** fixtures/l2-tape-2026-11-05`）
+⇒ 只证明**重放确定性 + 夹具上的 D1/D2 绿**，**不是真跑验收**。
+真跑验收须 `ROUND_DIR=<当轮目录>`；本轮未跑该形态，故不写"当真跑通过"。
+```
