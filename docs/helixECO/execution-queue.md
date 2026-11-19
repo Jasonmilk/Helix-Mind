@@ -1294,3 +1294,34 @@ C tape 不存在        ：改前 tool/call=[]      → 改后 [UNMEASURABLE]
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
 **自查**：本轮的反样本是 snippet 级（不启动整周期），已在节内标明，不冒充"整周期已验证"。
+
+### B1-l 轮次 · 引擎指纹可被"零文件"签成对 stdin，且 accept_all 不查指纹 · 2026-11-19
+
+**撞到（两条，都是"读到空 = 通过"）**
+```
+① tools/upstream-manifest.sh --write 在没有可签文件时：`shasum` 无参 ⇒ **读 stdin**，
+   清单写成 da39a3… **`-`**（44 字节），随后 `shasum -c` 返回 **OK**（实测 `-: OK`）⇒ 假通过。
+② 本仓当时**已经漂了**：tools/check_upstream.sh（B1-j）与 tools/run_one_cycle.sh（B1-k）
+   改了却没重签 ⇒ `bash tools/upstream-manifest.sh` rc=1；
+   而 `accept_all.sh` 仍打印「三项均通过」rc=0 ⇒ **指纹红没进入任何一道门**（我自己的流程漏洞）。
+```
+
+**修（`Cellrix 7f8d183`，additive；按仓规在提交信息里具名分叉并重签指纹）**
+```
+① --write 无可签文件 ⇒ UNMEASURABLE / exit 4（不写）；校验时拒绝含 `-` 条目的清单 ⇒ exit 4
+② accept_all 增 ⓪ 引擎指纹（rc=4 ⇒ UNMEASURABLE；rc≠0 ⇒ fail=1）
+   结果行不再写死"三项" ⇒「分项全绿（项数以上面 ── 行为准）」
+重签：7 个引擎文件；这只证明"副本自我一致"，**不证明与 phyt-DNA 上游一致**
+```
+
+**反样本**
+```
+A 空 tools/          改前 写 44 字节清单 + 已写入 rc=0 → 改后 UNMEASURABLE rc=4，未写文件
+B 清单含 stdin 条目   改前 shasum -c OK rc=0        → 改后 UNMEASURABLE rc=4
+C 指纹漂移时          改前 accept_all「三项均通过」rc=0（当时实跑现场） → 改后 ⓪ FAIL rc=1
+回归：重签后指纹 rc=0 · accept_all rc=0 · bash -n 通过
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+**自查**：本次重签 UPSTREAM.sha256 属"共享产物"，按仓规**在提交信息里具名分叉**（四个引擎文件逐一点名），未顺带改任何引擎行为。
