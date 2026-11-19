@@ -2996,3 +2996,30 @@ begin / end 各收全；>1 ⇒ `{_ambiguous_n, _rows}`；单条时原样输出
 **计数**：本轮有 B1 ⇒ N=0 · B1 累计 **26 笔**（a..z）。
 **未动**：K-134 · 门后 22 条一项未动、未互相销账。
 **B2 候选（未登记，按规矩先具名）**：投影本身对"孤儿 result"照发 END/RESULT —— 是否该丢/该报，属投影行为面 ⇒ 门。
+
+### B1-aa 轮次 · B1-z 的反方向：有 START 无 END/RESULT 仍 rc=0 · 2026-11-19
+
+**撞到（构造输入，已标注）**
+```
+真实 tool tape 去掉 `tool/result`（只留 `tool/call`）
+  ⇒ 投影出 TOOL_CALL_START 而**没有** TOOL_CALL_END / TOOL_CALL_RESULT
+  ⇒ **D1/D2 rc=0** —— B1-z 只判了"END/RESULT 必须有 START"，没判"START 必须被收口"
+```
+
+**修（`Cellrix` 本轮提交，additive）**
+```
+每个 TOOL_CALL_START 必须被同 id 的 END 与 RESULT 收口；缺哪个点哪个（悬空）
+```
+
+**四形反样本**
+```
+[有 call 无 result] rc=1「TOOL_CALL_START …#0 没有 TOOL_CALL_END（悬空）」← **改前 rc=0**
+[孤儿 result]       rc=1（B1-z 那条仍抓）
+[真跑工具轮] rc=0   [真跑 rail 轮] rc=0（不误伤）
+回归：accept_all rc=0
+```
+
+**计数**：本轮有 B1 ⇒ N=0 · B1 累计 **27 笔**（a..z + aa）。
+**未动**：K-134 · 门后 22 条一项未动、未互相销账。
+**规律（配对完整性两次成对出现）**：B1-z 判"END/RESULT 必须有 START"，B1-aa 判"START 必须有 END+RESULT"——
+  两端都判完，`TOOL_CALL_*` 这一族在判据层**才真正收口**（此前只有"有没有"，没有"配不配"）。
