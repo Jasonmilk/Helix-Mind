@@ -1462,3 +1462,36 @@ B1-n 落盘节（3a57743）行内写了「`Cellrix 9c7f3c1` 等级：additive」
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+
+### B1-p 轮次 · `run_one_cycle` 退出后服务仍在监听 50061，后续轮次被写进工具的目录 · 2026-11-19
+
+**撞到（实测，真跑现场）**
+```
+`SVC_PID=$!` 拿到的是跑 `cargo run` 的**子 shell** ⇒ kill 它杀不到真正的 anaphase
+证据：/tmp/roc2 结束后 50061 仍是 roc2 的实例（pid 93185 · 起于 15:05:25 · env 指向 /tmp/roc2/events）
+      我随后手动 POST 的 run-e7c79555b5bd8b9b 落进 **/tmp/roc2/events**（p006afe9fd8000002）
+      而 /tmp/t2round/events **没有新 tape**；ring 里只有该实例的**苏醒 period**（8 条事件 · 单一 trace_id）
+⇒ 这正是入口文档第⑤节警告的"旧实例用自己的事件目录应答"——这次是**工具自己造的**。
+```
+
+**修（`Cellrix c40fa70`，additive；重签指纹并具名分叉）**
+```
+cleanup 里按端口补杀（脚本开头已清过场 ⇒ 此刻监听者就是本工具刚起的）
+```
+
+**反样本 / 改后读数（真跑 /tmp/roc3，prompt=compute 5^5）**
+```
+退出后 `lsof -ti :50061 | wc -l` = **0**（改前 roc2 之后为 1）
+`tape 按 job_id 钉住（run-9a0ea3d402d09768）` · `本目录 period 数=2` · 行数=6
+回归：bash -n 通过 · 指纹重签 rc=0 · accept_all rc=0
+```
+
+**A（同一轮里附带确认的一条判断）**
+```
+"ring 只装苏醒 period"不是 ring 的缺陷，而是**实例归属错**：那个 ring 属于 roc2 的实例。
+⇒ 判断改成：**读 ring 前必须先确认 50061 是谁、它的 events 目录是哪**；
+   否则 `hitl _source=tape(ring-stale)` 这类现象会被误读成 ring 的实现问题。
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
