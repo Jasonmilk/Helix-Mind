@@ -1599,3 +1599,35 @@ tools/accept_all.sh:  TAPE=fixtures/l2-tape-2026-11-05（冻结样本 · Nov 15 
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
+
+### C 轮次 · token 读数本轮**不可量**（两轮都走了 rail 旁路）· 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+POST A「Please answer briefly: what is 3+4?」（35 chars）
+  job=run-bbb45325be75328f · period=run-bbb45325be75328f-p006afedc85000002
+  types=['turn/start','user/message','context/inject','assistant/reply','turn/end','check/status'] · rows=6
+  **无 assistant/usage 行**
+POST B（同一问题 + 480 chars 填充）
+  job=run-711d05fc63f4a3bb · period=run-711d05fc63f4a3bb-p006afedc87000003
+  types 同上 · rows=6 · **无 assistant/usage 行**
+⇒ 两轮都没调用 LLM（rail 旁路），usage 读数本轮**不可量**，不是 0、也不是"没变化"。
+```
+
+**核的是哪条判断 / 结论**
+```
+问句：`assistant/usage` 的 prompt_tokens=341 / cached_tokens=268 是否自洽、cache 是否重复计入？
+代码事实：anaphase:src/adapters/usage.rs:14「uncached input = prompt_tokens - cached_tokens」·
+          :29「raw: it overlaps cached_tokens」⇒ 语义**已在代码里写明**（disjoint 口径）。
+读数事实：本轮两轮均无 usage 行 ⇒ **无法用当轮读数验证 provider 给的数值**。
+⇒ 结论只能是：**本轮 UNMEASURABLE**（不拿代码注释冒充当轮读数，也不拿历史 341/268 补当轮）。
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：**只要 rail 旁路命中，本轮就取不到 usage 读数**；
+要验 token 自洽，必须先造出"经过推理段"的轮次（tape 里有 assistant/usage 行才算量到）。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
