@@ -2387,3 +2387,58 @@ casefile: hitl._source=**tape(ring-stale)** · ring_mismatch=['run-8bba…000000
 **没有新增 B2**：门后项 19 条未动、未互相销账。
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### 口径更正 · 四条（append-only，不回改历史件）· 2026-11-19
+
+**① 18 笔 B1 的证据分级补全（上一轮只覆盖 d–r，缺 a/b/c）**
+```
+a   行 540  「工具段有产出、无页面消费点」        **混合**：真跑 tape 渲染（页面出现 'calc · ok=true'）+ 构造反样本（移除该栏 ⇒ grep=0）
+b   行 592  「verdict/status 零消费者」           **混合**：真跑 tape（verdict=Met）+ 构造反样本（唯一串 all checks passed 三段）
+c   行 592  「HITL 只认 ring」                    **混合**：真跑（_source=tape(ring-stale) 多次）+ 构造（ring 手写本 period）
+d   行 606  「ring 未校验 period_id」             **混合**：同上（d480d2e 已记：命中分支无真跑证据）
+e   行 723  「rail 早退吞生命周期行」             **真跑**：run-ff46d4db…/run-0d710723…（3 行 D1 rc=1 → 6 行 rc=0）
+f   行 773  「casefile 丢身份」                   **真跑**：rail 轮 vs normal 轮 sha 互通（72e2a41 前）
+g   行 822  「三栏跨轮取数」                      **真跑**：12 份目录 rows=87 → 6（95be595）
+h   行 859  「两口径混源」                        **构造 + 真跑读数**（ring_mismatch 当轮即出现）
+i   行 1178 「文档与台账冲突」                    **真跑读数 + 文档 diff**
+j   行 1236 「只读 config 漏 env」                **构造**（config 缺行 + env 设值）
+k   行 1268 「run_one_cycle 三处读到空」          **构造**（删 agui / 缺 tape）
+l   行 1298 「指纹签成 stdin + accept_all 不查」  **构造**（空 tools/）+ 真跑（漂移时 accept_all 曾报全绿）
+m   行 1329 「emit-failures rc 反话」             **构造**（stub 日志两种）
+n   行 1400 「选轮靠 mtime 猜」                   **构造**（/tmp/sel 改 mtime）
+o   行 1436 「选轮注释过期」                      **真跑**（/tmp/roc1 vs roc2 period 数=2）
+p   行 1466 「退出后仍在监听」                    **真跑**（lsof=0）+ 构造（BOGUS job）
+q   行 1499 「tape 字段装 ring.json」             **真跑**（页头 tape/ring 分列）
+r   行 1553 「accept_all 用冻结夹具」             **真跑**（默认 vs ROUND_DIR 两形）
+⇒ 分级以「证据里有没有**真实链上自然发生**的读数」为准；短 hash 已在本行换回落盘节/period_id 形态。
+```
+
+**② `--expect` 的身份键统一为 **period_id**（job_id 只作前缀筛选）**
+```
+代码按 period 或 job 匹配；实测（本轮）：`--expect run-1c88f828ff96c1bf-p006aff0a5c000011`
+  ⇒ selection=expect:<完整 period_id> · period=run-1c88f828ff96c1bf-p006aff0a5c000011 · rows=15
+落点要贴"命中后的 period_id + 行数"，不只贴 sha。
+同输入重跑必须仍满足 B1-f 转针：**同 period 两次一致 + 不同 period sha 必不同**（本轮 sha=8206f0c9… 只对这一个 period 有意义）。
+```
+
+**③「构造 ≠ 真跑证据」收成**读数分级**，不立成新的完成判据**
+```
+三态（真跑 / 构造 / 混合）只是给读数贴标签，不是门、不是完成条件；
+逐笔依据见本节的落盘节行号与 DEBTS 行号，不以口述归类代签。
+「落盘须写明构造样本」自本节起生效；旧件只补限定、不回改。
+suggested_action 的「…= 未验证」保持**出现才重判**的被动观察，不写成下轮逐笔补证据的清单。
+```
+
+**④ 门后项构成数清（19 条实体 + 1 行更正）**
+```
+DEBTS 当前共 28 行 `d-`；其中门后项实体 = **19**：
+  原 11（objective 列表：K-134/C-076/phyt 4/ring5/K22/K17/M6-B18/M7 条件2/L2/tentacle-transport-mcp/chain-rings）
+  + 本轮序列新增 **8 条实体**（DEBTS 行 20–26、28）：
+    20 d-rail-bypass-ignores-request-intent · 21 d-context-inject-chars-is-budget ·
+    22 d-d3-compares-presence-not-values · 23 d-ring-only-holds-wakeup-period ·
+    24 d-gate-refusal-replies-with-raw-plan · 25 d-exec-ok-names-expect-match-not-success ·
+    26 d-bare-json-plan-not-parsed · 28 d-verdict-job-id-holds-period-id
+  + 行 27 是 26 的**归因更正**，属同一件，不重复计。
+⇒ 更正上一段"16 条"与"18 条"两种口述：**19 条实体 + 1 行更正**。数字只作对账，不立阈值。
+"动 ring 写入面属门"成立，但不写成下轮去动它、也不去造 `_source=ring` 的真跑。
+```
