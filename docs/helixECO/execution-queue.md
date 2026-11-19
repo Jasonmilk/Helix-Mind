@@ -818,3 +818,40 @@ begin/end 优先读 tape（user/message · turn/end），ring 只兜底并如实
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · center · 队列 3 行 · DEATH-CERT · 页面留白。
+
+### B1-g 轮次 · 我自己新加的三栏跨轮取数（12 份 tape 目录）· 2026-11-19
+
+**核对方式（不改状态，只把 evDir 指向真实 events 目录）**
+```
+ls /tmp/t2round/events/*.jsonl | wc -l ⇒ 12
+l2_casefile.js <ring> /tmp/t2round/events <src>
+  改前 ⇒ period_id=run-0d7107230101e4f2…（**不是当轮**）· tape_rows=**87**（= 12 份之和）
+  改后 ⇒ period_id=run-1ca755e1d26e00a7-p006afe92d7000003 · tape_rows=6 · tapes_in_dir=12
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+B1-d 已把 HITL 读数按 period_id 校验（同族：跨轮取数）。
+而我自己在 B1-a/B1-b 加的三栏（tool_calls / verdict_status / tape_rows）**没有按 period 限定**：
+它们扫 evDir 里所有 tape ⇒ 12 份时把别的 period 数出来。**同一个错我在新代码里又犯了一遍。**
+```
+
+**修（`Cellrix 95be595`，additive）**
+```
+evDir 多份时以**最新 mtime 那份**为当轮，其余不计；输出 `tapes_in_dir` 如实写目录里有几份。
+口径：多份不是错 —— **静默合并**才是错。
+```
+
+**反样本（四种形状）**
+```
+改前同目录：rows=87 · period_id=错轮（反样本本身）
+改后：rows=6 · period_id=当轮 · tapes_in_dir=12
+单份目录：rows=6 · tapes_in_dir=1（行为不变）
+旧 period 带 tool/call + 当轮无 ⇒ 面板仍写「本轮无工具段」（不串台）
+页面读数：period_id: run-1ca755e1d26e00a7-p006afe92d7000003 · tape 行数: 6 · 目录内 tape 数: 12
+回归：l2_render_test.js rc=0 · accept_all.sh 三项通过
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**教训（写给下一轮的我）**：这已经是第 3 次「跨轮取数」（B1-d ring · B1-f casefile 身份 · B1-g 三栏）——
+**加任何跨文件汇总前先问：这份数据属于哪个 period_id？**
