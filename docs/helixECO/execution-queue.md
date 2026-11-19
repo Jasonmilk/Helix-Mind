@@ -3139,3 +3139,75 @@ bash tools/run_one_cycle.sh --config-upstream --prompt '…4*4…' /tmp/roc4   �
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：K-134 · 门后 23 条一项未动、未互相销账。
+
+### 阶段现状 / 意图对齐 / 路线计划（本节为**落盘快照**，2026-11-19 · 可被后续推翻并追加更正）
+
+#### 一、现状（读数，非结论）
+
+```
+仓（dirty=0）：anaphase-helix e875a45 · Cellrix 4f6ac76 · helix-mind d791f8b ·
+              Tuck c833034 · FlowModus 9359a8f · helix-tentacle 2554ebf ·
+              phyt-DNA 5f017fa（v2 · ledger/hits 运行时追加，具名不提交）
+链：50061 anaphase（events→/tmp/t2round/events）· 50051 tentacle · 8080 llama-swap
+    /v1/health 全 ok=True · check_upstream YES src=config
+台账：execution-queue 99 节 · DEBTS 33 行 `d-`（门后项实体 23）· B1 累计 28 笔（a..z + aa + ab）
+goal：paused（N=2，按 objective 主动停机）
+```
+
+#### 二、意图与需求对齐（三层，名字不许互借）
+
+```
+① 用户要的「对外说话」：任意前端能消费标准事件流
+   ⇒ 由 **官方 AG-UI 协议** 承担；我们只做**薄适配层**（此词今后**只指这一层**）。
+② 用户要的「对内证明」：白盒（每条读数可追到 period/字段/哪次真跑/用什么量的/会不会红）·
+   可重复（同输入重跑算哪一轮）· 证轨（案卷带身份、绿标来源）
+   ⇒ 由 **L2 自有证轨 + 28 笔 B1 + I1 不变式** 承担；协议**不管**这一层。
+③ 用户要的「人在环」：HITL 真闭环
+   ⇒ 另一条独立线（C-076 持久化 + 应答者注册 + K22 安装面 + K17），**未授权、未开工**。
+```
+
+#### 三、「AG-UI 已交付」拆两章（旧节只补限定、不删文）
+
+```
+章 A｜自有最小投影 / 证轨出口（**已实现，未签字**）
+  · anaphase:src/agui.rs 纯函数投影 → bin/agui → 自有 `agui-1.0-min` 快照 + 仓内 D1/D2 判据
+  · 证据：28 笔 B1 的消费链（页面三栏 / casefile 身份 / ambiguous 标注 / 配对与唯一判据 / 端口补杀…）
+  · 三下（重放带身份 diff=0 / 页面留白 / 地面变化）**只签这一章**
+  · **三下里没有官方 schema 校验 ⇒ 判不出 8/8，也不升格为「符合官方协议」**
+
+章 B｜官方 ag-ui-protocol/ag-ui 薄适配层对齐（**未立项 · 未开工 · 属门**）
+  · 差异读数：`agui_conformance.js` 对官方副本（sha 4b5c9322…）⇒ **1/8 通过**
+    （TOOL_CALL_RESULT 缺 messageId；runId/threadId/metadata 被 unevaluatedProperties:false 明文拒）
+  · 换真源四连带：自有 agui-1.0-min 存废 · 78227a6 守卫是否退位 · K-134 怎么裁 · D1·D2 对象是否整体改
+  · 三步（补 messageId · 去多余键/迁移 metadata · STATE_* 显式「未覆盖」清单）与换真源是同一件两面
+  · 属门：不自行开工、不列「先裁哪条」的可点菜单
+```
+
+#### 四、路线与计划（三条线并行、互不代签）
+
+```
+线 1｜差驱动读数轮（自裁层，随时可继续）
+  /goal-resume → 探测复用 → 真跑 → 最小读数集 → 找差 → 四选一（A/B1/B2/C）→ N 计数 → N=2 停
+  当前窗口可推翻点（被动观察，不主动去造）：
+    · 真跑出现 `_ambiguous_n`（说明链本身多地来源）
+    · `exec` 出现 `tool/call=1`，或非 exec 出现 `unavailable>0`
+    · 同输入两次 casefile 不一致，或不同 period sha 相同
+    · usage=1 却 `tool/call>0`；`verdict=Unmet` 而 `tool/result.ok=true` 的其它成因
+
+线 2｜章 B 对齐（门，须人裁）
+  需要你写一句：① 1/8（自写最小校验器 + 官方副本）算不算基准；② 换真源四连带怎么处置
+  另一种裁决也存在：**不改实现、正式登记偏离**（等于把"借用官方"改判为"参考官方、自持最小子集"）
+
+线 3｜其它门后（互不代签、不捆一起）
+  K-134 · C-076 · phyt 4 条 · ring5 · K22 · K17 · M6/B18 · M7 条件2 · L2 签字 ·
+  tentacle-transport-mcp · chain.json/rings.json · 本轮序列新增 12 条（见 DEBTS）
+  HITL 真闭环是其中一条**独立线**，须单独授权
+```
+
+#### 五、边界（不因本节松动）
+
+```
+不写「已确认」· 不归档 · 不改 center · 不删队列 3 行 · 不动 DEATH-CERT · 页面留白
+AGUI=8 / Met / D1·D2 rc=0 只认当轮读数，不升格协议合规或 L2 闭合
+K-134 待裁非基线、D2 的绿只标来源；`accept_all` 默认跑冻结夹具（已声明，rc=0 不是真跑验收）
+本快照是**落盘以免遗忘**，不是结项：任何一条都可被下一轮读数推翻并在此后追加更正。
