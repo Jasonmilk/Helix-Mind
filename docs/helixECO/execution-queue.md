@@ -4016,3 +4016,37 @@ unevaluatedProperties:false 73 处）与 README 原文。
 
 **边界**：不补 SUBAGENT_*、不删 META_EVENT、不换 validator 基准、不自行唤醒 ·
 8/8 只认「实现落地 + 官方副本校验通过」· 章 A 三下签字 / signoff 矛盾 / HITL 不捆入 · phyt 护栏 · 未归档。
+
+### 半格收口 · 28 vs 31 逐项对上（含**我方正则漏读**的更正）· 2026-11-20
+
+**逐项差集（可复跑）**
+```
+口径：schema = `$defs.EventType.enum`；java = `refs/ag-ui-EventType.java` 的枚举常量
+  schema = **31**   java = **29**（28 个以 `,` 结尾 + 1 个以 `;` 结尾）
+  schema − java = {SUBAGENT_STARTED, SUBAGENT_FINISHED, SUBAGENT_ERROR}  → 3
+  java − schema = {META_EVENT}（java 文件行 52 的 `META_EVENT;`）        → 1
+  校验：**31 = 29 − 1 + 3** ✅
+```
+
+**为什么之前是 28（根因，属"读到空"家族）**
+```
+我数 java 常量用的正则只认「逗号结尾」：`^\s{4}([A-Z][A-Z0-9_]+),`
+而枚举最后一个常量常以**分号**收尾（`META_EVENT;`）⇒ 被漏掉 ⇒ 报成 28。
+改用 `[,;]` 后 = 29。这与 C-059 那族同形：**正则方言把"有"读成"没有"**，而不是文件缺项。
+```
+
+**由此更正一条结论（只追加、不回改）**
+```
+旧：「META_EVENT = 我方凭空多列（schema 与 java 均无）」
+新：「META_EVENT 在 **java 枚举里有**、在 **1.0 schema enum 里没有** ⇒ 属**两个官方工件不同步**；
+     相对 schema 仍记「本方多列 1」，但性质是"取了 java 侧的类"，不是幻影。」
+⇒ `d-uncovered-list-drift-vs-official` 的现象不变（我方清单未从 `$defs` 生成），
+   但其中"多 META_EVENT"的**解释**改成本条；仍维持门后待裁、**未改** UNCOVERED / agui.rs。
+```
+
+**证据等级常态口径（不是一次性更正）**
+```
+以后凡外部断言，一律标“谁核的”：本轮的 schema（31 项 / 8 类 required / opaque 11 / unevaluatedProperties 73）
+与 README 原文 = gardener 独立核过；`EventType.java`（29 常量）与两个 sha = **Pi 侧落仓读数**。
+两边分列保留，不再合称"已复核"。
+```
