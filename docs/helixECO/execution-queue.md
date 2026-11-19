@@ -3776,3 +3776,40 @@ pre-commit 行预算 ratchet：`src/agui.rs 113 -> 137`（ncloc 增长 24）⇒ 
 ```
 
 **边界**：未写「已确认」· 未归档 · 章 A 三下签字 / signoff 矛盾 / HITL 各是各未捆入 · phyt 护栏维持 · 门后项未销账。
+
+### 章 B 落地后的两处具名 + 四连带建议（append-only）· 2026-11-20
+
+**① 两处具名（含更正 YB 的 12→13）**
+```
+d2_fail：**12 条**，不是 13 —— 证据：`node tools/d1_d2_check.js <tool Wheel tape>` 输出里
+  `d2_fail` 数组共 12 项（6 种类型 × {threadId, runId}）：
+    TOOL_CALL_START/END/RESULT · TEXT_MESSAGE_START/CONTENT/END 各缺 threadId 与 runId
+  grep 到的第 13 处是**汇总行** `RED D2: …`，不是新条目 ⇒ 前一轮"12→13"的读法作废，仍 **12**。
+  成因单点：`Cellrix/docs/observations/agui-1.0-min.schema.json` 的 `required` 仍写
+  `["type","threadId","runId",…]`；而官方副本对这三类只要求 messageId / toolCallId ⇒ 投影按官方去掉后必红。
+accept_all：**rc=0 → 1**，唯一失败项是「② 出口（标准事件 + D1/D2）」的子项 `★ FAIL: D1/D2 rc≠0`；
+  其余项（⓪ 指纹 / ① 重放 / ②b 页面 / ③ web=0）仍各自通过。落点：`Cellrix/tools/accept_all.sh` 的 ② 段。
+官方副本读数照旧带四项锚点：`agui_conformance.js` · `node tools/agui_conformance.js <bin/agui 输出.jsonl>` ·
+  period run-93f71d7d5c9b397a-p006aff38c3000008（8 条 → 8/8）/ run-6ce28faed7aa8e1f-p006aff379a000006（5 条 → 5/5） ·
+  schema sha256_16 **4b5c93226838a0e7**。两套验具并列，不互相判死。
+```
+
+**② 四连带：我的建议（每条给依据，不是菜单；全部仍待裁）**
+```
+⑴ 自有 agui-1.0-min 存废 → 建议：**不删，改性质**为「指向官方副本的薄说明 + 本地未覆盖清单」。
+   依据：①官方副本已落仓带 sha（4b5c9322…），可校验；②D2 需要一个**必填键集合**，官方副本正好提供；
+        ③删掉会让 D2 失去可校验对象，而"删即绿"正是我们一直在防的通道；④append-only 精神：留下但不冒充契约。
+⑵ 78227a6 守卫（d1_d2_check.js）退位 → 建议：**不退位**，只换 D2 的数据源。
+   依据：守卫的价值在"能红"——B1-w/x/z/aa/ab 五项都是它抓出来的；退位＝丢掉红的能力。
+        需改的只是 `SCHEMA` 指向（从自有快照 → refs/ 官方副本）＋ `required` 读取口径，D1 段完全不动。
+⑶ K-134 裁定 → 建议：**改判为「D2 的基线 = 官方副本 sha」**，即 D2 的绿今后必须注明 `4b5c9322…`。
+   依据：K-134 的原始问题是"D2 的绿依赖我改过的快照"（验具计入被验对象）；换真源后这个问题**结构性消失**，
+        因为基线不再由我们改、而由外部副本 sha 钉住。风险：改的当批 D2 会立刻红到 12 条 ⇒ 必须与 ⑵ 同批。
+⑷ D1/D2 对象是否整体改 → 建议：**分两步，先 D2 后 D1，且 D1 不动**。
+   依据：D1 判的是序列/配对/唯一（B1-w/x/z/aa/ab 那五条），全是我们自己的不变式，与官方无关；
+        D2 才是"合同面"。一步到位改两个对象会把"判据变更"和"真源变更"混在一次提交里，下次再红就分不清是谁的错。
+```
+
+**依赖顺序（若你采纳）**：⑴ → ⑵ → ⑶（同批，因 ⑶ 以 ⑵ 为前提）→ ⑷ 的 D1 部分保持不动。
+**边界**：不为凑绿改任何文件；d-pits-k_id-format-not-loadable 维持门后只具名；
+8/8 只认「实现已落地」，不写「已对齐官方 / 已交付」；章 A 三下签字 / signoff 矛盾 / HITL 各是各。
