@@ -3611,3 +3611,35 @@ reply 原文「121」⇒ 对
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：章 A/章 B · 清单甲 24 实体 / 清单乙 11 项 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
+
+### C 轮次 · 工具轮真跑（calc 7*7）：读数与已落盘判断一致 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True
+POST「Please call the calc tool with expression 7*7 and report the result.」
+job_id=run-93f71d7d5c9b397a · period_id=run-93f71d7d5c9b397a-p006aff38c3000008
+jsonl=/tmp/t2round/events/run-93f71d7d5c9b397a-p006aff38c3000008.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: calc"
+D1/D2 rc=0（**8 类口径** · 量在本 period_id · **K-134 改过快照、非基线**）
+verdict={status:Met, checks:2, reason:"all checks passed", job_id:<=period_id>}
+HITL 四态 {allowed_once:1, rejected:0, cancelled:0, unavailable:0, kinds:{}} · _source=tape(ring-stale)
+reply 原文「The result of 7*7 is 49.」⇒ 对
+两次 l2_casefile（`--expect run-93f71d7d5c9b397a-p006aff38c3000008`）rc=0/0 · diff **0 字节** rc=0 · sha256 均 **36c766bccd70201b**
+  selection=expect:<period_id> · rows=15 · tools=['index=0 · calc · ok=true · 56ms']
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c890a7b（有无计划只看 attempt；tool/call>0 必伴随 usage=2）+ 08f5a23（verdict.job_id 装 period_id）：
+attempt="planned calls: calc" · usage=2 · tool/call=1 · verdict.job_id==period_id ✅ 一致，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：calc 工具轮形态（15 行 · usage=2 · tool/call=1 · Met · allowed_once=1）稳定；
+若出现 usage=1 却 tool/call>0、或 allowed_once=0 而 tool/call=1 ⇒ 形态被推翻，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+**未动**：章 A/章 B · 清单甲 24 / 清单乙 11 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
