@@ -2614,3 +2614,37 @@ DEBTS 现有 `d-` 行 29 行；门后项实体 = **20 条**：
   属共享验具口径（动它＝改引擎约定）⇒ 门，不由我自裁扩展。
 （另：`agui_conformance.js` 本身是 additive、未接完成判据，这一点不因上述更正而变。）
 ```
+
+### C 轮次 · 新验具在第二个输入上自洽（1/5），无判断变化 · 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+prompt「用 calc 算 15×4，另外跑 echo rail-x」⇒ rail 旁路（reply=[rail citation]，model=null）
+job_id=run-38309a88d2ac15e1 · period_id=run-38309a88d2ac15e1-p006aff1a34000012
+jsonl=/tmp/t2round/events/run-38309a88d2ac15e1-p006aff1a34000012.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0（⇒ 未调用 LLM，三档里的"rail 旁路"档）
+D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+HITL 全 0 · _source=tape(ring-stale)
+两次 l2_casefile（--expect run-38309a88d2ac15e1）rc=0/0 · diff 无输出 rc=0 · sha=6c196ac9…
+```
+
+**核的是哪条判断 / 为何对不上 ⇒ 对得上**
+```
+上两轮立的尺：新验具（agui_conformance.js）也要被量——它在"8 条事件"上给 1/8，
+到另一个形状的输入上会不会崩溃或换口径？
+当轮第二个输入（rail 轮，5 条事件）：
+  RUN_STARTED OK；TEXT_MESSAGE_START/CONTENT/END 额外键=["runId","threadId"]；RUN_FINISHED 额外键=["metadata"]
+  结果 **1/5 通过** · rc=0（报告器，不是门）
+⇒ 与工具声明的规则一致（required + unevaluatedProperties:false），**没有崩溃、没有换口径、没有 NO_DEFINITION**。
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：`agui_conformance.js` 在"事件子集不同"的两种输入上给出**同形结论**
+（RUN_STARTED 通过、其余因额外键 DEVIATES）；若某轮出现 `NO_DEFINITION` 或 ok 比例与事件形状不符，
+说明它的匹配规则（type const）有洞，须重判。
+（本轮读数只用于量"尺子本身是否稳定"，**不**升格为"协议兼容"结论。）
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134（待裁、非基线）· 门后 21 条一项未动、未互相销账。
