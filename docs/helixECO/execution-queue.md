@@ -3050,3 +3050,32 @@ TOOL_CALL_START 的 toolCallId 必须唯一；重复时红，并点出两个 nam
 **计数**：本轮有 B1 ⇒ N=0 · B1 累计 **28 笔**（a..z + aa + ab）。
 **未动**：K-134 · 门后 22 条一项未动、未互相销账。
 **判据层进度**：`TOOL_CALL_*` 现在判三件事 —— 配对两端（B1-z / B1-aa）＋ 身份唯一（B1-ab）。
+
+### A 轮次 + B2 登记 · `toolCallId` 由 **job_id** 派生 ⇒ 跨 period 可撞 id · 2026-11-19
+
+**核的是哪条判断 / 为何对不上**
+```
+上一轮（B1-ab）刚立：「一个 toolCallId 只能对应一次调用（id 是身份）」。
+代码事实（anaphase:src/agui.rs:14/15/46）：
+  thread = **period_id** · run = **job_id** · `let id = format!("{run}#{idx}")` ⇒ toolCallId = **job_id#index**
+而 job_id 是**按输入派生、可重复**的（I1）；同一 job 的多个 period（每次重启的苏醒轮就是同一 job、不同 period）
+⇒ **不同 period 会生成完全相同的 toolCallId**（例：`run-8bba24c5ee368a4a#0` 在 3 个 period 里都会出现）。
+⇒ B1-ab 的规则在**单份 tape 内**守得住，但 id 的身份范围只到 job，不到 period ⇒ 与 I1 不同层。
+```
+
+**A：判断改成**
+```
+toolCallId 的身份范围是 **job 级**（`job_id#index`），不是 period 级；
+所以"跨 period 唯一"这件事它**不提供**——两份不同 period 的 tape 可以带一模一样的 toolCallId。
+⇒ 可被下轮推翻的一句：**若要按 toolCallId 做跨轮对账，必须先并上 threadId（=period_id）**；
+   单独拿 toolCallId 当全局键会撞（同 job 多 period 的苏醒轮即可构造）。
+```
+
+**B2（撞门：只登记不自裁）**
+```
+把 id 从 `job#idx` 改成 `period#idx` = 改投影载荷 ⇒ 属门。
+`DEBTS.md` 增 `d-tool-call-id-scoped-to-job-not-period`（带 revisit-on）；本轮**未改**投影。
+（与 B1-ab 的判据不冲突：那条管"单份 tape 内不许重"；这条管"跨 tape 的身份范围"。）
+```
+
+**计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）· 门后项 22 → **23 条**。
