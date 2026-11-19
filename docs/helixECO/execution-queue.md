@@ -2139,3 +2139,45 @@ reply「The result of the ca…」
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 16 条一项未动、未互相销账。
+
+### 口径更正 · 四条（append-only，不回改历史件）· 2026-11-19
+
+**① 「是否有计划只看 attempt」窄成**当前**可推翻判别式（逐轮给完整 period_id）**
+```
+run-f3003122d008a17b-p006afefe1600000d  9 行  usage=1  tool=0  attempt="no calls planned"       reply=裸 JSON 计划
+run-0235f80b25383b84-p006afefe3200000e  9 行  usage=1  tool=0  attempt="no calls planned"       reply=```json 围栏计划
+run-65ac6520dbb36978-p006afefdad000009  9 行  usage=1  tool=0  attempt="planned calls: exec"     reply=裸 JSON（闸拦 unavailable=1）
+run-00c676c26f5ec20c-p006afefddc00000b 15 行  usage=2  tool=1  attempt="planned calls: calc"     reply="441"
+run-cf208fb4baf29a73-p006afefdf600000c 15 行  usage=2  tool=1  attempt="planned calls: numbers"  reply="series […]"（verdict Unmet）
+run-7e32fa5e2ed6c25e-p006afefe5400000f 15 行  usage=2  tool=1  attempt="planned calls: calc"     reply="The result of the ca…"（Met）
+```
+⇒ 措辞收窄：**在这 6 个 period 上**，`tool/call>0` 都伴随 `usage=2`；不写成全称公理。
+「usage=1 却 tool/call>0」只作**被动重判点**，不是下轮要去造的轮次。
+
+**② 门后项 13 → 16 的构成（同一件不重复计）**
+```
+原本 11 条（K-134 · C-076 · phyt 4 · ring5 · K22 · K17 · M6/B18 · M7 条件2 · L2 · tentacle-transport-mcp · chain.json/rings.json）
+本轮序列新增 **5 条**已登记门后项：
+  d-rail-bypass-ignores-request-intent · d-context-inject-chars-is-budget ·
+  d-d3-compares-presence-not-values · d-ring-only-holds-wakeup-period ·
+  d-gate-refusal-replies-with-raw-plan · d-exec-ok-names-expect-match-not-success ·
+  d-bare-json-plan-not-parsed（**归因更正行不计新项**）
+⇒ 门后项合计以其在 DEBTS 里的行数为准（当前 16 条实体 + 1 行更正），
+   更正行与本体是**同一件**，不重复计、不互相销账。
+   若与上一段口述的 13 不一致，以上面逐条具名为准（口述数不立阈值）。
+```
+
+**③ `suggested_action` 的四个可推翻点保持被动**
+```
+usage=1 却 tool/call>0 · exec 类出现 tool/call=1 · calc 类出现 unavailable=1 ·
+verdict=Unmet 而 tool/result.ok=true 的其它成因
+⇒ 全部是**出现才重判**的观察点，不写成下轮逐条去核/去造轮的清单。
+A/C 分类维持现行「复现/对得上记 C」；pause 只按「连续 2 轮无 B1/B2」，A/C 都不改写计数。
+```
+
+**④ 全项只认当轮读数（重申，不升格）**
+```
+AGUI=8 / Met / allowed_once=1 / D1·D2 rc=0 —— 只认当轮；
+不升格 L2 闭合、不升格「HITL 在环」；K-134 待裁非基线、D2 绿只标来源。
+门后 16 条「已具名、待真撞」不动、不销账；paused 保持、不自行唤醒。
+```
