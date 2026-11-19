@@ -2720,3 +2720,31 @@ HITL 全 0 · _source=tape(ring-stale)
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · 门后 21 条（含 d-new-verifier-outside-self-signed-manifest）一项未动、未互相销账。
+
+### B1-u 轮次 · 同一 period 多条 hitl 行时，casefile 静默取最后一条 · 2026-11-19
+
+**撞到（构造输入，已标注；真跑 tape 为底）**
+```
+底：真实 tool tape `run-43d0fd88e73c639a-p006aff031c000010`（真跑 hitl allowed_once=**1**）
+构造：同一 period 追加一条 hitl 行 allowed_once=**7** · rejected=3 · kinds={"exec":2}
+改前 casefile：`hitl.allowed_once=7`（**静默取最后一条**，无任何提示）
+⇒ 与 B1-s（--expect 歧义）、B1-t（重复键）同族：**歧义被静默消解**。
+```
+
+**修（`Cellrix 05e9899`，additive）**
+```
+收集该 period 全部 hitl 行；>1 ⇒ `_source` 追加 `(ambiguous n=2)`，并输出 `_rows`（每个四态元组）
+```
+
+**三形反样本**
+```
+[1] 构造两条 ⇒ `_source=tape(ring-stale)(ambiguous n=2)` · `_rows=[{allowed_once:1,…},{allowed_once:7,…}]`
+[2] 真跑单条（/tmp/r43）⇒ `_source=tape(ring-stale)` · allowed_once=1（**行为不变**）
+回归：l2_render_test.js rc=0 · accept_all rc=0
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）· B1 累计 **21 笔**（a..u）。
+**未动**：K-134 · 门后 21 条一项未动、未互相销账。
+**规律（第 4 次应验）**：「每加一处钉住/校验，立刻用**歧义输入**打它一次」——
+  B1-s `--expect`（同 job 多 period）· B1-t `check_upstream`（重复键）· B1-u `casefile`（多 hitl 行）。
+  三个不同工具、同一种病：**多个来源时静默选一个，并把它当成唯一读数。**
