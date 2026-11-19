@@ -2913,3 +2913,32 @@ suggested_action 三点保持被动观察，不写下轮逐条去核清单。
 
 **状态**：paused 不自行唤醒 · 门后 22 条不动不销账 · 真源/自有 schema/78227a6 守卫/K-134/D1·D2 对象/
 1-of-8 基准/opaque/HITL 四连带一条不猜一条不动 · AGUI=8 / Met / D1·D2 rc=0 只认当轮读数。
+
+### B1-x 轮次 · 我在上一轮加的判据过严（合法形状被误红）· 2026-11-19
+
+**撞到（构造输入，已标注；打的是我自己 B1-w 的判据）**
+```
+真跑 35 份 tape 全部只有 1 条 `assistant/reply`（`行数分布={1:35}`）——
+上一轮据此把 TEXT_MESSAGE_START/END 也钉成"恰好 1 次"。
+构造：真实 tool tape 追加第二条 `assistant/reply`（一次运行多条消息，协议上合法）
+  ⇒ agui 输出 11 条：TEXT_MESSAGE_START=**2** · RUN_FINISHED=1
+  ⇒ B1-w 规则判 **rc=1**「TEXT_MESSAGE_START 出现 2 次（必须恰好 1 次）」⇒ **误红**。
+⇒ 教训："真跑没有反例" ≠ "规则正确"；判据要把**该紧的紧、该松的松**分开。
+```
+
+**修（`Cellrix` 本轮提交，收紧到该紧的地方）**
+```
+RUN_STARTED / RUN_FINISHED ⇒ 恰好 1 次（一次运行一条生命周期）
+TEXT_MESSAGE_START / END   ⇒ 至少 1 次 **且次数相等**（不配对才红）
+```
+
+**四形反样本**
+```
+[两条 reply（构造）]  rc=0  ← **改前 rc=1**（合法形状不再误红）
+[两条 turn/end（构造）] rc=1「RUN_FINISHED 出现 2 次」（B1-w 的原始目标仍抓住）
+[真跑工具轮] rc=0   [真跑 rail 轮] rc=0
+回归：accept_all rc=0
+```
+
+**计数**：本轮有 B1 ⇒ N=0 · B1 累计 **24 笔**（a..x）。
+**未动**：K-134 · 门后 22 条一项未动、未互相销账。
