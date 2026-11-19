@@ -2181,3 +2181,49 @@ AGUI=8 / Met / allowed_once=1 / D1·D2 rc=0 —— 只认当轮；
 不升格 L2 闭合、不升格「HITL 在环」；K-134 待裁非基线、D2 绿只标来源。
 门后 16 条「已具名、待真撞」不动、不销账；paused 保持、不自行唤醒。
 ```
+
+### 口径更正 · 四条（append-only，不回改历史件）· 2026-11-19
+
+**① 门后项构成数清（不拿"口述数不立阈值"代替数清）**
+```
+原 11 条（objective 列表，逐项）：K-134（DEBTS 行 d-agui-schema-snapshot-modified）· C-076 ·
+  phyt 4 条（d-phyt-pre-gap-a/b/c + d-phyt-phantom-complete）· ring5 · K22 · K17 ·
+  M6/B18 · M7 条件2 · L2 签字 · tentacle-transport-mcp · chain.json/rings.json
+本轮序列新增 **7 条实体**（DEBTS 行 107–113）：
+  d-rail-bypass-ignores-request-intent · d-context-inject-chars-is-budget ·
+  d-d3-compares-presence-not-values · d-ring-only-holds-wakeup-period ·
+  d-gate-refusal-replies-with-raw-plan · d-exec-ok-names-expect-match-not-success ·
+  d-bare-json-plan-not-parsed
+另 1 行（DEBTS:114）是 d-bare-json-plan-not-parsed 的**归因更正**，属同一件，不重复计。
+⇒ 更正上一段的两个数：不是"16 条实体"，而是 **11 + 7 = 18 条实体**（其中 8 条标 ⛔ 属门，
+   其余为"⏳ 等裁决"或在册未定档）；DEBTS 文件当前共 27 行 `d-`（含非门后项，如
+   d-phyt-ref-no-version-pin / d-adr0048-233-236 / d-ecosystem-md-stale-42d / d-k133-gate-route-not-mounted 等）。
+   —— 数清 ≠ 立阈值：这些数字不作判据，只作对账。
+```
+
+**② 判别式③（闸分流）窄成单 period 观察，不写成"一律 / 与危险性无关"**
+```
+只保留可证事实：`run-65ac6520dbb36978-p006afefdad000009` 上 exec 被拦（unavailable=1 · kinds={"exec":1}）；
+`run-000…calc` 轮（run-00c676c26f5ec20c-p006afefddc00000b / run-7e32fa5e2ed6c25e-p006afefe5400000f）放行。
+"闸按什么分流"属**安全语义**（与 K22 危险形状判据同族：判据已绿、安装未装、phyt 引擎面冻结）⇒ 归门，
+不扩成公理。无害 echo 也被拦这一条只作为"单点反例"保留，不外推。
+```
+
+**③ 判别式⑤转针（B1-d 双向，不互相覆盖）**
+```
+现状 A：「ring 只含苏醒 period ⇒ 从 ring 读当轮结构上不成立」，这只在**当前实例状态**下成立。
+5e547b1 的四形反样本仍有效：**ring 含本 period（trace_id===period_id）时，`_source=ring` 且行为不变**。
+⇒ 正确表述：ring 命中本 period ⇒ 用 ring；未命中 ⇒ 回落 tape 并标 `tape(ring-stale)`；
+   两件不互相覆盖、不互相销账（"当前 ring 里只有苏醒轮"是**观察**，不是"ring 永不可用"的结论）。
+```
+
+**④ 删掉"目前只有人能做的一件事"这种标题式收束**
+```
+门后 18 条实体维持「已具名、待真撞」；不列成 K-134 / C-076 / L2 的**可点清单**。
+下一件仍由「当轮真跑读数与已落盘判断的差」决定；需要人裁的事项在撞到时才具名提出。
+```
+
+**状态重申**：paused 不自行唤醒 · 不写「已确认」· 不归档 · 不改 center · 不删队列 3 行 ·
+不动 DEATH-CERT · 页面留白；AGUI=8 / Met / allowed_once=1 只认当轮读数、不升格；
+K-134 待裁非基线；`accept_all` 默认跑**冻结夹具**（已声明），其 rc=0 **不是**真跑验收，
+真跑验收要用 `ROUND_DIR=<当轮目录>`。
