@@ -3442,3 +3442,36 @@ verdict={status:Met, checks:2} · HITL allowed_once=1 · unavailable=0 · kinds=
 **没有 B1**：不是缺陷（复用策略属实现选择）；**没有 B2 新增**（不改行为面）。
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：章 A/章 B、清单甲/乙、B1 28 笔、门后项一律不动不销账。
+
+### C 轮次 · rail 档真跑：与已落盘判断无差 · 2026-11-20（新 goal `mwnts33v` 第一轮）
+
+**t1 最小读数集**（探测复用，未冷启动）
+```
+check_upstream.sh ⇒ YES src=config rc=0（reasoning 8080/v1 · tentacle 50051）
+/v1/health ⇒ 逐项全 ok（tentacle=reachable · reasoning=reachable · 其余 not configured）
+POST「Please call the calc tool with expression 3*7 and report the result.」
+job_id=run-0c1a217d7faee7ce · period_id=run-0c1a217d7faee7ce-p006aff3210000003
+jsonl=/tmp/t2round/events/run-0c1a217d7faee7ce-p006aff3210000003.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0（rail 旁路档）
+D1/D2 rc=0（**8 类口径** agui-1.0-min · 量在本 period_id · **K-134 改过快照、非基线**）
+HITL 四态 {allowed_once:0,rejected:0,cancelled:0,unavailable:0,kinds:{}} · _source=tape(ring-stale)
+reply 原文「[rail citation · knowledge_base/rails/demo] - 第 3 条 禁止行为…」⇒ **判错：答非所问**（问 3*7）
+两次 l2_casefile（`--expect run-0c1a217d7faee7ce`）rc=0/0 · diff 无输出 rc=0 · sha256 均 **b6db61b73b35c98c**
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核：c47cd21「凡缺 assistant/attempt 的轮次，只能论证『请求被 rail 旁路吞掉』，不能论证模型不愿用工具」。
+当轮：tape 6 行、无 attempt、usage=0、tool/call=0、reply 是法条引用 ⇒ **完全一致**（rail 档）。
+另核「rail 档 = 6 行 / usage0 / attempt 无」亦然一致。
+⇒ 无差。不制造核对对象。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：rail 档的六行结构与"无 attempt/usage0"目前稳定；
+若某轮 rail 档出现 attempt 行或 usage>0，说明 rail 判定边界变了，必须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+**未动**：章 A/章 B · 清单甲 24 实体 / 清单乙 11 项 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
