@@ -1093,3 +1093,17 @@ success=true 只表示"这一轮跑完了"，**不表示答案被验证过**：
 `d-context-inject-chars-is-budget` 仍待真撞、未销账。
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### 限定补记 · 给 A2（6a660f4）那条判断加成因标签 · 2026-11-19
+
+```
+A2 落盘节缺一个标签：那一轮的 `tool/call=0` 属于哪一类？
+当轮 tape 实测：types 含 `assistant/attempt`（原文 "no calls planned — answered directly"）
+⇒ 按 A1（c47cd21）的尺：**有 attempt ⇒ 走到了推理段** ⇒ 该轮的错答案属**推理段算错（模型行为）**，
+   不能归到 rail 旁路上去（rail 轮缺 attempt 行）。
+```
+**因此 A2 的适用范围**：`success=true` 可配错答案这一条，在**两类成因上都成立**，但归因不同：
+```
+有 attempt ⇒ 模型在推理段算错（本轮即此形）
+无 attempt ⇒ 请求被 rail 旁路吞掉（另案，已登记为门后项）
+```
