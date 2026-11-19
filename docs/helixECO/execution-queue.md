@@ -2311,3 +2311,41 @@ check answer.delivered : check_id=<period>#c1 · evidence_id=<period>#0
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 19 条一项未动、未互相销账。
+
+### A 轮次 · 「ring 命中本 period」这条分支至今**没有真跑证据** · 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+prompt「Please call the calc tool with expression 7*6 and report the result.」
+job_id=run-1c88f828ff96c1bf · period_id=run-1c88f828ff96c1bf-p006aff0a5c000011
+jsonl=/tmp/t2round/events/run-1c88f828ff96c1bf-p006aff0a5c000011.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+HITL allowed_once=1 · unavailable=0 · kinds={}
+两次 l2_casefile（--expect run-1c88f828ff96c1bf）rc=0/0 · diff 无输出 rc=0 · sha=8206f0c9…
+GET /v1/agent/events ⇒ 8 条事件 · **distinct trace_id=1** = run-8bba24c5ee368a4a-p006afedbcf000000（苏醒 period）
+ring 含本 period? **False**
+casefile: hitl._source=**tape(ring-stale)** · ring_mismatch=['run-8bba…000000'] · selection=expect:run-1c88f8…
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+5e547b1 + 本轮前两轮的转针写的是两条并列分支：
+  (i) ring 命中本 period ⇒ `_source=ring`（四形反样本里"一致"那一形）
+  (ii) ring 未命中 ⇒ 回落 tape 并标 `tape(ring-stale)`
+当轮（以及此前所有真跑）只观察到 (ii)。**分支 (i) 至今只有构造样本（trace_id 手写成本 period），
+没有一次真跑出现过** —— 因为 ring 实际只装苏醒 period（已登记 d-ring-only-holds-wakeup-period）。
+```
+
+**A：判断改成（把"证据类型"写清）**
+```
+`_source=ring` 这条分支的状态是：**代码实现 + 构造反样本验证，未获真跑证据**；
+`tape(ring-stale)` 这条分支是：**代码实现 + 多次真跑证据**。
+⇒ 可被下轮推翻的一句：**在 ring 仍只装苏醒 period 的前提下，`_source=ring` 不会自己出现；
+   若要它出现，必须先动 ring 的写入面（属门），或构造 ring（属反样本，不算真跑证据）。**
+```
+
+**没有 B1**：不是缺陷，是**证据等级**的区分（避免把构造样本当成"已在实际链上验证"）。
+**没有新增 B2**：`d-ring-only-holds-wakeup-period` 已在册（本轮的读数只是再次印证它），未重开、未销账。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134 · C-076 · L2 · 门后项 19 条一项未动。
