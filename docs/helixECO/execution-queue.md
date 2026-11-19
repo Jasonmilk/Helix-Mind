@@ -2494,3 +2494,55 @@ ACTIVITY_SNAPSHOT/DELTA · RAW/CUSTOM/META_EVENT  （约 30 个）
 ```
 
 **计数**：本登记不改 goal 状态；新增 1 条门后项（见 DEBTS），不计入「连续无 B1/B2」的 A/C 序列。
+
+### AG-UI 对齐 · 四条更正（材料落盘 / 校验读数 / 措辞边界 / 门后项数清）· 2026-11-19
+
+**① 材料已落成仓内可复跑对象（解除"Pi 侧自述"状态）**
+```
+Cellrix/docs/observations/refs/ag-ui-1.0-schema.json   sha256 前16 = **4b5c93226838a0e7**（96 KB · $defs 98）
+Cellrix/docs/observations/refs/ag-ui-EventType.java    sha256 前16 = **9e1cce4a1d2c8b1b**
+取用命令与边界写在 refs/README.md（含 `curl … spec/1.0/schema.json` 原样命令）
+⇒ e515ab5 里的对照表因此从「Pi 侧自述实测」升级为「**仓内可复跑**」；
+   但**校验器**仍是我们自写的最小校验器（required + unevaluatedProperties），不是官方实现 ⇒ 读数须带这条限定。
+```
+
+**② 校验读数（第一次拿官方 schema 量我们的 8 条事件）**
+```
+输入：`bin/agui <当轮 tape>` 的 8 条事件（period run-43d0fd88e73c639a-p006aff031c000010）
+校验器：自写最小校验器（按 `$defs` 里 type const 匹配定义；查 required 齐 + `unevaluatedProperties:false` 下的额外键）
+结果：
+  RUN_STARTED            missing=[] extra=[]                                 → **OK**
+  TOOL_CALL_START        missing=[] extra=['runId','threadId']               → FAIL
+  TOOL_CALL_END          missing=[] extra=['runId','threadId']               → FAIL
+  TOOL_CALL_RESULT       missing=['messageId'] extra=['metadata','runId','threadId'] → FAIL
+  TEXT_MESSAGE_START     missing=[] extra=['runId','threadId']               → FAIL
+  TEXT_MESSAGE_CONTENT   missing=[] extra=['runId','threadId']               → FAIL
+  TEXT_MESSAGE_END       missing=[] extra=['runId','threadId']               → FAIL
+  RUN_FINISHED           missing=[] extra=['metadata']                       → FAIL
+⇒ **1/8 通过**；差异有两类：缺必填键（1 处：TOOL_CALL_RESULT.messageId）与额外键（7 处：threadId/runId/metadata）。
+```
+
+**③ 措辞更正（把"未见禁止"改成实测的"明文禁止"）**
+```
+上一节写「多余键官方未禁」⇒ **错**：官方每个事件定义带 `unevaluatedProperties: false`（文件内 73 处）
+⇒ 额外键会被拒。原句作废，以本轮读数为准。
+另外两条边界保持不变：`opaque` 仍**待验**（schema 里没找到明文约束）；7/8 必填齐**不**升格"符合官方协议"。
+`check/status` · `assistant/attempt` · `assistant/usage` 的落点仍是「**我们未覆盖** STATE_*/CUSTOM/META_EVENT」，
+补它们＝动投影载荷/换真源 ⇒ 门，不自裁。
+```
+
+**④ 门后项计数一次对上（16 → 19 → 20 的账）**
+```
+DEBTS 现有 `d-` 行 29 行；门后项实体 = **20 条**：
+  原 11（objective 列表）
+  + 新增 9 条实体（DEBTS 20–26、28、29）：
+    20 d-rail-bypass-ignores-request-intent · 21 d-context-inject-chars-is-budget ·
+    22 d-d3-compares-presence-not-values · 23 d-ring-only-holds-wakeup-period ·
+    24 d-gate-refusal-replies-with-raw-plan · 25 d-exec-ok-names-expect-match-not-success ·
+    26 d-bare-json-plan-not-parsed · 28 d-verdict-job-id-holds-period-id ·
+    29 d-agui-min-subset-deviates-from-official
+  + 行 27 = 行 26 的**归因更正**，同一件，不重复计。
+⇒ 此前口述的「16 / 18 / 19」均作废，以 **20 条实体 + 1 行更正** 为准。
+`d-agui-min-subset-deviates-from-official` 与「换真源（以官方 schema 为真源）」**是同一件的两面**
+（前者是缺口，后者是解法）⇒ 不重复计、不互相销账。
+```
