@@ -3475,3 +3475,40 @@ reply 原文「[rail citation · knowledge_base/rails/demo] - 第 3 条 禁止�
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
 **未动**：章 A/章 B · 清单甲 24 实体 / 清单乙 11 项 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
+
+### C 轮次 · 工具轮真跑（同 job 第 3 个 period）：读数与已落盘判断一致 · 2026-11-20（mwmmu76m 重启后第一轮）
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True
+POST「Please call the calc tool with expression 9*9 and report the result.」
+job_id=run-43d0fd88e73c639a · period_id=run-43d0fd88e73c639a-p006aff3677000004
+jsonl=/tmp/t2round/events/run-43d0fd88e73c639a-p006aff3677000004.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2
+D1/D2 rc=0（**8 类口径** agui-1.0-min · 量在本 period_id · **K-134 改过快照、非基线**）
+verdict={status:Met, checks:2, reason:"all checks passed", job_id:<=period_id>}
+HITL 四态 {allowed_once:1, rejected:0, cancelled:0, unavailable:0, kinds:{}} · _source=tape(ring-stale)
+reply 原文「81」⇒ 对
+两次 l2_casefile（`--expect run-43d0fd88e73c639a-p006aff3677000004`，**period_id 作身份键**）rc=0/0
+  diff 输出 **0 字节** · diff rc=0 · sha256 均 **b65e7a4b4cd9ffb1**
+  selection=`expect:run-43d0fd88e73c639a-p006aff3677000004` · rows=15 · tools=['index=0 · calc · ok=true · 53ms']
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 44fbb47「同一输入不复用同一 period」+ 4c5aef3「toolCallId 身份只到 job」：
+当轮 job_id 与前两轮相同（run-43d0fd88e73c639a），period 是**新的第 3 个**（p006aff3677000004）；
+tool/call index=0 ⇒ 该轮的 toolCallId 仍是 `run-43d0fd88e73c639a#0`，与前两个 period 撞同一 id。
+⇒ 与两条已落盘判断**一致**（不是新形态）；casefile 的 identity 由 period_id/sha 区分（b65e7a4b ≠ 早期 06e7e113）。
+另核 08f5a23「verdict.job_id 装的是 period_id」⇒ 当轮 verdict.job_id == period_id ✅ 一致。
+⇒ 无差。不制造核对对象。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：同 job 的多个 period 之间，page 身份靠 period_id/sha 区分、toolCallId 会撞（已登记）；
+若出现"两个 period 的 casefile sha 相同"或"toolCallId 跨 job 相同"，则上述结构被推翻，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+**未动**：章 A/章 B · 清单甲/乙 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
