@@ -855,3 +855,34 @@ evDir 多份时以**最新 mtime 那份**为当轮，其余不计；输出 `tape
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **教训（写给下一轮的我）**：这已经是第 3 次「跨轮取数」（B1-d ring · B1-f casefile 身份 · B1-g 三栏）——
 **加任何跨文件汇总前先问：这份数据属于哪个 period_id？**
+
+### B1-h 轮次 · 两套口径不同源（tape 定身份，ring 定内容）· 2026-11-19
+
+**核对方式（构造 + 真跑产物混用，已分栏标注）**
+```
+当轮 trace（真跑）：period_id=run-1ca755e1d26e00a7-p006afe92d7000003 · tape 6 行 · D1/D2 rc=0
+构造（**不与真跑读数混写**）：ring 里只放 run-OTHER-p999 的 hitl 事件
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+B1-d/f/g 之后，页面身份来自 tape；但 begin/end/hitl 仍可能来自 ring（兜底）。
+当 ring 属于别的 period 时，改前**没有任何提示**：页面 period_id 是一轮、内容来自另一轮。
+⇒ 与「页面读数必须可归属」直接对不上（同族第 4 次，这次是"两套口径并存"而不是取数越界）。
+```
+
+**修（`Cellrix 5e973b6`，additive）**
+```
+casefile 增 ring_period_ids / ring_mismatch（ring 事件全都不等于当轮 period ⇒ 列出）
+页面红字：「ring 事件属于别的 period：… —— 本页一切读数以 tape 的 period_id 为准」
+```
+
+**反样本（两形，构造值与真跑分栏）**
+```
+混源（ring=run-OTHER-p999）⇒ 警告=1 · hitl _source=tape(ring-stale) · allowed_once=0（不是 ring 的 2）
+一致（ring trace=当轮 period）⇒ 警告=0 · hitl _source=ring · allowed_once=1（原行为不变）
+回归：l2_render_test.js rc=0 · accept_all.sh 三项通过
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · d-context-inject-chars-is-budget · d-rail-bypass-ignores-request-intent。
