@@ -3813,3 +3813,28 @@ accept_all：**rc=0 → 1**，唯一失败项是「② 出口（标准事件 + D
 **依赖顺序（若你采纳）**：⑴ → ⑵ → ⑶（同批，因 ⑶ 以 ⑵ 为前提）→ ⑷ 的 D1 部分保持不动。
 **边界**：不为凑绿改任何文件；d-pits-k_id-format-not-loadable 维持门后只具名；
 8/8 只认「实现已落地」，不写「已对齐官方 / 已交付」；章 A 三下签字 / signoff 矛盾 / HITL 各是各。
+
+### 口径补记 · 两条（append-only，不动实现）· 2026-11-20
+
+**① 四连带那张表是「带依据的建议」，不是裁定**
+```
+上一节四行（不删改性质 / 不退位只换 D2 数据源 / K-134 改判 / D1 不动）**全部是判断句**，
+不因表填好就滑成"已裁"。四连带当前仍停在：
+  · `DEBTS.md:19` d-agui-schema-snapshot-modified 状态 **⏳ 待裁**
+  · 四个文件**均未改**：Cellrix/docs/observations/agui-1.0-min.schema.json · Cellrix/tools/d1_d2_check.js ·
+    K-134 对应条目 · D1/D2 对象定义
+「依赖顺序 ⑴→⑵→⑶→⑷」只在 gardener 写出裁定后**才作执行顺序**；现在不排期、不预写工单。
+```
+
+**② 「红 12 条」是实测；「换真源后结构性消失 / 同批转绿」是推断 —— 两态分列**
+```
+实测（可复跑）：`node tools/d1_d2_check.js <tool 轮 tape>` ⇒ rc=1 · d2_fail **12 条**；
+   因为 D2 当前仍读**自有** agui-1.0-min（required 含 threadId/runId）。
+   同时 `accept_all` rc=1，仅 ② 段失败。
+推断（未跑、不算数）：若把 D2 的数据源换成官方副本，12 条"缺 threadId/runId"会消失；
+   但这**尚未执行、未经读数验证**，不写成"已消解 / 会转绿"。
+⇒ 两态并列：**当前红 12 条**（读数）｜**换真源后的预期**（推断，未验）。
+```
+
+**状态维持**：不为凑绿改任何文件（d1_d2_check.js / 自有 schema / 四连带 / d-pits-k_id-format-not-loadable）·
+8/8 只认「实现已落地」· 章 A 三下签字 / signoff 矛盾 / HITL 各是各不捆入 · phyt 护栏 · 不归档 · dirty=0。
