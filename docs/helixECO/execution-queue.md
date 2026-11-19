@@ -3944,3 +3944,37 @@ function/success/interrupt/cancelled/suspended/video）：
 ```
 
 **边界**：8/8 只认「实现落地 + 官方副本校验通过」；不写「已交付 / 已确认」；章 A / signoff / HITL 不捆入。
+
+### 口径更正 · 三条（append-only，不动实现）· 2026-11-20
+
+**① 分母重算：三态分开，括号不再混算（我上一轮 20+3+1=24 却写 23，错）**
+```
+口径落点改为 `$defs.EventType.enum`（实测 **31 项**；不再用"44 个 type const 减 13 个非事件值"这种转述），
+且写死：**基准以 `ag-ui-1.0-schema.json` 为准；`ag-ui-EventType.java` 只作旁证**。
+三态分列（不相加、不混成一个数）：
+  · 已映射 = **8**
+  · 官方真未覆盖 = enum − mapped = **23**：其中**已具名 20** · **未具名 3**（SUBAGENT_STARTED / SUBAGENT_FINISHED / SUBAGENT_ERROR）
+  · 本方多列 = **1**（META_EVENT —— 官方 enum 里没有，不属于"官方未覆盖"这个集合）
+⇒ 31 = 8 + 23 ✅；上一轮写的「未覆盖真实 23（20 + 3 + 1）」把"多列"塞进了"未覆盖"，括号相加 24 ≠ 23，作废。
+```
+
+**② opaque：只写实测结论，不另造稻草人**
+```
+正确写法：「1.0 schema 对 `threadId`/`runId` **无明文约束**（只有 type:string + 描述）；
+schema 另有 **11 处** `opaque`，全部用于**载荷语义**（tool args / content / result / interrupt）」。
+作废我上一轮那句"schema 里没有 opaque 一词，但这个说法是错的"——那是我自己造的稻草人，不是既有口径。
+针只转一格：**待验 → 已核**。
+```
+
+**③ 「SDK 由 schema 生成」有落点（不是我方陈述）**
+```
+落点：`Cellrix/docs/observations/refs/ag-ui-README.md`（sha256_16=**667422d2a16f79ba** · 19,476 B）
+      **行 30** 原文：「AG-UI 1.0 is here. The protocol now has a stable, frozen specification backed by a JSON Schema,
+      and the TypeScript, Python, and .NET SDKs are generated from it.」
+⇒ 该句从"用户陈述"升级为"有外部落点的引文"；但「基准是否认自写最小校验器」**仍归 gardener 裁**，
+   不因原文出现就自行换基准（C-087 门＝停下来找人）。
+```
+
+**维持边界**：`d-uncovered-list-drift-vs-official` 维持门后只具名，**未改** UNCOVERED / agui.rs ·
+8/8 只认「实现落地 + 官方副本校验通过」· 不写「已对齐官方 / 已交付 / 已确认」·
+章 A 三下签字 / signoff 矛盾 / HITL 不捆入 · phyt 护栏 · dirty=0 · 未归档。
