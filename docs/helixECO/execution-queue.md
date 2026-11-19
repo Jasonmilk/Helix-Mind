@@ -2111,3 +2111,31 @@ run-cf208fb4… 15 行  usage=**2** tool=**1** attempt="planned calls: numbers" 
 
 **没有 B1**：本轮无自裁层缺陷；**没有新增 B2**（只是更正已登记那条的归因）。
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+
+### C 轮次 · 上一轮那条判断被复现（不是新判断）· 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+prompt「Please call the calc tool with expression 8*8 and report the result.」
+job_id=run-7e32fa5e2ed6c25e · period_id=run-7e32fa5e2ed6c25e-p006afefe5400000f
+jsonl=/tmp/t2round/events/run-7e32fa5e2ed6c25e-p006afefe5400000f.events.jsonl
+LINES=15 · AGUI=8 · USAGE=**2** · TOOLCALL=**1** · attempt="planned calls: calc"
+D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+verdict={status:Met, checks:2, reason:"all checks passed"} · HITL allowed_once=1 · unavailable=0 · kinds={}
+reply「The result of the ca…」
+```
+
+**核的是哪条判断 / 结果**
+```
+上一轮 A（c890a7b）：「是否有计划只看 attempt；tool/call>0 必伴随 usage=2」
+当轮：usage=2 + tool/call=1 + attempt="planned calls: calc" ⇒ **复现，与判断一致**。
+⇒ 这是**复现**，不是新判断变化 ⇒ 按「纯数字变化记 C」记 C。
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断（沿用）：**usage=1 的轮次不可能有 tool/call>0；若出现，说明"两次调用"这条被判翻。**
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 16 条一项未动、未互相销账。
