@@ -2831,3 +2831,36 @@ B1-f 转针（同 period 一致 + **不同 period sha 必不同**）：
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134 · 门后 22 条一项未动、未互相销账。
+
+### C 轮次 · 第三个工具读数：weather 也走"放行"档（只加观察，不改判断）· 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+prompt「Please call the weather tool for city Shanghai and report what it returns.」
+job_id=run-864bf725fa31aea2 · period_id=run-864bf725fa31aea2-p006aff1b09000013
+jsonl=/tmp/t2round/events/run-864bf725fa31aea2-p006aff1b09000013.events.jsonl
+LINES=15 · AGUI=8 · USAGE=2 · TOOLCALL=1 · attempt="planned calls: weather"
+D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+tool/call {index:0, tool:"weather"} · verdict={status:Met, checks:2, all checks passed}
+HITL **allowed_once=1** · unavailable=0 · kinds={}
+reply「The weather for Shanghai is sunny with a …」
+两次 l2_casefile（--expect run-864bf725fa31aea2）rc=0/0 · diff 无输出 rc=0 · sha=49e257d0…
+casefile：tools=['index=0 · weather · ok=true · 2546ms'] · verdict={Met, checks:2}
+```
+
+**核的是哪条判断 / 结论**
+```
+已落盘（2f58a1c，经 b6719bc 收窄为**单 period 观察**）："闸按什么分流"归门，只记观察。
+当轮新增一个观察点：`weather` 与 `calc`/`numbers` 同档（allowed_once=1 且 tool/call=1）。
+⇒ 累计观察：allowed 类 = {calc, numbers, weather}（3 个）；blocked 类 = {exec}（1 个，unavailable=1）。
+   这**只加观察**，不推"规则是什么"——规则属安全语义（门）。
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：**在这 4 个工具上，"被拦"只出现在 `exec`**；
+若某个非 exec 工具出现 unavailable>0，或 exec 出现 tool/call=1 ⇒ 上述观察被推翻，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：K-134 · 门后 22 条一项未动、未互相销账。
