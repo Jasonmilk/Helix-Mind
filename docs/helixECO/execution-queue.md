@@ -1053,3 +1053,43 @@ types=['turn/start','user/message','context/inject','assistant/reply','turn/end'
 **口径未动**：K-134 · C-076 · L2 · 其余门后项一项未动、未互相销账。
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口（gardener 重新下发后从 0 起）**连续无 B1/B2 = N = 1**。
+
+### A 轮次 · `success=true` 可以配一个**算错的答案**，而出口没有任何一处标出错 · 2026-11-19
+
+**当轮真跑（探测复用：`check_upstream.sh` YES rc=0）**
+```
+prompt「Please call the calc tool with expression 11*11*11*11*11 and report the result it returns.」
+reply 原文 ⇒ "The result of the expression 11*11*11*11*11 is 28561."
+job_id=run-759fa7181f06f0a6 · period_id=run-759fa7181f06f0a6-p006afe9afe000005
+jsonl=/tmp/t2round/events/run-759fa7181f06f0a6-p006afe9afe000005.events.jsonl
+LINES=9 · AGUI=5 · TOOLCALL=0 · HITL 四态全 0
+D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+types=['turn/start','user/message','context/inject','assistant/usage','assistant/think',
+       'assistant/attempt','assistant/reply','turn/end','check/status']
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘判断（:678 那轮 C）：出口"无法区分真执行与未执行"；后又改成"证据在 tape、出口没人读"。
+当轮读数把这条推得更窄也更硬：
+  ① 答案**算错**：`11**5 = 161051`（python 实测），模型写 **28561**（=13⁴）
+  ② `turn/end.success=true`、`impasse=false`、reply 自洽
+  ③ tape 无 `verdict/status`（执行段没跑）⇒ **没有任何检查点会指出这个答案错**
+  ④ 页面里 `28561` 出现 **0** 次 ⇒ **证轨页根本不显示 reply 文本**，看页面也核不出来
+```
+
+**A：判断改成**
+```
+success=true 只表示"这一轮跑完了"，**不表示答案被验证过**：
+  在无执行段（tool/call=0）的轮次里，连"答错"都不会被记为失败——
+  `verdict/status` 只在执行段产出（:667），所以错答案与对答案在出口读数上**完全同形**。
+⇒ 一句可被下轮推翻的判断：**凡 `tool/call=0` 的轮次，
+  出口读数（success / D1D2 rc / 页面三栏）都不足以判断答案对错；判对错必须回到 reply 文本本身。**
+```
+
+**没有 B1**：页面不显示 reply 文本这件事，是"证轨投影的取舍"还是"缺陷"，取决于下一轮当轮读数
+是否真的需要它来判定——本轮只把它作为**读不到**的事实登记，不预先补面板（避免长成覆盖率作业）。
+**没有 B2 新增**：未新增 DEBTS 行；`d-rail-bypass-ignores-request-intent` /
+`d-context-inject-chars-is-budget` 仍待真撞、未销账。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
