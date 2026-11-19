@@ -2809,3 +2809,25 @@ RUN_STARTED / RUN_FINISHED / TEXT_MESSAGE_START / TEXT_MESSAGE_END 各必须**�
 **计数**：本轮有 B1 ⇒ N=0 · B1 累计 **23 笔**（a..w）· 门后项 21 → **22 条**。
 **规律（第 6 次应验）**：歧义输入连打五处 —— `--expect` · `check_upstream` · `casefile.hitl` ·
 `casefile.verdict` · **D1（生命周期次数）**。同一个病：**多来源时静默选一个，或根本不数次数。**
+
+### C 轮次 · 歧义标注本身是确定的；不同 period 的 sha 仍必不同 · 2026-11-19
+
+**核对（用"歧义输入"检查表的最后一格：确定性）**
+```
+B1-u / B1-v 之后 casefile 会输出 `_ambiguous_n` / `_rows`：这些标注本身是否确定？
+  /tmp/dup_hitl（同 period 两条 hitl）两次跑 ⇒ 一致 · sha=**422f99cb26110b30**
+  /tmp/dup_v   （同 period 两条 verdict）两次跑 ⇒ 一致 · sha=**a2dc8882f2f31ae6**
+B1-f 转针（同 period 一致 + **不同 period sha 必不同**）：
+  两个不同 period 的 casefile ⇒ 6c196ac9d10a1fd5 vs eb1194b78dd01455 ⇒ **不同** ✅
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：**歧义标注（`_ambiguous_n` / `_rows`）不引入不确定性** ——
+同一输入两次跑字节一致；且"不同 period 必不同 sha"这条转针在新输出下仍成立。
+若某轮出现同一输入两次 casefile 不一致，或不同 period 的 sha 相同 ⇒ 说明新标注引入了序依赖，
+必须重判（`_rows` 的顺序来自 tape 行序，这一点目前只是"实测稳定"，未在代码里钉死）。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134 · 门后 22 条一项未动、未互相销账。
