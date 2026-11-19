@@ -2774,3 +2774,38 @@ HITL 全 0 · _source=tape(ring-stale)
 **未动**：K-134 · 门后 21 条一项未动、未互相销账。
 **规律（第 5 次应验）**：歧义输入连打四处 —— `--expect`（多 period）· `check_upstream`（重复键）·
 `casefile.hitl`（多 hitl 行）· `casefile.verdict_status`（多判定行）。同一个病：**多来源时静默选一个**。
+
+### B1-w 轮次 · 歧义输入打投影层：D1 不判"生命周期恰好一次" · 2026-11-19
+
+**撞到（构造输入，已标注；两种形状各一遍）**
+```
+A 两条 `turn/end`（原一条 + 构造一条）
+  ⇒ agui 输出 9 条：RUN_STARTED 1 · TOOL_CALL_* 3 · TEXT_MESSAGE_* 3 · **RUN_FINISHED 2**
+  ⇒ **D1/D2 rc=0**（判据只查"首条是不是 RUN_STARTED / 末条是不是 RUN_FINISHED"，不查次数）
+B 去掉 `tool/call`、只留 `tool/result`
+  ⇒ 输出含 TOOL_CALL_END / TOOL_CALL_RESULT 而**没有 TOOL_CALL_START**，D1 抓到 ⇒ rc=1（这条原本就对）
+```
+
+**修（`Cellrix` 本轮提交，additive，只加一条能红判据）**
+```
+RUN_STARTED / RUN_FINISHED / TEXT_MESSAGE_START / TEXT_MESSAGE_END 各必须**恰好 1 次**；
+否则 D1 红并写出实际次数。
+```
+
+**三形反样本**
+```
+[dup_end]           ⇒ rc=1「RED D1: RUN_FINISHED 出现 2 次（必须恰好 1 次）」—— **改前 rc=0**
+[result_only]       ⇒ rc=1（原判据，行为不变）
+[真跑工具轮 15 行]  ⇒ rc=0   [真跑 rail 轮 6 行] ⇒ rc=0（新增判据不误伤真跑）
+回归：accept_all rc=0
+```
+
+**B2（撞门：只登记不自裁）**
+```
+"投影遇到重复 turn/end 时该不该只出一条 RUN_FINISHED"属投影**行为面**（anaphase）⇒ 门。
+`DEBTS.md` 增 `d-agui-projects-duplicate-lifecycle-rows`（带 revisit-on）；本轮**未改**投影。
+```
+
+**计数**：本轮有 B1 ⇒ N=0 · B1 累计 **23 笔**（a..w）· 门后项 21 → **22 条**。
+**规律（第 6 次应验）**：歧义输入连打五处 —— `--expect` · `check_upstream` · `casefile.hitl` ·
+`casefile.verdict` · **D1（生命周期次数）**。同一个病：**多来源时静默选一个，或根本不数次数。**
