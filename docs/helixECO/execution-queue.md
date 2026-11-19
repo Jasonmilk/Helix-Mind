@@ -1495,3 +1495,32 @@ cleanup 里按端口补杀（脚本开头已清过场 ⇒ 此刻监听者就是�
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+
+### B1-q 轮次 · casefile 的 `tape` 字段装的是 ring.json 文件名 · 2026-11-19
+
+**核的是哪条判断 / 为何对不上**
+```
+A（5cfd94a）已证明：`/v1/agent/events` 只含**苏醒 period**，从 ring 读当轮结构上不成立。
+据此核对"页面里还有没有隐式 ring 依赖" ⇒ 撞到字段级：
+  tools/l2_casefile.js  `tape: path.basename(ringFile)`  ⇒ casefile.tape = "ring.json"
+  页面头部因此写「tape: ring.json」——**名字说 tape，内容是 ring**，且没有任何提示。
+其余工具核对：`d3_compare.js` 不读 ring · `l2_render.js` 只读 casefile · `accept_all.sh` 把 ring.json 送进 casefile（合规）。
+```
+
+**修（`Cellrix 0afe67d`，additive）**
+```
+`tape` 保留但改为**真实 tape 名**；另列 `tape_file`（同 tape）与 `ring_file`（旧含义）
+页面头部：`tape: …events.jsonl · ring: ring.json`（两者不再混成一个词）
+```
+
+**改前 / 改后（同一当轮产物：period run-efd3714ecf568b81-p006afedbf0000001）**
+```
+改前 casefile：tape= ring.json · tape_file=(无) · ring_file=(无)
+改后 casefile：tape= run-efd3714ecf568b81-p006afedbf0000001.events.jsonl · ring_file= ring.json
+页面        ：`tape: run-efd3714ecf568b81-…events.jsonl · ring: ring.json`
+反样本：改前那份 casefile 本身就是反样本（字段名与内容不符，且无任何提示）
+回归：l2_render_test.js rc=0 · accept_all.sh rc=0
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
