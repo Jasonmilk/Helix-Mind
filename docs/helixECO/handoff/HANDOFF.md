@@ -60,6 +60,16 @@ cd phyt-DNA && bash tools/validate.sh --index
 | **K17** 并发上限/背压 | **未做** | `grep -rn 'Semaphore\|max_concurrent' anaphase-helix/src` ⇒ 0；流式路径用的是 `UnboundedSender`（`adapters/http_reasoning.rs:154`） |
 | **K19** `GateVerdict` 改名 | **已无该符号；现存类型叫 `Verdict`** | `grep -rn 'GateVerdict' Tuck/crates` ⇒ **0**；`tuck-gateway/src/matrix.rs:138 pub struct Verdict` ⇒ 改名事实上已完成（或该符号从未以该名落地）⇒ 本条可视为结项，不单开一轮 |
 
+**2026-11-20 增量（现量，不改上面的批次表）**
+
+| 项 | 现在量到 | 证据（可复跑） |
+|---|---|---|
+| **AG-UI 章 B 第一步** | **已落地**（投影只产官方声明过的键） | `anaphase-helix 5d71a05`（fix_window cap=24 · k_id=C-083；坑先记于 `17066c0`）· 官方副本校验 tool 轮 8/8 / rail 轮 5/5（量具 `Cellrix/tools/agui_conformance.js` · schema sha256_16=4b5c93226838a0e7） |
+| **D2 数据源 / K-134** | **已裁并落地**：D2 读官方副本；agui-1.0-min 改性质不再当基准 | `Cellrix 6d91208`（schema f338f74f→94ac7396 · d1_d2 f28408b5→eb9e2508）· `DEBTS` 行 106 历史 + 行 123 改判记录 |
+| **UNCOVERED 清单** | **未从 `$defs` 生成**：缺 SUBAGENT_* 3 类 · 相对 schema 多 META_EVENT 1 类 | 账上三态 8 / 23 / 1（`execution-queue` 行 3982 复盘节）· `d-uncovered-list-drift-vs-official` 待裁 |
+| **B1 累计** | **28 笔**（a..z + aa + ab），全部带改前/改后与反样本 | `execution-queue` 各节行号 |
+| **goal** | **paused**（N=2 自停，未标 complete） | 最近两轮见 `execution-queue` 尾部 C 轮次节 |
+
 **顺带两个读数（与上表相关，供判断顺序）**：
 ```
 · 本文件已 50 行，超过它自己写的「≤40 行」——超标是事实，不是待办（压缩会删掉不可导出的那节）

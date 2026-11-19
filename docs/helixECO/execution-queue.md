@@ -4079,3 +4079,50 @@ unevaluatedProperties:false 73 处）与 README 原文。
 
 **维持边界**：不补 SUBAGENT_* · 不删 META_EVENT · 不换 validator 基准 · 不自行唤醒 ·
 8/8 只认「实现落地 + 官方副本校验通过」· 章 A 三下签字 / signoff 矛盾 / HITL 不捆入 · phyt 护栏 · dirty=0 · 未归档。
+
+### 阶段快照 v2 · 现状 / 路线 / 计划（2026-11-20，落盘以便对齐；可被后续推翻并追加更正）
+
+**一、现状（读数）**
+```
+仓（dirty=0，phyt 除外）：anaphase-helix 5d71a05 · Cellrix 213ded6 · helix-mind a610ada ·
+  Tuck c833034 · FlowModus 9359a8f · helix-tentacle 2554ebf ·
+  phyt-DNA 5f017fa（v2 · ledger/hits-2026.jsonl 运行时追加，具名不提交）
+链：50061 anaphase（events→/tmp/t2round/events）· 50051 tentacle · 8080 llama-swap · /v1/health 全 ok
+台账：execution-queue **124 节** · DEBTS **38 行 `d-`** · B1 累计 **28 笔**（a..z + aa + ab）
+goal：paused（N=2 自停，未标 complete）
+```
+
+**二、AG-UI 两章（唯一的分层口径）**
+```
+章 A｜自有最小投影 / 证轨出口 —— 已实现，**未签字**（只由三下签；三下判不出 8/8）
+章 B｜官方薄适配层 —— **第一步已落地**：anaphase-helix 17066c0（记坑）+ 5d71a05（fix_window cap=24 · k_id=C-083）
+      读数：官方副本校验 tool 轮 **8/8** · rail 轮 **5/5**（量具 agui_conformance.js · schema sha 4b5c9322…）
+      四连带已裁并落地：D2 数据源 → 官方副本（Cellrix 6d91208）· agui-1.0-min 改性质（不再当基准）·
+      K-134 改判（DEBTS 行 106 历史 + 行 123 改判记录）· D1 未动
+      未做且仍门后：UNCOVERED 清单未从 `$defs` 生成（缺 SUBAGENT_* 3 · 相对 schema 多 META_EVENT 1）
+```
+
+**三、路线（三条线，互不代签）**
+```
+线 1｜差驱动读数轮（自裁层，唯一可自长）：探测复用 → 真跑 → 最小读数集 → 找差 → A/B1/B2/C → N 计数 → N=2 停
+线 2｜章 B 余项（门后待裁）：UNCOVERED 由 `$defs` 生成 / 是否补 SUBAGENT_* / validator 基准认不认自写校验器
+线 3｜其它门后：清单甲 24 实体 + 清单乙 11 项（K-134 已裁已落地，其余 10 项照旧）· HITL 独立须授权 · phyt 不续期
+```
+
+**四、计划（下一件由差决定，不预写工单）**
+```
+可推翻点（出现才重判）：
+  · 官方副本校验掉回 <8/8，或 d2_fail 从 0 变正
+  · D2 与 conformance 出现一绿一红（说明有一条改读别处）
+  · 真跑出现 _ambiguous_n / usage=1 却 tool/call>0 / allowed_once=0 而 tool/call=1
+  · numbers 出现 verdict=Met 而 outcome 无 ok 字段
+```
+
+**五、口径指针（读哪份、以谁为准）**
+```
+AG-UI 事件类型与 required  → $defs.EventType.enum 与 $defs.<Event>.required（schema sha 4b5c9322…）
+                              见 execution-queue 行 3982「章 B 真源切换复盘」；java/README 只作旁证
+未覆盖清单               → 账上三态分列（8 / 23 / 1），文件仍 21 项含 META_EVENT（未改，待裁）
+证据等级                 → 独立核（schema + README）与 Pi 侧落盘读数（java 29 常量 + sha）**分列不合称**
+签字                     → signoff.toml(signed=true/2026-11-03) 与 queue「L2 未签」两处并列，只登记不裁
+```
