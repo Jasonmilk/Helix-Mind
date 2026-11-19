@@ -1943,3 +1943,42 @@ casefile：tool_calls=本轮无工具段（0 条）· verdict=UNMEASURABLE（未
 
 **计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 13 条一项未动、未互相销账。
+
+### A 轮次 · 闸按**工具类别**分流，不按命令危险性：exec 一律 unavailable，calc 一律 allowed_once · 2026-11-19
+
+**本轮三条真跑（同一链、连续三次；最小读数集逐行给）**
+```
+① exec + 破坏性命令 `chmod 777 … && rm -rf …`
+   period=run-65ac6520dbb36978-p006afefdad000009 · 9 行 · AGUI=5 · TOOLCALL=0 · USAGE=1 · D1/D2 rc=0
+   HITL: allowed_once=0 rejected=0 cancelled=0 **unavailable=1** kinds=**{"exec":1}** · verdict 无
+② exec + **无害**命令 `echo hello-gate`
+   period=run-7b6f52e8879bed6d-p006afefdd400000a · 9 行 · TOOLCALL=0 · USAGE=1
+   HITL: **unavailable=1** kinds=**{"exec":1}** · verdict 无 · reply 仍是计划 JSON
+③ calc `21*21`
+   period=run-00c676c26f5ec20c-p006afefddc00000b · 15 行 · TOOLCALL=**1** · USAGE=2
+   HITL: **allowed_once=1** unavailable=0 kinds={} · verdict={status:Met, checks:2}
+   reply 原文「441」·（两次 casefile 与 D1/D2 在 ①②③ 均 rc=0，口径同前）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+上一轮 A（77e6926）把 `unavailable=1` 读成"高风险 exec 被拦下"。
+当轮读数把这条读法推翻：**无害的 `echo hello-gate` 同样 unavailable=1** ⇒ 拦的不是"高风险"，是**工具类别 exec**。
+反方向同样成立：calc 的 `allowed_once=1` 出现在**每次执行成功**时（不是人类批准）。
+```
+
+**A：判断改成**
+```
+① 闸的分流是**按工具**的：`exec` 一律 fail-closed（unavailable=1 · kinds={"exec":n}），
+   `calc` 一律 allowed（allowed_once=1 且 tool/call=1）——与命令危险性**无关**（无害 echo 也被拦）。
+② `allowed_once` 的正确读法是「**闸自动放行了一次**」，不是「有人批准了一次」：
+   它随正常执行增长，且没有任何 human 输入参与。
+⇒ 可被下轮推翻的一句：**若出现 exec 类工具 tool/call=1（=拦下却执行），或 calc 类工具 unavailable=1，
+   则"按工具分流"这条判断被推翻，必须重判闸的分类表。**
+```
+
+**没有 B1**：这是读数归因的修正，不是缺陷修复项（拦不拦由行为面决定，未自裁改）。
+**没有 B2 新增**：拦下时 reply 是计划原文，已在上一轮登记 `d-gate-refusal-replies-with-raw-plan`，未重开、
+未销账；`d-rail-bypass-ignores-request-intent` / `d-ring-only-holds-wakeup-period` 同样未动。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
