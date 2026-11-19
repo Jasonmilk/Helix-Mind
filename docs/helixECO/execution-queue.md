@@ -3023,3 +3023,30 @@ begin / end 各收全；>1 ⇒ `{_ambiguous_n, _rows}`；单条时原样输出
 **未动**：K-134 · 门后 22 条一项未动、未互相销账。
 **规律（配对完整性两次成对出现）**：B1-z 判"END/RESULT 必须有 START"，B1-aa 判"START 必须有 END+RESULT"——
   两端都判完，`TOOL_CALL_*` 这一族在判据层**才真正收口**（此前只有"有没有"，没有"配不配"）。
+
+### B1-ab 轮次 · `toolCallId` 唯一性没被判（同 id 两次调用仍绿）· 2026-11-19
+
+**撞到（构造输入，已标注）**
+```
+同一 `index=0` 的两条 `tool/call`（第一条 calc、第二条 exec）
+  ⇒ 投影出**两条同 id 的 `TOOL_CALL_START`**（`…-p006aff…#0`），END/RESULT 各一条
+  ⇒ B1-aa 的配对规则是**按 id** 判的，仍满足 ⇒ **D1/D2 rc=0**
+  ⇒ 一个 toolCallId 对应两次调用 ⇒ id 失去身份作用（与 I1 同族：身份必须唯一）
+```
+
+**修（`Cellrix` 本轮提交，additive）**
+```
+TOOL_CALL_START 的 toolCallId 必须唯一；重复时红，并点出两个 name（calc 与 exec）
+```
+
+**四形反样本**
+```
+[同 id 两条 START] rc=1「toolCallId …#0 重复（calc 与 exec）」← **改前 rc=0**
+[call 无 result]   rc=1（B1-aa 仍抓）
+[真跑工具轮] rc=0  [真跑 rail 轮] rc=0（不误伤）
+回归：accept_all rc=0
+```
+
+**计数**：本轮有 B1 ⇒ N=0 · B1 累计 **28 笔**（a..z + aa + ab）。
+**未动**：K-134 · 门后 22 条一项未动、未互相销账。
+**判据层进度**：`TOOL_CALL_*` 现在判三件事 —— 配对两端（B1-z / B1-aa）＋ 身份唯一（B1-ab）。
