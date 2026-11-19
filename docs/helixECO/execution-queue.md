@@ -3260,3 +3260,60 @@ DEBTS 当前 **33 行 `d-`**，构成（逐类数清）：
 · 门后 23 条「已具名、待真撞」不动不销账；HITL 仍须单独授权。
 · 章 A 只由三下签（三下判不出 8/8）；章 B 未立项未开工属门。
 ```
+
+### 更正 · 「门后项 23」这个数**撤回**（两套清单混算，无法从单一 DEBTS 复现）· 2026-11-19
+
+**先答 YB 的两处算术**
+```
+① 33 行构成：⛔ 15 + ⏳ 10 + 非门类 8 = 33 —— **更正行在 33 之内**（它就是 ⛔ 那 15 行里的第 27 行），
+   我此前写成"15+10+8+更正行"，等于把它加了两次 ⇒ 错，以本行为准。
+② ⛔15 + ⏳10 = 25 ≠ 门后实体 23 ⇒ 差 2；且"23"本身**无法从单一 DEBTS 表复现**（见下）。
+```
+
+**逐行归类表（33 行，按 DEBTS 顺序；`⛔`=属门 · `⏳`=等裁决/待真撞 · `—`=早期遗留）**
+```
+ 1 — d-mind-sunset-audit              2 ⏳ d-ci6-8files-ruling
+ 3 ⏳ d-ci6-over-total-baseline        4 — d-k129-declared-vs-implemented
+ 5 — d-ci6-attr-381                   6 ⏳ d-edge-cellrix
+ 7 — d-mind-test-count-generator      8 ⏳ d-dangerous-gate-never-installed
+ 9 ⛔ d-flowmodus-ssot-gap            10 — d-anaphase-budget-300-no-ssot
+11 — d-anaphase-guards-stale-from    12 — d-machine-absolute-paths
+13 ⏳ d-phyt-adopt-declared-v1        14 ⏳ d-cellrix-vendored-engine
+15 ⏳ d-k133-gate-route-not-mounted   16 ⛔ d-phyt-ref-no-version-pin
+17 ⏳ d-adr0048-233-236               18 — d-ecosystem-md-stale-42d
+19 ⏳ d-agui-schema-snapshot-modified（= K-134）
+--- 以下 20–33 为**本轮序列新增**（14 行 = 13 实体 + 1 归因更正行）---
+20 ⛔ d-rail-bypass-ignores-request-intent     21 ⛔ d-context-inject-chars-is-budget
+22 ⛔ d-d3-compares-presence-not-values        23 ⛔ d-ring-only-holds-wakeup-period
+24 ⛔ d-gate-refusal-replies-with-raw-plan     25 ⛔ d-exec-ok-names-expect-match-not-success
+26 ⛔ d-bare-json-plan-not-parsed             27 ⛔ 同上「归因更正」行（= 26 的同一件）
+28 ⛔ d-verdict-job-id-holds-period-id         29 ⛔ d-agui-min-subset-deviates-from-official
+30 ⛔ d-new-verifier-outside-self-signed-manifest
+31 ⛔ d-agui-projects-duplicate-lifecycle-rows  32 ⏳ d-casefile-rows-order-unpinned
+33 ⛔ d-tool-call-id-scoped-to-job-not-period
+⇒ 分类合计：⛔ 15（含更正行 1）· ⏳ 10 · — 8 = 33 ✅
+   本轮序列新增 = 14 行（13 实体 + 1 更正行）；早期遗留 = 19 行（其中 ⛔ 2 · ⏳ 9 · — 8）
+```
+
+**「23」为什么撤回——它是两套清单混算出来的**
+```
+objective 的「门后项」是**跨仓清单**：K-134 · C-076 · phyt 4 条 · ring5 · K22 · K17 · M6/B18 ·
+M7 条件2 · L2 签字 · tentacle-transport-mcp · chain.json/rings.json。
+其中只有一小部分落在 helix-mind 的 DEBTS 里：
+  K-134 → 行 19 `d-agui-schema-snapshot-modified`（⏳）
+  phyt 4 条 → 在 **phyt-DNA 仓自己的 DEBTS**（`d-phyt-pre-gap-a/b/c` + `d-phyt-phantom-complete`），本表没有
+  ring5 → 在 **driver 仓 `rings.json`**，本表没有
+  K22/K17/M6-B18/M7-2/L2 签字/tentacle-transport-mcp/chain.json → **不在本表**（部分只在台账叙述里）
+⇒ 正确写法是**两条独立清单、各自可复现**：
+   清单甲（本仓 DEBTS 门后行）：⛔15 + ⏳10 = **25 行**，其中 1 行是更正（同一件），⇒ **24 个实体**
+   清单乙（objective 跨仓门后项）：**11 项**，逐项给出"它在哪张表/哪份文件里"才算数，未落表的一律标「未落表」
+   **两者不相加、不互相代表**；此前所有"门后 20/21/22/23"口述一律作废。
+```
+
+**1/5 与 1/8 的并列规则（YB 第②条）**
+```
+两个输入锚点并列、**不并成平均合规**：
+  8 条事件（period run-43d0fd88e73c639a-p006aff031c000010，工具轮）⇒ 1/8
+  5 条事件（period run-38309a88d2ac15e1-p006aff1a34000012，rail 旁路）⇒ 1/5
+引用时必须带四项：`agui_conformance.js` · 命令 · 输入（上面两个 period 之一）· schema sha256_16=4b5c93226838a0e7
+```
