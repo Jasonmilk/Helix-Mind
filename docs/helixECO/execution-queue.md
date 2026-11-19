@@ -2942,3 +2942,30 @@ TEXT_MESSAGE_START / END   ⇒ 至少 1 次 **且次数相等**（不配对才�
 
 **计数**：本轮有 B1 ⇒ N=0 · B1 累计 **24 笔**（a..x）。
 **未动**：K-134 · 门后 22 条一项未动、未互相销账。
+
+### B1-y 轮次 · `casefile.begin/end` 在多来源时静默选一个 · 2026-11-19
+
+**撞到（构造输入，已标注）**
+```
+真实 tool tape（period run-43d0fd88e73c639a-p006aff031c000010，turn/end success=true/impasse=false）
+追加第二条 turn/end（success=false · impasse=true · reason="contrived second end"）
+改前 casefile.end = {"success": false, "impasse": true, "reason": "contrived second end"}
+  ⇒ 真实那条被**静默覆盖**，`_source` 仍写 tape，无歧义提示（begin 同理：多 user/message 只取第一条）
+```
+
+**修（`Cellrix` 本轮提交，additive）**
+```
+begin / end 各收全；>1 ⇒ `{_ambiguous_n, _rows}`；单条时原样输出
+```
+
+**四形反样本**
+```
+[构造两条 turn/end] ⇒ end={_ambiguous_n:2, _rows:[{success:true…},{success:false,impasse:true…}]}
+[真跑单条]          ⇒ end={"done":true,"success":true,"impasse":false}（行为不变）
+回归：l2_render_test.js rc=0 · accept_all rc=0
+```
+
+**计数**：本轮有 B1 ⇒ N=0 · B1 累计 **25 笔**（a..y）。
+**未动**：K-134 · 门后 22 条一项未动、未互相销账。
+**规律**：`casefile` 的三个字段（hitl / verdict / begin+end）都曾"边扫边覆盖"，现已全部改成
+「多个就全列 + 标 ambiguous」——这是同一修法在三处的收口。
