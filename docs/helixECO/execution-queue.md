@@ -3407,3 +3407,38 @@ usage>0 或 tool/call>0，说明 rail 判定与推理段边界变了，必须重
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：章 A/章 B、清单甲/乙、B1 28 笔、门后项一律不动不销账；K-134 待裁非基线。
+
+### A 轮次 · 同一输入**不保证复用同一 period**（我此前的说法被推翻）· 2026-11-19
+
+**当轮真跑**
+```
+prompt「Please call the calc tool with expression 8*8 and report the result.」
+job_id=run-7e32fa5e2ed6c25e · period_id=run-7e32fa5e2ed6c25e-p006aff2dcf000002
+jsonl=/tmp/t2round/events/run-7e32fa5e2ed6c25e-p006aff2dcf000002.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+verdict={status:Met, checks:2} · HITL allowed_once=1 · unavailable=0 · kinds={}
+两次 l2_casefile rc=0/0 · diff 无输出 rc=0 · sha=（见落盘）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘（B1-e 轮次的"顺带具名"）：「同一输入重复 POST 会**复用同一 job/period**（run-ff46… 原样返回）」。
+当轮读数：**同一个 job_id、不同 period** —— 目录里同一 job 现有 **2 个 period**：
+  run-7e32fa5e2ed6c25e-p006afefe5400000f（更早一轮，同输入）
+  run-7e32fa5e2ed6c25e-p006aff2dcf000002（本轮）
+⇒ 复用不是输入的性质，而是**进程状态的性质**（进程内仍记得该 job 时才复用；重启后同输入新开 period）。
+```
+
+**A：判断改成**
+```
+`job_id` 由输入派生 ⇒ **稳定可重复**；但 **period 是否复用取决于进程状态**，
+不能由"同一输入"推出"同一 period"。
+⇒ 由此更硬的一条：**跨轮对账只能锚 period_id（或 job_id + 时间/序号），不能假设"同 job 必同 period"**；
+   这也是 B1-n（苏醒轮同 job 多 period）与 B1-s（--expect 歧义）的结构性来源。
+⇒ 可被下轮推翻的一句：若出现"同 job 且 period 也相同"的重复 POST，说明进程内复用生效——
+   但那只证明"进程内缓存存在"，不证明"输入决定 period"。
+```
+
+**没有 B1**：不是缺陷（复用策略属实现选择）；**没有 B2 新增**（不改行为面）。
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：章 A/章 B、清单甲/乙、B1 28 笔、门后项一律不动不销账。
