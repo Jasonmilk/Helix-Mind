@@ -1796,3 +1796,38 @@ q           1499      r           1553
 K-134 = 待裁、非基线；D2 的绿只标来源即可。
 「人类答复记录」无对象 ⇒ 属 B 线门后边界，不是待验判据。
 ```
+
+### A 轮次 · 一轮里有**两条** `assistant/usage`（工具轮按 LLM 调用计数）· 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config）**
+```
+沿用同一链上四轮真跑产物（全部走到工具段，tool/call=1、AGUI=8）：
+  run-10355f50358ec9ba-p006afeec93000004  usage 行=2  #1 prompt=512 cached=0   completion=26
+                                                     #2 prompt=483 cached=417 completion=5
+  run-96913fcdca09ebf6-…                 usage 行=2  #1 512/417/26  #2 483/417/20
+  run-e6c4ac5ae69107d4-…                 usage 行=2  #1 520/417/26  #2 491/417/20
+  run-c963cab308c5e27b-…                 usage 行=2  #1 514/417/26  #2 485/417/20
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘（6661410 那轮）：把 `assistant/usage` 当"一轮一条"来读（P1..P4 各取一条）。
+当轮读数：**每个工具轮都是 2 条 usage** ⇒ "一轮一条"不成立；token 总量若按轮算会少一半
+（completion 26 只算到第一条，实际 26+5/26+20）。
+附带改正一条：第二条调用的 prompt 比第一条**小** 29–32 tokens（483/491/485 vs 512/520/514），
+   且 cached 仍 417 ⇒ 两条调用不是同一份 prompt 的重复，而是不同上下文。
+```
+
+**A：判断改成**
+```
+① `assistant/usage` 的行数 = **本轮 LLM 调用次数**（工具轮 2 条：规划一次 + 作答一次），
+   不是"每轮一条"；任何 token 统计必须**按行求和**，并按 seq 指明是哪一次调用。
+② cached=417 出现在**第二条**调用（四轮皆是）；第一条在冷启动时为 0 ⇒ 前缀缓存跨调用共享。
+⇒ 可被下轮推翻的一句：**非工具轮应只有 1 条 usage；若某轮 0 条 ⇒ 该轮没调用 LLM（rail 旁路，已具名）。**
+```
+
+**没有 B1**：这是读数口径，不是缺陷。
+**没有 B2 新增**：`d-rail-bypass-ignores-request-intent` / `d-ring-only-holds-wakeup-period` /
+`d-context-inject-chars-is-budget` 均未动、未销账。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
