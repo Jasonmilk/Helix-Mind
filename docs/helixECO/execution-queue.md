@@ -1202,3 +1202,33 @@ Cellrix:docs/observations/acceptance-entrypoints.md:110
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条（含新登记 d-d3-compares-presence-not-values）一项未动、未互相销账。
+
+### C 轮次 · 入口文档⑤节「会误导的三处」逐条核对：三处都仍成立 · 2026-11-19
+
+**核对（每条给命令/位置，不猜）**
+```
+① 「端口取 ecosystem/chain.json（ADR-0046）」
+   anaphase-helix/ecosystem/chain.json 的 components ⇒
+     tuck 60052 · tentacle 50051 · mind 50052 · flowmodus-serve 60053 ·
+     flowmodus-reason 60054 · **anaphase 50061** · panel 50050
+   ⇒ 读者要用的 50061/50051 都在里面。**成立**（我第一次只 walk 了前 5 个组件，差点误判成"缺 50061"，已自纠）。
+
+② 「/v1/health 的 reasoning 那条按 config 字段名判、不代表端点没生效」
+   代码：anaphase:src/health.rs:112  check_endpoint("reasoning", cfg.reasoning_endpoint.as_ref())
+        health.rs:84/97 未配置 ⇒ {"configured": false, "ok": true, "detail": "not configured"}
+   当轮实读：{"configured": true, "ok": true, "detail": "reachable", "name": "reasoning"}
+   ⇒ "未配置不等于失败（ok=true）"这层语义成立。**成立**
+
+③ 「50061 上若有旧实例，它用自己的事件目录应答（先清场）」
+   本轮之前已实测：重启时漏掉 ANAPHASE_SESSION_EVENTS_PATH ⇒ tape 写到 ./events.jsonl 而非 /tmp/…
+   ⇒ 同一条链、两套事件目录并存。**成立**（且有现场读数）
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：⑤节这三句"会误导"到目前为止**仍与代码/现场一致**，
+本轮没有找到"文档滞后于机制"的第二处（第一处是 allowed_once=1，已在 B1-i 修）。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
