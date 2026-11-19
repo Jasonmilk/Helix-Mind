@@ -2748,3 +2748,29 @@ HITL 全 0 · _source=tape(ring-stale)
 **规律（第 4 次应验）**：「每加一处钉住/校验，立刻用**歧义输入**打它一次」——
   B1-s `--expect`（同 job 多 period）· B1-t `check_upstream`（重复键）· B1-u `casefile`（多 hitl 行）。
   三个不同工具、同一种病：**多个来源时静默选一个，并把它当成唯一读数。**
+
+### B1-v 轮次 · 同一 period 多条 `verdict/status` 时静默取最后一条 · 2026-11-19
+
+**撞到（构造输入，底为真实 tape）**
+```
+底：真实 tool tape `run-43d0fd88e73c639a-p006aff031c000010`（verdict=Met · checks=2 · all checks passed）
+构造：同一 period 追加一条 verdict（Unmet · reason="failed: contrived second verdict"）
+改前 casefile：`verdict_status={status:"Unmet",…}` —— **真实那条被静默覆盖**，无提示
+```
+
+**修（`Cellrix` 本轮提交，additive）**
+```
+收全部 verdict 行；>1 ⇒ `{_ambiguous_n:2, _rows:[…]}`；单条时原样输出（行为不变）
+```
+
+**三形反样本**
+```
+[1] 构造两条 ⇒ {_ambiguous_n:2, _rows:[{Met…},{Unmet…}]}
+[2] 真实单条（/tmp/r43）⇒ {status:"Met", checks:2, reason:"all checks passed"}
+回归：l2_render_test.js rc=0 · accept_all rc=0
+```
+
+**计数**：本轮有 B1 ⇒ N=0 · B1 累计 **22 笔**（a..v）。
+**未动**：K-134 · 门后 21 条一项未动、未互相销账。
+**规律（第 5 次应验）**：歧义输入连打四处 —— `--expect`（多 period）· `check_upstream`（重复键）·
+`casefile.hitl`（多 hitl 行）· `casefile.verdict_status`（多判定行）。同一个病：**多来源时静默选一个**。
