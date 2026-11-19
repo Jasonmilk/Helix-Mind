@@ -2292,3 +2292,22 @@ sha256(json.dumps(…))  = c4db48ed…  → False
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 19 条一项未动、未互相销账。
+
+### C 轮次 · `reply.chars` 与 `check_id`/`evidence_id` 查了：都诚实 · 2026-11-19
+
+**核对（当轮真跑产物 period `run-43d0fd88e73c639a-p006aff031c000010`）**
+```
+assistant/reply : chars=14 · len(text)=14 ⇒ **相等**（"9*9 equals 81"）
+check exec_ok          : check_id=<period>#c0 · evidence_id=<period>#0
+check answer.delivered : check_id=<period>#c1 · evidence_id=<period>#0
+⇒ 编号与工具结果 index 一致（都是 0），check 序号 c0/c1 与出现顺序一致；没有装别的对象。
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：`reply.chars` = 该轮 reply 文本的字符数；
+`check_id` = `<period_id>#c<n>`、`evidence_id` = `<period_id>#<tool_index>` —— 三者目前都自洽。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：K-134（待裁、非基线）· C-076 · L2 · 门后项 19 条一项未动、未互相销账。
