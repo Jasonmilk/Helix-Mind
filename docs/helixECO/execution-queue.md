@@ -3838,3 +3838,30 @@ accept_all：**rc=0 → 1**，唯一失败项是「② 出口（标准事件 + D
 
 **状态维持**：不为凑绿改任何文件（d1_d2_check.js / 自有 schema / 四连带 / d-pits-k_id-format-not-loadable）·
 8/8 只认「实现已落地」· 章 A 三下签字 / signoff 矛盾 / HITL 各是各不捆入 · phyt 护栏 · 不归档 · dirty=0。
+
+### 四连带落地（按 gardener 2026-11-20 裁）· 2026-11-20
+
+**执行与落点（逐项）**
+```
+① 自有 agui-1.0-min.schema.json —— **不删、改性质**（Cellrix 6d91208）
+   → 变成「指向官方副本的薄说明 + 本地未覆盖清单（21 个官方类型）」，并记 superseded.pinned=agui-1.0-min/2026-11-05 及撤销理由
+   sha256_16：f338f74f9fb5fba9 → **94ac739610f9a001**
+② 78227a6 守卫 —— **不退位**；D1 段完全不动，只把 D2 的 SCHEMA 指向与 required 读取口径换到官方副本
+   → Cellrix/tools/d1_d2_check.js sha256_16：f28408b564c161c2 → **eb9e2508f32c227d**
+   （规则：按 `properties.type.const` 匹配定义；required 齐 + unevaluatedProperties:false 下不得有额外键；汇总行改标官方 sha）
+③ K-134 —— **改判为「D2 基线 = 官方副本 sha 4b5c93226838a0e7」**；落点 DEBTS.md 追加一行「K-134 改判记录」
+   （**不替换历史行**：第一次我误把 106 行整行替换，已 `git checkout` 回滚后改为追加）
+④ D1/D2 分步 —— 本批只动 D2；D1 对象未改
+投影侧：anaphase-helix **5d71a05**（章 B 第一步 · fix_window cap=24 · k_id=C-083）
+```
+
+**实测读数（换完即取，不写"会转绿"）**
+```
+tool 轮  period run-93f71d7d5c9b397a-p006aff38c3000008 ⇒ d1_d2 **rc=0** · d2_fail **0 条**
+rail 轮  period run-6ce28faed7aa8e1f-p006aff379a000006 ⇒ d1_d2 **rc=0**
+accept_all **rc=0**（分项全绿）· fingerprint rc=0
+官方副本校验（agui_conformance.js · 命令 · 上述两个 period · sha 4b5c93226838a0e7）：**8/8** / **5/5**
+```
+
+**边界**：四连带按裁定执行但**不销账**（K-134 行仍留在 DEBTS，追加改判记录）·
+未写「已对齐官方 / 已交付 / 已确认」· 章 A 三下签字 / signoff 矛盾 / HITL 未捆入 · phyt 护栏维持 · 未归档。
