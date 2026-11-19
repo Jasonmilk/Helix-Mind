@@ -1013,3 +1013,43 @@ B1-h Cellrix 5e973b6 · 落盘节「B1-h 轮次 · 两套口径不同源」
 11 条不因被列成路线而进工单；不列成"给一句就裁一条"的三选一；
 "允做 C-076 opt-in"不作为可点示例；下一件仍由**当轮真跑读数与已落盘判断的差**决定，不预先固定。
 ```
+
+### A 轮次 · `tool/call=0` 有两种成因，且 tape 上一行就能分辨 · 2026-11-19
+
+**当轮真跑（探测复用：`check_upstream.sh` YES rc=0）**
+```
+prompt「Use the calc tool to compute 11 to the power of 5, then report the number.」
+reply=[rail citation · knowledge_base/rails/demo] · model=null
+job_id=run-edef20f53ea70768 · period_id=run-edef20f53ea70768-p006afe9ad6000004
+jsonl=/tmp/t2round/events/run-edef20f53ea70768-p006afe9ad6000004.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · HITL 四态全 0
+D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+两次 l2_casefile rc=0/0 · diff 无输出 rc=0 · sha256 均 e9c4e698…
+types=['turn/start','user/message','context/inject','assistant/reply','turn/end','check/status']
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘判断（815c759 + e269d05 + :592 起那批）：把 tool/call=0 读成
+  "模型没有规划调用（attempt 自述 no calls planned）" ⇒ 闸没被经过 ⇒ 四态该为 0。
+当轮读数：**tape 里根本没有 `assistant/attempt` 行**（`'assistant/attempt' in tape` ⇒ False），
+  因为 rail 旁路在推理段之前就回答了 ⇒ **不是"模型不规划"，是"根本没走到规划"**。
+⇒ 同一个 `tool/call=0` 混了两种成因，而它们的后果不同（一个经过推理段、一个没经过）。
+```
+
+**A：判断改成**
+```
+`tool/call=0` 有两类，**用 tape 上有没有 `assistant/attempt` 行即可分辨**：
+  有 attempt（自述 no calls planned）⇒ 走到了推理段，模型选择不调用；
+  无 attempt（本轮）⇒ **rail 旁路在推理前回答**，规划段根本没执行。
+⇒ 由此，HITL 四态恒 0 的两个前提也要分开写：
+  第一类"闸没被经过是因为没有动作"；第二类"闸没被经过是因为连动作规划都没发生"。
+⇒ 一句可被下轮推翻的判断：**凡 tape 缺 `assistant/attempt`，该轮就不该被用来论证
+  "模型不愿用工具"；它只能被用来论证"请求被旁路吞掉了"（=已登记的 d-rail-bypass-ignores-request-intent）。**
+```
+
+**没有 B1**：这是**读数分辨力**问题，不是缺陷修复项；rail 吞输入已登记为门后项（B2），本轮不重开。
+**没有 B2 新增**：`d-rail-bypass-ignores-request-intent` 已在册（reads: 本轮为第 3 次现场）。
+**口径未动**：K-134 · C-076 · L2 · 其余门后项一项未动、未互相销账。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口（gardener 重新下发后从 0 起）**连续无 B1/B2 = N = 1**。
