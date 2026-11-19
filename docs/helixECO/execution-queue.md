@@ -1524,3 +1524,28 @@ A（5cfd94a）已证明：`/v1/agent/events` 只含**苏醒 period**，从 ring 
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
+
+### C 轮次 · 两个"疑似说谎的字段"实为诚实（并自纠一次误读）· 2026-11-19
+
+**核对对象（接着 B1-q 的线索：还有哪个字段名在描述别的对象）**
+```
+① verdict/status 的 `checks: 2`
+   代码：anaphase:src/run_cycle/reflection.rs:106  "checks": reports.len()
+   ⇒ 它就是**本轮检查报告条数**，历史那两轮正是 exec_ok + answer.delivered ⇒ 字段诚实，不是常量冒充
+
+② casefile 的 `support_reading.session_rows`
+   我一开始读成"按文件字节最大选 tape"（`const f = tapes.map(…).sort(size desc)[0]`）
+   实际：`tapes` **已经**是当轮选择的结果（--expect / mtime），size 排序只在这一份上取最大 ⇒ 不是跨轮取数
+   反样本（构造）：/tmp/div 里 tiny（2 行 / 335B）+ 6 行（2369B），--expect run-tiny
+     ⇒ session_rows=**2**（选中的那份），不是 6 ⇒ 与 period_id 一致 ✅
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：**这两个字段到目前为止都诚实**：
+`checks` = 报告条数；`session_rows` = 当轮选中 tape 的行数；两者都与 period_id 同源。
+（我最初对 session_rows 的怀疑是**误读**，已在上面写明并给出构造反样本。）
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
