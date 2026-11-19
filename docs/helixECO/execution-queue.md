@@ -1432,3 +1432,33 @@ B1-n 落盘节（3a57743）行内写了「`Cellrix 9c7f3c1` 等级：additive」
 更正为：B1-n 的代码提交 = Cellrix 03420b7（本仓入盘 = helix-mind 3a57743）。
 教训：交付必带 sha 的要求里，**sha 必须来自命令输出**，不能在写文档时凭印象填。
 ```
+
+### B1-o 轮次 · `run_one_cycle` 的选轮注释已过期（苏醒轮也含 turn/start）· 2026-11-19
+
+**撞到**
+```
+脚本注释断言：「一个目录里可能有两条流：本次周期的 10 行 + rails 演示的 3 行（后者没有 turn/start）
+                ⇒ 选 tape 按内容选（含 turn/start）就够」
+今天不成立：启动 anaphase 会先写一个**苏醒 period**（session_notes · config.rs:114 P10c T1），
+它**也含 turn/start**（/tmp/roc1 实测：000000 6 行 + 000001 9 行，两份都有）
+⇒ "按含 turn/start 选"退化成 **glob 字典序**，选对只是碰巧。
+```
+
+**修（`Cellrix 45913e2`，additive；重签指纹并具名分叉：只改 run_one_cycle.sh）**
+```
+用脚本**已经解析**的 POST job_id 去钉 tape（head -1 含 job_id）
+钉不到 ⇒ 打印 ⚠「退化为含 turn/start 的第一个（可能是苏醒轮）」
+另打印「本目录 period 数=N（>1 表示含苏醒轮）」——把"一轮"到底覆盖几个 period 说出来
+```
+
+**改前 / 改后（两次独立真跑周期）**
+```
+改前 /tmp/roc1：无 period 数、无钉住提示，选轮靠 glob（行数=9 恰好对）
+改后 /tmp/roc2：`tape 按 job_id 钉住（run-6e8b48600e450f2e）` · `本目录 period 数=2` ·
+               行数=6 · agui 标准事件=5 · D1/D2 rc=0 · bypass=rail（工具自报"上游未被调用 ⇒ 通路未验证"）
+反样本（构造 chat.json job_id=run-BOGUS）：不钉住 ⇒ 打印 ⚠ 并退化（选中仍为含 turn/start 的第一个）
+回归：bash -n 通过 · 指纹重签 rc=0 · accept_all rc=0 · 链已恢复（50061 在跑）
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
