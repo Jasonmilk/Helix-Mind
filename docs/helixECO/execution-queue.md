@@ -3546,3 +3546,35 @@ reply 原文「The current weather in Beijing, China is Smoky haze with a temper
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：章 A/章 B · 清单甲 24 实体 / 清单乙 11 项 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
+
+### C 轮次 · rail 档真跑：读数与已落盘判断一致 · 2026-11-20（mwmmu76m 本轮第 1 轮）
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True
+POST「Please call the calc tool with expression 4*9 and report the result.」
+job_id=run-6ce28faed7aa8e1f · period_id=run-6ce28faed7aa8e1f-p006aff379a000006
+jsonl=/tmp/t2round/events/run-6ce28faed7aa8e1f-p006aff379a000006.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0（rail 旁路档）
+D1/D2 rc=0（**8 类口径** · 量在本 period_id · **K-134 改过快照、非基线**）
+HITL 四态 {allowed_once:0, rejected:0, cancelled:0, unavailable:0, kinds:{}} · _source=tape(ring-stale)
+reply 原文「[rail citation …]」⇒ **判错**（问的是 4*9）
+seq=[0,1,2,3,4,5] 严格递增
+两次 l2_casefile（`--expect run-6ce28faed7aa8e1f-p006aff379a000006`）rc=0/0 · diff **0 字节** rc=0 · sha256 均 **4678ec0fbb2fd626**
+  selection=expect:<period_id> · rows=6 · verdict=UNMEASURABLE（tape 里 0 条）
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c47cd21「缺 assistant/attempt 的轮次只能论证 rail 吞请求」+「rail 档 = 6 行 / usage0 / attempt 无」：
+当轮 6 行、无 attempt、usage=0、tool/call=0 ⇒ **完全一致**，无差；不制造核对对象。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：rail 档结构稳定（6 行 · seq 0..5 · 无 attempt/usage）；
+若 rail 档出现 attempt 行或 usage>0 ⇒ rail 判定边界变了，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+**未动**：章 A/章 B · 清单甲 24 / 清单乙 11 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
