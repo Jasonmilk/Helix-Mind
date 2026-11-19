@@ -3978,3 +3978,41 @@ schema 另有 **11 处** `opaque`，全部用于**载荷语义**（tool args / c
 **维持边界**：`d-uncovered-list-drift-vs-official` 维持门后只具名，**未改** UNCOVERED / agui.rs ·
 8/8 只认「实现落地 + 官方副本校验通过」· 不写「已对齐官方 / 已交付 / 已确认」·
 章 A 三下签字 / signoff 矛盾 / HITL 不捆入 · phyt 护栏 · dirty=0 · 未归档。
+
+### 章 B 真源切换复盘 · 派生清单必须由真源生成 · 2026-11-20
+
+**先纠一处证据等级（母题本身）**
+```
+「EventType.java 28 常量」是**Pi 侧落仓读数**（我读了 `refs/ag-ui-EventType.java` 副本），
+**不是** gardener 独立复核的。我上一轮回执写成"你复核的 java 28 vs schema 31"——把未核写成已复核，作废。
+gardener 侧独立核过的只有：schema（$defs.EventType.enum 恰 31 项 · 8 类 required · opaque 11 处 ·
+unevaluatedProperties:false 73 处）与 README 原文。
+```
+
+**根因（一句话）**
+```
+行而后知 ≠ 未行过即不存在 —— 我方那份 UNCOVERED 清单是**手写派生物**，
+它没有从真源生成，于是"缺 SUBAGENT_* 3 类 / 多 META_EVENT 1 类"在这几周里一直没人看见。
+```
+
+**可推翻判据（防再犯，写死口径）**
+```
+凡引用"官方有哪些事件 / 哪些 required"，落点必须是
+  `$defs.EventType.enum`（事件类型全集）或对应 `$defs.<事件>Event.required`（必填键），
+**不得**由手写 UNCOVERED、仓内守卫反推、或 EventType.java 单独充当依据。
+基准：`Cellrix/docs/observations/refs/ag-ui-1.0-schema.json` · sha256_16=**4b5c93226838a0e7**；
+`ag-ui-EventType.java`（sha 9e1cce4a…）与 `ag-ui-README.md`（sha 667422d2…）只作**旁证**。
+⇒ 出现"某人手写的官方清单"与 `$defs` 不一致时，**以 `$defs` 为准**，手写清单标"派生、可能漂"。
+```
+
+**两态不合并（现状）**
+```
+账上已三态分列：已映射 8 / 官方真未覆盖 23（具名 20 + 未具名 SUBAGENT_* 3）/ 本方多列 1（META_EVENT）。
+但**文件仍是旧清单**：`Cellrix/.../agui-1.0-min.schema.json` 的 `uncovered_official_types`（21 项，含 META_EVENT）
+与 `anaphase-helix:src/agui.rs` 的 `const UNCOVERED`（21 项，含 META_EVENT）**均未改**；
+`d-uncovered-list-drift-vs-official` 维持门后待裁。
+⇒ 不写「清单已修正 / 幻影已删」；本轮只落口径与复盘，不动实现。
+```
+
+**边界**：不补 SUBAGENT_*、不删 META_EVENT、不换 validator 基准、不自行唤醒 ·
+8/8 只认「实现落地 + 官方副本校验通过」· 章 A 三下签字 / signoff 矛盾 / HITL 不捆入 · phyt 护栏 · 未归档。
