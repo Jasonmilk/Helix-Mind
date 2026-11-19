@@ -3373,3 +3373,37 @@ phyt 不续期 / ledger 具名不提交 / hook 不自动唤醒 / paused 不自�
    **/goal-resume 本身就是那一下**——paused 不自行唤醒，重新下发是**可选动作、不是欠着**；
    resume 只放行线 1，不碰签字层、不碰章 B、不碰 HITL。
 ```
+
+### C 轮次 · 当轮真跑（rail 档）：读数与已落盘判断全部对得上 · 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config · /v1/health 全 ok）**
+```
+prompt「Please call the calc tool with expression 5*5 and report the result.」
+job_id=run-579a6d09b4943e62 · period_id=run-579a6d09b4943e62-p006aff2db6000001
+jsonl=/tmp/t2round/events/run-579a6d09b4943e62-p006aff2db6000001.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0（⇒ 三档里的 rail 旁路档）
+reply=[rail citation…]（model=null）
+D1/D2 rc=0（**8 类口径** · 本 period_id · K-134 改过快照、非基线）
+HITL 四态全 0 · kinds={} · _source=tape(ring-stale)
+两次 l2_casefile（--expect run-579a6d09b4943e62）rc=0/0 · diff 无输出 rc=0 · sha=27716288…
+seq 序列 = [0,1,2,3,4,5] ⇒ 严格递增（I3 方向与已有断言一致）
+```
+
+**核的是哪条判断 / 结论**
+```
+核两条已落盘判断：
+ ① 「rail 轮 = usage 0 / attempt 无 / tool/call 0」⇒ 当轮完全一致
+ ② 「不拿替代物当完成对象」⇒ 本轮没有 Met、没有 verdict/status、没有工具段；
+    页面读数是「本轮无工具段 / UNMESURABLE」，与 tape 一致
+⇒ 无差。不制造核对对象。
+```
+
+**C：本轮无新增真读数**
+```
+一句可被下轮推翻的判断：rail 档的六行结构（turn/start · user/message · context/inject ·
+assistant/reply · turn/end · check/status）与 seq 0..5 严格递增目前稳定；若某轮 rail 档出现
+usage>0 或 tool/call>0，说明 rail 判定与推理段边界变了，必须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：章 A/章 B、清单甲/乙、B1 28 笔、门后项一律不动不销账；K-134 待裁非基线。
