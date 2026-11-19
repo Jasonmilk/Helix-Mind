@@ -2683,3 +2683,40 @@ HITL 全 0 · _source=tape(ring-stale)
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134（待裁、非基线）· 门后 21 条（含 d-new-verifier-outside-self-signed-manifest）一项未动、未互相销账。
+
+### B1-t 轮次 · 重复键：引擎硬失败，读数工具却报 YES · 2026-11-19
+
+**撞到（两边都实测）**
+```
+配置里两条 `reasoning_endpoint`：
+  `./target/debug/anaphase --config /tmp/dupana/config.toml` ⇒ **rc=1**
+  `Error: TomlError { message: "duplicate key `reasoning_endpoint` in table `anaphase`" }`
+  而 `Cellrix/tools/check_upstream.sh` 用 `grep -m1` 取第一行 ⇒ **YES / rc=0**
+⇒ 假阳性：工具说"配好了"，引擎对同一份文件根本起不来。
+```
+
+**修（`Cellrix 67d1c65`，additive；引擎文件 ⇒ 重签指纹，具名改前/改后）**
+```
+对脚本读的每个键（reasoning_endpoint · tentacle_endpoint）数出现次数；>1 ⇒
+  `UNMEASURABLE: <key> 在 <cfg> 里出现 N 次 —— 引擎会拒绝该配置（TomlError: duplicate key），读数无意义` + rc=4
+指纹：tools/UPSTREAM.sha256 sha256 前16 **e2862af4cdb163ff → a58c0a811080c69d**（7 个引擎文件）
+```
+
+**三形反样本**
+```
+[1] 重复 reasoning_endpoint  ⇒ UNMEASURABLE rc=4（**改前 YES rc=0**）
+[2] 真仓配置                ⇒ YES src=config rc=0（行为不变）
+[3] 只重复 tentacle_endpoint ⇒ UNMEASURABLE rc=4
+回归：bash -n 通过 · 指纹重签 rc=0 · accept_all rc=0
+```
+
+**具名更正（我自己的提交信息写坏了）**
+```
+67d1c65 的提交信息里 "旧→新 sha" 被 shell 变量拼接弄坏（出现乱码、`$new` 未被展开），
+并触发 git 的 UTF-8 警告。**提交信息不实**，以本节为准确值：
+  旧 e2862af4cdb163ff → 新 **a58c0a811080c69d**（`git show 67d1c65^:tools/UPSTREAM.sha256` vs 现文件，均可复跑）
+教训：往 `-F -` 的 heredoc 里塞 `$(...)` 变量 = 双重展开风险；这类消息应先落文件、再 `git commit -F <file>`。
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · 门后 21 条（含 d-new-verifier-outside-self-signed-manifest）一项未动、未互相销账。
