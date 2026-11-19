@@ -2969,3 +2969,30 @@ begin / end 各收全；>1 ⇒ `{_ambiguous_n, _rows}`；单条时原样输出
 **未动**：K-134 · 门后 22 条一项未动、未互相销账。
 **规律**：`casefile` 的三个字段（hitl / verdict / begin+end）都曾"边扫边覆盖"，现已全部改成
 「多个就全列 + 标 ambiguous」——这是同一修法在三处的收口。
+
+### B1-z 轮次 · D1 不判工具事件配对（孤儿 END/RESULT 可 rc=0）· 2026-11-19
+
+**撞到（构造输入，已标注）**
+```
+真实 tool tape 追加一条 `index=9` 的 `tool/result`（无对应 `tool/call`）：
+  A 插在 `turn/end` **之前** ⇒ 投影出孤儿 `TOOL_CALL_END`/`TOOL_CALL_RESULT`（toolCallId …#9）
+    ⇒ **D1/D2 rc=0**（判据只查"有没有工具事件"，不查"配不配"）
+  B 插在 `turn/end` **之后** ⇒ rc=1，但红因是"末条不是 RUN_FINISHED"（顺序），**不是配对**
+```
+
+**修（`Cellrix` 本轮提交，additive）**
+```
+每个 TOOL_CALL_END / TOOL_CALL_RESULT 的 toolCallId 必须在前文出现过同 id 的 TOOL_CALL_START；否则红并点出该 id
+```
+
+**四形反样本**
+```
+[孤儿在 end 之前] rc=1「TOOL_CALL_END 的 toolCallId …#9 没有对应的 TOOL_CALL_START」← **改前 rc=0**
+[孤儿在 end 之后] rc=1（末条 + 孤儿 两条都报）
+[真跑工具轮] rc=0   [真跑 rail 轮] rc=0（不误伤）
+回归：accept_all rc=0
+```
+
+**计数**：本轮有 B1 ⇒ N=0 · B1 累计 **26 笔**（a..z）。
+**未动**：K-134 · 门后 22 条一项未动、未互相销账。
+**B2 候选（未登记，按规矩先具名）**：投影本身对"孤儿 result"照发 END/RESULT —— 是否该丢/该报，属投影行为面 ⇒ 门。
