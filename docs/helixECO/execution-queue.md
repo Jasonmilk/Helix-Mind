@@ -1232,3 +1232,35 @@ Cellrix:docs/observations/acceptance-entrypoints.md:110
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+
+### B1-j 轮次 · `check_upstream.sh` 只读 config：env 已接通时判 NO（假阴性）· 2026-11-19
+
+**撞到（实测，非构造推理）**
+```
+ANAPHASE_DIR=/tmp/fakeana（config 里**没有** reasoning_endpoint 行）
+ANAPHASE_REASONING_ENDPOINT=http://127.0.0.1:8080/v1
+bash Cellrix/tools/check_upstream.sh
+⇒ NO / **rc=1**，而同一行已印出 `env=1` —— **读了不用**
+代码依据：anaphase:src/config.rs:473
+  take(&mut cfg.reasoning_endpoint, "ANAPHASE_REASONING_ENDPOINT")   ⇒ env 覆盖 config
+⇒ 真上游已接通的情形被判"没接"。这正是该脚本声称要防的"以为没生效/其实生效"的反面。
+```
+
+**修（`Cellrix d060ed7`，additive，只改本工具）**
+```
+config 缺 ⇒ 看 env；任一存在即 YES，并如实标 `src=config|env|config+env`
+tentacle 同理接 ANAPHASE_TENTACLE_ENDPOINT；model 兜 ANAPHASE_REASONING_MODEL
+两者都设且不同 ⇒ 显式提示「运行时以 env 为准」（因为 config.rs:473 是覆盖语义）
+```
+
+**四形反样本（`rc` 一律不在管道里取 —— 这是我自己反复犯的错）**
+```
+[1] config 有       ⇒ YES src=config        rc=0
+[2] 只有 env        ⇒ YES src=env           rc=0（**改前 NO rc=1**）
+[3] 都没有          ⇒ NO                    rc=1
+[4] 两者都有且不同  ⇒ YES src=config+env + ⚠「运行时以 env 为准」(env=…9999)  rc=0
+回归：accept_all.sh rc=0
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
