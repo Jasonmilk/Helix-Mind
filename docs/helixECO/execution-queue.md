@@ -1678,3 +1678,42 @@ casefile 两次字节一致且带 period_id。
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
+
+### A 轮次 · `cached_tokens` 是实测的前缀缓存，不是回填常量 · 2026-11-19
+
+**四轮真跑读数（同一链、连续四次，全部走到工具段）**
+```
+P1 「…expression 13*13*13…」      run-10355f50358ec9ba  prompt=512  cached=**0**    completion=26  tool/call=1
+P2 「…expression 17*17*17…」      run-96913fcdca09ebf6  prompt=512  cached=**417**  completion=26  tool/call=1
+P3 「…17*17*17… + 尾部 filler」   run-e6c4ac5ae69107d4  prompt=520  cached=**417**  completion=26  tool/call=1
+P4 「Compute 17*17*17 using…」（**换掉前缀措辞**）
+                                  run-c963cab308c5e27b  prompt=514  cached=**417**  completion=26  tool/call=1
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+上一轮留下的问句：`cached_tokens` 是实测还是回填？
+若为回填常量，四轮应同值；若为实测，应满足：冷启动为 0、热了以后等于**共享前缀**大小、
+且**随用户输入变化的那部分不计入 cached**。
+读数正好如此：
+  · 第一次调用 cached=0（冷）
+  · 之后三轮 cached 恒 417，即使 prompt 从 512→514→520 变化
+  · 换掉用户措辞（P4）仍是 417 ⇒ **417 是系统前缀规模，不是用户措辞的命中量**
+  · uncached = prompt − cached = 95 / 97 / 103 / 97（**随输入增长**）——与 usage.rs:14 的 disjoint 口径一致
+```
+
+**A：判断改成**
+```
+① `cached_tokens` 是**实测值**，且它与 `prompt_tokens` 的口径是 disjoint（`uncached = prompt − cached`）；
+② 417 这个数字是**系统前缀**（L0/L1 注入）被缓存的部分，与用户当轮措辞无关；
+③ 因此"缓存命中率"不能拿 cached/prompt 当"这一轮理解得多好"的指标 —— 它只反映前缀复用。
+⇒ 可被下轮推翻的一句：**换一个完全不同的系统注入（改 L0/工具清单）后，
+   cached 的基线应从 417 移动到新的前缀规模；若仍是 417，则它其实是常量而非实测。**
+```
+
+**没有 B1**：四轮读数自洽，无新缺陷。
+**没有 B2 新增**：`d-rail-bypass-ignores-request-intent`（本轮四次都进工具段，未被吞）·
+`d-ring-only-holds-wakeup-period` · `d-context-inject-chars-is-budget` 均未动、未销账。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动。
