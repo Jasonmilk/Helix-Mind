@@ -719,3 +719,53 @@ tape 自身自洽（attempt 与 reply 一致），出口无法从 reply 区分"�
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：K-134（待裁、非基线）· C-076（不销账）· L2（读数齐备未签）· center · 队列 3 行 · DEATH-CERT · 页面留白。
+
+### B1-e 轮次 · rail 旁路跳过了生命周期行（真撞，非构造）
+
+**当轮真跑（探测复用：`check_upstream.sh` YES rc=0 · `/v1/health` tentacle ok=True reachable）**
+```
+prompt「Run the exec tool with `echo probe-round-5` …」
+⇒ reply 是 [rail citation · knowledge_base/rails/demo]，model=null
+job_id=run-ff46d4db4eea328b · period_id=run-ff46d4db4eea328b-p006afe91f7000007
+jsonl=/tmp/t2round/events/run-ff46d4db4eea328b-p006afe91f7000007.events.jsonl
+LINES=3 · AGUI=4 · TOOLCALL=0
+HITL={allowed_once:0,rejected:0,cancelled:0,unavailable:0,kinds:{}}
+D1/D2 **rc=1** ⇒「RED D1: 首条不是 RUN_STARTED」（8 类口径 · 量在本 period_id · K-134 改过快照非基线）
+tape types=['assistant/reply','turn/end','check/status']
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘判断（本 goal 前一轮 A，:592 起那批与 :667 同族）：
+  出口链的 tape 以 turn/start 开头，D1 才能投影出 RUN_STARTED 序列。
+当轮读数：rail 旁路轮 **首条就是 assistant/reply**，D1 rc=1 ⇒ 与"序列完整"直接对不上。
+根因（代码事实，不是推断）：`src/run_cycle/reasoning.rs` 的 rail 分支在 `emit_period_start`
+（写 turn/start + user/message）**之前** `return` ⇒ 生命周期行被这条旁路绕过。
+```
+
+**修（`anaphase-helix e875a45`，additive、只补一行证据）**
+```
+rail 分支 return 前补写同一个 emit_period_start；
+injected_chars 传 None（该路径未组装 prompt，**不测量 ≠ 0**）。
+未动协议语义 / schema / D1 判据 / 共享验具。
+```
+
+**改前 / 改后（同一 prompt 形状、都是真跑产物）**
+```
+改前 run-ff46d4db4eea328b-p006afe91f7000007 · 3 行 · first=assistant/reply · D1 rc=1
+改后 run-0d7107230101e4f2-p006afe926d000002 · 6 行 · first=turn/start     · D1 rc=0
+     types=['turn/start','user/message','context/inject','assistant/reply','turn/end','check/status']
+     同轮读数：AGUI=5 · TOOLCALL=0 · HITL 四态全 0（_source=tape(ring-stale)）
+     两次 l2_casefile rc=0/0 · diff 无输出 rc=0 · sha256 均 fb4a4092…
+反样本：**改前那份 tape 本身**（同路径、同 schema、仅因缺 turn/start 而红）
+回归：cargo test rc=0 · 520 passed / 0 failed（41 个 ok 行）
+```
+
+**B2（只登记不自裁）**：rail 旁路对「要求用 exec」的 prompt 仍返回法条引用（内容与输入无关），
+且 `success=true`。这是**路由/策略面**（谁该被 rails 命中），不属自裁层 ⇒ 具名登记，不改。
+`DEBTS.md` 一行：`d-rail-bypass-ignores-request-intent`。
+
+**计数**：本轮有 B1 ⇒ **连续无 B1/B2 归零（N=0）**，不 pause。
+**未动**：K-134 · C-076 · L2 · center · 队列 3 行 · DEATH-CERT · 页面留白。
+**顺带具名（不改）**：同一输入重复 POST 会**复用同一 job/period**（run-ff46… 原样返回），
+所以"同一 prompt 改前改后对比"不可行 ⇒ 必须换输入造新 period 再测。
