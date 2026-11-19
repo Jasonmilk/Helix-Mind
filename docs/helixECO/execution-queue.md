@@ -1866,3 +1866,36 @@ K-134 = 待裁、非基线；D2 的绿只标来源即可。
 **没有 B1 / 没有 B2 新增**：这是读数分辨力，不是缺陷；门后项 13 条一项未动、未销账。
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### 口径更正 · 三条（append-only，不回改历史件）· 2026-11-19
+
+**① 332d43f 那张 uncached 表只数了每条 #1 ⇒ 按 usage 行重列（同轮两条分列 + 求和）**
+```
+P1 run-10355f50358ec9ba-p006afeec93000004  #1 prompt=512 cached=0   comp=26 uncached=512
+                                          #2 prompt=483 cached=417 comp=5  uncached=66
+                                          Σ  prompt=995 cached=417 comp=31
+P2 run-96913fcdca09ebf6-p006afeecbe000006  #1 512/417/26 uncached=95   · #2 483/417/20 uncached=66
+                                          Σ  prompt=995 cached=834 comp=46
+P3 run-e6c4ac5ae69107d4-p006afeecc1000007  #1 520/417/26 uncached=103  · #2 491/417/20 uncached=74
+                                          Σ  prompt=1011 cached=834 comp=46
+P4 run-c963cab308c5e27b-p006afeecc7000008  #1 514/417/26 uncached=97   · #2 485/417/20 uncached=68
+                                          Σ  prompt=999 cached=834 comp=46
+⇒ 旧表（512/95/103/97）**只覆盖 #1**；按行求和后 completion 是 31/46/46/46，不是 26。
+```
+
+**② 冷启动的 cached 逐 period 标清（不写成"第一条在冷启动时为 0"覆盖四轮）**
+```
+P1 #1 cached=**0**（冷）· #2 cached=417；P2/P3/P4 的 #1 与 #2 **皆 417**。
+⇒ 结论窄成：**在这 4 个 period、这 8 条 usage 行上，cached=417 不随用户措辞变化**；
+   冷启动只发生在 P1 的 #1。不写成常数、不改 L0/锚（验它不许动方向层）。
+```
+
+**③ 24 份 tape 的三档映射 = **历史构成核对**，逐档给 period_id 来源，attempt 记为"行数"**
+```
+0/0/0（usage 行数 / tool/call 数 / attempt 行数）⇒ 10 份：
+   run-0d7107230101e4f2-p006afe926d000002 · run-1ca755e1d26e00a7-p006afe92d7000003（示例，另 8 份同类）
+1/0/1 ⇒ 9 份：run-759fa7181f06f0a6-p006afe9afe000005 · run-7bc05e4fa668578c-p006afe1851000006（示例）
+2/1/1 ⇒ 5 份：run-10355f50358ec9ba-p006afeec93000004 · run-473f88ada0742633-p006afeec98000005（示例）
+⇒ 历史值只用于**建立映射**，不拿来当任何一轮的"通过"证据；当轮仍只有当轮读数。
+   "出现新形态须重判"保持**被动观察**，不写成"下轮去造 usage=1 且 tool/call=1 的轮"。
+```
