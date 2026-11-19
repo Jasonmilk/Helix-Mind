@@ -1631,3 +1631,50 @@ POST B（同一问题 + 480 chars 填充）
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
+
+### A 轮次 · 工具段第一次在修后全绿跑通：四态真的会动（且仍不是 human 在环）· 2026-11-19
+
+**当轮真跑（探测复用：check_upstream YES src=config · /v1/health 全 ok）**
+```
+prompt「Please call the calc tool with expression 13*13*13 and report the result.」
+job_id=run-10355f50358ec9ba · period_id=run-10355f50358ec9ba-p006afeec93000004
+jsonl=/tmp/t2round/events/run-10355f50358ec9ba-p006afeec93000004.events.jsonl
+LINES=15 · AGUI=**8** · D1/D2 rc=0（8 类口径 · 本 period_id · K-134 改过快照非基线）
+types: turn/start · user/message · context/inject · assistant/usage · assistant/think ·
+       assistant/attempt · **tool/call** · **tool/result** · check/status(exec_ok) ·
+       check/status(answer.delivered) · **verdict/status** · assistant/usage · assistant/reply ·
+       turn/end · check/status(hitl)
+读数：tool/call {index:0, tool:calc} → tool/result {ok:true, 55ms, result:"2197"}
+     exec_ok actual=ok=true · answer.delivered actual="result produced, delivery confirmed at tool edge"
+     verdict/status {status:Met, checks:2, reason:"all checks passed"}
+     HITL **allowed_once=1** · rejected=0 · cancelled=0 · unavailable=0 · kinds={}
+usage：prompt_tokens=512 · completion_tokens=26 · cached_tokens=0 · model=coder-3b
+两次 l2_casefile（--expect run-10355f50358ec9ba）rc=0/0 · diff 无输出 rc=0 · sha=eb1194b7…
+页面：`tool_calls=['index=0 · calc · ok=true · 55ms']` · `verdict_status={status:Met, checks:2, …}`
+     · `hitl._source=tape(ring-stale)` · 含 'calc · ok=true'=1 · 含 'all checks passed'=1
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘（815c759 + e269d05）：「四态为 0 不是没人记，是闸没被经过；只要 tool/call>0 且走路高风险路径，四态就会动」
+当轮：tool/call=1 且动作经闸 ⇒ **allowed_once=1**（自那次历史首绿以来第一次复现）
+⇒ 判断被**实时证实**，不是靠历史样本推的。
+同时验证了三处修复在生产里都成立：AGUI 8 条（5 基础 + 3 tool 事件）· 页面工具段/判定位有值 ·
+casefile 两次字节一致且带 period_id。
+```
+
+**A：判断改成（把限定钉在读数上）**
+```
+① `allowed_once=1` 的成立条件是"**闸被经过**"，本轮给出现场读数（tool/call=1 → 55ms → exec_ok → Met → allowed_once=1）；
+② 它**仍然只是程序自记计数器**：本轮用户并未授权、也没有 human allow/reject/cancel 入口
+   ⇒ 1 这个数字说明"有人会被问"这件事还没发生，它只说明"闸走到了计数那一步"。
+⇒ 可被下轮推翻的一句：**只有同时出现"真正的人类答复记录"与"allowed_once 增量"，
+   才能说 HITL 在环；现在只有后者。**
+```
+
+**没有 B1**：本轮三处面板/投影均按预期产出，没有新缺陷。
+**没有 B2 新增**：`d-rail-bypass-ignores-request-intent`（本轮没被 rail 吞，说明该门后项是"偶发"而非"必然"，仍留在册）
+与 `d-ring-only-holds-wakeup-period`（本轮 ring 仍是苏醒 period ⇒ 与 A 轮一致）均未动。
+
+**计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
+**未动**：K-134 · C-076 · L2 · 门后项 13 条一项未动、未互相销账。
