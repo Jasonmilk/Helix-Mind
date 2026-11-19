@@ -3680,3 +3680,55 @@ reply 原文「The numbers tool returned the series [1, 2, 3, …]」⇒ 对（�
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：章 A/章 B · 清单甲 24 实体 / 清单乙 11 项 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
+
+### 章 B 执行记录 · agui.rs 按官方副本对齐（改动已验证，**提交被行预算门拦住**）· 2026-11-20
+
+** gardener 裁定**：以官方副本（sha256_16=4b5c93226838a0e7）为真源，按 1/8 差异清单做薄适配层对齐；四连带逐项给落点、不自动销账、不改基线。
+
+**已做的三件事（在 `anaphase-helix` 工作区验证，未并入 rs）**
+```
+① TOOL_CALL_RESULT 补 `messageId`（官方 required=[type,messageId,toolCallId,content]）；去掉非官方 `metadata`
+② TEXT_MESSAGE_* / TOOL_CALL_START / TOOL_CALL_END 去掉 `runId`/`threadId`（官方 required 只有 messageId / toolCallId）
+③ RUN_FINISHED 去掉非官方 `metadata`；verdict **不猜进 result/outcome**（非 return value、也不属 success/interrupt/cancelled）
+   ⇒ 记「未覆盖」；另加 `pub const UNCOVERED`：STEP_* / RUN_ERROR / TOOL_CALL_ARGS|CHUNK / REASONING_* /
+     STATE_SNAPSHOT|DELTA / MESSAGES_SNAPSHOT / ACTIVITY_* / TEXT_MESSAGE_CHUNK / RAW / CUSTOM / META_EVENT
+   （= 官方有位置、我们未覆盖 —— 显式具名，不是"协议没位置"）
+保留 agui.rs 纯函数薄形状（无状态 / 无写入 / 认不出返回空）——未改。
+```
+
+**读数（改前 → 改后）**
+```
+官方副本校验（Cellrix/tools/agui_conformance.js · schema sha256_16=4b5c93226838a0e7 · 自写最小校验器）
+  tool 轮（period run-93f71d7d5c9b397a-p006aff38c3000008 · 8 条）  1/8 → **8/8**
+  rail 轮（period run-6ce28faed7aa8e1f-p006aff379a000006 · 5 条）  1/5 → **5/5**
+cargo test --lib：**320 passed / 0 failed**（含改写的两个 agui 单测）
+自家判据（预期红，**这正是连带证据**）：Cellrix d1_d2 rc=1 · d2_fail **12 条**
+  （TEXT_MESSAGE_* / TOOL_CALL_* 各缺 threadId/runId —— 因为我们的 `agui-1.0-min` 快照**还没改**）
+```
+
+**提交被拦（这一步才是本轮的真读数）**
+```
+pre-commit 行预算 ratchet：`src/agui.rs 113 -> 137`（ncloc 增长 24）⇒ **REJECT**
+规则：增长需在 `ci/baseline.toml` 里带**签名 seed**（`[[seed]] target=… k_id=… reason=…`）；
+而 seed 属**基线** ⇒ 按 gardener「不改基线」的裁定，**我不自行加 seed、不用 --no-verify 绕过**。
+⇒ 改动以补丁形式留档：`helix-mind/docs/helixECO/patches/agui-chapter-b-2026-11-20.patch`
+  （131 行 · sha256_16 见文件同目录提交信息）· 工作树已回滚，rs 上 `d1_d2 rc=0` · `accept_all rc=0` 仍然绿
+```
+
+**四连带 · 逐项落点（执行记录，不销账、不改）**
+```
+① 自有 agui-1.0-min 存废 → `Cellrix/docs/observations/agui-1.0-min.schema.json`（**未改**；
+   本改动一旦落地，它要么退役、要么改成"引用官方 refs/ 副本 + 本地差异清单"）
+② 78227a6 守卫退位 → `Cellrix/tools/d1_d2_check.js`（**未改**；它按旧快照判 ⇒ 现在必然红 12 条）
+③ K-134 裁定 → `helix-mind/docs/helixECO/DEBTS.md:19 d-agui-schema-snapshot-modified`（**仍待裁**，非基线）
+④ D1/D2 对象是否整体改 → 落点同 ②+d agui-1.0-min；本次**未动**（改它=改判据对象，属裁定范围）
+```
+
+**新增门（本轮撞出来的，只具名不自裁）**
+```
+`d-agui-chapter-b-blocked-by-line-budget-seed`：章 B 的第一步实现会让 `src/agui.rs` ncloc +24，
+而行预算 ratchet 要求**签名 seed**（基线改动）。⇒ 要么 gardener 给 seed，要么把改动压进 113 行以内。
+两者都不是我能自裁的。
+```
+
+**边界**：未并入 rs · 未改基线 · 未写「已确认」· 章 A 签字与 HITL 仍另线未捆入 · 门后项未销账。
