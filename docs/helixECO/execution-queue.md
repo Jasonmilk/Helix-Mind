@@ -1264,3 +1264,33 @@ tentacle 同理接 ANAPHASE_TENTACLE_ENDPOINT；model 兜 ANAPHASE_REASONING_MOD
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+
+### B1-k 轮次 · `run_one_cycle.sh` 三处「读到空」· 2026-11-19
+
+**撞到（三条，都是同一族：失败被编译成合法值）**
+```
+① config 模式**只认 config.toml**：config 缺行 + ANAPHASE_REASONING_ENDPOINT 有 ⇒
+   打印 UNMEASURABLE 并 exit 4 —— 与 B1-j（check_upstream.sh）**同一个错的第二处**
+   （依据：anaphase:src/config.rs:473 是 env 覆盖 config）
+② `agui "$f" | wc -l`：agui 崩溃时 `wc -l` 得 **0** ⇒ 报「标准事件=0」（C-059 家族）
+③ `tc=$(grep -c … || true)`：tape 读不到时 grep 不输出 ⇒ 变量留空 ⇒ 打印 `tool/call= ·`（静默）
+```
+
+**修（`Cellrix 54ecd02`，additive，只改本工具）**
+```
+① config 有 ⇒ 「来源：config.toml」· env 有 ⇒ 「来源：ANAPHASE_REASONING_ENDPOINT」· 都无 ⇒ UNMEASURABLE/exit 4
+② 先取 agui rc：rc=0 才数行；rc≠0 ⇒ `agui 标准事件=UNMEASURABLE（agui rc=N，不是 0 条）`
+③ grep 无输出 ⇒ 显式 `UNMEASURABLE`，不再留空
+```
+
+**反样本（snippet 级，改前/改后同一输入）**
+```
+A config 缺行 + env 有：改前 rc=4 UNMEASURABLE → 改后 rc=0 OK-env
+B agui 不存在        ：改前 标准事件=0        → 改后 UNMEASURABLE（agui rc=127）
+C tape 不存在        ：改前 tool/call=[]      → 改后 [UNMEASURABLE]
+回归：bash -n 通过 · accept_all.sh rc=0
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条一项未动、未互相销账。
+**自查**：本轮的反样本是 snippet 级（不启动整周期），已在节内标明，不冒充"整周期已验证"。
