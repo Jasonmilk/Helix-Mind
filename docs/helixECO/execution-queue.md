@@ -915,3 +915,36 @@ src/run_cycle/mod.rs:742 / :990 读 snapshot 写进 tape
 K-134 · C-076 · L2 一项未动。
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**（N=2 才 pause）。
+
+### A 轮次 · `assistant/attempt`：第 5 处"有产出、无消费者"，且它正好能回答 phantom-exec · 2026-11-19
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘判断（:678 那轮 C 的结尾句）：
+  "出口无法从 reply 区分『真执行』与『未执行』"
+当轮核对：`assistant/attempt` 行里**写着答案** ——
+  历史 7 条 attempt 全部 empty=false，原文形如
+  {"empty":false,"text":"no calls planned — answered directly"}
+⇒ 不是"没有证据"，是"**证据在 tape 里，出口没人读**"。
+```
+
+**消费者实测（三处都 0）**
+```
+grep -rc 'assistant/attempt' Cellrix/tools/*.js            ⇒ 0（除 web_removal_probe 里的无关字符串）
+anaphase-helix/src/agui.rs                                 ⇒ 1，但只在 `#[test] the_real_skeleton_maps_to_five_standard_events` 的 fixture 里（:87）
+Cellrix/docs/observations/agui-1.0-min.schema.json         ⇒ 0（8 类里没有它）
+```
+
+**A：判断从"无法区分"改成**
+```
+**不是无法区分，是没人读**：`attempt` 明确携带"没有计划任何调用"的自述，
+tape 里可查、可重放；缺的是出口上的一处消费点（页面/判据），不是证据本身。
+⇒ 这也把上一轮"phantom-exec 要不要造判据"的问题改准了：判据的原料已经在 tape 里，不必新造数据面。
+```
+
+**没有 B1**：本轮的"缺消费点"若立刻补，正是 objective 禁止的"逐类型补消费点清单"；
+是否补、补在哪一层（页面读数 vs 判据），属下一轮由**差**决定，不预先固定。
+**没有 B2 新增**：未新增 `DEBTS` 行；已登记的 `d-rail-bypass-ignores-request-intent` /
+`d-context-inject-chars-is-budget` 仍待真撞、未销账。
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
