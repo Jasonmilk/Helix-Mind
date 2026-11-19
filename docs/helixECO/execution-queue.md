@@ -2546,3 +2546,59 @@ DEBTS 现有 `d-` 行 29 行；门后项实体 = **20 条**：
 `d-agui-min-subset-deviates-from-official` 与「换真源（以官方 schema 为真源）」**是同一件的两面**
 （前者是缺口，后者是解法）⇒ 不重复计、不互相销账。
 ```
+
+### AG-UI 对齐 · 四条落点（校验器落盘 / 两套验具 / 转针补限定 / 分层边界）· 2026-11-19
+
+**① 量「1/8」的那把尺自己落盘了（解除"回执里的自述读数"）**
+```
+脚本：Cellrix/tools/agui_conformance.js（新增引擎文件 · 重签 UPSTREAM.sha256）
+命令：node tools/agui_conformance.js <bin/agui 输出.jsonl>            # rc=0，报告
+      node tools/agui_conformance.js <…> --fail-on-deviation          # 有偏离 ⇒ rc=1
+输出（本文即落点）：
+  schema: docs/observations/refs/ag-ui-1.0-schema.json · sha256_16=4b5c93226838a0e7 · defs=98
+  校验器: 自写最小校验器（required + unevaluatedProperties:false），**非官方实现**
+  RUN_STARTED OK
+  TOOL_CALL_START/END  · 额外键=["runId","threadId"]                       → DEVIATES
+  TOOL_CALL_RESULT     · 缺必填=["messageId"] · 额外键=["metadata","runId","threadId"] → DEVIATES
+  TEXT_MESSAGE_START/CONTENT/END · 额外键=["runId","threadId"]             → DEVIATES
+  RUN_FINISHED         · 额外键=["metadata"]                               → DEVIATES
+  结果: **1/8 通过**（**自写校验器对官方副本的读数，不是官方判定**）
+⇒ 「1/8」从此不再是回执里的数：它有脚本路径、命令、输入与 sha。引用时必须带这四项。
+```
+
+**② 两套验具并列钉死（互不解释、互不销账）**
+```
+验具 A（自有）：D1/D2 量的是 `agui-1.0-min`（自有 8 类快照 · **K-134 改过、待裁、非基线** · D2 绿须标来源）
+验具 B（官方）：`agui_conformance.js` 量的是官方副本（sha 4b5c9322…）· 自写最小校验器
+⇒ 两者**不互相解释、不互相判死**：
+   · 不能拿 1/8 把 18 笔 B1 或 D1·D2 的绿读成"假绿作废"——它们量的是「本轮 tape 有没有被本轮页面正确消费」，对象自洽；
+   · 也不能拿 D1·D2 的绿去覆盖 1/8。
+```
+
+**③ 转针补限定（append-only，旧节留原样）**
+```
+· 旧节「check/status · assistant/attempt · assistant/usage **按设计不映射**」
+  ⇒ 本行补限定：官方有 `STATE_SNAPSHOT/STATE_DELTA/MESSAGES_SNAPSHOT/CUSTOM/META_EVENT`
+    ⇒ 那是「**我们未覆盖**」，不是"协议没位置"（旧节只补此句，不回改）。
+· 「16/18/19 三种口述全部作废」改为：**以 DEBTS 20 条实体为准，旧口述只补限定、不删文**。
+· 字节口径：同一文件两次量法不同（上一轮写 94,359 B = `curl` 落盘大小；本轮写 96 KB = `du` 的块大小）
+  ⇒ **同一份文件，非格式化差异**；精确字节以 `refs/` 里那份为准（`wc -c` 可复跑）。
+· `opaque` 仍**待验**（官方 schema 里未找到明文约束）；不为了量它去造明文。
+```
+
+**④ 分层边界（回答"协议能否承载需求"的落盘版）**
+```
+官方协议能承载：**对外说话**那一层（标准事件流 · 任意前端可消费）——该用，且该是薄适配层；
+官方协议不承载、也不该承载：
+  · 白盒/可审计（字段语义逐个核、判据会红）——归自有 L2 证轨 + 18 笔 B1；
+  · 轮次身份（同题重跑算哪一轮）——协议把 id 当标签，身份归 I1（period_id / --expect / sha 分列）；
+  · 证轨纪律（验具不计入被验对象、构造 ≠ 真跑证据、报告不能验收）——协议没有这些概念；
+  · HITL 真闭环 / 跨仓契约 / 分母口径 / K-134 裁定——**全在协议作用域外**。
+⇒ 「1/8」只说明**薄适配层还没对齐**（缺 messageId + 多余键被明文拒），**不说明"协议承载不了需求"**。
+   把证轨塞进 CUSTOM / 事件流 = 「验具被计入被验对象」在协议层的版本 ⇒ 不做。
+   三步（补 messageId · 去多余键/metadata 迁移 · STATE_* 显式"未覆盖"清单）与「换真源」是**同一件两面**，
+   维持门后「已具名、待真撞」：不自裁开工、不列「先裁哪条」的可点菜单。
+```
+
+**状态**：paused 不自行唤醒 · 18 笔 B1 不作废 · AGUI=8 / Met / D1·D2 rc=0 不升格 · K-134 待裁非基线 ·
+门后 20 条不动不销账 · L2 仍「读数齐备未签」。
