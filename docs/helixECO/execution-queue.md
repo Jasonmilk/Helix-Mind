@@ -1174,3 +1174,31 @@ D3 的「对得上」= **字段在场**，不是值相等，也不随当轮变�
 
 **计数**：本轮有 B2 ⇒ **连续无 B1/B2 归零（N=0）**。
 **未动**：K-134 · C-076 · L2 · 门后项其余 10 条一项未动、未互相销账。
+
+### B1-i 轮次 · 入口文档把 `allowed_once=1` 当"期望形状"，与台账限定对不上 · 2026-11-19
+
+**核对方式（读文档 vs 读台账，两者都已在册）**
+```
+Cellrix:docs/observations/acceptance-entrypoints.md:110
+  期望形状里写着  check(phase=hitl) {"allowed_once":1,…}
+台账 e269d05：四态是**程序自记计数器**（anaphase:src/hitl.rs:482→484），
+  只证明"闸被经过且 counter 会写"，**不证明人在环**，且当前无 human allow/reject/cancel 入口。
+⇒ 同一件事，文档读成"HITL 动了"，台账读成"程序自记"。文档会让下一个人直接误读。
+```
+
+**修（`Cellrix c6be703`，additive、不改期望形状本身）**
+```
+在期望形状下补一栏「`allowed_once=1` 是什么」：
+  来源（hitl.rs:482→484）· 只证明什么 · 不证明什么（人在环 / HITL 可达）·
+  缺的 human 入口（无 ApproverRegistry/Binding/EscalationStep）·
+  真闭环属哪条门后线（C-076 + 应答者注册 + K22 + K17）· 指向台账出处节名
+```
+
+**反样本**
+```
+改前：`grep -c '程序自记计数器' acceptance-entrypoints.md` = **0**
+改后：= **1**（限定块在场；期望形状本身未被改动，diff 只有 +7 行）
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · 门后项 12 条（含新登记 d-d3-compares-presence-not-values）一项未动、未互相销账。
