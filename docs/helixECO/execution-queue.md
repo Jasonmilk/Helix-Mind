@@ -769,3 +769,52 @@ injected_chars 传 None（该路径未组装 prompt，**不测量 ≠ 0**）。
 **未动**：K-134 · C-076 · L2 · center · 队列 3 行 · DEATH-CERT · 页面留白。
 **顺带具名（不改）**：同一输入重复 POST 会**复用同一 job/period**（run-ff46… 原样返回），
 所以"同一 prompt 改前改后对比"不可行 ⇒ 必须换输入造新 period 再测。
+
+### B1-f 轮次 · casefile 丢了身份（两轮字节相同）· 2026-11-19
+
+**当轮真跑（探测复用：`check_upstream.sh` YES rc=0）**
+```
+prompt「用 calc 算 987×654，另外用 exec 跑 echo rail-check-8」
+job_id=run-1ca755e1d26e00a7 · period_id=run-1ca755e1d26e00a7-p006afe92d7000003
+jsonl=/tmp/t2round/events/run-1ca755e1d26e00a7-p006afe92d7000003.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · reply=[rail citation] · model=null
+types=['turn/start','user/message','context/inject','assistant/reply','turn/end','check/status']
+D1/D2 rc=0（8 类口径 · 本 period_id · **K-134 改过快照、非基线**）⇒ 上一笔 B1-e 的修复在生产里保持
+两次 l2_casefile rc=0/0 · diff 无输出 rc=0 · sha256 曾均 fb4a4092…（**这正是缺陷**）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘判断：I1「身份是 period_id」+ B1-d 已把 HITL 读数按 period 校验。
+当轮读数：rail 轮与 normal 轮（run-0d7107230101e4f2-p006afe926d000002）的 casefile
+**字节完全相同**，`begin` 还是 ring 里更早那条 "Calculate 2 to the power of 10"，
+casefile 里 `period_id` 出现次数 = **0** ⇒ 页面无法归属任何一轮。同一族，但这次是整份证轨。
+```
+
+**修（`Cellrix 72e2a41`，additive、只动自有渲染链）**
+```
+casefile 增 period_id / tape_rows / _source{begin,end}
+begin/end 优先读 tape（user/message · turn/end），ring 只兜底并如实标源
+页面头部显示：period_id · tape 行数 · begin/end 源
+```
+
+**改前 / 改后（同一对真跑产物）**
+```
+改前：两轮 casefile 完全相等，sha 均 fb4a4092…（反样本就是这一对）
+改后：13dbb61b… / 0dafdb05…（不同）；页面分别显示
+      period_id: run-1ca755e1d26e00a7-p006afe92d7000003
+      period_id: run-0d7107230101e4f2-p006afe926d000002
+旧 casefile（无 period_id）⇒ 页面显式 `period_id: UNMEASURABLE（casefile 未带 period_id）`，不静默沿用 ring
+回归：l2_render_test.js rc=0 · accept_all.sh 三项通过
+```
+
+**A（同一轮里附带确认的一条判断变化）**：`context/inject` 的 `chars` **不是注入实测，是配置预算**
+```
+53 份历史 tape：chars=800 恒等（= `DEFAULT_MEMORY_INJECT_CHARS`），nodes=0，injected_chars=0/缺
+⇒ 读数行写着"800 chars 被注入"，实测是 0 ⇒ **预算是被当成测量值写进 tape 的**（"0 就是 0" 的反面形态）
+```
+**B2（属门，只登记不自裁）**：改 `chars` 语义 = 动 tape 载荷/消费面（D1/D2 schema 口径未裁）
+⇒ `DEBTS.md` 增 `d-context-inject-chars-is-budget`，带 revisit-on；本轮**未改**该字段。
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134 · C-076 · L2 · center · 队列 3 行 · DEATH-CERT · 页面留白。
