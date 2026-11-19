@@ -3512,3 +3512,37 @@ tool/call index=0 ⇒ 该轮的 toolCallId 仍是 `run-43d0fd88e73c639a#0`，与
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
 **未动**：章 A/章 B · 清单甲/乙 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
+
+### C 轮次 · 工具轮真跑（weather）：读数与已落盘判断一致 · 2026-11-20（mwmmu76m 重启后第二轮）
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True
+POST「Please call the weather tool for city Beijing and report what it returns.」
+job_id=run-28a961c03266a12d · period_id=run-28a961c03266a12d-p006aff3691000005
+jsonl=/tmp/t2round/events/run-28a961c03266a12d-p006aff3691000005.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2
+D1/D2 rc=0（**8 类口径** · 量在本 period_id · **K-134 改过快照、非基线**）
+verdict={status:Met, checks:2, reason:"all checks passed", job_id:<=period_id>}
+HITL 四态 {allowed_once:1, rejected:0, cancelled:0, unavailable:0, kinds:{}} · _source=tape(ring-stale)
+reply 原文「The current weather in Beijing, China is Smoky haze with a temperature…」⇒ 对（回答了城市天气）
+两次 l2_casefile（`--expect run-28a961c03266a12d-p006aff3691000005`，period_id 作身份键）rc=0/0
+  diff 输出 **0 字节** · diff rc=0 · sha256 均 **f1a4c8332bbff162**
+  selection=`expect:run-28a961c03266a12d-p006aff3691000005` · rows=15 · tools=['index=0 · weather · ok=true · 1245ms']
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 b6719bc/b6719bc 收窄后的观察「allowed 类 = {calc, numbers, weather}」与 08f5a23「verdict.job_id 装 period_id」：
+当轮 weather 走 allowed 档（allowed_once=1 · tool/call=1 · verdict Met）、verdict.job_id 与 period_id 相等
+⇒ 两条均一致，无差。不制造核对对象。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：weather 与 calc 同档（allowed_once=1 + tool/call=1 + Met）；
+若 weather 出现 unavailable>0 或 tool/call=0 而 attempt 显示 planned calls: weather，则"按工具分流"的观察须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：章 A/章 B · 清单甲 24 实体 / 清单乙 11 项 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
