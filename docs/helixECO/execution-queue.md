@@ -3643,3 +3643,40 @@ attempt="planned calls: calc" · usage=2 · tool/call=1 · verdict.job_id==perio
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
 **未动**：章 A/章 B · 清单甲 24 / 清单乙 11 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
+
+### C 轮次 · numbers 工具轮（verdict Unmet 而 tool/result ok=true）：与已落盘判断一致 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「Please call the numbers tool and report exactly what it returns.」
+job_id=run-cf208fb4baf29a73 · period_id=run-cf208fb4baf29a73-p006aff38da000009
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006aff38da000009.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: numbers"
+D1/D2 rc=0（**8 类口径** · 量在本 period_id · **K-134 改过快照、非基线**）
+tool/result {ok:true, tool:numbers, outcome:"{\"series\":[1,…,10]}"}
+check exec_ok          expect="ok" · actual="ok=false"
+check answer.delivered expect="ok" · actual="no business result in tool return"
+verdict={status:**Unmet**, checks:2, reason:"failed: exec_ok, answer.delivered", job_id:<=period_id>}
+HITL 四态 {allowed_once:1, rejected:0, cancelled:0, unavailable:0, kinds:{}} · _source=tape(ring-stale)
+reply 原文「The numbers tool returned the series [1, 2, 3, …]」⇒ 对（如实报回 series）
+两次 l2_casefile（`--expect run-cf208fb4baf29a73-p006aff38da000009`）rc=0/0 · diff **0 字节** rc=0 · sha256 均 **8adc616ac80e6793**
+  tools=['index=0 · numbers · ok=true · 29ms'] · verdict={Unmet, checks:2}
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 round34 那条 A + B2（`d-exec-ok-names-expect-match-not-success`）：
+「`exec_ok` 不是执行是否成功，而是 outcome 是否满足本次调用的 expect；`tool.result.ok` 与 `exec_ok.actual` 可一真一假」。
+当轮：tool/result.ok=**true**（29ms，返回 series）而 exec_ok.actual=**"ok=false"**（outcome 无 `ok` 字段，expect 是 "ok"）
+⇒ 与已落盘判断**完全一致**（不是新形态，是同一机制在新 period 的复现）；不制造核对对象。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：numbers 的 outcome 形如 `{"series":[…]}` ⇒ expect="ok" 必然失配 ⇒ verdict=Unmet；
+若某轮 numbers 出现 verdict=Met 而 outcome 仍无 `ok` 字段，说明 expect 对齐规则变了，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：章 A/章 B · 清单甲 24 实体 / 清单乙 11 项 · B1 28 笔 · 门后项一律不动不销账 · K-134 待裁非基线。
