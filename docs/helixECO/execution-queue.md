@@ -3317,3 +3317,44 @@ M7 条件2 · L2 签字 · tentacle-transport-mcp · chain.json/rings.json。
   5 条事件（period run-38309a88d2ac15e1-p006aff1a34000012，rail 旁路）⇒ 1/5
 引用时必须带四项：`agui_conformance.js` · 命令 · 输入（上面两个 period 之一）· schema sha256_16=4b5c93226838a0e7
 ```
+
+### 口径更正 · 三条（append-only，不回改历史件）· 2026-11-19
+
+**① 「20/21/22/23 全部作废」收窄成 append-only 说法**
+```
+正确写法：**旧口述（门后 20/21/22/23）以本批次两条独立清单为准；旧节只补限定、不删文、不回改。**
+"作废"只在"不再用它当口径"这个意义上成立，历史行原样保留。
+```
+
+**② 清单乙（objective 跨仓 11 项）逐项落点（补齐表；未落表就写未落表）**
+```
+ 1 K-134                 ✅ helix-mind/docs/helixECO/DEBTS.md 行 19 `d-agui-schema-snapshot-modified`（⏳）
+ 2 C-076                 ⚠ **未落 DEBTS 行** —— 只存在于 consensus-ledger `C-076` 与 execution-queue 叙述
+ 3 phyt 4 条             ✅ phyt-DNA/DEBTS.md 行 46 / 48 / 50 / 54
+                           （`d-phyt-pre-gap-a` / `-b` / `-c` / `d-phyt-phantom-complete`，均 ⬜ 待做）
+ 4 ring5                 ✅ driver 仓 thinking/phyt-DNA的任务编排思路/rings.json（`ring5`: edge "anaphase <- flowmodus"）
+ 5 K22                   ✅ DEBTS 行 94 `d-dangerous-gate-never-installed`（⏳ 等授权，"K22 的部署面残留"）
+ 6 K17                   ⚠ **未落 DEBTS 行** —— 只在 execution-queue 与 HANDOFF 叙述
+ 7 M6 / B18              ⚠ **未落 DEBTS 行** —— B18 只在 center/CONVERGENCE-M0-M7.md，M6 无表
+ 8 M7 条件 2             ⚠ **未落 DEBTS 行** —— 只在 ECOSYSTEM/README/queue 叙述
+ 9 L2 签字               ⚠ **两处口径不一致，待核（不代为裁定）**：
+                           `governance/signoff.toml` = `signed=true` / `signed_by=gardener` / `signed_at=2026-11-03`；
+                           execution-queue 口径 = "L2 读数齐备**未签**"
+                           ⇒ 本行只登记"两处不一致"，**不判哪个作数**
+10 tentacle-transport-mcp ⚠ **未落 DEBTS 行** —— 只在 execution-queue
+11 chain.json / rings.json 更正 ✅ 落点：`anaphase-helix/ecosystem/chain.json`（当前仍列 `flowmodus-reason` 60054）
+                           + driver `rings.json`（ring5 未作废前仍指向 flowmodus）
+⇒ 结论：**写法已提出、落点已逐项核**（11 项里 5 项有落表/落文件、5 项未落表、1 项两处不一致待核）；
+   **不认"已列全"以外的任何含义**：清单乙仍是 objective 的口述清单，不是可复跑的判据。
+```
+
+**③ 状态段补新口径（此后不再用单一数字）**
+```
+门后项 = **清单甲 24 实体（本仓 DEBTS：⛔15+⏳10=25 行，含 1 行更正）+ 清单乙 11 项（objective 跨仓，逐项落点见上）**，
+两者分别具名、不相加、不互相代表。
+B1 = **28 笔**（对象自洽，不随"23"撤回而变动）。
+1/5（rail 轮 5 条事件）与 1/8（工具轮 8 条事件）**并列两个输入锚点，不并成平均合规**；
+引用必带四项：`agui_conformance.js` · 命令 · 输入（period）· schema sha256_16=4b5c93226838a0e7。
+章 A 只由三下签（判不出 8/8）；章 B 四连带未裁前不动实现；
+phyt 不续期 / ledger 具名不提交 / hook 不自动唤醒 / paused 不自行唤醒 / 不写「已确认」。
+```
