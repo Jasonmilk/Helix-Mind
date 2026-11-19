@@ -3904,3 +3904,43 @@ K-134 的历史行在 **DEBTS.md 行 106**（`d-agui-schema-snapshot-modified`�
 ⇒ 只证明**重放确定性 + 夹具上的 D1/D2 绿**，**不是真跑验收**。
 真跑验收须 `ROUND_DIR=<当轮目录>`；本轮未跑该形态，故不写"当真跑通过"。
 ```
+
+### 章 B 真源确认 + 三处口径（改动仅落盘，不动实现）· 2026-11-20
+
+**外部正文独立取回 ⇒ 真源确认**
+```
+CDN 镜像 · **94359 B** · sha256_16=**4b5c93226838a0e7** · $defs=**98** ⇒ 与仓内 `refs/ag-ui-1.0-schema.json` **一致**
+（仓内副本实测同样 94,359 字节 / 98 defs / sha 4b5c9322…）⇒ 章 B 的真源不再是"我们贴过的副本"，是外部可复取的同一份。
+```
+
+**① opaque：从「待验」转「已核」，但要把 11 次出现说清**
+```
+官方 schema 里 `opaque` 出现 **11 次**，上下文全部是**载荷**语义：
+  「Carried opaquely: the protocol does not constrain or validate it」——指 tool 的 args / content / result 等。
+对 `threadId` / `runId`：schema 里**没有任何 opaque 明文约束**（只声明 type=string + description）。
+⇒ 结论：**「1.0 schema 对 threadId/runId 无 opaque 明文」成立**；但"schema 里没有 opaque 一词"是错的（有 11 次，用在别处）。
+```
+
+**② UNCOVERED 与官方事件类型的差集（实测，不按口述）**
+```
+官方 schema 的 **事件类型常量 31 个**（44 个 type const 里减去 13 个非事件值：audio/text/url/file/image/document/data/
+function/success/interrupt/cancelled/suspended/video）：
+  RUN_STARTED RUN_FINISHED RUN_ERROR · STEP_STARTED STEP_FINISHED · TEXT_MESSAGE_START/CONTENT/END/CHUNK ·
+  TOOL_CALL_START/ARGS/END/CHUNK/RESULT · REASONING_START/END/MESSAGE_START/CONTENT/END/CHUNK/ENCRYPTED_VALUE ·
+  STATE_SNAPSHOT/STATE_DELTA/MESSAGES_SNAPSHOT · ACTIVITY_SNAPSHOT/ACTIVITY_DELTA ·
+  **SUBAGENT_STARTED / SUBAGENT_FINISHED / SUBAGENT_ERROR** · RAW · CUSTOM
+我们的清单：映射 8 + UNCOVERED 21 = 29 项，实测差集是**两个方向都有**：
+  · **缺 3 类**：SUBAGENT_STARTED / SUBAGENT_FINISHED / SUBAGENT_ERROR（官方有、我们两处都没列）
+  · **多 1 类**：META_EVENT —— 官方 schema **没有**这个常量，`EventType.java`（仓内副本 28 个常量）也没有
+⇒ 净覆盖 = 8 + (21-1) = **28 / 31**，未覆盖真实为 **23**，其中 20 已具名、3 未具名、1 具名了不存在的类型。
+（`EventType.java` 副本只有 28 个常量，比 schema 少 3 个 SUBAGENT_* 与 META_EVENT 之差 ⇒ 两个官方工件本身就不同步，见下）
+```
+
+**③ 官方 SDK 由 schema 生成 ⇒ validator 候选，但基准认不认仍归 gardener**
+```
+用户陈述：官方 SDK 由 schema 生成。**我方未独立验证**（未取 SDK、无生成关系读数）⇒ 只作为「候选」记录。
+即便成立，"基准是否认自写最小校验器"仍是**gardener 的裁**（C-087：门＝停下来找人）。
+本轮不动实现：不改 UNCOVERED（缺 3 / 多 1 已具名待裁）、不改校验器、不改 8/8 口径。
+```
+
+**边界**：8/8 只认「实现落地 + 官方副本校验通过」；不写「已交付 / 已确认」；章 A / signoff / HITL 不捆入。
