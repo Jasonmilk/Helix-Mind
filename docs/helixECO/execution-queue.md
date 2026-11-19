@@ -2648,3 +2648,38 @@ HITL 全 0 · _source=tape(ring-stale)
 
 **计数**：本轮无 B1/B2 ⇒ 本次下发窗口 **连续无 B1/B2 = N = 1**。
 **未动**：K-134（待裁、非基线）· 门后 21 条一项未动、未互相销账。
+
+### B1-s 轮次 · `--expect` 的歧义被静默消解（同 job_id 多 period）· 2026-11-19
+
+**撞到（真跑产物目录）**
+```
+苏醒轮每次重启都用**同一个 job_id**（输入相同 ⇒ job_id 派生相同），而 period 每次新生成：
+  /tmp/t2round/events 里 `run-8bba24c5ee368a4a` 有 **3 份 tape**（period 各不同）
+改前：`--expect run-8bba24c5ee368a4a` 用 `.find()` 取第一份 ⇒
+      selection 写成 `expect:run-8bba24c5ee368a4a`，与"唯一命中"**完全一样** ⇒ 歧义不可见。
+```
+
+**修（`Cellrix 24640f7`，additive）**
+```
+命中全部列出；>1 ⇒ selection = `expect:<id> (ambiguous n=3, picked newest mtime: <file>)`
+新增 `--strict-pin`：歧义 ⇒ rc=4（不猜）
+```
+
+**四形反样本（同一 ring.json，只换输入）**
+```
+[1] 唯一 job（run-38309a88d2ac15e1）        ⇒ expect:run-38309a88d2ac15e1（无标注）
+[2] 歧义 job（run-8bba24c5ee368a4a）        ⇒ … (ambiguous n=3, picked newest mtime: …p006afedbcf000000)
+[3] 歧义 + --strict-pin                     ⇒ **rc=4**「命中 3 份 tape ⇒ 歧义（不猜）」
+[4] 完整 period id（…-p006afedbcf000000）   ⇒ expect:<period>（唯一，无标注）
+回归：l2_render_test.js rc=0 · accept_all rc=0 · fingerprint rc=0
+      （本文件不在 `tools/*.sh` 自签范围 ⇒ 见门后项 d-new-verifier-outside-self-signed-manifest，未销账）
+```
+
+**为什么它是 B1 而不是 C**
+```
+`--expect` 的全部价值是"钉住当轮"；歧义时仍显示"钉住了"，会让下一轮把另一轮的读数当成这一轮 ⇒
+正是 B1-d（ring 未校验 period）、B1-f（无身份）同族，只是这次发生在**我自己新加的钉轮参数**上。
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：K-134（待裁、非基线）· 门后 21 条（含 d-new-verifier-outside-self-signed-manifest）一项未动、未互相销账。
