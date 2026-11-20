@@ -4537,3 +4537,36 @@ casefile：tools=「本轮无工具段（0 条）」· hitl allowed_once=1
 
 **维持边界**：不为凑绿改 D1/D2 · 不换 validator 基准 · 不写「已交付 / 已确认」·
 章 A 三下签字 / signoff / HITL 不捆入 · phyt 护栏 · N=2 自 pause · dirty=0 · 未归档。
+
+### C 轮次 · 工具轮真跑（weather Tokyo）：读数与已落盘判断一致 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「Please call the weather tool for city Tokyo and report what it returns.」
+job_id=run-b10fe4d164a323c5 · period_id=run-b10fe4d164a323c5-p006afffaf4000010
+jsonl=/tmp/t2round/events/run-b10fe4d164a323c5-p006afffaf4000010.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2
+verdict={status:Met, checks:2, reason:"all checks passed", job_id:<=period_id>}
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+reply 原文「The weathe…」⇒ 对（回答了 Tokyo 天气）
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-b10fe4d164a323c5-p006afffaf4000010`）rc=0/0 · diff **0 字节**
+  命中后落点：period_id=run-b10fe4d164a323c5-p006afffaf4000010 · rows=15 · sha256 均 **99f3fea993ab5331**
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 b6719bc（allowed 类 = calc/numbers/weather）+ 9e4cbf1（三层 ok）：
+weather 走 allowed（allowed_once=1 · tool/call=1 · verdict Met），outcome 满足 expect ⇒ 三层全绿。
+⇒ 与已落盘判断一致，无差。**对照上两轮的静默失败轮**（planned calls 但 tool/call=0 ⇒ success=true 却无执行）：
+   本轮是"执行真的发生"，区分点仍是 **tool/call 行是否存在**。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：weather 与 calc/numbers 同档（allowed_once=1 + tool/call=1 + Met）；
+若 weather 出现 planned calls 而 tool/call=0，则与 frobnicate 轮同形，需按执行层静默失败重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
