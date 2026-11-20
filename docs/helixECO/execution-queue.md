@@ -5017,3 +5017,38 @@ rc=**0** · 输入：当轮目录 /tmp/round_r21（EV=run-69c4b42af7d98a7e-p006b
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+
+### C 轮次 · rail 档（rate 请求被 rails 吞）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0（复用）
+POST「Please call the rate tool with numerator 7 and denominator 2, then report what it returns.」⇒ **rail 旁路**
+job_id=run-9c008f637c3f3f9c · period_id=run-9c008f637c3f3f9c-p006b00017d00001c
+jsonl=/tmp/t2round/events/run-9c008f637c3f3f9c-p006b00017d00001c.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · attempt=**（无该行）** · HITL 四态全 0
+reply 原文「[rail citation …]」⇒ **判错（答非所问）**
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-9c008f637c3f3f9c-p006b00017d00001c`）rc=0/0 · diff 0 字节 · sha=**cc7ca19c381757b8**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r22 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r22（EV=run-9c008f637c3f3f9c-p006b00017d00001c.events.jsonl）
+① rc=**0/0** · diff=0 · sha=**5f97959fc2c31d97** · ② 事件条数=**5**（投影 rc=0）· ② rc=**0** · ②b rc=**0**
+③ `git ls-files web = 0` · `test -d web ⇒ 1`
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c47cd21（缺 attempt ⇒ rail 吞请求）+ rail 档结构（6 行 / usage0 / tool0 / HITL 全 0）⇒ **完全一致**，无差。
+附：本轮 attempt 行**不存在**（不是空文本），与"rail 在推理段之前就回答"的机制一致 —— 与 c890a7b 的判别一致。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：英文 rate 请求也会被 rails 吞（6 行 / 无 attempt 行 / usage0）；
+若同输入出现 attempt 行（哪怕空文本），说明 rail 判定边界变了，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
