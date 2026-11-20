@@ -6921,3 +6921,11 @@ GET localhost:50061/v1/agent/events ⇒ 顶层键 ["dropped","events","last_seq"
 可被下轮推翻的一句：**若某轮 GET 后 ring 里出现当轮 period_id（或多于一条 period），则"单轮次、且常与当轮无关"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Fukuoka(Met) / web_search(Met) · 2026-11-20
+
+```
+[1] period=run-fe87532adea8630d-p006b002986000038 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=7f28f18b13ca40a5 · d1_d2 rc=0 · accept rc=0
+[2] period=run-8f9c6705089fac72-p006b00298b000039 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=51bd8cb7cbfd5d7c · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（ring 输入均为同一条旧 period，按上轮 A 的限定只作"输入齐备"）
+```
