@@ -7890,3 +7890,40 @@ ROUND_DIR=/tmp/s21_run-be92a28a7547ac9a-p006b0031f1000002 accept_all rc=0（① 
 ⇒ 与上轮 A 一致：请求城市与实际解析城市不一致，verdict 仍 Met；`tool/call` 无 args，参数不可由 tape 审计。
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 「清单外工具」第二型：模型**自行剔除**并明说（qwen3.8-27b）· 与 coder-3b 的「臆造并提交」不同 · 2026-11-20
+
+**读数（真跑，插件面 = 仅 calc）**
+```
+[轮换 #21] `./fixtures`(5) → `/tmp/plugins_calc`（仅 calc；轮末已复原，health tentacle=reachable）
+prompt：Please call the calc tool with expression 72*72 and also the numbers tool, then report both results.
+period_id=run-08b1b9b194d292ee-p006b00325e000004 · jsonl=/tmp/t2round/events/run-08b1b9b194d292ee-p006b00325e000004.events.jsonl
+LINES=15 · AGUI=8 · tc=**1** · verdict=**Met** · attempt="planned calls: calc"（只计划 calc）
+tool/call={"tool":"calc","index":0} · tool/result={"tool":"calc","index":0,"ok":true,"source":null}
+HITL（_source=check/status.hitl）：allowed_once=1 · unavailable=0 · kinds={}
+reply 原文（模型自述剔除）：
+  "The calc tool returned 5184 for the expression 72*72. I don't have access to a "numbers" tool, so I can't provide a result for that."
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=3122da1c0bd88875 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+ROUND_DIR=/tmp/s23_run-08b1b9b194d292ee-p006b00325e000004 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘 `d-unknown-tool-name-silently-dropped` 口径：「模型规划了工具清单里不存在的工具 ⇒ 闸不校验存在性 ⇒ 放行 ⇒ 无 tool/call」，
+并以 coder-3b 的 calc/numbers/weather 三例为证据（pipeline NotFound ⇒ B1-zf 补行）。
+当轮出现**第二种结局**：同一请求在 qwen3.8-27b 下，模型干脆**不计划**清单外工具，只执行存在的那个，
+并在 reply 里明说"我没有 numbers 工具"；tape 上**没有任何错误行**，verdict = Met。
+```
+
+**A：判断改成两型（同一机制的两种表现）**
+```
+① 型 A（臆造并提交）：模型把清单外工具写进 calls ⇒ 闸不校验存在性 ⇒ 执行段 NotFound ⇒ B1-zf 落
+   `tool/call` + `tool/result(ok=false, source=execution-pipeline)`（coder-3b 三例）；
+② 型 B（自行剔除）：模型不写清单外工具 ⇒ 只执行存在的 ⇒ **零错误痕迹、可 Met**，
+   只有 reply 的自述能看出请求的一部分没被执行（qwen3.8-27b 本例如实说明）。
+⇒ 审计含义：**只看 tape 无法区分"没请求该工具"与"请求了但被模型剔除"**；
+   要判"请求是否被完整执行"必须同时读 reply 原文（且 reply 是模型自述，非工具事实）。
+可被下轮推翻的一句：**若出现第三型（例如模型提交清单外工具但被闸拦下、或 reply 声称没有而 tape 有调用），则须扩为三型。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
