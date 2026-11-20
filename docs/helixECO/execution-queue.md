@@ -6522,3 +6522,11 @@ tape 数：155 → **157**（新增两条）
 ⇒ 可被下轮推翻的一句：**若并发两个 period 出现相同 conversation_id 或互为 parent，则"各自成链"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Takamatsu / calc 32*32（均 Met）· 2026-11-20
+
+```
+[1] run-6bcf91a06401bb90-p006b0026e500000e · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=247315b856b73a23 · d1_d2 rc=0 · accept_all rc=0
+[2] run-6f16b6c3091882e0-p006b0026e900000f · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=844c3385d6fa50f3 · d1_d2 rc=0 · accept_all rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
