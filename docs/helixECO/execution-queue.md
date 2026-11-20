@@ -8461,3 +8461,39 @@ ROUND_DIR=/tmp/s42_run-977d3633014c0b2d-p006b003554000013 accept_all rc=0（① 
 三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 三支并成两式：③ 支是 ② 支的 `n=0` 特例；统一式 `LINES = 9 + u + 2n + (2n if 有 verdict)` · 2026-11-20
+
+**实测计数（四条并列，全部逐行）**
+```
+② 支 n=3（run-be189212e414d13e-p006b0033da000008）：17? → 实测 15 行 · u=1 · check=1 · verdict=0 · reply=1 · turn/end=1 · 9+2n=15 ✓
+② 支 n=4（run-94752d80d75ae05e-p006b003411000009）：17 行 · u=1 · check=1 · verdict=0 · reply=1 · turn/end=1 · 9+2n=17 ✓
+③ 支 n=5 计划/0 执行（run-fa239bc773830b94-p006b00344100000a）：9 行 · u=1 · check=1 · verdict=0 · tc=**0** · 9+2n=9 ✓
+   ⇒ ③ 不是独立形态，是 **② 支取 n=0**（同 u=1/check=1/无 verdict）
+① 支 n=1（本轮 run-cf208fb4baf29a73-p006b00356f000014）：15 行 · u=2 · check=3 · verdict=Unmet · 9+2+4=15 ✓
+```
+
+**A：统一式（并把③并入②）**
+```
+LINES = 9 + u + 2n + (2n if 有 verdict/status else 0)
+  · ① 支（有 verdict，u 常 2，命名 check 2n）：9+2+2n+2n = 9+2+4n ✓
+  · ②/③ 支（无 verdict，u=1，仅 hitl 一条 check）：9+1+2n+0 = 10+2n ⇒ 与实测 9+2n 差 1
+    （差在 reply 行：②/③ 支有 reply 但**无** verdict；核对后改为
+     **LINES = 9 + u + 2n + (2n if 有 verdict) − (1 if 无 verdict)**，即 ②/③ 支 = 8+u+2n = 9+2n（u=1）✓）
+⇒ 更简表述：**有 verdict ⇒ 9+u+4n；无 verdict ⇒ 8+u+2n**（u=1 时即 9+2n；③ 只是 n=0）。
+⇒ 「三支」只是两个行数式 + 一个 n=0 特例；判支仍看 (verdict) × (unavailable)。
+可被下轮推翻的一句：**若出现「有 verdict 且 u=1」或「无 verdict 且 u=2」的行数反例，则上式作废。**
+```
+
+**当轮真跑**
+```
+prompt：Please call the numbers tool and report exactly what it returns.
+period_id=run-cf208fb4baf29a73-p006b00356f000014
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b00356f000014.events.jsonl
+LINES=15 · tc=1 · u=2 · check=3 · verdict=Unmet · AGUI=8
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=2b85848f89959efc
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s43_run-cf208fb4baf29a73-p006b00356f000014 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
