@@ -6268,3 +6268,18 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）
    若某轮传入 job_id 而 resume_from 缺失或写成 job 形态，须重判。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · 接续链第二跳：`resume_from` 指向**上一轮** period（链条而非根）· 2026-11-20
+
+```
+POST {"message":"Summarize our conversation in one sentence.","job_id":"run-03fd82d665e3a5e3"}
+⇒ period_id=run-5b703d3ceede86b7-p006b0025b3000005
+jsonl=/tmp/t2round/events/run-5b703d3ceede86b7-p006b0025b3000005.events.jsonl
+LINES=9 · AGUI 映射=5 · tool/call=0 · verdict 无
+context/inject.resume_from = **run-03fd82d665e3a5e3-p006b002598000004**（上一轮 period，不是根）
+⇒ 接续是**链**：每一跳只指向上一跳的 period（与 I4「lineage 单调」方向一致）
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=370fe809697c7bd8
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=5（投影 rc=0）· ② rc=0
+四选一：C（与上一轮 A 的"resume_from=上一 period"一致，本轮是第二跳复现）· 红判据逐条=否 ⇒ 续
+```
