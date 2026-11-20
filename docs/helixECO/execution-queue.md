@@ -6634,3 +6634,11 @@ LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · D1/D2 rc=0（D2=官方副本
 两次 casefile rc=0/0 · diff 0 字节 · cf sha=08c5e623be30dddc · ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0）
 C · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers（Unmet）/ web_search（Met）· 2026-11-20
+
+```
+[1] job_id=run-cf208fb4baf29a73 · period=run-cf208fb4baf29a73-p006b0027d2000018 · 15 行 · tc=1 · **Unmet** · diff 0 字节 · cf sha=cc1c428d52276f69 · d1_d2 rc=0 · accept rc=0
+[2] job_id=run-23a1205893ecd972 · period=run-23a1205893ecd972-p006b0027d5000019 · 15 行 · tc=1 · **Met** · diff 0 字节 · cf sha=559dd4abb446f9e3 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
