@@ -4830,3 +4830,49 @@ ROUND_DIR=工具轮  ：改前 ② 会报"期望 5 条"FAIL → 改后 rc=0（8 
 `ROUND_DIR=工具轮` 那个目录是**用真跑 tape 拷出来的**（构造目录、真数据），不是造的 tape。
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+
+### C 轮次 · 新合约下的第一份完整读数集（含 ROUND_DIR 形态 accept_all 分项 rc）· 2026-11-20
+
+**t1 当轮真跑读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True（复用，未冷启动）
+POST「Please call the numbers tool and report exactly what it returns.」
+job_id=run-cf208fb4baf29a73 · period_id=run-cf208fb4baf29a73-p006b0000b7000017
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b0000b7000017.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: numbers"
+tool/result ok=true · outcome={"series":[1..10]}
+verdict={status:**Unmet**, reason:"failed: exec_ok, answer.delivered"}
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+D1/D2 rc=0（**D2 数据源=官方副本 sha256_16=4b5c93226838a0e7** · 本 period_id）
+两次 l2_casefile（`--expect run-cf208fb4baf29a73-p006b0000b7000017`）rc=0/0 · diff 0 字节 · sha=**910a4b433e1a842f**
+```
+
+**t1b 新增项：`ROUND_DIR=/tmp/round_r17 bash tools/accept_all.sh` 分项读数**
+```
+rc=**0** · 首行「输入：当轮目录 /tmp/round_r17（EV=run-cf208fb4baf29a73-p006b0000b7000017.events.jsonl）」
+⓪ 引擎指纹：OK（副本与自签一致）· ① rc=**0/0** · diff=0 · sha=**abe32f40808d10e5**
+② rc=**0**（D1/D2）· 事件条数=**8**（投影 rc=0）
+②b rc=**0**（render_test）· 缺口标注=2 处 · 3896 字节
+③ web：`git ls-files web = 0` · `test -d web ⇒ 1`
+```
+
+**口径补记（读这份读数时必须知道）**
+```
+accept_all 的 ① 不带 `--expect` ⇒ 选轮退回 mtime 规则，输出里 `selection=mtime-newest(unpinned)`；
+我手跑的 casefile 用 `--expect <period_id>` ⇒ 同一 tape、同一 diff=0，但 **sha 不同**（910a4b43 vs abe32f40）。
+⇒ 两个 sha 不可互比；要比就必须同参数（这条已记，不写成缺陷）。
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 round34 / `d-exec-ok-names-expect-match-not-success`：numbers 的 outcome 无 `ok` 字段、expect="ok" ⇒ exec_ok 必假 ⇒ Unmet。
+当轮：outcome={"series":[…]} · exec_ok actual="ok=false" · verdict Unmet ⇒ **完全一致**，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：numbers 这种"outcome 无 ok 字段"的工具恒判 Unmet（与 9e4cbf1 三层一致）；
+若某轮 numbers 出现 Met，说明 expect 对齐规则变了，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
