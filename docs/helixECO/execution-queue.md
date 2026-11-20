@@ -7216,3 +7216,11 @@ GET /v1/agent/events ⇒ events=8 · dropped=0 · last_seq=8 · 涉及 period �
 [2] period=run-7efc6c9eca30c151-p006b002b0500004e · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=9b64e36010b5f92e · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 13 样本：可解析）
 ```
+
+### C 轮次 ×2 · calc 54*54(Met) / exec-blocked(9 行) · 2026-11-20
+
+```
+[1] period=run-f60f0ce27c5503cc-p006b002b1a00004f · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=29a4f0cbff56b38a · d1_d2 rc=0 · accept rc=0
+[2] period=run-a572e9fe19bc2614-p006b002b1d000050 · 9 行 · tc=0 · verdict 无 · turn/end.success=true（闸拒轮，按 A-ee86fe8 的语义）· diff 0 字节 · cf sha=97baeb19c7e8378d · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
