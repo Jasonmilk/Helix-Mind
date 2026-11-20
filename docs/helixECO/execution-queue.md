@@ -8069,3 +8069,36 @@ ROUND_DIR=/tmp/s29_run-a2b1a678fd838b26-p006b003368000006 accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C（对照样本，不改判断；把 B2 边界收窄为"批内有失败项时"）· 六红逐条=否 ⇒ 继续
 ```
+
+### B1 真撞（红，已修）· 审计产物把缺失读数渲染成 `undefinedms` / `ok=null` · 2026-11-20
+
+**撞到（真跑产物里读到假值）**
+```
+多调用批有失败项时，`tool/result` 不带 `duration_ms` ⇒ `Cellrix/tools/l2_casefile.js:145` 直接拼串，
+casefile.tool_calls 里出现：`"index=0 · calc · ok=false · **undefinedms**"`（`ok` 缺席时同理写 `ok=null`）
+三个样本（同批失败）：
+  run-b5a5cda88409f4a2-p006b0032d3000001 · run-b15d6af2564f7eb2-p006b00334b000005（反序）· 及复本轮
+对照成功批：`["index=0 · calc · ok=true · 56ms", "index=1 · weather · ok=true · 1362ms"]`（有真值）
+⇒ 缺项被写成"像真值的串"，违反「缺项写 UNMEASURABLE、留白不算闭合」口径。
+```
+
+**修（B1 授权范围内，additive / 可逆：1 行 + 2 行注释）**
+```
+`Cellrix 1d16a22`：`ok` 与 `duration_ms` 为 null/undefined 时一律写 `UNMEASURABLE`；有值格式不变。
+```
+
+**改后读数（命令与输出均为实际执行）**
+```
+失败批 run-b15d6af2564f7eb2-p006b00334b000005：
+  ["index=0 · calc · ok=false · UNMEASURABLE", "index=1 · numbers · ok=false · UNMEASURABLE"]  rc=0
+成功批 run-a2b1a678fd838b26-p006b003368000006：
+  ["index=0 · calc · ok=true · 56ms", "index=1 · weather · ok=true · 1362ms"]（未变）
+ROUND_DIR=/tmp/s29_run-a2b1a678fd838b26-p006b003368000006 accept_all：
+  ⓪ 指纹 OK · ① rc=0/0 sha=f0d8528a4484d148 · ② rc=0（D1/D2，D2=官方副本 4b5c93226838a0e7）
+  ②b rc=0（render_test）· 缺口标注=2 处 · 3920 字节 · 结果：分项全绿
+指纹：`tools/upstream-manifest.sh` ⇒ OK（覆盖 tools/*.sh；本次改 .js ⇒ **无需重签**，已实测）
+三仓 dirty：Cellrix=0（已提交）· anaphase-helix=0 · helix-mind=0
+```
+
+**红停声明**：本轮触红判据「B1 真撞」⇒ 按纪律**停一轮**，修复 + 读数已落盘、已提交（`Cellrix 1d16a22`）。
+不写 DEBTS、不签字、不销账、不新造守护机制；B2 具名项（`d-multicall-result-error-attribution`）**本轮不连带修**，仍待 gardener 裁。
