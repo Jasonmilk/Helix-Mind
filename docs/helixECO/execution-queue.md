@@ -5540,3 +5540,16 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=191807e2d9eeb184 · �
 
 四选一：C ×2 · 红判据逐项=无红 ⇒ 续下一轮
 ```
+
+### C 轮次 ×3 · weather Fukuoka / calc 21*4(rail) / numbers · 2026-11-20
+
+```
+[1] weather Fukuoka · period run-fe87532adea8630d-p006b00114200002d · 15 行 · tc=1 · usage=2 · Met · allowed_once=1
+    cf sha=3102d9d9c66e9178 · diff 0 字节 · accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0 · ②b rc=0）
+[2] calc 21*4（rail）· period run-f177b0e4810f0e2b-p006b00114600002e · 6 行 · tc=0 · usage=0 · verdict 无 · HITL 全 0
+    cf sha=e1dd966dd65f2e8a · diff 0 字节 · accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0 · ②b rc=0）
+[3] numbers · period run-cf208fb4baf29a73-p006b00114600002f · 15 行 · tc=1 · usage=2 · Unmet · allowed_once=1
+    cf sha=f67b7f278bf628c7 · diff 0 字节 · accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0 · ②b rc=0）
+D1/D2 三轮 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+四选一：C ×3 · 红判据逐项=无红 ⇒ 续下一轮
+```
