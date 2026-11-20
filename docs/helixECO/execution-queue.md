@@ -7242,3 +7242,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-64ad7bed0f2549a8-p006b002b46000054 · 15 行 · tc=1 · Met · bypass=null · diff 0 字节 · cf sha=07c0702b8031bc20 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 57*57(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] period=run-0d1f1f1e5629915e-p006b002b58000055 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=1b43b65c12e72563 · d1_d2 rc=0 · accept rc=0
+[2] period=run-cf208fb4baf29a73-p006b002b5c000056 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=58271449d4953fae · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 15 样本：可解析）
+```
