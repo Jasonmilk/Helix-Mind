@@ -5520,3 +5520,23 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=191807e2d9eeb184 · �
 （[1] 与 2f58a1c / `d-gate-refusal-replies-with-raw-plan` 的现场一致：exec 一律 fail-closed、kinds 按命令首词分桶；
  [2] 与 b6719bc / 9e4cbf1 一致。）
 ```
+
+### C 轮次 ×2 · calc 20*4（rail）+ numbers（Unmet）· 2026-11-20
+
+```
+[1] calc 20*4（rail 档）
+  period_id=run-2a49f67cc3adfa82-p006b00112f00002b
+  jsonl=/tmp/t2round/events/run-2a49f67cc3adfa82-p006b00112f00002b.events.jsonl
+  LINES=6 · TOOLCALL=0 · USAGE=0 · verdict 无 · HITL 四态全 0
+  D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）· 两次 l2_casefile rc=0/0 · diff 0 字节 · sha=a62f587b9fb25214
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=da2b740209a4bec5 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+
+[2] numbers
+  period_id=run-cf208fb4baf29a73-p006b00113000002c
+  jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b00113000002c.events.jsonl
+  LINES=15 · TOOLCALL=1 · USAGE=2 · verdict=**Unmet** · HITL allowed_once=1
+  D1/D2 rc=0 · 两次 l2_casefile rc=0/0 · diff 0 字节 · sha=90d8dbaebbce29e5
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=8a40dcbd1c2e9801 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+
+四选一：C ×2 · 红判据逐项=无红 ⇒ 续下一轮
+```
