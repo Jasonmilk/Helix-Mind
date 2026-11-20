@@ -8954,3 +8954,13 @@ ROUND_DIR accept_all 两轮均 rc=0 · 三仓 dirty 0/0/0 · docs 冻结快照 r
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C ×2（B2 复现不重复计红，红已在 849d48b 记）· 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · calc 95*95(Met) / web_search(Met) · 2026-11-20
+
+```
+[1] period=run-3b127ce5466d01e2-p006b0037bb000030 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=ece9aab14440d634 · d1_d2 rc=0 · accept_all rc=0
+[2] period=run-2881a34cc1e8ffd9-p006b0037bf000031 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=285d00468ea01794 · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮命中 · 页面缺口=2 两轮命中
+三仓 dirty 0/0/0（anaphase / Cellrix / helix-mind）· docs 冻结快照 rc=0
+四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
