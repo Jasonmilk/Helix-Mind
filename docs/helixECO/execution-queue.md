@@ -8936,3 +8936,21 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮�
 ROUND_DIR accept_all 两轮均 rc=0 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · B2 revisit 检查（第 4 样本仍复现）+ weather Sapporo · 2026-11-20
+
+```
+[B2 revisit 检查，按 849d48b 记的机械条件重跑]
+  插件面 /tmp/plugins_numbers（仅 numbers）· coder-3b · 请求「numbers + calc 94*94」
+  period=run-11ca15fb4f93908c-p006b00379400002e · 13 行 · tc=2
+  tool/result 两条：均 ok=false · source=execution-pipeline · error 同一条（缺失项 calc）
+  casefile.tool_calls（B1-zh 修后）= ["index=0 · numbers · ok=false · UNMEASURABLE", "index=1 · calc · ok=false · UNMEASURABLE"]
+  ⇒ **具名项 `d-multicall-result-error-attribution` 仍复现（第 4 样本）⇒ revisit 未满足，不销账**
+  diff 0 字节 · cf sha=7754c3d01baf98e4 · d1_d2 rc=0 · accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口=4）
+[轮换后复原 ./fixtures（health tentacle=reachable）]
+[当轮真跑] period=run-f41a276cef550001-p006b0037a500002f · weather Sapporo
+  15 行 · tc=1 · u=2 · check=3 · verdict=Met · diff 0 字节 · cf sha=93136fe494fa8d4b · d1_d2 rc=0
+  ROUND_DIR accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口=2）
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C ×2（B2 复现不重复计红，红已在 849d48b 记）· 六红逐条=否 ⇒ 继续
+```
