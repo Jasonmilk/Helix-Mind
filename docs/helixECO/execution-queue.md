@@ -7233,3 +7233,12 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-527d74e73d85e232-p006b002b35000052 · 15 行 · tc=1 · allowed_once=1 · Met · diff 0 字节 · cf sha=c7fb4db0d16c7c73 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · 中文 calc 请求落 rail（6 行，`bypass="rail"`）/ weather Tottori(Met) · 2026-11-20
+
+```
+[1] period=run-0b20699f4b0e2054-p006b002b44000053 · 6 行 · tc=0 · verdict 无 · **assistant/reply.bypass="rail"** · diff 0 字节 · cf sha=144903ab80430e79 · d1_d2 rc=0 · accept rc=0
+    （中文「用 calc 算一下 56*56」⇒ rail 旁路；与 A-8263067 的区分口径一致：bypass≠null 才是真旁路）
+[2] period=run-64ad7bed0f2549a8-p006b002b46000054 · 15 行 · tc=1 · Met · bypass=null · diff 0 字节 · cf sha=07c0702b8031bc20 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
