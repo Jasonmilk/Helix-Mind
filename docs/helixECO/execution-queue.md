@@ -7024,3 +7024,24 @@ ROUND_DIR=/tmp/mixed accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
 可被下轮推翻的一句：**若某轮出现 unavailable≥1 且同时 tc≥1（部分执行），则"轮级 fail-closed"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · 输入面轮换 #8（插件面 = 仅 calc）+ 多工具请求：模型直接作答（9 行）· 2026-11-20
+
+**轮换记录**
+```
+面：tentacle 插件目录（一次只换一个）
+改前：`--plugins-dir ./fixtures`（5 插件）· 改后：`--plugins-dir /tmp/plugins_calc`（仅 calc.js + calc.manifest.json）
+来源：既有 fixtures 文件（复制，未改内容、未新建上游）· 轮末已复原 ./fixtures（health tentacle=reachable）
+```
+
+**当轮读数**
+```
+POST「Please call the calc tool with expression 48*48 and also the numbers tool, then report both.」
+⇒ job_id=run-4f18ba73f9d5a696 · period_id=run-4f18ba73f9d5a696-p006b002a16000041
+jsonl=/tmp/t2round/events/run-4f18ba73f9d5a696-p006b002a16000041.events.jsonl
+LINES=9 · AGUI=5 · **tool/call=0** · verdict 无 · attempt="no calls planned — answered directly"
+（numbers 不在清单里、calc 在 ⇒ 模型**一个都不计划**，直接作答；与轮换 #7「臆造 numbers」形态不同）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=420d7b848a9a7033
+ROUND_DIR=/tmp/railtwo accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
+四选一：C（与「reply/attempt 形态随模型×工具面变化」一致，无判断变化）· 红判据逐条=否 ⇒ 续
+```
