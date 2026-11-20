@@ -8051,3 +8051,21 @@ ROUND_DIR=/tmp/s28_run-b15d6af2564f7eb2-p006b00334b000005 accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
 四选一：C（同一 B2 的第 3 样本；新增信息仅"对称/与顺序无关"，不改判断、不重复计红）· 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · 对照样本：双调用**全在清单里** ⇒ 逐条各归其位（ok=true ×2、source=null）· 2026-11-20
+
+```
+插件面 ./fixtures(5) · 模型 coder-3b · prompt：calc 76*76 + weather Hakodate
+period_id=run-a2b1a678fd838b26-p006b003368000006
+jsonl=/tmp/t2round/events/run-a2b1a678fd838b26-p006b003368000006.events.jsonl
+LINES=19 · AGUI=11 · tc=2 · verdict=**Met**
+tool/result = [{"tool":"calc","ok":true,"source":null},{"tool":"weather","ok":true,"source":null}]
+HITL 四态（_source=check/status.hitl）：allowed_once=2 · unavailable=0 · kinds={}
+⇒ 与 B2 三样本（缺失项存在时）对照：**只要每条调用都能成功，结果就各归其位**；
+  广播只发生在批内有失败项时 ⇒ 缩小了 B2 的边界（不是"批量一律广播"，而是"批内失败 ⇒ 全批同错误"）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=a005efcb3887b04e
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s29_run-a2b1a678fd838b26-p006b003368000006 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C（对照样本，不改判断；把 B2 边界收窄为"批内有失败项时"）· 六红逐条=否 ⇒ 继续
+```
