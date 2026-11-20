@@ -6170,3 +6170,31 @@ pipeline Err（工具不存在/执行段失败）⇒ tool/result **ok=false** + 
 [2] period run-901c997c78176aee-p006b002517000006 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=a5c0012da75e51ef · d1_d2 rc=0 · accept_all rc=0（① 0/0 · ② 8 条）
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · 面：tentacle 断开（传输层）· 三项读数里两项 UNMEASURABLE · 2026-11-20
+
+**操作与读数**
+```
+1) 停 50051 后再 POST：**50061 监听=0 · health http=000 · POST http=000 bytes=0**
+   ⇒ 该段**不可量**（UNMEASURABLE）；anaphase 日志无 panic / 无 shutdown 记录
+   ⇒ **原因未定**：不断言"停 tentacle 导致 anaphase 退出"（无证据），只记"当时 50061 不可达"
+2) 重启 anaphase（tentacle 仍断开）：health **http=200**，`tentacle=False`，其余 10 项 ok
+   POST ⇒ 200 · 194 bytes · `success=true` · 日志 `[Reasoning] Unstructured output (no calls`
+   ⇒ 本轮 period_id=**run-4bbe9a759e8a09c0-p006b00253d000001**
+   jsonl=/tmp/t2round/events/run-4bbe9a759e8a09c0-p006b00253d000001.events.jsonl
+   LINES=9 · AGUI 映射=5 · tool/call=0 · usage=1 · attempt="no calls planned — answered directly" · verdict 无
+   D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+   两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=a34a092ec2879a1e
+   ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+3) 恢复 tentacle（./fixtures，5 插件）⇒ health **全 ok=True**
+```
+
+**B1-zf 的"传输层失败"覆盖：本轮未取到（具名 UNMEASURABLE）**
+```
+想验的是「tentacle 不可达 ⇒ pipeline Err ⇒ 补 ok=false + source=execution-pipeline」。
+但本轮模型**没有规划调用**（attempt=no calls planned）⇒ 未进入执行段 ⇒ **该分支没有被触发**。
+⇒ 记 UNMEASURABLE（不是"验过"）：B1-zf 目前只在「工具不在清单（NotFound）」一条上取到真跑证据。
+可推翻/待核点：**若在 tentacle 断开且模型确实规划调用的一轮里，tape 仍无 tool/result ⇒ B1-zf 覆盖不足**。
+```
+
+**红判据**：六项逐条＝否（UNMEASURABLE 项按具名记录，不当通过）⇒ 记 C，续。
