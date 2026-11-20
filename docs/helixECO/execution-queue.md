@@ -4980,3 +4980,40 @@ rc=**0** · 输入：当轮目录 /tmp/round_r20（EV=run-ed2bb4b8937dd7a1-p006b
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### C 轮次 · calc 13*13 工具轮 + ROUND_DIR accept_all 分项读数 · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True（复用，未冷启动）
+POST「Please call the calc tool with expression 13*13 and report the result.」
+job_id=run-69c4b42af7d98a7e · period_id=run-69c4b42af7d98a7e-p006b00016600001b
+jsonl=/tmp/t2round/events/run-69c4b42af7d98a7e-p006b00016600001b.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2
+verdict={status:**Met**, reason:"all checks passed"}
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+reply 原文「13 multiplied by 13 equals 169」⇒ 对
+D1/D2 rc=0（**D2 数据源=官方副本 sha256_16=4b5c93226838a0e7** · 本 period_id）
+两次 l2_casefile（`--expect run-69c4b42af7d98a7e-p006b00016600001b`）rc=0/0 · diff 0 字节 · sha=**712e3ab351c63372**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r21 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r21（EV=run-69c4b42af7d98a7e-p006b00016600001b.events.jsonl）
+⓪ 引擎指纹：OK · ① rc=**0/0** · diff=0 · sha=**c1f03a5f022c4710**
+② 事件条数=**8**（投影 rc=0）· ② rc=**0**（D1/D2）· ②b rc=**0**
+③ `git ls-files web = 0` · `test -d web ⇒ 1`
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 b6719bc（calc allowed）+ 9e4cbf1（三层 ok）+ c890a7b（usage=2）：当轮全部一致，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：calc 工具轮恒 15 行 / usage=2 / tool/call=1 / Met / allowed_once=1；
+若某轮 calc 出现 Unmet 或 tool/call=0，须按执行层或期望层重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
