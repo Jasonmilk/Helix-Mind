@@ -8552,3 +8552,20 @@ ROUND_DIR=/tmp/s44_run-ba9cecdd1a6d1910-p006b0035a4000015 accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · `sessions.count` 连 `u=3` 的 20 行轮也对得上（6/15/20）；三条 gist 均空（未被推理轮引用）· 2026-11-20
+
+```
+GET /v1/sessions 三条逐条（新快照，非旧值）：
+  run-ba9cecdd1a6d1910-p006b0035a4000015（rail 轮）  count=**6**  · gist=''   ← tape 实测 6 行
+  run-977d3633014c0b2d-p006b003554000013（weather）  count=**15** · gist=''   ← tape 实测 15 行
+  run-5c3c04a4173904a8-p006b00350d000011（u=3 轮）    count=**20** · gist=''   ← tape 实测 20 行
+⇒ `count` = tape 行数（含 usage 多行的情况）逐条一致；三条 gist 皆空 ⇒ 与「gist 只对被推理轮引用的 period 才写」一致
+[当轮真跑] prompt：weather Tottori
+  period_id=run-64ad7bed0f2549a8-p006b0035b9000016 · 15 行 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=3fa9dd9b6deb4ff5
+  D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+  ROUND_DIR=/tmp/s45_run-64ad7bed0f2549a8-p006b0035b9000016 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C · 六红逐条=否 ⇒ 继续
+```
