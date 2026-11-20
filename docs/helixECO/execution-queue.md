@@ -8285,3 +8285,19 @@ ROUND_DIR=/tmp/s33_run-fa239bc773830b94-p006b00344100000a accept_all rc=0（① 
 rc 向量与上一 numbers 轮逐项相同 ⇒ 增益=0（下一轮按增益判据取下一个真实上游面）
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · 轮换 #22（插件 calc+web_search）+ 双调用全成功：19 行 / AGUI 11 / 两条各归其位 · 2026-11-20
+
+```
+[轮换 #22] `./fixtures`(5) → `/tmp/plugins_cw`（**calc.js + web_search.js**，由 fixtures 复制；轮末已复原，health tentacle=reachable）
+[当轮真跑] prompt：calc 82*82 + web_search n2 success，报两个
+  period_id=run-d05ff6bb6768d1bc-p006b0034b900000e
+  jsonl=/tmp/t2round/events/run-d05ff6bb6768d1bc-p006b0034b900000e.events.jsonl
+  LINES=19 · AGUI=11 · tc=2 · verdict=Met（① 支：15+4(n−1)=19 ✓ · AGUI 5+3n=11 ✓）
+  casefile.tool_calls = ["index=0 · calc · ok=true · **50ms**", "index=1 · web_search · ok=true · **962ms**"]（有真值、各归其位）
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=b6425257eeb32723
+  D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+  ROUND_DIR=/tmp/s37_run-d05ff6bb6768d1bc-p006b0034b900000e accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C（三支定律与 tool_calls 归位再验一次；无判断变化）· 六红逐条=否 ⇒ 继续
+```
