@@ -8569,3 +8569,34 @@ GET /v1/sessions 三条逐条（新快照，非旧值）：
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 页面缺口标注数按支二分：**有 verdict ⇒ 2 处；无 verdict ⇒ 4 处**（15 份 accept_all 输出全对）· 2026-11-20
+
+**全量核对（本会话 15 次 `ROUND_DIR accept_all` 的「缺口标注」行，按支分组）**
+```
+① 支（有 verdict/status）：s34=2 · s36=2 · s37=2 · s39=2 · s40=2 · s41=2 · s42=2 · s43=2 · s45=2 · s46=2   ⇒ 全为 **2**
+无 verdict 支：rail s35=**4** · rail s44=**4** · ②s30=4 · ②s31=4 · ②s32=4 · ③s33=4                        ⇒ 全为 **4**
+（s40 是 u=3 的 20 行轮，仍 2 ⇒ 缺口数与 usage 无关）
+```
+
+**A：缺口标注数是页面侧的判支信号**
+```
+`l2-evidence` 页面的「本 tape 未记录」缺口数：**有 verdict ⇒ 2 · 无 verdict ⇒ 4**
+⇒ 判支可由页面独立复核（与 tape 的 (verdict) × (unavailable) 互为交叉校验）：
+   页面 2 处 ⇒ ① 支；页面 4 处 ⇒ ② / ③ / rail（再用 tc 与 unavailable 细分）
+⇒ 但注意：**缺口 4 不能反推"哪一支"**，只能反推"无 verdict"。
+可被下轮推翻的一句：**若某轮页面缺口=2 而 tape 无 verdict，或缺口≠2/4（如 3、5），则本条作废并须给该页实际文本。**
+```
+
+**当轮真跑**
+```
+prompt：calc 86*86
+period_id=run-991702636f2074ee-p006b0035d4000017
+jsonl=/tmp/t2round/events/run-991702636f2074ee-p006b0035d4000017.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=64f925f0e6e5cda6
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s46_run-991702636f2074ee-p006b0035d4000017 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=**2**）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
