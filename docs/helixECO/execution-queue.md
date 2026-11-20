@@ -6313,3 +6313,12 @@ GET /v1/sessions?root=run-03fd82d665e3a5e3-p006b002598000004 ⇒ periods=2，两
    若仍为空 ⇒ 才是真缺陷。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · calc 29*29：与已落盘判断一致 · 2026-11-20
+
+```
+period_id=run-ebd7f57f47d63fac-p006b0025e2000006 · jsonl=/tmp/t2round/events/run-ebd7f57f47d63fac-p006b0025e2000006.events.jsonl
+LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · HITL allowed_once=1
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · sha=f134df872a706319
+ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0 · ②b rc=0）· C · 无红 ⇒ 续
+```
