@@ -4250,3 +4250,34 @@ UNCOVERED / drift / validator 基准维持门后 · 章 B 与 HITL 不捆入 · 
 **落点**：`helix-mind/docs/helixECO/agui-chapter-a-acceptance.md` 新增同名节；本条为台账侧索引。
 **维持**：不改包的三下命令 · 不改 signoff.toml · 不自行备签 · 8/8 只认章 B 实现落地 ·
 UNCOVERED / drift / validator 维持门后 · 章 B 与 HITL 不捆入 · phyt 护栏 · dirty=0 · 未归档。
+
+### 裁 d-uncovered-list-drift-vs-official：清单改由真源生成（执行记录）· 2026-11-20
+
+**裁定**
+```
+以 `Cellrix/docs/observations/refs/ag-ui-1.0-schema.json`（sha256_16=**4b5c93226838a0e7**）的
+`$defs.EventType.enum` 为**唯一基准**，重新生成两处清单：31 = 已映射 8 + 未覆盖 **23**。
+```
+
+**执行（逐项落点 + 改前改后 sha）**
+```
+anaphase-helix **2c22110**：`src/agui.rs` 的 `pub const UNCOVERED` 重生成 = 23 项
+  补入 SUBAGENT_STARTED / SUBAGENT_FINISHED / SUBAGENT_ERROR；META_EVENT 移出并在注释写明"两工件不同步"
+  sha256_16：**33ff863dc597993d → 7e38e4b92ccc7f9a**
+  cargo test --lib **320 passed / 0 failed** · ci/check_line_budget.py **rc=0**（行数打包不变、未增长）
+Cellrix **30f8d4d**：`docs/observations/agui-1.0-min.schema.json` 的 `uncovered_official_types` = 23 项
+  `META_EVENT` 单列到 `not_in_schema_enum` + `not_in_schema_enum_note`（java 枚举侧来源、schema enum 无）
+  新增 `generated_from`（写明生成口径）；**历史 `superseded` 段未删**
+  sha256_16：**94ac739610f9a001 → 4dc43f509f63b348** · fingerprint rc=0
+```
+
+**重跑读数（四项锚点：`agui_conformance.js` · 命令 · 输入 period · schema sha）**
+```
+tool 轮 period run-93f71d7d5c9b397a-p006aff38c3000008 → **8/8**
+rail 轮 period run-6ce28faed7aa8e1f-p006aff379a000006 → **5/5**
+d1_d2 rc=0（D2 读官方副本；D1/D2 口径**未动**）· validator 基准**未换**
+```
+
+**未动/未写**：未为凑绿灯改 D1/D2 · 未换 validator 基准 · 未写「已交付 / 已确认」· 章 A 签字与 HITL 未捆入。
+**该债务行状态**：`d-uncovered-list-drift-vs-official` 现象（清单未从 `$defs` 生成）**已消除并留下生成口径**；
+但按「不自动销账」，DEBTS 行**不删**，其状态由「⏳ 待裁」改为「✅ 已裁并执行（2026-11-20）」，附本条落点。
