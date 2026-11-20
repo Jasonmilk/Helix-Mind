@@ -8031,3 +8031,23 @@ ROUND_DIR=/tmp/s27_run-e1ccad091df2f268-p006b003330000004 accept_all rc=0（① 
 三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0 · docs 冻结快照 rc=0
 四选一：C（与 5af2c08 判断一致：闸拒 ⇒ 不产生任何 tool 行）· 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · B2 具名项第 3 样本（**反序**）：错误广播与顺序、缺失项身份无关 · 2026-11-20
+
+```
+插件面 /tmp/plugins_calc（仅 calc ⇒ **numbers 缺失**，与上两样本相反）· 模型 coder-3b（config sha `507d3f781f7c9260`）
+prompt：Please call the numbers tool and also the calc tool with expression 75*75, then report both results.
+period_id=run-b15d6af2564f7eb2-p006b00334b000005
+jsonl=/tmp/t2round/events/run-b15d6af2564f7eb2-p006b00334b000005.events.jsonl
+LINES=13 · AGUI=11 · tc=2 · attempt="planned calls: calc, numbers"（计划顺序 calc→numbers，与缺失项不同位）
+tool/result #1 {"tool":"calc","ok":false,"source":"execution-pipeline",
+               "outcome.error":"… tool not found or not instantiated: **numbers** …"}
+tool/result #2 {"tool":"numbers","ok":false,"source":"execution-pipeline",
+               "outcome.error":"… tool not found or not instantiated: **numbers** …"}
+⇒ **存在的 calc 也被写成 numbers 的 NotFound**；与样本 1/2（缺失=calc、存在=numbers）完全对称
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=4d7d55466a0cf676
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s28_run-b15d6af2564f7eb2-p006b00334b000005 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口4）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
+四选一：C（同一 B2 的第 3 样本；新增信息仅"对称/与顺序无关"，不改判断、不重复计红）· 六红逐条=否 ⇒ 继续
+```
