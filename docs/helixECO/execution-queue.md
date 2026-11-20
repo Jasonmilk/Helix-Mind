@@ -6454,3 +6454,13 @@ LINES=6 · AGUI=5 · tool/call=0 · verdict 无 · HITL 四态全 0 · diff 0 �
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· ROUND_DIR accept_all rc=0（① 0/0 · ② 5 条 · ②/②b 0）
 四选一：C（与 c47cd21「缺 attempt ⇒ rail 吞请求」一致）· 无红 ⇒ 续
 ```
+
+### C 轮次 · `sessions?root=` 的切片与 I5 一致（叶子 1 条 / 链根 3 条成链）· 2026-11-20
+
+```
+root=叶子 run-20ce208e57048c35-p006b00268e00000a ⇒ periods=**1**（parent 空，count=6）
+root=链根 run-04836f1edf36145e-p006b002579000003 ⇒ periods=**3**，parent 串成链：
+  run-04836f1…（parent 空）→ run-03fd82d6…（parent=run-04836f1…）→ run-5b703d3c…（parent=run-03fd82d6…）
+⇒ 与 I5「按 root 切片、父指针只指上一跳」一致；本轮是三天前那条接续链（本会话前半段建的）的复核。
+四选一：C（无判断变化）· 无红 ⇒ 续
+```
