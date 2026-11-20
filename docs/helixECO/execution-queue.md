@@ -7792,3 +7792,32 @@ ROUND_DIR=/tmp/s13_run-cf208fb4baf29a73-p006b0030d6000001 accept_all rc=0
 （重启使 period 序号回到 …0000001，与已落盘「序号不持久化」一致）
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 「coder-7b reply = 答案 + `ONLY:` + 计划 JSON（混排）」被两轮反例推翻 · 2026-11-20
+
+**读数（同一模型 coder-7b，两轮不同工具请求，均干净回答）**
+```
+[1] calc 71*71 → period=run-de02403d874f9846-p006b00318a000001（./target/debug/… 已在轮换 #18 记）
+    15 行 · tc=1 · verdict=Met · reply="The result of 71 * 71 is 5041."（无 `ONLY:`）
+[2] numbers → period=run-cf208fb4baf29a73-p006b0031a1000002
+    jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b0031a1000002.events.jsonl
+    15 行 · AGUI=8 · tc=1 · verdict=Unmet · model=coder-7b · reply="The numbers tool returns the series [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]."
+    两次 casefile rc=0/0 · diff 0 字节 · cf sha=b289a10e1bf81ad7 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+    ROUND_DIR=/tmp/s19_run-cf208fb4baf29a73-p006b0031a1000002 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+「含 ONLY: ?」两轮均 **False**（脚本判定，非目测）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘 reply 形态清单：`coder-7b · 答案 + "ONLY: " + 计划 JSON（混排）`（当作该模型的面形态）。
+本轮 coder-7b 两轮均为**干净答案**，无 `ONLY:` ⇒ 该"混排"不是 coder-7b 的固定形态。
+```
+
+**A：判断改成**
+```
+「reply 形态随 模型 × 工具面 变化」这条保留，但**清单里 coder-7b 的混排标记不成立**：
+它是早期某一轮的**一次**观测，不是该模型的稳定形态（此后 coder-7b 两轮均干净）。
+⇒ 任何"某模型的 reply 形态"结论都必须带样本数与 period_id；单例不得写成模型属性。
+可被下轮推翻的一句：**若 coder-7b 再现混排（含 `ONLY:` 的 reply），则须改记为该模型"偶发混排"并给比例。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
