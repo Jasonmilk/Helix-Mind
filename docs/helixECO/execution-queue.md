@@ -6716,3 +6716,41 @@ ROUND_DIR=/tmp/rot30 accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0）
 ```
 
 **四选一**：C（与已落盘 B1-zf 判断一致；新增信息=第二个工具名同样触发）· 红判据逐条=否 ⇒ 续
+
+### A 轮次 · `attempt="no calls planned"` 的真实含义是「**没有可解析的调用**」，不是「模型没尝试计划」· 2026-11-20
+
+**两条真跑读数**
+```
+[1] calc 39*39（插件面已恢复 ./fixtures）
+    period=run-c274cffa4f091b4e-p006b002871000024 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=ed6435188a48f60e
+    d1_d2 rc=0 · ROUND_DIR accept_all rc=0
+[2] numbers（同一插件面，紧接其后）
+    period=run-cf208fb4baf29a73-p006b002875000025 · **9 行** · tc=**0** · verdict 无 · HITL 四态全 0
+    diff 0 字节 · cf sha=26142bc18454855b · d1_d2 rc=0 · accept_all rc=0
+    tape 关键三行：
+      assistant/attempt = {"empty":false,"text":"no calls planned — answered directly"}
+      assistant/reply   = {"bypass":null,"chars":80,"model":"coder-3b",
+                          "text":"{\"calls\":[{\"tool\":\"numbers\",\"args\":{\"series\":\"[1, 2, 3, 4, 5]\"}},\"expect\":\"ok\"]}"}
+      check/status(hitl)= {allowed_once:0, cancelled:0, rejected:0, unavailable:0, kinds:{}}
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘判断（reply 形态清单那条）：「reply 是计划 JSON 有两种成因（被闸拦下 / 没解析），判据只看 attempt 首词」。
+当轮 [2] 的 attempt 首词 = "no calls planned"，字面读作「模型没有计划、直接作答」；
+但同一轮 reply 原文**就是一份计划 JSON**（`{"calls":[{"tool":"numbers",…}]}`）⇒ **字面与事实相反**。
+⇒ 不是"没计划"，是"**计划没被解析成 calls**"（args 里 `series` 是字符串、`expect:"ok"` 等形态未被接受）。
+```
+
+**A：判断改成**
+```
+① `attempt="no calls planned — answered directly"` 的确切含义 = **本轮没有可解析的 tool call**，
+   而不是"模型没尝试计划"；
+② 因此判「有无计划」**不能只看 attempt 首词**，必须 attempt + `assistant/reply` 原文同时看：
+   reply 是计划 JSON 而 attempt 说 no calls planned ⇒ 属**解析失败**，不是直接作答；
+③ 同理，「rail 旁路」与「解析失败」在 attempt 上都可能写 same 文案，靠 `assistant/reply.bypass`（本轮 null）
+   与 reply 形态区分：bypass≠null ⇒ 真旁路；bypass=null 且 reply 是计划 ⇒ 解析失败。
+⇒ 可被下轮推翻的一句：**若出现 attempt=no calls planned 且 reply 为纯自然语言、bypass=null 而模型实际计划过
+   （有其它行证），或解析失败轮写出 bypass≠null，则上面两条被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
