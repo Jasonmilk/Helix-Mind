@@ -5052,3 +5052,71 @@ rc=**0** · 输入：当轮目录 /tmp/round_r22（EV=run-9c008f637c3f3f9c-p006b
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### 章 A 三下执行（依 gardener 授权令）· 2026-11-20
+
+**授权来源**：gardener 本条授权令（"执行章 A 三下，并落盘"），按 `helix-mind/docs/helixECO/agui-chapter-a-acceptance.md`（93 行包）执行；
+**同一个真实 `<ROUND>`，不挑轮、不造样本**：`<ROUND>=/tmp/round_r22`（绝对路径）·
+tape `events/run-9c008f637c3f3f9c-p006b00017d00001c.events.jsonl`（2429 B）·
+ring.json（1666 B）· **period_id=run-9c008f637c3f3f9c-p006b00017d00001c**（即上一轮 C 的 rail 轮，原样使用）。
+
+**第一下 · 重放带身份**
+```
+cmd1: node tools/l2_casefile.js /tmp/round_r22/ring.json /tmp/round_r22/events ../anaphase-helix/src/run_cycle/mod.rs --expect run-9c008f637c3f3f9c-p006b00017d00001c > r1.json   ⇒ rc=0
+cmd2: 同上 > r2.json                                                                                            ⇒ rc=0
+diff r1.json r2.json ⇒ **rc=0 · 0 字节**
+sha256（两次）⇒ **cc7ca19c381757b8b0ef…**（相同）
+命中落点：selection=expect:run-9c008f637c3f3f9c-p006b00017d00001c · period_id=同上 · rows=**6**
+对照（另一 period，run-69c4b42af7d98a7e-p006b00016600001b）⇒ sha **712e3ab351c63372**（与本 period 不同 ⇒ 带身份成立）
+⇒ **第一下：成立**
+```
+
+**第二下 · 页面留白（读数在此；判据须三分，见下）**
+```
+node tools/d3_compare.js r1.json > d3.json ⇒ rc=0
+node tools/l2_render.js r1.json d3.json page.html ⇒ rc=0 · 页面 **3978 字节**
+页面 `<span class="gap">` 留白格 = **3** 处：①「为什么没走另一条边」(unselected_reason) ②「status」(verdict_status) ③ D3 行「重复检测 repeats —」
+casefile 里以 `UNMEASURABLE` 开头的字段 = **2**（verdict_status · unselected_reason）
+页面里 `<dd>null</dd>` = **1** 处（**verdict**）—— 既不是留白标记，也不是值
+缺口声明「缺口如实标注，不假装完整」= **1** 处
+⇒ 留白数(3) = casefile 缺项(2) + D3 缺项(1)；**另有 1 处 null 冒充**（verdict）不在留白计数内
+⇒ **第二下：读数齐，但"留白数=真实缺项数"这条判据在当前实现下需三分（留白 / 缺项 / null 冒充）；按现状不可直接判通过**
+```
+
+**第三下 · 地面变化**
+```
+git ls-files web ⇒ **0**
+test -d web ⇒ **1**（目录不存在）
+（另：默认冻结夹具形态 `bash tools/accept_all.sh` 仍只证夹具绿，不与本轮混写）
+⇒ **第三下：成立**
+```
+
+**状态**：章 A 由「读数齐备未签」转 **「依 gardener 本条授权令、Pi 执行三下、读数在此、可复跑」**；
+**不自签、不写「已确认」、不归档、不销账**。**三下判不出 8/8**；8/8 仍是章 B 实现落地，不并入。
+commit：本节点与三处限定同批提交（sha 见提交记录）。
+
+---
+
+**三处 append-only 限定（只记账，不改实现/命令/历史件）**
+
+① **rail 档 ROUND_DIR accept_all 全绿的口径边界**
+```
+绿只认「**旁路 tape 被本轮页面正确消费**」；本轮的 reply 判错（rail citation 答非所问）·
+attempt 行不存在 · tool/call=0 **不因分项绿被盖掉**；**不升格「请求已处理 / 回答正确」**。
+```
+
+② **具名 accept_all 与 ROUND_DIR 内容**
+```
+accept_all.sh 绝对路径：`/Users/jason/Developer/Jasonmilk/Cellrix/tools/accept_all.sh`
+  sha256_16 = 027a5e40b31d9f4c（本轮实测，`shasum -a 256` 可复跑）
+ROUND_DIR 目录内 tape 与 t1 交付的 jsonl **同 period、同 sha**：
+  period_id=run-9c008f637c3f3f9c-p006b00017d00001c · tape sha256_16 = c9a1c0af6b0d0f33（两处指同一文件）
+```
+
+③ **⓪ 补 rc 数字 · ② 两个编号对象分开具名**
+```
+⓪：`bash tools/upstream-manifest.sh` ⇒ **rc=0**（"OK: 引擎副本与本仓自签指纹一致"）
+②：「② 出口（标准事件 + D1/D2）」= 投影条数 + D1/D2 判据（本轮 rc=0）
+    「②b 页面（缺口留白 + 反向）」= render_test 反向检查（本轮 rc=0）
+    两者**是不同编号对象**，不合并成一个"②"。
+```
