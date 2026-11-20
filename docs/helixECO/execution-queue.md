@@ -5496,3 +5496,27 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=191807e2d9eeb184 · �
 四选一：C ×2 · 红判据逐项=无红 ⇒ 续下一轮
 （numbers 的 Unmet 与 round34 / d-exec-ok-names-expect-match-not-success 一致；weather 的 Met 与 b6719bc 一致。）
 ```
+
+### C 轮次 ×2 · exec 破坏性命令被拦（unavailable）+ web_search（Met）· 2026-11-20
+
+```
+[1] exec + `rm -rf /tmp/round-probe-x`（**未执行**，闸拦下）
+  period_id=run-7b11d9fd8c52e07b-p006b00111a000029
+  jsonl=/tmp/t2round/events/run-7b11d9fd8c52e07b-p006b00111a000029.events.jsonl
+  LINES=9 · TOOLCALL=0 · USAGE=1 · verdict 无（未进执行段）
+  HITL {allowed_once:0, rejected:0, cancelled:0, **unavailable:1**, **kinds={"exec":1}**}
+  D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+  两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=0ba4b760fdb77f60
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=5f113ca180c7cb73 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+
+[2] web_search
+  period_id=run-e8770d2d85c16140-p006b00111c00002a
+  jsonl=/tmp/t2round/events/run-e8770d2d85c16140-p006b00111c00002a.events.jsonl
+  LINES=15 · TOOLCALL=1 · USAGE=2 · verdict=**Met** · HITL allowed_once=1
+  D1/D2 rc=0 · 两次 l2_casefile rc=0/0 · diff 0 字节 · sha=94cdfeea05b3fc97
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=3b71f15dbf95822c · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+
+四选一：C ×2 · 红判据逐项=无红 ⇒ 续下一轮
+（[1] 与 2f58a1c / `d-gate-refusal-replies-with-raw-plan` 的现场一致：exec 一律 fail-closed、kinds 按命令首词分桶；
+ [2] 与 b6719bc / 9e4cbf1 一致。）
+```
