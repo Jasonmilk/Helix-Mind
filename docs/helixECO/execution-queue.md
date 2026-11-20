@@ -5674,3 +5674,12 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [3] run-7ee2365e0c15e9f8-p006b0013a600004a · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=2428f920bedfe58b · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×3 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×3 · numbers(Unmet) / weather Yamagata(Met) / calc 32*4(rail) · 2026-11-20
+
+```
+[1] run-cf208fb4baf29a73-p006b0013b300004b · 15 行 · tc=1 · Unmet · cf sha=55d0aab97cc5aac7 · d1_d2 rc=0 · accept_all rc=0
+[2] run-177b59b7b6d3fd8c-p006b0013b500004c · 15 行 · tc=1 · Met · cf sha=163f5180a8a1dfaa · d1_d2 rc=0 · accept_all rc=0
+[3] run-ccaf1cc398818e1b-p006b0013b800004d · 6 行 · tc=0 · verdict 无 · cf sha=9e7a63773bc2c561 · d1_d2 rc=0 · accept_all rc=0
+三轮 diff 均 0 字节 · D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×3 · 无红 ⇒ 续
+```
