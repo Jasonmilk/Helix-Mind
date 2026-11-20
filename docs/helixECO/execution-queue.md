@@ -5797,3 +5797,45 @@ coder-3b 时 reply 实测是**纯计划 JSON**（如 {"calls":[…]}）；
 ```
 
 **红判据**：六项逐条＝否（读数与已落盘判断"对不上"处已按 A 处理，非红触发）⇒ 记 A，续下一轮。
+
+### A 轮次 · 第三种 reply 形态出现（coder-14b = 干净答案、无计划文本）· 2026-11-20
+
+**输入面轮换第 2 次（同轴：模型 coder-7b → coder-14b）**
+```
+来源：llama-swap `GET /v1/models`（既有 4 个 id 之一）；取值 `reasoning_model="coder-14b"`（config.toml 行 16）
+改前 config.toml sha256_16 = **de6e3325b2e85a11** → 改后 **07e2c6d21a53c449**（重启后 check_upstream `model=coder-14b`，health 全 ok）
+```
+
+**当轮读数**
+```
+POST「Please call the calc tool with expression 14*14 and report the result.」
+job_id=run-8c59067d6a41f234 · period_id=run-8c59067d6a41f234-p006b00182a000001
+jsonl=/tmp/t2round/events/run-8c59067d6a41f234-p006b00182a000001.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · usage.model=**coder-14b**
+attempt="planned calls: calc" · verdict=**Met** · HITL allowed_once=1
+reply 原文 =「The result of 14*14 is 196.」← **干净答案，无任何计划 JSON**
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=**3949abf24b789ef4**
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=3c4be853cdd93a9f · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**核的是哪条判断 / 结果**
+```
+上一轮 A（307c139）的可推翻点：「若再换一个模型后 reply 又出现第三种形态，则"形态随模型变化、无稳定形状"成立」。
+当轮证实：三模型三形态 ——
+  coder-3b  ⇒ reply = **纯计划 JSON**（{"calls":[…]}）
+  coder-7b  ⇒ reply = **答案 + "ONLY: " + 计划 JSON** 混排
+  coder-14b ⇒ reply = **干净答案**（196），无计划文本
+```
+
+**A：判断改成**
+```
+reply 的形态**随模型变化、无稳定形状**（三例三形）；因此：
+① 「有无计划」只能看 `attempt`（coda-3b/7b/14b 均未推翻这一条）；
+② 任何以 reply 形状为据的推断（"含 calls 就是计划"、"是纯 JSON 就没答案"）**在每个面上都要重判**，
+   不得跨模型外推。
+⇒ 可被下轮推翻的一句：**若换第四个模型（qwen3.8-27b）后 reply 又落回上述三形之一，则"三形即全集"成立；
+   若出现第四形，则"形态随模型变化"更硬。**
+```
+
+**红判据**：六项逐条＝否 ⇒ 记 A，续下一轮。
