@@ -8784,3 +8784,37 @@ ROUND_DIR=/tmp/s52_run-4b36b7b645b63e4e-p006b00367600001d accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · D1/D2 全库 sweep（312 份）：仅 2 份 rc≠0，且正是已具名的两份 3 行截断 tape · 2026-11-20
+
+**全量实测（逐份跑 `node tools/d1_d2_check.js`）**
+```
+rc=0 的 **310** 份 · rc≠0 的 **2** 份
+两份失败样本 = run-8bba24c5ee368a4a-p006afde646000000 · run-ff46d4db4eea328b-p006afe91f7000007
+  ← 与「行数定律」里已具名的两份 **3 行 tape**（['assistant/reply','turn/end','check/status']）**完全同一对**
+实际失败项（两份同为）：
+  d1_fail = ["首条不是 RUN_STARTED", "RUN_STARTED 出现 0 次（一次运行必须恰好 1 次）"] · d2_fail = [] · events=4
+⇒ 失败原因 = tape 缺 `turn/start` 段（正是 3 行截断形态），**不是 D1 不变式被违反**
+```
+
+**A：把两条口径对上**
+```
+① D1/D2 在本链上**只对截断 tape 报错**：失败项集中在「缺 RUN_STARTED」，d2_fail 全空；
+   312 份里 310 份 rc=0 ⇒ D1（自研不变式）与 D2（官方 schema）在这批样本上**没有出现实质违规**；
+② 这两份的失败与"行数例外"是**同一个事实**（缺 turn/start），不是两个独立问题 ⇒ 不得各记一次；
+③ 因此 D1/D2 rc≠0 在此链上可读作「tape 不完整」，而不是「投影违反 schema」。
+可被下轮推翻的一句：**若出现 3 行以外仍有 rc≠0 的 tape，或某份 rc≠0 但 d1_fail 不含 RUN_STARTED，则①②作废。**
+```
+
+**当轮真跑**
+```
+prompt：weather Akita
+period_id=run-f35f30ce0568e77b-p006b00369f00001e
+jsonl=/tmp/t2round/events/run-f35f30ce0568e77b-p006b00369f00001e.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met · d1_d2 rc=0
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=436229ae533ff162
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s53_run-f35f30ce0568e77b-p006b00369f00001e accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
