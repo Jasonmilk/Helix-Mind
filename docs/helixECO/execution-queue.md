@@ -8120,3 +8120,41 @@ ROUND_DIR=/tmp/s30_run-8b26bcd4b5e9f272-p006b0033b6000007 accept_all rc=0（① 
 三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
 四选一：C（同一 B2 第 4 样本 + 修后验证，无判断变化）· 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 行数定律两条：成功批 `15+4(n−1)` vs **pipeline 失败批 `9+2n`**（n=1/2/3 三例吻合）· 2026-11-20
+
+**读数（真跑，失败批 n=3；与既有 n=1/n=2 失败样本并列）**
+```
+插件面 /tmp/plugins_nw（numbers+weather；**calc 缺失**）· 模型 coder-3b（config sha `507d3f781f7c9260`）
+prompt：numbers + weather Obihiro + calc 78*78，报三个结果
+period_id=run-be189212e414d13e-p006b0033da000008
+jsonl=/tmp/t2round/events/run-be189212e414d13e-p006b0033da000008.events.jsonl
+LINES=**15** · AGUI=**14** · tc=3 · verdict **无** · attempt="planned calls: numbers, weather, calc"
+逐行类型：turn/start · user/message · context/inject · assistant/usage · assistant/think · assistant/attempt
+          · tool/call/result ×3 · assistant/reply · turn/end · check/status
+  计数：usage=**1** · check/status=**1** · verdict=**0**（成功批是 usage=2 · check/status=4 · verdict=1）
+tool/result 三条：全部 `ok=false` · `source=execution-pipeline` · 错误同一条（缺失项 calc）
+casefile.tool_calls（B1-zh 修后）：三条全 `UNMEASURABLE` 时长
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=63c4f6215a25cb4f
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s31_run-be189212e414d13e-p006b0033da000008 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件14 · 缺口4）
+三仓 dirty 0/0/0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘：行数 = 15+4(n−1)，AGUI = 8+3(n−1)，allowed_once = n（n=1..4 四例吻合，全在**成功批**上核的）。
+当轮失败批：n=1 → 11 行 · n=2 → 13 行 · n=3 → **15 行** ⇒ 与 15+4(n−1)（应为 23）不符。
+逐行差异找到：失败批缺 `verdict/status`，且只有 1 个 `check/status`、1 个 `assistant/usage`。
+```
+
+**A：行数定律分两支（同一批结构，两种结局）**
+```
+成功/业务失败批（有 verdict，无 pipeline 错误）：LINES = **15 + 4(n−1)** · AGUI = 8 + 3(n−1)
+pipeline 失败批（有 result ok=false/source=execution-pipeline，无 verdict）：
+  LINES = **9 + 2n**（n=1→11 · n=2→13 · n=3→15 三例吻合）· AGUI = 5 + 3(n−1)（本 n=3 为 14）
+⇒ 不能用单一公式由行数反推调用数：必须先看有无 `verdict/status` 判属于哪一支。
+可被下轮推翻的一句：**若失败批出现 n=4 而行数≠17，或同一批同时有 verdict 又有 execution-pipeline 失败行，
+则这支划分被推翻。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
