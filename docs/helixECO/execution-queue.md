@@ -6616,3 +6616,12 @@ ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
 ```
 
 **四选一**：C（与已落盘 B1-zf 判断一致，且为**修复后的新一次真跑复现**）· 红判据逐条=否 ⇒ 续
+
+### C 轮次 · 插件面复原后 calc 35*35（Met）· 2026-11-20
+
+```
+period_id=run-eb190089fc010ca6-p006b0027b1000016 · jsonl=/tmp/t2round/events/run-eb190089fc010ca6-p006b0027b1000016.events.jsonl
+LINES=15 · AGUI=8 · tool/call=1 · verdict=Met（tentacle 已复原 ./fixtures 后真跑）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=9bb1954ee4c6044e
+ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0）· C · 无红 ⇒ 续
+```
