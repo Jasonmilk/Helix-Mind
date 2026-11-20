@@ -6413,3 +6413,15 @@ total=50 · gist 为空=**47** · 非空=3
 须重新判定该字段的语义与其是否应被填充。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · 改后回归扫（默认夹具 + 三条近期 period）· 2026-11-20
+
+```
+默认冻结夹具（不与当轮混写）：`bash tools/accept_all.sh` rc=0
+  ① rc=0/0 · ② rc=0 · ②b rc=0 · `git ls-files web = 0`
+近期 period（改后，逐条实测）：
+  run-ebd7f57f47d63fac-…  d1_d2 rc=0 · agui_conformance **8/8**
+  run-430919349decce69-…  d1_d2 rc=0 · agui_conformance **8/8**
+  run-5b703d3ceede86b7-…  d1_d2 rc=0 · agui_conformance **5/5**
+四选一：C（与已落盘判断一致）· 红判据逐条=否 ⇒ 续
+```
