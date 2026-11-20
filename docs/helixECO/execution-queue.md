@@ -7599,3 +7599,43 @@ ROUND_DIR=/tmp/s8_run-d8158d7a72eedbc8-p006b002ff1000075 accept_all rc=0（① 0
 | 10 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_cn`（calc+numbers） | 由 fixtures 复制 | 同上 | `run-1b3c22066200401e-p006b002f93000071` | C（B1-zf 第三个工具名 weather） |
 | 11 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_rate`（rate） | 由 fixtures 复制 | 同上 | `run-6445efa2b707ffc0-p006b002fc5000073` | C（首次 rate 往返：ok=true / Unmet / 25ms） |
 | 12 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_cr`（calc+rate） | 由 fixtures 复制 | 同上 | `run-d8158d7a72eedbc8-p006b002ff1000075` | C（双调用 19 行 / AGUI 11 / allowed_once=2 / Unmet） |
+
+### A + 聪明调度第五用（增益=0 ⇒ 轮换 #13 插件 numbers+rate）· rail 命中内容与请求**不相干** · 2026-11-20
+
+**轮 1（web_search，同形）**
+```
+period_id=run-59339f3ddae9f9b1-p006b00301f000076 · jsonl=/tmp/t2round/events/run-59339f3ddae9f9b1-p006b00301f000076.events.jsonl
+15 行 · AGUI=8 · tc=1 · verdict=Met · HITL allowed_once=1 · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=10c4f3674601da1d
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· ROUND_DIR accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs rc=0 ⇒ rc 向量与上一 web_search 轮逐项相同 ⇒ **增益=0** ⇒ 立即轮换
+```
+**轮换 #13**：`./fixtures`(5) → `/tmp/plugins_nr`（**numbers.js + rate.js**，由 fixtures 复制）；轮末已复原，health tentacle=reachable。
+
+**轮 2（轮换后真跑）**
+```
+POST「Please call the rate tool with numerator 3 and denominator 7, then report exactly what it returns.」（rate 在 /tmp/plugins_nr 里**存在**）
+period_id=run-376f038751fd85c7-p006b00302f000077 · jsonl=/tmp/t2round/events/run-376f038751fd85c7-p006b00302f000077.events.jsonl
+LINES=**6** · AGUI=5 · tc=**0** · verdict 无
+逐行类型：turn/start · user/message · context/inject · assistant/reply · turn/end · check/status
+assistant/reply = {"bypass":"rail","chars":211,"model":null,
+  "text":"[rail citation · knowledge_base/rails/demo]\n- 第 3 条 禁止行为 (civil-code#第 3 条 禁止行为):\n> 禁止以下行为：\n1. 未经授权访…"}
+HITL 四态（_source=check/status.hitl）：allowed_once=0 · cancelled=0 · rejected=0 · unavailable=0 · kinds={}
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=a26116a2dc5dabe1 · D1/D2 rc=0
+ROUND_DIR=/tmp/s10_run-376f038751fd85c7-p006b00302f000077 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘读法（reply 形态清单 + rail 旁路）：`bypass="rail"` ⇒ 走 rail 旁路、不执行工具。
+当轮补充的是**内容侧**：请求是「rate 工具 3/7」（rate 在清单里、可执行），而 rail 引用的却是
+`knowledge_base/rails/demo` 的「第 3 条 禁止行为（civil-code）」—— **rail 命中内容与请求语义不相干**。
+```
+
+**A：判断补一条**
+```
+① `bypass="rail"` 的命中来自知识库 rail 的检索，其**内容可以与请求语义无关**；
+② 因此不能由 rail 引用的是哪一条去反推"用户想干什么/请求被拒的原因"，也不能把 rail 轮读成「请求被拒绝」；
+③ rail 轮的可判读项只有：`bypass="rail"` · `model=null` · tc=0 · HITL 四态全 0 · 行数 6（固定基线）。
+可被下轮推翻的一句：**若出现 rail 命中条目与请求语义一致（或 model≠null 的 rail 轮），则①②被推翻。**
+四选一：A · 六项红逐条=否 ⇒ 继续
+```
