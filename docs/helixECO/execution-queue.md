@@ -5702,3 +5702,30 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×3 · 无红 ⇒ 续
 [2] run-eedb7f87f2b874f2-p006b0013d500004f · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=905007d9e973abd7 · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红
 ```
+
+### 悬着配置处理：`maxAutonomousRuns` 回滚 0 → 4（依 gardener 授权令）· 2026-11-20
+
+**处理方式**：选**回滚**（不选"标未生效"）
+```
+理由（ gardener 判定，本轮采信）：上一轮回执里 "Automatic continuation disabled by maxAutonomousRuns=0"
+是**生效读数** ⇒ 该配置确实生效；再标"未生效、不作判据"就是假读数。
+objective 原文允许"回滚 或 标未生效"，两者只居其一 ⇒ 现值下只有**回滚**成立。
+```
+
+**改前/改后（同一文件 `.pi/pi-goal-x-settings.json`，绝对路径 `/Users/jason/Developer/.pi/pi-goal-x-settings.json`）**
+```
+改前内容：{  "maxAutonomousRuns": 0}     改前 sha256_16 = **51da62797d064a3e**
+改后内容：{  "maxAutonomousRuns": 4}     改后 sha256_16 = **def87f805a9a3471**
+```
+
+**commit / dirty**
+```
+该文件**不在任何 git 仓库内**（`git -C /Users/jason/Developer rev-parse --show-toplevel` ⇒ 无输出）
+⇒ **commit = 不可提交（具名，不是"已提交"）**；本节点落盘在 helix-mind 台账，其 commit 见提交记录，dirty=0。
+```
+
+**附：上一轮那条"未生效"判断的自我更正**
+```
+我上一轮把 4→0 之后仍出现的 1/4 快照读成"限流未生效"，与本轮 "disabled by maxAutonomousRuns=0" 冲突；
+以**生效读数**为准 ⇒ 4→0 是生效的，1/4 快照是旧值残留（同为"读到旧值"家族）。该判断作废。
+```
