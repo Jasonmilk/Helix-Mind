@@ -6359,3 +6359,28 @@ LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · D1/D2 rc=0（D2=官方副本
 两次 casefile rc=0/0 · diff 0 字节 · sha=0291a57d9a4083b9 · ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
 C · 无红 ⇒ 续
 ```
+
+### A 轮次 · 全量核 gist 写入条件（50 条）：推理轮引用写、rail 轮引用不写，两个方向都无反例 · 2026-11-20
+
+**核对方式（逐条对 `/v1/sessions` 的 period_id / parent / model / gist，不猜）**
+```
+total=50 · gist 为空=**47** · 非空=3
+方向一（应无例）：**推理轮（model 非空）引用了"空 gist"的 parent** ⇒ **0 例**
+方向二（应无例）：**rail 轮（model=null）引用了"非空 gist"的 parent** ⇒ **1 例**，且该例可归因：
+   parent=run-ebd7f57f47d63fac-p006b0025e2000006（gist 非空）
+   两个子节点：rail  run-f3ec372c0c83b045-p006b0025f4000007（model=None）
+               推理 run-9c454b45529f4b00-p006b0025fa000008（model=coder-3b）
+   ⇒ 写入可归因于**推理子节点**；rail 子节点只是先引用过（它的引用没有写，符合规则）
+```
+
+**A：判断改为带计数的版本**
+```
+在 50 条现存 period 上：
+  「推理轮引用 ⇒ 该 parent 的 gist 被写」**无反例**（0 例反例）；
+  「rail 轮引用 ⇒ 不写」**无反例**（唯一"rail 引用了非空 gist"的例由同 parent 的推理子节点解释）。
+⇒ 可被下轮推翻的一句：**若出现"某 period 只有 rail 子节点、却 gist 非空"，或"某 period 有推理子节点、gist 仍空"，
+   则"推理路径才按需写"被推翻。**（本轮两个方向都已核过，均 0 反例）
+四选一：A · 红判据逐条=否 ⇒ 续
+
+**自查**：本轮我先用 `conversation_id` 当 parent 做连接，得出"3 例空 gist 被引用"的错读数 ——
+`/v1/sessions` 每条**自带 `period_id`**（我漏看），改用 `period_id` 后结论才成立。此为"坐标取错"家族的又一次。
