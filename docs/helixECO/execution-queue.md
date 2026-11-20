@@ -5553,3 +5553,16 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=191807e2d9eeb184 · �
 D1/D2 三轮 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
 四选一：C ×3 · 红判据逐项=无红 ⇒ 续下一轮
 ```
+
+### C 轮次 ×3 · calc 22*4(rail) / weather Sendai / numbers · 2026-11-20
+
+```
+[1] calc 22*4（rail）· run-eaf5a65691ecea48-p006b00115e000030 · 6 行 · tc=0 · verdict 无 · cf sha=566c75e0a2b6b417
+    accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0 · ②b rc=0）
+[2] weather Sendai · run-1e2655adb60efe3b-p006b00115f000031 · 15 行 · tc=1 · Met · cf sha=322ec18786446a0f
+    accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0 · ②b rc=0）
+[3] numbers · run-cf208fb4baf29a73-p006b001161000032 · 15 行 · tc=1 · Unmet · cf sha=9444a242d4a03708
+    accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0 · ②b rc=0）
+D1/D2 三轮 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）· 三轮 diff 0 字节
+四选一：C ×3 · 红判据逐项=无红 ⇒ 续
+```
