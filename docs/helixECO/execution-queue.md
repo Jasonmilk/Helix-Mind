@@ -4947,3 +4947,36 @@ rc=**0** · 输入：当轮目录 /tmp/round_r19（EV=run-97f5f439ab04a0da-p006b
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+
+### C 轮次 · rail 档（中文 calc 请求被 rails 吞）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0（复用）
+POST「用 calc 算 33×3，并告诉我结果」⇒ **rail 旁路**
+job_id=run-ed2bb4b8937dd7a1 · period_id=run-ed2bb4b8937dd7a1-p006b00011e00001a
+jsonl=/tmp/t2round/events/run-ed2bb4b8937dd7a1-p006b00011e00001a.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · HITL 四态全 0
+reply 原文「[rail citation …]」⇒ **判错（答非所问）**
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-ed2bb4b8937dd7a1-p006b00011e00001a`）rc=0/0 · diff 0 字节 · sha=**c378ec67128ac9a7**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r20 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r20（EV=run-ed2bb4b8937dd7a1-p006b00011e00001a.events.jsonl）
+① rc=**0/0** · diff=0 · sha=**1a13c1c081e0d526** · ② rc=**0** · ②b rc=**0** · ③ `web=0` / `test -d ⇒ 1`
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c47cd21（缺 attempt ⇒ rail 吞请求）+ rail 档结构（6 行 / usage0 / tool0 / HITL 全 0）⇒ **完全一致**，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：中文"用 calc 算 …"持续被 rails 吞（6 行 / usage0）；
+若同输入出现 attempt 或 usage>0，须按 rail 边界重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
