@@ -6445,3 +6445,12 @@ total=50 · gist 为空=**47** · 非空=3
 count=15 vs LINES=15（run-430919349decce69-…）· count=15 vs 15（run-9c454b45529f4b00-…）· count=6 vs 6（run-f3ec372c0c83b045-…，rail 轮）
 ⇒ `count` = 当轮 tape 的行数，逐条一致，无偏差。C · 无红 ⇒ 续
 ```
+
+### C 轮次 · 中文 weather 请求落 rail（6 行）：与已落盘判断一致 · 2026-11-20
+
+```
+period_id=run-20ce208e57048c35-p006b00268e00000a · jsonl=/tmp/t2round/events/run-20ce208e57048c35-p006b00268e00000a.events.jsonl
+LINES=6 · AGUI=5 · tool/call=0 · verdict 无 · HITL 四态全 0 · diff 0 字节 · cf sha=a41ed90939b89363
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· ROUND_DIR accept_all rc=0（① 0/0 · ② 5 条 · ②/②b 0）
+四选一：C（与 c47cd21「缺 attempt ⇒ rail 吞请求」一致）· 无红 ⇒ 续
+```
