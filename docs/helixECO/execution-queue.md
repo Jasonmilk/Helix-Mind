@@ -8497,3 +8497,43 @@ ROUND_DIR=/tmp/s43_run-cf208fb4baf29a73-p006b00356f000014 accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · **全量 census（303 份 tape）**：行数定律 100% 可解释；rail 支 u=0（**无 LLM 调用**）· 2026-11-20
+
+**全量实测（/tmp/t2round/events 下 303 份 tape，逐份逐行）**
+```
+按 (verdict, u=usage 行数, n=tool/call 行数) 分组后的**行数分布**（每组只有唯一行数，除最后一组）：
+  verdict=1 u=2 n=1 ⇒ 15（168 份）        verdict=1 u=2 n=2 ⇒ 19（8）      verdict=1 u=2 n=4 ⇒ 27（2）
+  verdict=1 u=3 n=2 ⇒ 20（1）
+  verdict=0 u=1 n=0 ⇒  9（43）            verdict=0 u=1 n=1 ⇒ 11（6）      verdict=0 u=1 n=2 ⇒ 13（4）
+  verdict=0 u=1 n=3 ⇒ 15（1）             verdict=0 u=1 n=4 ⇒ 17（1）
+  verdict=0 u=**0** n=0 ⇒ **6（66）** ｜ 另有 **3（2）**
+⇒ 两式：**有 verdict ⇒ 9+u+4n** · **无 verdict 且 u≥1 ⇒ 8+u+2n**
+   对 303 份逐份代入：命中 235 / 不符 68，而 68 = **66 份 rail（6 行、u=0）** + **2 份 3 行 tape**
+```
+
+**两份 3 行 tape 的实际内容（否证必须给原文）**
+```
+run-8bba24c5ee368a4a-p006afde646000000.events.json ⇒ ['assistant/reply','turn/end','check/status']
+run-ff46d4db4eea328b-p006afe91f7000007.events.json ⇒ ['assistant/reply','turn/end','check/status']
+（无 turn/start、无 usage、无 verdict ⇒ 早期/截断 tape，**具名列出、不计入定律**，也不回改）
+```
+
+**A：定律改成四类 + 两条例外**
+```
+① 有 verdict/status ⇒ LINES = 9 + u + 4n（u=usage 行数）
+② 无 verdict 且 u≥1 ⇒ LINES = 8 + u + 2n（u=1 时即 9+2n；③ 闸拒是 n=0）
+③ **rail 支 ⇒ LINES = 6 且 u = 0**：rail 旁路**不产生任何 LLM 调用**（无 assistant/usage 行），
+   也不产生 tool 行；6 行 = turn/start · user/message · context/inject · reply · turn/end · check/status
+④ 例外：2 份 3 行 tape（仅 reply/turn/end/check），早期/截断，具名不计入
+可被下轮推翻的一句：**若出现 rail 支带 usage 行（LINES≠6）、或有 verdict 但 LINES≠9+u+4n，则①②③作废。**
+四选一：A · 六红逐条=否 ⇒ 继续（本轮读数集见下）
+```
+
+**当轮真跑（同轮读数，不与 census 混）**
+```
+period_id=run-cf208fb4baf29a73-p006b00356f000014（numbers）· 15 行 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Unmet
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=2b85848f89959efc · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+ROUND_DIR=/tmp/s43_run-cf208fb4baf29a73-p006b00356f000014 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+```
