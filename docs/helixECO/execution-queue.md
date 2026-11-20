@@ -7927,3 +7927,32 @@ ROUND_DIR=/tmp/s23_run-08b1b9b194d292ee-p006b00325e000004 accept_all rc=0（① 
 可被下轮推翻的一句：**若出现第三型（例如模型提交清单外工具但被闸拦下、或 reply 声称没有而 tape 有调用），则须扩为三型。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 型 B 细分两种表现：**部分剔除后执行**（15 行/Met）vs **全拒后直接作答**（9 行/无 verdict）· 2026-11-20
+
+**读数（同一插件面 = 仅 calc，模型 qwen3.8-27b；两落盘轮并列对照，不混算）**
+```
+[B-1 部分剔除 · 上一轮] period=run-08b1b9b194d292ee-p006b00325e000004
+  请求 calc + numbers ⇒ attempt="planned calls: calc" · 15 行 · tc=1 · verdict=**Met**
+  reply="The calc tool returned 5184 … I don't have access to a "numbers" tool …"
+[B-2 全拒作答 · 本轮] period=run-cf208fb4baf29a73-p006b003292000005
+  jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b003292000005.events.jsonl
+  请求仅 numbers（清单里只有 calc）⇒ attempt="no calls planned — answered directly"
+  **9 行** · AGUI=5 · tc=0 · **verdict 无** · HITL 四态全 0（_source=check/status.hitl）
+  reply 原文："I don't have a "numbers" tool available. My only available tool is `calc`, which performs safe arithmetic eval…"
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=3fa92a4197d1ca92 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+  ROUND_DIR=/tmp/s24_run-cf208fb4baf29a73-p006b003292000005 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
+```
+
+**A：型 B 的两种表现都要单列**
+```
+型 B（模型自行剔除清单外工具）在本链上已见两种形态，行数与 verdict 完全不同：
+  B-1 部分剔除 ⇒ **15 行 · tc=1 · Met**（其余调用照常执行；只有 reply 里才看得出缺一项）
+  B-2 全拒作答 ⇒ **9 行 · tc=0 · 无 verdict**（attempt="no calls planned — answered directly"；无任何 tool 行）
+⇒ ① 判「本轮有没有执行」只能数 `tool/call`；② 判「请求是否被完整执行」必须读 reply 原文；
+   ③ 型 A（臆造提交 ⇒ pipeline NotFound ⇒ B1-zf 补 ok=false 行）与型 B 在 tape 上的痕迹**正相反**：
+      型 A 有 tool 行且 ok=false，型 B 完全没有 tool 行。
+可被下轮推翻的一句：**若出现型 B 但 tape 上带 tool 行（或型 A 而无 tool 行），则三型划分被推翻。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
