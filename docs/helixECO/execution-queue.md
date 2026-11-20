@@ -7291,3 +7291,28 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句累�
 [2] period=run-b167de780d96a4ee-p006b002bbf000060 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=c2d9cc0220611960 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### A 轮次 · 五调用轮（含 exec）：`allowed_once=4` + `unavailable=1` 同时非零，但仍**零执行** · 2026-11-20
+
+**读数（真跑）**
+```
+POST「…calc 61*61 · weather Morioka · numbers · web_search n5 · exec ls… report all five」
+⇒ job_id=run-7b68a4d5202cf316 · period_id=run-7b68a4d5202cf316-p006b002bd6000061
+jsonl=/tmp/t2round/events/run-7b68a4d5202cf316-p006b002bd6000061.events.jsonl
+LINES=9 · AGUI=5 · tool/call=**0** · verdict 无
+attempt="planned calls: calc, weather, numbers, web_search, exec"（5 个）
+HITL 四态（_source=check/status.hitl）：**allowed_once=4** · **unavailable=1** · **kinds={"exec":1}** · cancelled=0 · rejected=0
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+两次 l2_casefile（--expect 同一 period_id）rc=0/0 · diff 0 字节 · cf sha=4428808122954742
+ROUND_DIR=/tmp/n5 accept_all rc=0（① rc=0/0 · ② 事件条数=5（投影 rc=0）· ② rc=0）
+```
+
+**A：把"计数"与"执行"彻底分开**
+```
+① 同一轮里 `allowed_once` 与 `unavailable` **可以同时非零**（本轮 4 + 1 = 计划 5 个调用）；
+   闸按顺序逐个判定：前 4 个放过各计 1，第 5 个 exec 被拒计 1（fail-fast 只记这一次拒绝）；
+② **allowed_once=4 不等于执行了 4 个**：本轮 tc=0、整轮零执行（轮级 fail-closed）；
+③ ⇒ 判"执行了几个"只能数 `tool/call`；`allowed_once+unavailable` 才能反推**计划了几个**（本轮 5）。
+可被下轮推翻的一句：**若某轮出现 allowed_once + unavailable ≠ 计划调用数，或出现拒绝后仍有 tool/call，则①②被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
