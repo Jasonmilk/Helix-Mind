@@ -4785,3 +4785,48 @@ D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### B1-zb/zc 轮次 · `accept_all` 的三处读数缺陷（新目标要求"分项 rc"后立刻撞到）· 2026-11-20
+
+**t1 当轮真跑读数（新增项的第一次实测）**
+```
+check_upstream.sh ⇒ YES src=config · /v1/health 全 ok=True
+POST「Please call the calc tool with expression 5*5 and report the result.」⇒ 落到 **rail 旁路**
+job_id=run-579a6d09b4943e62 · period_id=run-579a6d09b4943e62-p006b000062000016
+jsonl=/tmp/t2round/events/run-579a6d09b4943e62-p006b000062000016.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · HITL 全 0 · reply=[rail citation]（答非所问）
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect run-579a6d09b4943e62-p006b000062000016）rc=0/0 · diff 0 字节 · sha 69767efa8f81e4e7 · rows=6
+ROUND_DIR 形态（修前）：`ROUND_DIR=/tmp/roundA16 bash tools/accept_all.sh` ⇒ **rc=1**，① `rc=1/1` casefile 自身失败
+```
+
+**t2 撞到什么（三处，全是"读数不可信"而非"功能坏"）**
+```
+① 重放假绿：两次重定向都写 `/tmp/replay`（无 -1/-2），却 diff `/tmp/replay-1.json` 与 `-2.json`
+   ⇒ 比的是**上次留下的同一份旧文件**。实测：改前 `diff=0 · sha=18efffeaa5fb9313`（旧文件，与当轮 casefile 69767efa 无关）
+   ；改后同夹具 `sha=1db6ca806ce164a2`（真算）。
+② 硬编码"期望 5 条"：rail 轮 5、工具轮 8 ⇒ 工具轮被误判 FAIL（判据本应是 D1/D2）。
+③ ROUND_DIR 形态未接通：把 `$TAPE`（目录）当 events 目录传 casefile ⇒ 当轮目录结构 `<ROUND>/events/` 读不到 ⇒ `① rc=1/1`。
+④（附带）②b 无 rc 输出 ⇒ 新目标要求的"分项 rc"取不到。
+```
+
+**修（`Cellrix 673ee68`，additive；引擎文件 ⇒ 重签指纹 具名）**
+```
+① 写 `/tmp/replay-1.json` / `-2.json`，并打印 `① rc=$rc1/$rc2`；新增"casefile 自身失败"分支
+② 去掉"期望 5 条"，只报条数 + 投影器 rc；判据交给 D1/D2，并打印 `② rc=`
+③ 新增 `EVDIR`：有 `events/` 子目录就用它，否则退回 TAPE
+④ 打印 `②b rc=`（render_test）
+指纹：tools/UPSTREAM.sha256  a58c0a811080c69d → 877295293e6d227e → **00776ce4f5e341d3**
+```
+
+**改前/改后（同一输入）**
+```
+默认冻结夹具      ：改前 ①未见 rc（且比旧文件）→ 改后 `① rc=0/0 · diff=0 · sha=1db6ca80` · ② rc=0 · ②b rc=0 · 总 rc=0
+ROUND_DIR=rail 轮 ：改前 **rc=1**（① rc=1/1）→ 改后 rc=0（① rc=0/0 · sha=af7737b5）
+ROUND_DIR=工具轮  ：改前 ② 会报"期望 5 条"FAIL → 改后 rc=0（8 条不再误判；① rc=0/0 · sha=1860ff70）
+```
+
+**为什么是 B1**：三处都让"读数"失真（旧文件、硬编码、路径未接通），且都在我们自己的验具里、可逆、additive；
+`ROUND_DIR=工具轮` 那个目录是**用真跑 tape 拷出来的**（构造目录、真数据），不是造的 tape。
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
