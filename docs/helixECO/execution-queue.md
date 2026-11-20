@@ -7146,3 +7146,31 @@ ROUND_DIR=/tmp/exec2 accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=4cc33fb995ba5f1e
 ROUND_DIR=/tmp/exec2b accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）· C · 无红 ⇒ 续
 ```
+
+### A 轮次 · `turn/end.success` 的语义是「流程未报错」，**不是**「请求被满足」：闸拒轮 = true、Unmet 轮 = false · 2026-11-20
+
+**读数（三条 period 同批对照，零改动）**
+```
+run-5e1a1fd98b63388d-…29f8000040（exec+calc 混合轮，闸拒）：9 行 · tc=0 · verdict=无（UNMEASURABLE）· **turn/end.success=true**
+run-f47020ede4d0b351-…2ab100004a（双 exec，闸拒）：      9 行 · tc=0 · verdict=无（UNMEASURABLE）· **turn/end.success=true**
+run-386d69adb6944ed9-…29e200003f（numbers+calc 多调用）：19 行 · tc=2 · verdict=**Unmet**   · **turn/end.success=false**
+casefile 投影一致：mixed/exec2b 的 `end.success=true`，multi2 的 `end.success=false`；
+`verdict_status` 分别为「UNMEASURABLE（tape 里 0 条 verdict/status）」与 `Unmet/Met`
+（Met 两例 multi3/rot29 为 end.success=true）
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+隐含读法：`turn/end.success` 可当"这一轮成不成功（用户的请求有没有被满足）"。
+当轮：**被闸拒、什么都没执行的轮 success=true**；**执行了但不满足期望的轮 success=false**
+⇒ 两者相反于"请求被满足"的直觉 ⇒ 该字段不能用来判达成。
+```
+
+**A：判断改成**
+```
+① `turn/end.success` = **本轮流程没有报错**（拒绝是正常 fail-closed 路径 ⇒ 无错误 ⇒ true）；
+② 判"请求是否被满足"只能看 `verdict/status`（Met/Unmet/缺失=UNMEASURABLE）+ HITL 四态；
+③ 由此**禁止**用 success 判绿：`success=true` 里既有 Met 轮也有"零执行"的拒绝轮。
+可被下轮推翻的一句：**若出现被闸拒的轮 `turn/end.success=false`，或 Unmet 轮 success=true，则上面①②被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
