@@ -7732,3 +7732,23 @@ ROUND_DIR=/tmp/s13_run-cf208fb4baf29a73-p006b0030d6000001 accept_all rc=0
 ```
 
 **红判据**：B1 真撞（已修并复跑出 tape）⇒ 本轮按红停处理；修复后同轮读数已齐，下一轮继续六形态/增益判据。
+
+### C 轮次 ×2 + 轮换 #15（插件 web_search 单件）· 模型面 coder-14b 下向量不变 · 2026-11-20
+
+```
+[1] 模型面 coder-14b（轮换 #14 后）· calc 69*69
+    period=run-73d1bc3507d4d9bc-p006b0030f5000002 · jsonl=/tmp/t2round/events/run-73d1bc3507d4d9bc-p006b0030f5000002.events.jsonl
+    15 行 · AGUI=8 · tc=1 · verdict=Met · allowed_once=1 · reply="The result of 69 times 69 is 4761."
+    model=coder-14b · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=7db422a00c126ad3
+    D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+    ⇒ rc 向量与 coder-3b 的 calc 轮逐项相同（只有 reply 措辞不同）⇒ **增益=0** ⇒ 立即轮换
+[轮换 #15] `./fixtures`(5) → `/tmp/plugins_ws`（**仅 web_search**，由 fixtures 复制）；轮末已复原，health tentacle=reachable
+[2] 轮换后真跑
+    period=run-50e4f0eb30c0fa13-p006b00310a000003 · jsonl=/tmp/t2round/events/run-50e4f0eb30c0fa13-p006b00310a000003.events.jsonl
+    15 行 · AGUI=8 · tc=1 · verdict=Met · model=coder-14b
+    reply="The web search for \"single plugin face\" returned multiple results rela…"
+    两次 casefile rc=0/0 · diff 0 字节 · cf sha=a89150ec2aa91412 · D1/D2 rc=0
+    ROUND_DIR=/tmp/s15_run-50e4f0eb30c0fa13-p006b00310a000003 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+四选一：C（两轮均与已落盘判断一致：单插件面正例、模型面差异只在 reply 措辞）· 六红逐条=否 ⇒ 继续
+```
