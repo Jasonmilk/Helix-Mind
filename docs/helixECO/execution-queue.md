@@ -5441,3 +5441,15 @@ rc=**0** · ① rc=**0/0** · diff=0 · sha=**7baffbe466f62837** · ② 事件�
 核 round34 / `d-exec-ok-names-expect-match-not-success`：numbers 的 outcome 无 ok 字段 ⇒ exec_ok 假 ⇒ Unmet ⇒ 一致。
 ⇒ 记 C，续下一轮。
 ```
+
+### C 轮次 · rail 档（calc 18*4 被吞）+ ROUND_DIR accept_all · 2026-11-20
+
+```
+period_id=run-27b3d4eb759f689f-p006b0010e0000024
+jsonl=/tmp/t2round/events/run-27b3d4eb759f689f-p006b0010e0000024.events.jsonl
+LINES=6 · AGUI 映射=5 · TOOLCALL=0 · USAGE=0 · verdict 无 · HITL 四态全 0
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=b0d8244a0a93d342
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=191807e2d9eeb184 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+四选一：C · 红判据逐项=无红 ⇒ 续下一轮
+```
