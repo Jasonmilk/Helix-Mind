@@ -5839,3 +5839,39 @@ reply 的形态**随模型变化、无稳定形状**（三例三形）；因此�
 ```
 
 **红判据**：六项逐条＝否 ⇒ 记 A，续下一轮。
+
+### A 轮次 · 第四个模型落回第三形 ⇒「三形即全集」成立 · 2026-11-20
+
+**输入面轮换第 3 次（同轴：模型 coder-14b → qwen3.8-27b）**
+```
+来源：llama-swap `/v1/models` 既有 id；取值 `reasoning_model="qwen3.8-27b"`（config.toml 行 16）
+改前 config sha256_16 = **07e2c6d21a53c449** → 改后 **98d6380f2a55132a**（重启后 health 全 ok）
+```
+
+**当轮读数**
+```
+POST「Please call the calc tool with expression 15*15 and report the result.」
+job_id=run-1ef37e9620a67ef2 · period_id=run-1ef37e9620a67ef2-p006b001869000001
+jsonl=/tmp/t2round/events/run-1ef37e9620a67ef2-p006b001869000001.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · usage.model=**qwen3.8-27b**
+attempt="planned calls: calc" · verdict=**Met** · reply=「The result of 15 × 15 is 225.」← 干净答案
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=**367e764fbb8ae2fe**
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=b3b0a3e26d7a88b3 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0 · ③ web=0/test -d⇒1
+```
+
+**核的是哪条判断 / 结果**
+```
+上一轮 A（77bca53）的可推翻点：「若换第四个模型后 reply 又落回上述三形之一 ⇒"三形即全集"成立」。
+当轮证实：qwen3.8-27b 的 reply = 干净答案（与 coder-14b 同形）⇒ 落回第三形。
+四模型三形：coder-3b=纯计划JSON · coder-7b=答案+ONLY:+计划 · coder-14b & qwen3.8-27b=干净答案
+```
+
+**A：判断改成**
+```
+「reply 形态随模型变化」成立且**目前只见三形**（在两款模型上各复现一次第三形）；
+⇒ 可被下轮推翻的一句：**若出现第四形，则"三形"只是当下样本的上限；若持续三形，则模型面已覆盖完毕。**
+③ 「有无计划」仍只看 attempt（四模型一致，未出现反例）。
+```
+
+**红判据**：六项逐条＝否 ⇒ 记 A，续下一轮。
