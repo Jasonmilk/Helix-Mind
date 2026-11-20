@@ -6570,3 +6570,12 @@ HITL：unavailable=1 · kinds={"exec":1} · allowed_once=0（四态：allowed_on
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=f37a8e27e135c069
 ROUND_DIR accept_all rc=0（① 0/0 · ② 5 条 · ②/②b 0）· C · 无红 ⇒ 续
 ```
+
+### C 轮次 · numbers（带 count 3）落 rail（6 行）· 2026-11-20
+
+```
+period_id=run-03651df52e228109-p006b00276c000014 · jsonl=/tmp/t2round/events/run-03651df52e228109-p006b00276c000014.events.jsonl
+LINES=6 · AGUI=5 · tool/call=0 · tool/result=0 · verdict 无 · reply 直接作答（model=null ⇒ rail 旁路，与 c47cd21 判断一致）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=7f26731748c1bfbc
+ROUND_DIR accept_all rc=0（① 0/0 · ② 5 条 · ②/②b 0）· C · 无红 ⇒ 续
+```
