@@ -6035,3 +6035,14 @@ A：`d-unknown-tool-name-silently-dropped` 的覆盖面由「模型臆造名字�
 B2：只扩既有行说明，**不新增实体**、不改实现。
 红判据：B2 真撞 = **是** ⇒ 按 objective **落盘后停在该红上等 gardener**。
 ```
+
+**补充证据（同轮，来自 anaphase 日志，非推断）**
+```
+[Execution] Executing tool call...
+[Execution] Pipeline execution failed: status: NotFound
+State transition: Execution --Failure--> Reflection
+```
+⇒ 「静默」发生在**tape 层**，不是执行层：执行段确实被进入、确实报 `NotFound`，
+   但**不写 `tool/result`** ⇒ 与 60dd4e3 已落盘的 A（`pipeline Err => Ok(Failure)` 不 emit）**同一机制**，
+   本轮是该机制的第二个现场（第一个是臆造名 `tentacle·fixture`）。
+```
