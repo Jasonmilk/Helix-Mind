@@ -4637,3 +4637,43 @@ D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+
+### A 轮次 · `verdict=Met` 不含"工具是否切题"：无关调用也算通过 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「What is the capital of France? Answer in one word.」
+job_id=run-9c1835da49f35170 · period_id=run-9c1835da49f35170-p006afffeca000012
+jsonl=/tmp/t2round/events/run-9c1835da49f35170-p006afffeca000012.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: calc"
+tool/call = {index:0, tool:"calc", expect:"ok"}
+tool/result = {ok:true, 49ms, outcome:"{\"ok\":true,\"result\":\"47\"}"}
+verdict = {status:**Met**, checks:2, reason:"all checks passed"}
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+reply 原文「Paris」⇒ 对（问题答对）
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-9c1835da49f35170-p006afffeca000012`）rc=0/0 · diff **0 字节**
+  命中后落点：period_id=run-9c1835da49f35170-p006afffeca000012 · rows=15 · sha256 均 **0422cd43c9c9c351**
+```
+
+**t2 核的是哪条判断 / 为何对不上**
+```
+已落盘（round34 / 9e4cbf1 三层 ok）：`verdict` 只看**期望层**（outcome 是否满足 expect）。
+当轮给出一条极端的实证：问的是"法国首都"，模型却规划并执行了 `calc`（结果 **47**，与问题毫无关系），
+`outcome.ok=true` 满足 `expect:"ok"` ⇒ **verdict=Met**，而回答「Paris」与那次 calc 完全无关。
+⇒ `verdict=Met` 不表示"工具用得对/结果被采用"，只表示"那次调用的期望层对齐了"。
+```
+
+**A：判断改成**
+```
+`verdict` 的判定范围 = **期望层对齐**，**不含**两件事：
+  ① 工具是否切题（无关调用也 Met）② 工具结果是否被用于回答（reply 与 outcome 可毫无关系）
+⇒ 可被下轮推翻的一句：**凡 verdict=Met，不得据此认为"工具被正确使用"；
+   若某轮出现"无关调用被判 Unmet"（即 verdict 开始判相关性），说明判定范围已扩，须重判。**
+```
+
+**B2 记账**：模型在无关问题上规划工具调用属**模型侧行为**，不是我们层的缺陷，也不新增实体；
+与 `d-exec-ok-names-expect-match-not-success` 不同件（那条讲措辞），本条讲**判定范围**，只在台账具名。
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
