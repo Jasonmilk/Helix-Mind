@@ -7591,3 +7591,11 @@ casefile.tool_calls = ["index=0 · calc · ok=true · 50ms", "index=1 · rate ·
 ROUND_DIR=/tmp/s8_run-d8158d7a72eedbc8-p006b002ff1000075 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口2）
 三仓 dirty 全 0 · docs 冻结快照 rc=0 · 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### 覆盖索引 · 续（只记「已试」；不列候选、不预写下一面、不写覆盖率、不立待撞清单）
+| # | 输入面 | 单变量值 | 来源 | 改前 sha（或启动参数） | period_id（代表轮） | 四选一 |
+|---|---|---|---|---|---|---|
+| 9 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_ww`（weather+web_search） | 由 fixtures 复制 | `--plugins-dir ./fixtures` | `run-24d8cc8f1760bb4e-p006b002f5a00006f` | C（B1-zf，calc NotFound；缺口 2→4） |
+| 10 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_cn`（calc+numbers） | 由 fixtures 复制 | 同上 | `run-1b3c22066200401e-p006b002f93000071` | C（B1-zf 第三个工具名 weather） |
+| 11 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_rate`（rate） | 由 fixtures 复制 | 同上 | `run-6445efa2b707ffc0-p006b002fc5000073` | C（首次 rate 往返：ok=true / Unmet / 25ms） |
+| 12 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_cr`（calc+rate） | 由 fixtures 复制 | 同上 | `run-d8158d7a72eedbc8-p006b002ff1000075` | C（双调用 19 行 / AGUI 11 / allowed_once=2 / Unmet） |
