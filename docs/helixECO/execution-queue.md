@@ -8616,3 +8616,33 @@ ROUND_DIR=/tmp/s47_run-cf208fb4baf29a73-p006b0035ea000018 accept_all rc=0（① 
 三仓 dirty：anaphase=0 · Cellrix=0 · helix-mind=0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · `assistant/think` 行**恒为空文本**（238/238 全量核）⇒ 不能当"模型思考内容"读数 · 2026-11-20
+
+**全量 census（307 份 tape，逐份逐行）**
+```
+无 assistant/think 行 = **69** 份（rail 支为主）· 有 1 条 think 行 = **238** 份
+在 238 份里：think 文本**为空** = **238** · 非空 = **0**
+当轮真跑样本：assistant/think = {"text": ""}（run-1e2655adb60efe3b-p006b0035ff000019）
+```
+
+**A：判断补一条**
+```
+`assistant/think` 在本链上是**结构占位**：行在场但文本恒空（238/238），rail 支则连行都没有。
+⇒ ① 任何"模型思考/推理内容"的读数**不能**来自该行（只能来自 reply 原文或 attempt）；
+   ② 该行的存在与否只提示"是否走了推理路径"（rail 支无此列），与内容无关。
+可被下轮推翻的一句：**若任一轮 `assistant/think.text` 非空，则本条作废并须给出该轮 period_id 与原文。**
+```
+
+**当轮真跑**
+```
+prompt：weather Sendai
+period_id=run-1e2655adb60efe3b-p006b0035ff000019
+jsonl=/tmp/t2round/events/run-1e2655adb60efe3b-p006b0035ff000019.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met · think={"text":""}
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=a9d13c97e307edea
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s48_run-1e2655adb60efe3b-p006b0035ff000019 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
