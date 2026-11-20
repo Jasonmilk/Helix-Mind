@@ -8867,3 +8867,14 @@ D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 perio
 ROUND_DIR=/tmp/s56_run-fe72ac3db7964c56-p006b0036e1000021 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · calc 90*90(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] period=run-35f6a55284d039b4-p006b0036f6000022 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=886bf52e99a24373
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr50_run-35f6a55284d039b4-p006b0036f6000022 accept_all rc=0
+[2] period=run-cf208fb4baf29a73-p006b0036f9000023 · 15 行 · tc=1 · u=2 · check=3 · Unmet · diff 0 字节 · cf sha=7b95093917c4c6f8
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr50_run-cf208fb4baf29a73-p006b0036f9000023 accept_all rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮均命中 · 页面缺口=2 两轮均命中
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
