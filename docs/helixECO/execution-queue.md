@@ -4570,3 +4570,38 @@ weather 走 allowed（allowed_once=1 · tool/call=1 · verdict Met），outcome 
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### B1-za 轮次 · begin/end 的 ring 兜底在"已知 mismatch"时仍被采用 · 2026-11-20
+
+**撞到（构造输入，标 构造；底为当轮真跑 tape）**
+```
+底：真跑 tape period run-b10fe4d164a323c5-p006afffaf4000010（weather 轮，15 行，见上一节 c6f48dd）
+构造：把该 tape 的 `turn/end` 去掉（模拟写盘被截断）
+改前 casefile：`_source={begin:tape, end:**ring**}`，而 ring 里那条 end 属于**别的 period**
+  （run-8bba24c5ee368a4a-p006aff2198000000，`ring_mismatch` 已标出该 mismatch）
+  ⇒ `end` 仍显示 `{"done":true,"success":true,"impasse":false,"reason":"completed"}`
+  ⇒ 读者只看 `end` 就会读到**别轮的结论**。
+```
+
+**修（`Cellrix 02e6730`，additive，只动渲染链）**
+```
+回落前先验身份：`trace_id === 本 period` 或无 `trace_id` 才允许回落；
+已知 mismatch ⇒ **不采用**，输出 `{_source: "ring(stale: 不采用，属于 <其它 period>)"}`（如实 UNMEASURABLE）
+```
+
+**三形反样本**
+```
+[1] tape 缺 turn/end + ring 属别轮 ⇒ end={_source:"ring(stale: 不采用，属于 run-8bba…)"}  ← **改前显示别轮 success=true**
+[2] 真跑完整 tape             ⇒ end={"done":true,"success":true,"impasse":false} · _source end=tape（行为不变）
+[3] ring 手写本 period        ⇒ 仍回落 ring（**不误伤合法兜底**）
+回归：l2_render_test.js rc=0 · accept_all rc=0
+```
+
+**为什么是 B1 不是 C**
+```
+与 B1-d（hitl 未校验 period）、B1-h（两口径混源）、B1-s（--expect 歧义）同族：**身份是 period_id**。
+这次的对象是 `begin`/`end` 的兜底路径 —— 它已经知道 mismatch（ring_mismatch 非空），却仍采用，属"已知错源照用"。
+```
+
+**计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：门后项一项未动、未互相销账；章 A 签字 / signoff / HITL 未捆入；未写「已确认」、未归档。
