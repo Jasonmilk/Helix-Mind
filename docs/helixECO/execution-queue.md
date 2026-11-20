@@ -5566,3 +5566,12 @@ D1/D2 三轮 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
 D1/D2 三轮 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）· 三轮 diff 0 字节
 四选一：C ×3 · 红判据逐项=无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 23*4(rail) / weather Hiroshima · 2026-11-20
+
+```
+[1] run-9865a5553e044e81-p006b001172000033 · 6 行 · tc=0 · verdict 无 · cf sha=7331432762cb8fe1 · d1_d2 rc=0 · accept_all rc=0 · diff 0 字节
+[2] run-9710ad97382548e3-p006b001172000034 · 15 行 · tc=1 · Met · cf sha=7378987cbb06c80f · d1_d2 rc=0 · accept_all rc=0 · diff 0 字节
+D2 数据源=官方副本 sha 4b5c93226838a0e7
+四选一：C ×2 · 无红 ⇒ 续
+```
