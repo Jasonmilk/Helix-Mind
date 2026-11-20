@@ -6754,3 +6754,25 @@ ROUND_DIR=/tmp/rot30 accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0）
    （有其它行证），或解析失败轮写出 bypass≠null，则上面两条被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### A 轮次 · **同一输入**在同一模型同一插件面上出现「可解析（15 行）」与「不可解析（9 行）」两种结局 · 2026-11-20
+
+**逐条对照（同一句 prompt："Please call the numbers tool and report exactly what it returns."）**
+```
+run-cf208fb4baf29a73-p006b0026ae00000b（早前）: attempt="planned calls: numbers"      reply="The numbers tool returns: [1..10]" → 15 行 · tc=1 · Unmet
+run-cf208fb4baf29a73-p006b00283d000022（早前）: attempt="planned calls: numbers"      reply="1, 2, 3, 4, 5, 6, 7, 8, 9, 10" → 15 行 · tc=1 · Unmet
+run-cf208fb4baf29a73-p006b002875000025（本轮）: attempt="no calls planned — answered directly"
+                                               reply={"calls":[{"tool":"numbers","args":{"series":"[1, 2, 3, 4, 5]"},"expect":"ok"}]} → 9 行 · tc=0
+差异点（本轮 raw 计划里）：`args.series` 写成**字符串** "[1, 2, 3, 4, 5]"，且带 `"expect":"ok"` ⇒ 未被解析成 calls
+```
+
+**A：判断补一条**
+```
+「reply 形态随 模型 × 工具面 变化」之外，**同一模型、同一工具面、同一句话在不同轮次也会出现
+"计划被解析 / 计划未被解析"两种结局**（模型输出形态本身有波动）。
+⇒ ① 不能用单轮结果给某个输入"定形态"（不能说"问 numbers 必 15 行"）；
+   ② 判「工具是否可被调用」时，`tc=0` 有可能是**模型没解析成功**而不是"工具不可用"——
+      要区分就得看 reply 原文是否含计划 JSON（本轮给出实例与具体差异字段）。
+可被下轮推翻的一句：**若同一句 prompt 在 20 轮内始终同形态（全 15 行或全 9 行），则"同输入可两结局"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
