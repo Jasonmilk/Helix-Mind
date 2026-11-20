@@ -7112,3 +7112,27 @@ LINES=27 · AGUI=17 · tool/call=4 · tools=[calc, weather, numbers, web_search]
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=8bc628ab1763822c
 ROUND_DIR=/tmp/multi4b accept_all rc=0（① 0/0 · ② 17 条 · ② rc=0）· C · 无红 ⇒ 续
 ```
+
+### A 轮次 · 两个 exec 调用只记 **1 次** `unavailable`、`kinds={"exec":1}` ⇒ 闸**遇第一次拒绝即停**，计数不是调用数 · 2026-11-20
+
+**读数（真跑）**
+```
+POST「…exec 调 ls，再 exec 调 pwd，然后报告两个输出」
+⇒ job_id=run-f47020ede4d0b351 · period_id=run-f47020ede4d0b351-p006b002a9a000048
+jsonl=/tmp/t2round/events/run-f47020ede4d0b351-p006b002a9a000048.events.jsonl
+LINES=9 · AGUI=5 · tool/call=**0** · verdict 无
+attempt="planned calls: exec, exec"（模型确实规划了**两个** exec）
+HITL 四态（_source=check/status.hitl）：allowed_once=0 · **unavailable=1** · **kinds={"exec":1}** · cancelled=0 · rejected=0
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=325975cf47bf00e6
+ROUND_DIR=/tmp/exec2 accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
+```
+
+**A：判断补一条**
+```
+`unavailable` / `kinds[kind]` 记的是**拒绝事件数**，不是被拒的调用数，且闸**按调用顺序 fail-fast**：
+本轮计划两个 exec，只记 1 次拒绝（kinds {"exec":1}），没有累加到 2。
+⇒ ① `unavailable=1` 不能读成"只有一个调用被拒"（本轮是 1 次拒绝对应 2 个被拦下的调用）；
+   ② `allowed_once` 亦同理是"放过的事件数"（见 n=1..4 公式：无拒绝时恰等于调用数）。
+可被下轮推翻的一句：**若某轮计划两个同类被拒调用却出现 `unavailable=2`/`kinds{"exec":2}`，则"fail-fast 只记 1 次"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
