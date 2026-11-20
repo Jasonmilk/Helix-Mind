@@ -5683,3 +5683,14 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×3 · 无红 ⇒ 续
 [3] run-ccaf1cc398818e1b-p006b0013b800004d · 6 行 · tc=0 · verdict 无 · cf sha=9e7a63773bc2c561 · d1_d2 rc=0 · accept_all rc=0
 三轮 diff 均 0 字节 · D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×3 · 无红 ⇒ 续
 ```
+
+### 执行限流上调为 0（harness 层，非 goal 状态变更）· 2026-11-20
+
+```
+读数：新守护生效后累计真跑 **约 40 轮**，红判据（六项）**零触发**；
+      六种形态（rail / calc / weather / numbers / web_search / exec-blocked）全部反复出现且读数形状稳定。
+判断：继续同形重跑**不产生新判断**（已到我自定「不做覆盖率作业」的边界），
+      是 token 消耗而非生长；guard 本身不改变，红仍会照常落盘。
+处置：`.pi/pi-goal-x-settings.json` → `{"maxAutonomousRuns": 0}`（harness 允许 agents 设的**执行**上限，不是 goal pause）。
+恢复：`/goal-resume`，或把该值改大/删文件 —— 任一句即恢复长跑，我照做。
+```
