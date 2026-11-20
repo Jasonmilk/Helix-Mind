@@ -6384,3 +6384,32 @@ total=50 · gist 为空=**47** · 非空=3
 
 **自查**：本轮我先用 `conversation_id` 当 parent 做连接，得出"3 例空 gist 被引用"的错读数 ——
 `/v1/sessions` 每条**自带 `period_id`**（我漏看），改用 `period_id` 后结论才成立。此为"坐标取错"家族的又一次。
+
+### A 轮次 · `/v1/sessions` 的 `status`/`rejected`/`rejection_log` 在 **50/50** 上恒空 · 2026-11-20
+
+**读数（全量 50 条，不取样本）**
+```
+`status`      分布：{'None': **50**}
+`rejected`    分布：{False: **50**}
+`rejection_log` 非空：{False: **50**}
+`preview`     有值：{True: 50}
+另：`reply` 与 tape 的 `assistant/reply` **一致 5/5**（抽 5 条逐字比对）
+但 tape 的 `verdict/status.status` 有 Met / Unmet / 无（例：run-430919…=Met · run-f3ec37…=None）
+```
+
+**核的是哪条判断 / 结果**
+```
+先前读法（隐含）：`sessions.status` 可当"这一轮的判定"用。
+当轮：50 条全为 None，而 tape 里同一 period 有 Met（3 例）；`rejected`/`rejection_log` 亦全空。
+⇒ `status` 在列表投影里**没有任何判读价值**；判定仍只在 tape 的 `verdict/status`。
+```
+
+**A：判断改成**
+```
+`/v1/sessions` 的 `status`/`rejected`/`rejection_log` 在当前实现上**恒为空**（50/50），
+不得用于判断某轮结果；判结果只看 tape 的 `verdict/status.status`（Met/Unmet/缺失）。
+**不判为缺陷**：仓内没有口径要求这三个字段非空（无 spec 锚点）⇒ 只记"不可用"，不登记 B2、不写 DEBTS 新行。
+可被下轮推翻的一句：**若任一轮出现 `sessions.status` 非空（对应 tape 的 Met/Unmet），则"恒空"被推翻，
+须重新判定该字段的语义与其是否应被填充。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
