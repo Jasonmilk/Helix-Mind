@@ -8748,3 +8748,39 @@ ROUND_DIR=/tmp/s51_run-cf208fb4baf29a73-p006b00365600001c accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 全量 census：`tool/call` 225 行零 args；失败 result 的 `duration_ms` **有两种缺失表示**（键缺席 20 / 键在但 null 1）· 2026-11-20
+
+**全量实测（309 份 tape，逐行扫）**
+```
+tool/call 行数 = **225** · 键并集 = ['expect','index','tool']        ← **无 args**（与既有 A 一致，样本从 32 涨到 225）
+tool/result 键并集 = ['duration_ms','index','ok','outcome','outcome_sha','source','tool']
+  source 分布 = {"None": 204, "execution-pipeline": 21}
+  duration_ms 有无 = {"有": 205, "无": **20**}
+⇒ 21 条 execution-pipeline 里 **只有 20 条没有 duration_ms 键**；剩下的 1 条**键在、值为 null**：
+   run-258ea661afdaec46-p006b002108000001 · tool=calc · ok=false · source=execution-pipeline · **duration_ms=null**
+   outcome = {"error":"status: NotFound, message: \"tool not found or not instantiated: calc\"…"}
+当轮真跑（成功侧对照）：result=[{"tool":"calc","ok":true,"source":null,"duration_ms":52}]
+```
+
+**A：把"缺失"的两种写法写明**
+```
+失败 result 的耗时字段有两种表示：**键缺席**（20 条）与**键在但为 null**（1 条，样本如上）。
+⇒ 读耗时一律按 `null` 或缺失 ⇒ `UNMEASURABLE`（这正是 `Cellrix 1d16a22` 的修法）；
+  不能用"键存在与否"判是否有耗时，也不能把 `null` 读成 0。
+⇒ 另：`source` 只有两种值（`null` / `execution-pipeline`），可作为"是否执行段失败"的**唯一**可靠标志。
+可被下轮推翻的一句：**若出现带非 null `duration_ms` 的 `source=execution-pipeline` 结果，则"失败无耗时"被推翻。**
+```
+
+**当轮真跑**
+```
+prompt：calc 88*88
+period_id=run-4b36b7b645b63e4e-p006b00367600001d
+jsonl=/tmp/t2round/events/run-4b36b7b645b63e4e-p006b00367600001d.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met · result.duration_ms=52
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=9f1b4a200dd0ff9d
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s52_run-4b36b7b645b63e4e-p006b00367600001d accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
