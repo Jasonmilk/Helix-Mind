@@ -6162,3 +6162,11 @@ pipeline Err（工具不存在/执行段失败）⇒ tool/result **ok=false** + 
 闸拒绝（exec fail-closed）⇒ **不写任何 tool 行**（反向反样本，上一轮）。
 ⇒ 三层各自可判，B1-zf 只接管第二层。四选一：C · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Okayama(Met) / calc 24*24(Met) · 2026-11-20
+
+```
+[1] period run-d5d0913d86637272-p006b002514000005 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=4f29d147028dea06 · d1_d2 rc=0 · accept_all rc=0（① 0/0 · ② 8 条）
+[2] period run-901c997c78176aee-p006b002517000006 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=a5c0012da75e51ef · d1_d2 rc=0 · accept_all rc=0（① 0/0 · ② 8 条）
+D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 红判据逐条=否 ⇒ 续
+```
