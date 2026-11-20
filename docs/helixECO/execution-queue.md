@@ -6241,3 +6241,30 @@ D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
 ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
 四选一：C · 红判据逐条=否 ⇒ 续
 ```
+
+### A 轮次 · 我读错了一半代码：`job_id` 是**被读的**，写进了 `context/inject.resume_from`（period 形态）· 2026-11-20
+
+**当轮读数（带 job_id 的接续请求，真跑）**
+```
+POST {"message":"And what was my previous question?","job_id":"run-04836f1edf36145e"}
+⇒ job_id=run-03fd82d665e3a5e3 · period_id=run-03fd82d665e3a5e3-p006b002598000004
+jsonl=/tmp/t2round/events/run-03fd82d665e3a5e3-p006b002598000004.events.jsonl
+LINES=15 · AGUI 映射=8 · tool/call=1 · verdict=Met · HITL allowed_once=1
+**context/inject = {"chars":800,"injected_chars":0,"nodes":0,"resume_from":"run-04836f1edf36145e-p006b002579000003"}**
+  ← 传入的 job_id 被解析成**上一轮的 period_id**，写进 `resume_from`（父子槽取 period id，符合 ADR-0048 §251）
+reply「I apologize…」（模型没答上"上一问是什么"，但**接续链路存在**）
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=bd429d7f8054b824
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**A：我先前的判断错了，改正如下**
+```
+错（本轮中途）："`/v1/chat` 只读 `message`，body 里的 `job_id` 会被忽略" ——
+   依据只是 `src/main.rs:528-556` 那段 handler **前 40 行**（那里确实只 `get("message")`）。
+对（本轮真跑）：**`job_id` 被读**，落成 `context/inject.resume_from = <上一轮 period_id>`。
+⇒ 这正是我自己记过的错型：**读到部分代码就下结论**（与"读到空"同族：把"我没看到"当成"不存在"）。
+⇒ 可被下轮推翻的一句：**接续身份由 body 的 job_id 经解析得到 period（不是 job）并写入 resume_from；
+   若某轮传入 job_id 而 resume_from 缺失或写成 job 形态，须重判。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
