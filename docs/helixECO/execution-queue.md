@@ -8991,3 +8991,14 @@ check_upstream：YES src=config · reasoning_endpoint=http://127.0.0.1:8080/v1
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮命中 · 页面缺口=2 两轮命中
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · web_search(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] period=run-c07e37c0c5619013-p006b003804000036 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=c7ce233b158b8d32
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr59_run-c07e37c0c5619013-p006b003804000036 accept_all rc=0
+[2] period=run-cf208fb4baf29a73-p006b00380d000037 · 15 行 · tc=1 · u=2 · check=3 · Unmet · diff 0 字节 · cf sha=802a7bd7f337720e
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr59_run-cf208fb4baf29a73-p006b00380d000037 accept_all rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮命中 · 页面缺口=2 两轮命中
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
