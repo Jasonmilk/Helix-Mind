@@ -6198,3 +6198,34 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 红判据逐条=否 �
 ```
 
 **红判据**：六项逐条＝否（UNMEASURABLE 项按具名记录，不当通过）⇒ 记 C，续。
+
+### A 轮次 · 传输层断开时 `pipeline Err` **结构上不可达**（模型无工具可规划）· 2026-11-20
+
+**当轮读数（tentacle 断开期间真跑）**
+```
+period_id=run-25df658f4814e5e6-p006b00255d000002
+jsonl=/tmp/t2round/events/run-25df658f4814e5e6-p006b00255d000002.events.jsonl
+LINES=9 · AGUI 映射=5 · tool/call=0 · tool/result=0 · usage=1 · attempt="no calls planned — answered directly"
+verdict 无 · reply「The result of the expression 28*28 is 784.」（**未用工具，答案仍对**）
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+（同一面上一轮已记：50061 一段 http=000 不可量；B1-zf 分支未触发 ⇒ UNMEASURABLE）
+恢复 tentacle（./fixtures）后 health 全 ok=True
+```
+
+**核的是哪条判断 / 结果**
+```
+上一节留的待核点：「若 tentacle 断开且模型确实规划调用，tape 应出现 ok=false + source=execution-pipeline」。
+当轮两次尝试（27*27、28*28）**模型都未规划调用** ⇒ 提示的结构原因是：
+  tentacle 不可达 ⇒ **工具清单为空** ⇒ 模型没有可规划的工具 ⇒ 根本不进执行段。
+⇒ 因此「传输层断开」这条面上，`pipeline Err` 分支**不是"没取到证据"，而是结构不可达**。
+```
+
+**A：判断改成**
+```
+`pipeline Err`（B1-zf 所接管的那条分支）在真实链上只有一种可达来源：
+**工具在清单里、但执行期消失**（如插件子集缺 calc ⇒ NotFound）。
+传输层断开时清单为空 ⇒ 模型不规划 ⇒ 不进执行段 ⇒ 该分支不可达。
+⇒ 可被下轮推翻的一句：**若在 tentacle 断开且 tape 里出现 attempt=planned calls（说明清单仍有缓存/视图），
+   则"清单为空"这条被推翻，B1-zf 的传输层覆盖须重判。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
