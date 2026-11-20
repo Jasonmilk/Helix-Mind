@@ -8158,3 +8158,41 @@ pipeline 失败批（有 result ok=false/source=execution-pipeline，无 verdict
 则这支划分被推翻。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次（含自纠）· 失败批 n=4 得 17 行；**AGUI 公式两支其实同一条 `5+3n`**（上轮我写错成 `5+3(n−1)`）· 2026-11-20
+
+**读数（真跑，失败批 n=4）**
+```
+插件面 /tmp/plugins_nw（numbers+weather；calc / web_search 缺失）· 模型 coder-3b（config sha `507d3f781f7c9260`）
+prompt：numbers + weather Kushiro + calc 79*79 + web_search n4，报四个结果
+period_id=run-94752d80d75ae05e-p006b003411000009
+jsonl=/tmp/t2round/events/run-94752d80d75ae05e-p006b003411000009.events.jsonl
+LINES=**17** · AGUI=**17** · tc=4 · verdict 无 · usage=1 · check/status=1
+attempt="planned calls: numbers, weather, calc, web_search"
+casefile.tool_calls（B1-zh 修后）：四条全 `ok=false` + 时长 `UNMEASURABLE`
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=54830d825c6dd4b1
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s32_run-94752d80d75ae05e-p006b003411000009 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件17 · 缺口4）
+三仓 dirty 0/0/0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
+```
+
+**自纠（上一条 A `25972c0` 的错项，给出实际内容）**
+```
+我在 25972c0 写的是「失败批 AGUI = 5 + 3(n−1)（本 n=3 为 14）」——**算不通**：5+3×(3−1)=11 ≠ 14。
+把三支实测逐条列出（AGUI 全部来自 `bin/agui | wc -l`）：
+  失败批 n=1 → run-24d8cc8f1760bb4e-p006b002f5a00006f：11 行 · AGUI=**8**
+  失败批 n=2 → run-b15d6af2564f7eb2-p006b00334b000005：13 行 · AGUI=**11**
+  失败批 n=3 → run-be189212e414d13e-p006b0033da000008：15 行 · AGUI=**14**
+  失败批 n=4 → 本轮 17 行 · AGUI=**17**
+  成功批 n=1..4 → 15/19/23/27 行 · AGUI=**8/11/14/17**
+⇒ **AGUI = 5 + 3n，两支同一条公式**（成功批先前记作 8+3(n−1)，与 5+3n 恒等，故无冲突）
+```
+
+**A：更正后的两条定律**
+```
+① AGUI 条数：**5 + 3n**（不分成功/失败批；n=1..4 均实测吻合）
+② 行数：成功/业务失败批（有 verdict）= **15 + 4(n−1)**；pipeline 失败批（无 verdict、有 ok=false/source=execution-pipeline 行）= **9 + 2n**
+   ⇒ 失败批 n=4 行数 17，与 9+2n 吻合（上条 A 的可推翻句「n=4 若≠17」已实测为 17 ⇒ 该支**未被推翻**）
+可被下轮推翻的一句：**若出现 AGUI ≠ 5+3n 的轮（任一支），或失败批 n=5 行数≠19，则①②再改。**
+四选一：A（含自纠）· 六红逐条=否 ⇒ 继续
+```
