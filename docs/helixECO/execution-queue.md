@@ -7839,3 +7839,38 @@ ROUND_DIR=/tmp/s13_run-cf208fb4baf29a73-p006b0030d6000001 accept_all rc=0
 （重启后 period 序号再从 …0000001 起，与已落盘「序号不持久化」一致）
 四选一：C（与已落盘「reply 形态须带样本数」一致：qwen3.8-27b 样本 1，干净答案）· 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · `tool/call` **不含参数**（32/32 零例外）⇒ 参数正确性不可由 tape 审计；Aomori→Shimizu 仍 Met · 2026-11-20
+
+**读数（真跑 + 全量核查）**
+```
+prompt：Please call the weather tool for city Aomori and report what it returns.（模型 qwen3.8-27b，5 插件面）
+period_id=run-be92a28a7547ac9a-p006b0031f1000002
+jsonl=/tmp/t2round/events/run-be92a28a7547ac9a-p006b0031f1000002.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · verdict=**Met** · model=qwen3.8-27b
+tool/call  = {"expect":"ok","index":0,"tool":"weather"}          ← **没有 args**
+tool/result= {"duration_ms":1221,"index":0,"ok":true,
+              "outcome":"{\"ok\":true,\"weather\":{\"city\":\"**Shimizu, Japan**\", …}}"}   ← 请求的是 Aomori
+reply      = "For Aomori (resolved to Shimizu, Japan), the weather tool reports the following: …"
+全量核查：近 40 份 tape 中 **tool/call 行 32 条，含 `args` 的 0 条**；data 键并集 = `['expect','index','tool']`
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=7d4a6d3a5181a618 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+ROUND_DIR=/tmp/s21_run-be92a28a7547ac9a-p006b0031f1000002 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘：「verdict=Met 不含『工具是否切题』」（无关 calc 调用也 Met）。
+当轮补的是更难的一层：**参数根本没有落进 tape** ⇒ "参数对不对" 连事后复核都做不到，
+只能从 reply 的自述（"resolved to Shimizu"）间接看到——而那是模型转述，不是工具输入。
+```
+
+**A：判断补两条**
+```
+① `tool/call` 行只含 `tool / index / expect`，**不含 args**（近 40 份 tape、32 条零例外）⇒
+   「送往工具的实际参数」在本链上 **UNMEASURABLE**，任何"参数正确/错误"的结论都不能声称由 tape 支撑；
+② `verdict=Met` 不校验城市解析等**语义正确性**：请求 Aomori、工具返回 Shimizu，仍判 Met。
+⇒ 若要让参数可审计，需改 tape 结构（新增 args 字段）—— 属行为面/方向层、**门后具名，不自裁**（不写 DEBTS 新行）。
+可被下轮推翻的一句：**若任一轮 tool/call 出现 `args` 字段，则①被推翻（并须改记该字段的可见范围）。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
