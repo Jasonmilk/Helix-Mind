@@ -6283,3 +6283,33 @@ D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
 ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=5（投影 rc=0）· ② rc=0
 四选一：C（与上一轮 A 的"resume_from=上一 period"一致，本轮是第二跳复现）· 红判据逐条=否 ⇒ 续
 ```
+
+### A 轮次 · `/v1/sessions` 里 48/50 的 `gist` 为空：不是"生成失败"，是"按需写、列表只读" · 2026-11-20
+
+**读数**
+```
+GET /v1/sessions ⇒ configured=true · periods=**50** · **gist 为空 48 条** · 非空 2 条
+  非空样本：run-03fd82d665e3a5e3（count=15）gist="And what was my previous question?"
+           run-04836f1edf36145e（count=15）gist="Please call the weather tool for city Nagasaki an…"
+  空样本（例）：run-5b703d3ceede86b7（count=9）· run-25df658f4814e5e6（count=9）· run-8bba24c5ee368a4a（count=6）
+但对应 tape 的 `user/message` **有原文**（例：run-5b703d3ceede86b7 的 user/message = "Summarize our conversation in one sentence."）
+GET /v1/sessions?root=run-03fd82d665e3a5e3-p006b002598000004 ⇒ periods=2，两条 **conversation_id 同为链根** run-04836f1…；
+   第二条 parent=run-03fd82d665e3a5e3-…（上一跳），`gist=''`
+```
+
+**核的是哪条判断 / 为何先疑为缺陷**
+```
+先疑：48/50 空 gist ⇒ "标题生成了但丢"（读到空家族）。
+代码事实：`src/session_events/convergence.rs:349-350` 注释与实现 ——
+  `read_gist` 是**只读**取（列表投影响用），"不产生副作用 —— 生产仍在 `gist_of` 的按需写一次"。
+⇒ 空 gist = **尚未按需写出**，不是生成失败/丢失。
+```
+
+**A：判断改成**
+```
+① `/v1/sessions` 的 `gist` 是**按需生成、列表只读** ⇒ 空值是"未写出"，不能读成"丢标题"；
+② 因此"空 gist"在任何一轮里都**不构成缺陷证据**；要判标题问题，须先触发一次按需写再看。
+⇒ 可被下轮推翻的一句：**触发按需写（使某 period 的 gist 被写一次）后，该 period 在列表里的 gist 应从空变非空；
+   若仍为空 ⇒ 才是真缺陷。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
