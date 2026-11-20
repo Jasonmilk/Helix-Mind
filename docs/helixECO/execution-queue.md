@@ -7283,3 +7283,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-cf208fb4baf29a73-p006b002bad00005e · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=30a15d5ffd20b21b · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句累计 17 样本：16 可解析 / 1 不可解析）
 ```
+
+### C 轮次 ×2 · calc 60*60(Met) / web_search(Met) · 2026-11-20
+
+```
+[1] period=run-9dd22ad560f7ad2e-p006b002bbc00005f · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=9b0d7983c0844ebf · d1_d2 rc=0 · accept rc=0
+[2] period=run-b167de780d96a4ee-p006b002bbf000060 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=c2d9cc0220611960 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
