@@ -6945,3 +6945,30 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-430919349decce69-p006b0029b600003d · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=0171ce35347c3b34 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 11 样本，可解析）
 ```
+
+### A 轮次 · 首次真跑到**一轮两个工具调用**（calc+weather）：`allowed_once=2`、19 行 · 2026-11-20
+
+**读数（真跑，一句话要求两个工具）**
+```
+POST「Please call the calc tool with expression 45*45 AND the weather tool for city Naha, then report both results.」
+⇒ job_id=run-f6764005e28e58c3 · period_id=run-f6764005e28e58c3-p006b0029c700003e
+jsonl=/tmp/t2round/events/run-f6764005e28e58c3-p006b0029c700003e.events.jsonl
+LINES=**19** · AGUI 映射=**11** · verdict=**Met**
+行序：turn/start · user/message · context/inject · assistant/usage · assistant/think · assistant/attempt{"planned calls: calc, weather"}
+      · tool/call{calc,index:0} · tool/result{calc,index:0,ok:true} · tool/call{weather,index:1} · tool/result{weather,index:1,ok:true}
+      · check/status×4 · verdict/status{Met} · assistant/usage · assistant/reply · turn/end · check/status
+HITL 四态（_source=check/status.hitl）：**allowed_once=2** · cancelled=0 · rejected=0 · unavailable=0 · kinds={}
+assistant/usage 条数 = **2**（规划 1 + 收尾 1）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7，所量 period 同上）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=30451ca72e0da874
+ROUND_DIR=/tmp/multi accept_all rc=0（① rc=0/0 · ② 事件条数=11 · ② rc=0 · ②b rc=0）
+```
+
+**A：判断补两条（此前所有轮 tc≤1，从未见过多调用）**
+```
+① **一轮可以有多个 tool call**：`tool/call`/`tool/result` 成对出现，`index` 0,1 递增；行数 = 15 + 4×(n−1)；
+② `allowed_once` = **闸放过的调用数**（本轮 2），不是布尔；`assistant/usage` 仍为 **2**（规划一次 + 收尾一次），
+   与已落盘「usage=LLM 调用次数」一致，不因调用数增加而增加。
+⇒ 由此：`allowed_once=1` 只能读"放过一次"，`allowed_once=2` 才能读"这一轮有两个调用被放过"。
+可被下轮推翻的一句：**若某轮 tc=2 而 allowed_once=1（或 usage≠2），则"闸按调用计数、usage 恒 2"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
