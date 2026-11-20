@@ -8017,3 +8017,17 @@ ROUND_DIR=/tmp/s26_run-8f86acfdf216824c-p006b003312000003 accept_all rc=0（① 
 轮末插件面已复原 ./fixtures（health tentacle=reachable）
 四选一：C（同一 B2 的第 2 样本，无新信息；不重复计一次红，红已在 849d48b 记并具名）· 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · exec-blocked（六形态第 6 形）：9 行 · 闸拒零执行 · 2026-11-20
+
+```
+period_id=run-e1ccad091df2f268-p006b003330000004
+jsonl=/tmp/t2round/events/run-e1ccad091df2f268-p006b003330000004.events.jsonl
+LINES=9 · AGUI=5 · tc=0 · verdict 无
+HITL 四态（_source=check/status.hitl）：allowed_once=0 · unavailable=1 · kinds={"exec":1} · cancelled=0 · rejected=0
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=f323792b42711b95
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s27_run-e1ccad091df2f268-p006b003330000004 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0 · docs 冻结快照 rc=0
+四选一：C（与 5af2c08 判断一致：闸拒 ⇒ 不产生任何 tool 行）· 六红逐条=否 ⇒ 继续
+```
