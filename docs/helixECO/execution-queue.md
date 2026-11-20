@@ -7414,3 +7414,62 @@ check_upstream：YES src=config · reasoning_endpoint=http://127.0.0.1:8080/v1 �
     D1/D2 rc=0 · ROUND_DIR accept_all rc=0 · Cellrix dirty=0
 四选一：C · 红判据逐条=否 ⇒ 续
 ```
+
+---
+
+## 阶段完工 · 稳态自生长
+
+**节名**：阶段完工 · 稳态自生长 · **本节起始行 = 7420**（`execution-queue.md` 尾部 append；后续追加不移动本节标题行）
+**依据**：gardener 收束裁定（goal-tweak，发出即生效）：完成口径三件 —— 真上游一轮 ⇒ 标准事件 ⇒ 证轨可查可重放 —— 均有落点且被真跑复现；章 A 三下齐可复跑；章 B 实现落地且清单由 `$defs` 生成。
+**本提交**：`a863a6d`（本节 append 的提交；行号 7420 指本节标题行）
+**三仓 dirty=0（收束时实测）**：`anaphase-helix` 0 · `Cellrix` 0 · `helix-mind` 0。
+
+### 一、额度停拆除（原「4/4 额度用尽」不再构成停）
+```
+配置文件：/Users/jason/Developer/.pi/pi-goal-x-settings.json（**不在任何 git 仓内**）
+改前：{"maxAutonomousRuns": 4}  sha16=def87f805a9a3471
+改法：移除该键（默认 = 不限）
+改后：{}                       sha16=ca3d163bab055381
+生效判据（机械）：后续回执的 runs 计数不再出现「k/4」上限分母；若仍现上限，则改判为
+  「未生效、不作判据」并再给读数，不留悬着配置。
+停触发只剩：六项红 + 资源型主动暂停（须标非红停 + 累计消耗 + 不冒充红触发）。
+```
+
+### 二、聪明调度（增益判据，代替按轮计数）
+```
+增益 = 当轮读数向量（去掉 period_id）与同形态已落盘判断之间的差。
+增益=0 的机械条件（三者同时）：四选一=C · 六项红逐条全否 · ROUND_DIR accept_all 分项 rc 向量与上一同形态轮逐项相同。
+满足 ⇒ 立即按「输入面轮换」取下一个真实上游并真跑（一次只换一个面，交来源 + 改前配置 sha），
+不再重跑同形轮、不因零增益累计轮次。
+固定读数项另加两条（逐仓带主语，缺项写 UNMEASURABLE 并给 rc）：
+  ① `git -C <repo> status --porcelain` 条数（Cellrix / anaphase-helix / helix-mind）
+  ② `git -C Cellrix diff --quiet HEAD -- docs/observations/` 的结果
+```
+
+### 三、覆盖索引（只记「已试」；不列候选、不预写下一面、不写覆盖率、不立待撞清单）
+| # | 输入面 | 单变量值 | 来源 | 改前 sha | period_id（代表轮） | 四选一 |
+|---|---|---|---|---|---|---|
+| 1 | 模型 | coder-3b → coder-7b | config `reasoning_model` | `507d3f781f7c9260` | 会话前半段回执 | C |
+| 2 | 模型 | coder-7b → coder-14b | 同上 | `de6e3325b2e85a11` | 会话前半段回执 | C |
+| 3 | 模型 | coder-14b → qwen3.8-27b | 同上 | `07e2c6d21a53c449` | 会话前半段回执 | C |
+| 4 | config 通道 | 文件写 qwen3.8-27b / 启动 env 覆盖为 coder-14b | `ANAPHASE_REASONING_MODEL` | `98d6380f2a55132a` | `run-0ad206b551cdc564-p006b0018a2000001` | A（env 覆盖生效，撞出 B1-ze） |
+| 5 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_subset`(numbers,rate) | 既有子集目录 | tentacle 启动参数 `--plugins-dir ./fixtures` | `run-9a5fa0c4ecba7c20-p006b00278d000015` | C（B1-zf 复现，calc NotFound） |
+| 6 | tentacle 插件 | `./fixtures`(5) → `/tmp/plugins_calc`(仅 calc) | 由 fixtures 复制 | 同上 | `run-cf208fb4baf29a73-p006b002857000023` | C（B1-zf 在第二个工具名 numbers 复现） |
+| 7 | tentacle 插件 | 同上（仅 calc）+ 多工具请求 | 同上 | 同上 | `run-4f18ba73f9d5a696-p006b002a16000041` | C（模型直接作答 9 行） |
+| 8 | 会话形态 | 无 job_id → 带 job_id 接续 → 并发同输入 | `/v1/chat` body | 无（不改配置） | `run-03fd82d665e3a5e3-p006b002598000004` / `run-5b703d3ceede86b7-p006b0025b3000005` / `run-b61c20cdf58665be-p006b0026bf00000c,d` | A（`resume_from`=上一跳 period；并发两个 period 各自成链） |
+
+### 四、门后项封存为「已具名、待真撞」（不进可自裁任务、不互相销账、不因封存造活）
+```
+HITL 真闭环（ApproverRegistry / ApproverBinding / EscalationStep）· validator 基准 ·
+signoff 销账（queue「L2 读数齐备未签」仍为唯一作数账）· 章 B 余项 23 类未覆盖事件 ·
+B2 闸是否校验工具存在性（`d-unknown-tool-name-silently-dropped` 既有行保留、带 revisit）。
+既有 K 系门后项不变：K-134 · C-076 · phyt 4 条 · ring5 · K22 · K17 · M6/B18 · M7 条件2 · L2 签字 ·
+tentacle-transport-mcp · chain.json/rings.json。
+```
+
+### 五、此后守护方式
+```
+线 1 转**低频稳态守护**：只有真撞到红才停（红 = 六项），不以「出红」或「覆盖率」为目标，
+不标 complete、不自行唤醒、不写「已确认 / 已交付 / 已对齐官方」、不归档、不改 center、不写 DEBTS 新行；
+dirty=0 维持（三仓逐仓实测，缺项写 UNMEASURABLE 并给 rc）。
+```
