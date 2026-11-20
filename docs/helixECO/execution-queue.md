@@ -6642,3 +6642,11 @@ C · 无红 ⇒ 续
 [2] job_id=run-23a1205893ecd972 · period=run-23a1205893ecd972-p006b0027d5000019 · 15 行 · tc=1 · **Met** · diff 0 字节 · cf sha=559dd4abb446f9e3 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · exec-blocked（9 行）/ calc 36*36（Met）· 2026-11-20
+
+```
+[1] period=run-a572e9fe19bc2614-p006b0027e600001a · 9 行 · tc=0 · verdict 无 · HITL unavailable=1 kinds={"exec":1} allowed_once=0 · diff 0 字节 · cf sha=718c78d0925f4c4f · d1_d2 rc=0 · accept rc=0
+[2] period=run-6414d90acd30b810-p006b0027e900001b · 15 行 · tc=1 · **Met** · HITL allowed_once=1 kinds={} unavailable=0 · diff 0 字节 · cf sha=682981c8e35f3108 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
