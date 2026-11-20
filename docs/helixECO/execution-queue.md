@@ -8878,3 +8878,14 @@ ROUND_DIR=/tmp/s56_run-fe72ac3db7964c56-p006b0036e1000021 accept_all rc=0（① 
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮均命中 · 页面缺口=2 两轮均命中
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · weather Kochi(Met) / web_search(Met) · 2026-11-20
+
+```
+[1] period=run-6f7a953aa6997cb7-p006b00370c000024 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=87f323d0d223b564
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr51_run-6f7a953aa6997cb7-p006b00370c000024 accept_all rc=0
+[2] period=run-369dab6ba9d3e758-p006b003712000025 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=940d703b3d95fbe8
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr51_run-369dab6ba9d3e758-p006b003712000025 accept_all rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮命中 · 页面缺口=2 两轮命中
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
