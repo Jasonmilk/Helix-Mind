@@ -7182,3 +7182,29 @@ casefile 投影一致：mixed/exec2b 的 `end.success=true`，multi2 的 `end.su
 [2] period=run-9710ad97382548e3-p006b002ade00004c · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=de90a1acd8211cea · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### A 轮次 · ring **百余轮未变**：`/v1/chat` 真跑不写 `/v1/agent/events`（它停在本目录都不存在的那条 period 上）· 2026-11-20
+
+**读数（两次相隔 100+ 轮 GET，逐字同值）**
+```
+GET /v1/agent/events ⇒ events=8 · dropped=0 · last_seq=8 · 涉及 period 数=**1**
+  该 period = **run-8bba24c5ee368a4a-p006b002535000000**
+本目录 /tmp/t2round/events 里同 job 的只有两条**其它** period（…p006afde646000000 / …p006afe925d000000，各 3 行、均 rail）
+⇒ ring 里那条 period 的 tape **不在本目录**（另有来源）；而本轮之前我已跑过 100+ 个 /v1/chat 轮次，ring 完全没变
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+上轮 A（8c0a7c7）：「ring 是单轮次快照，常与当轮无关」——当轮再核，更强：
+不只是"与当轮无关"，而是 **/v1/chat 的轮次根本不写 ring**（否则 100+ 轮后 last_seq 不可能还是 8）。
+```
+
+**A：判断加强**
+```
+① `/v1/agent/events` 不是 `/v1/chat` 的产物：真跑 100+ 轮后 `last_seq` 仍 =8、`dropped` 仍 =0、period 仍同一条；
+② ⇒ 每轮把它传给 `l2_casefile` 只能算"输入齐备"，**任何 ring 段的结论都必须写明它来自哪条 period**
+   （本轮：run-8bba24c5ee368a4a-p006b002535000000，且该 period 的 tape 不在 /tmp/t2round/events）；
+③ 由此：**不得**用 ring 的存在/为空去推断"当轮有无事件"。
+可被下轮推翻的一句：**若某轮 /v1/chat 之后 GET ring 出现 last_seq>8 或出现当轮 period_id，则"不写 ring"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
