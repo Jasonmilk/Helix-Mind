@@ -6689,3 +6689,30 @@ C · 红判据逐条=否 ⇒ 续
     ROUND_DIR=/tmp/rr6_run-cf208fb4baf29a73-p006b00283d000022 · accept_all rc=0 · d1_d2 rc=0
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 · 输入面轮换 #7（插件面 = 仅 calc）：B1-zf 在**第二个工具名**上复现 · 2026-11-20
+
+**轮换记录**
+```
+面：tentacle 插件目录（一次只换一个）
+改前：`--plugins-dir ./fixtures`（5 插件）
+改后：`--plugins-dir /tmp/plugins_calc`（**仅 calc.js + calc.manifest.json**，由 fixtures 复制、未改内容）
+来源：既有插件文件复制到新目录（不新建上游、不改协议）
+轮末已恢复 `./fixtures`，health tentacle=reachable
+```
+
+**当轮读数（真跑）**
+```
+POST「Please call the numbers tool and report exactly what it returns.」
+⇒ job_id=run-cf208fb4baf29a73 · period_id=run-cf208fb4baf29a73-p006b002857000023
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b002857000023.events.jsonl
+LINES=**11** · AGUI=8 · verdict **无**
+tool/call  = {"index":0,"tool":"numbers"}
+tool/result= {"index":0,"tool":"numbers","ok":false,"source":"execution-pipeline"}
+reply = 计划 JSON（`{"calls":[{"tool"…`）——模型**规划了清单里不存在的 numbers**（与 #6 的 calc 同机制）
+⇒ B1-zf 在**第二个工具名（numbers）**上成立，不是 calc 专属
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=23b7348fdb134dd4
+ROUND_DIR=/tmp/rot30 accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0）
+```
+
+**四选一**：C（与已落盘 B1-zf 判断一致；新增信息=第二个工具名同样触发）· 红判据逐条=否 ⇒ 续
