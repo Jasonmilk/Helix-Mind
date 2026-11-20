@@ -6550,3 +6550,12 @@ LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · D1/D2 rc=0（D2=官方副本
 两次 casefile rc=0/0 · diff 0 字节 · cf sha=24da708698b8fdd9 · ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
 C · 无红 ⇒ 续
 ```
+
+### C 轮次 · web_search（Met）——六形态第 5 形再复现 · 2026-11-20
+
+```
+period_id=run-cd2973ada561e46f-p006b002746000012 · jsonl=/tmp/t2round/events/run-cd2973ada561e46f-p006b002746000012.events.jsonl
+LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=29a85125dc0d4038 · ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
+C · 无红 ⇒ 续
+```
