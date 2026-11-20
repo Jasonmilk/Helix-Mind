@@ -7053,3 +7053,27 @@ ROUND_DIR=/tmp/railtwo accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
 [2] period=run-0103c4895cfcf301-p006b002a37000043 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=e4660b75e84a8caf · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### A 轮次 · 三调用轮（n=3）：23 行 · `allowed_once=3` · AGUI=14 ⇒ 行数公式 `15+4×(n−1)` 成立 · 2026-11-20
+
+**读数（真跑）**
+```
+POST「…calc 50*50 · weather Osaka · web_search helix… report all three」
+⇒ job_id=run-cdb67277976bdbbb · period_id=run-cdb67277976bdbbb-p006b002a47000044
+jsonl=/tmp/t2round/events/run-cdb67277976bdbbb-p006b002a47000044.events.jsonl
+LINES=**23** · AGUI（bin/agui 条数）=**14** · tool/call=3 · tool/result=3 · tools=[calc, weather, web_search]
+HITL 四态（_source=check/status.hitl）：**allowed_once=3** · unavailable=0 · kinds={} · cancelled=0 · rejected=0
+verdict=**Met**
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+两次 l2_casefile（--expect 同一 period_id）rc=0/0 · diff 0 字节 · cf sha=5523756d7fa8be6d
+ROUND_DIR=/tmp/multi3 accept_all rc=0（① rc=0/0 · ② 事件条数=14（投影 rc=0）· ② rc=0 · ②b rc=0）
+```
+
+**A：上轮公式从 n=2 推到 n=3**
+```
+n 个调用 ⇒ 行数 = 15 + 4×(n−1)，AGUI 条数 = 8 + 3×(n−1)，`allowed_once` = n
+（n=1: 15/8/1 · n=2: 19/11/2 · n=3: 23/14/3 —— 三例逐项吻合）
+⇒ 由此：行数与 AGUI 条数都能**反推调用数**，与 `allowed_once` 互为交叉校验。
+可被下轮推翻的一句：**若 n=4 出现 27 行/17 条以外，或某轮 allowed_once ≠ tool/call 个数，则公式被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
