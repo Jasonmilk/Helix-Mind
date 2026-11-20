@@ -8196,3 +8196,33 @@ ROUND_DIR=/tmp/s32_run-94752d80d75ae05e-p006b003411000009 accept_all rc=0（① 
 可被下轮推翻的一句：**若出现 AGUI ≠ 5+3n 的轮（任一支），或失败批 n=5 行数≠19，则①②再改。**
 四选一：A（含自纠）· 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 第三支确认：**闸拒支固定 9 行 / AGUI 5**（计划 5 个含 exec 也一样）· 失败批 n≤4 是结构上限 · 2026-11-20
+
+**读数（真跑）**
+```
+插件面 /tmp/plugins_nw（numbers+weather；calc/web_search 缺失）· 模型 coder-3b（config sha `507d3f781f7c9260`）
+prompt：numbers + weather Saga + calc 80*80 + web_search n5 + **exec ls**，报五个结果
+period_id=run-fa239bc773830b94-p006b00344100000a
+jsonl=/tmp/t2round/events/run-fa239bc773830b94-p006b00344100000a.events.jsonl
+LINES=**9** · AGUI=**5** · tc=**0** · verdict 无
+attempt="planned calls: numbers, weather, calc, web_search, exec"（计划 5 个）
+HITL 四态（_source=check/status.hitl）：**allowed_once=4** · **unavailable=1** · **kinds={"exec":1}** · cancelled=0 · rejected=0
+⇒ 4 个被放过、第 5 个 exec 被拒 ⇒ 整轮**零执行**（轮级 fail-closed，与 fb679ee 一致）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=97eab98252efcd6b
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s33_run-fa239bc773830b94-p006b00344100000a accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+三仓 dirty 0/0/0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
+```
+
+**A：三支定律补齐（同一批结构，三种结局）**
+```
+① 成功/业务失败支（有 verdict）：行数 15+4(n−1) · AGUI 5+3n
+② pipeline 失败支（无 verdict、有 ok=false/source=execution-pipeline 行）：行数 9+2n · AGUI 5+3n
+③ **闸拒支**（有 exec 类拒绝）：行数 **恒 9** · AGUI **恒 5**（与计划个数无关：本轮计划 5 个仍是 9/5）
+⇒ 因此「失败批 n=5」在结构上不可达：非 exec 工具只有 4 个（calc/numbers/weather/web_search），
+   要凑第 5 个必须带 exec ⇒ 立刻落闸拒支（9 行）。
+⇒ 判读数归属只需两问：有 `verdict/status` 吗？有 `unavailable>0` 吗？
+可被下轮推翻的一句：**若出现「unavailable>0 但行数≠9/AGUI≠5」，或「无 verdict 且无 unavailable 而行数≠9+2n」，则③②被推翻。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
