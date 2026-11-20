@@ -6111,3 +6111,15 @@ health 全 ok=True
 **收尾**：commit `anaphase-helix 472e06b`（= 远端）· 台账本节行号见文件 · dirty=0 · check_ci144 rc=0 ·
 边界：未改 objective 其余一字 · 未重立 goal · 未裁 HITL 真闭环 / validator 基准 / signoff 销账 / 章 B 余项 ·
 未写「已确认 / 已交付」· 章 A/B 未回改 · phyt 护栏维持。
+
+### C 轮次 · calc 23*23（calc 存在的原面）：与已落盘判断一致 · 2026-11-20
+
+```
+period_id=run-e3d8593a819c97a0-p006b0024dc000002
+jsonl=/tmp/t2round/events/run-e3d8593a819c97a0-p006b0024dc000002.events.jsonl
+LINES=15 · AGUI 映射=8 · tool/call=1 · tool/result=1 · verdict=Met · HITL allowed_once=1
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=652d8fe1befefddc
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+四选一：C（与 b6719bc / 9e4cbf1 一致）· 红判据逐条=否 ⇒ 续
+```
