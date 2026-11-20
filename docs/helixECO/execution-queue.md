@@ -5761,3 +5761,39 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=92a23f6d42afd33f · �
 可推翻点（换面带来的新判别）：**若后续轮次 coder-7b 走到推理段（出现 attempt/usage），
 则说明 rail 命中与「模型能力」无关、只与检索/路由有关**；若始终 rail，则候选判断是"命中与模型无关"。
 ```
+
+### A 轮次 · 换模型后 reply 形态变了：coder-7b 是「答案 + ONLY: {计划}」混排 · 2026-11-20
+
+**当轮读数（coder-7b 第二轮，走到推理段）**
+```
+POST「Please call the calc tool with expression 13*13 and report the result.」
+job_id=run-69c4b42af7d98a7e · period_id=run-69c4b42af7d98a7e-p006b001802000002
+jsonl=/tmp/t2round/events/run-69c4b42af7d98a7e-p006b001802000002.events.jsonl
+LINES=9 · AGUI=5 · TOOLCALL=0 · USAGE=1 · **usage.model=coder-7b** · prompt_tokens=509
+attempt = **"no calls planned — answered directly"**
+verdict 无 · HITL 四态全 0
+reply 原文 = `The result of 13 * 13 is 169.\n\nONLY: {"calls":[{"tool":"calc"…`  ← **答案 + "ONLY:" + 计划 JSON 混排**
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=**c229d60b8c06d52b**
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=ac4025a1e781a06b · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘（c890a7b）：「usage=1 + attempt="no calls planned" ⇒ 该次调用的文本直接成为 reply（**常是模型复述的 JSON**）」。
+coder-3b 时 reply 实测是**纯计划 JSON**（如 {"calls":[…]}）；
+换到 **coder-7b** 后，同样 attempt="no calls planned"，reply 却是**混排**：先给答案「169」，再以 "ONLY: " 引出计划 JSON。
+⇒ 「reply 是纯计划 JSON」不是模型无关的事实，而是**模型相关**的形态。
+```
+
+**A：判断改成**
+```
+① 「有无计划」仍只看 `attempt`（c890a7b 的核心，未变）；
+② 但 **reply 的形态是模型相关**：coder-3b = 纯计划 JSON；coder-7b = 答案 + "ONLY: " + 计划 JSON。
+   因此**不能用 reply 形状做任何模型无关的判据**（如"reply 含 calls 就一定是计划"），
+   也不能用"reply 是纯 JSON"推断"没有答案"。本条为换面后首个新读数。
+⇒ 可被下轮推翻的一句：**若再换一个模型（如 coder-14b / qwen3.8-27b）后 reply 又出现第三种形态，
+   则"形态随模型变化、无稳定形状"成立；若所有模型都同形，则本条收窄为"coder-3b 与 coder-7b 两例不同"。**
+```
+
+**红判据**：六项逐条＝否（读数与已落盘判断"对不上"处已按 A 处理，非红触发）⇒ 记 A，续下一轮。
