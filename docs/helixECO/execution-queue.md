@@ -6350,3 +6350,12 @@ rail 旁路轮引用不触发。⇒ 列表里 gist 为空，只说明"它还只�
 则"推理路径才按需写"这条被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · weather Kagoshima：与已落盘判断一致 · 2026-11-20
+
+```
+period_id=run-430919349decce69-p006b00261a000009 · jsonl=/tmp/t2round/events/run-430919349decce69-p006b00261a000009.events.jsonl
+LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+两次 casefile rc=0/0 · diff 0 字节 · sha=0291a57d9a4083b9 · ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
+C · 无红 ⇒ 续
+```
