@@ -6799,3 +6799,13 @@ run-cf208fb4baf29a73-p006b002875000025（本轮）: attempt="no calls planned �
 须重新记为该输入的不稳定形态，并考虑是否属门后（闸/解析层）。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Oita(Met) / calc 40*40(Met) · 2026-11-20
+
+```
+[1] period=run-d4c6ab8a859ddd4c-p006b0028c000002a · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=4e49b171fb8e49ac
+    ROUND_DIR=/tmp/rr8_run-d4c6ab8a859ddd4c-p006b0028c000002a · accept_all rc=0 · d1_d2 rc=0
+[2] period=run-c500b2248f5ea996-p006b0028c600002b · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=77c95d3e4b9ab6d0
+    ROUND_DIR=/tmp/rr8_run-c500b2248f5ea996-p006b0028c600002b · accept_all rc=0 · d1_d2 rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
