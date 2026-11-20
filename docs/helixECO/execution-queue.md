@@ -7421,7 +7421,8 @@ check_upstream：YES src=config · reasoning_endpoint=http://127.0.0.1:8080/v1 �
 
 **节名**：阶段完工 · 稳态自生长 · **本节起始行 = 7420**（`execution-queue.md` 尾部 append；后续追加不移动本节标题行）
 **依据**：gardener 收束裁定（goal-tweak，发出即生效）：完成口径三件 —— 真上游一轮 ⇒ 标准事件 ⇒ 证轨可查可重放 —— 均有落点且被真跑复现；章 A 三下齐可复跑；章 B 实现落地且清单由 `$defs` 生成。
-**本提交**：`a863a6d`（本节 append 的提交；行号 7420 指本节标题行）
+**本节 append 提交**：`a863a6d`（引入本节，标题行 7420）· **补记行提交**：`ca92680`（引入「append 提交 + 行号」这行记录）
+（自指问题：任何 amend 都会改自身 sha，故此处只记已 push 的两个提交，不再回头改本行）
 **三仓 dirty=0（收束时实测）**：`anaphase-helix` 0 · `Cellrix` 0 · `helix-mind` 0。
 
 ### 一、额度停拆除（原「4/4 额度用尽」不再构成停）
