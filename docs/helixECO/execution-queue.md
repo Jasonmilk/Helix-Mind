@@ -8102,3 +8102,21 @@ ROUND_DIR=/tmp/s29_run-a2b1a678fd838b26-p006b003368000006 accept_all：
 
 **红停声明**：本轮触红判据「B1 真撞」⇒ 按纪律**停一轮**，修复 + 读数已落盘、已提交（`Cellrix 1d16a22`）。
 不写 DEBTS、不签字、不销账、不新造守护机制；B2 具名项（`d-multicall-result-error-attribution`）**本轮不连带修**，仍待 gardener 裁。
+
+### C 轮次 · B1-zh 修复后**新真跑**验证：失败批 casefile 已是 `UNMEASURABLE`（非 `undefinedms`）· 2026-11-20
+
+```
+插件面 /tmp/plugins_numbers（仅 numbers）· 模型 coder-3b（config sha `507d3f781f7c9260`）
+prompt：numbers + calc 77*77
+period_id=run-8b26bcd4b5e9f272-p006b0033b6000007
+jsonl=/tmp/t2round/events/run-8b26bcd4b5e9f272-p006b0033b6000007.events.jsonl
+LINES=13 · AGUI=11 · tc=2 · verdict 无
+casefile.tool_calls（改后实测，新 period）：
+  ["index=0 · numbers · ok=false · **UNMEASURABLE**", "index=1 · calc · ok=false · **UNMEASURABLE**"]
+  ⇒ 不再是 `undefinedms`；缺项明确标 UNMEASURABLE（`Cellrix 1d16a22` 生效于真跑产物，不只旧 tape 复算）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=a4fb8a30d4d3c3d3
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s30_run-8b26bcd4b5e9f272-p006b0033b6000007 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口4）
+三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
+四选一：C（同一 B2 第 4 样本 + 修后验证，无判断变化）· 六红逐条=否 ⇒ 继续
+```
