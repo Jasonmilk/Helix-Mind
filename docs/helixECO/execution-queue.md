@@ -5665,3 +5665,12 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] run-cf208fb4baf29a73-p006b001393000047 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=f4bc398ad3307235 · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×3 · weather Morioka(Met) / numbers(Unmet) / calc 31*4(rail) · 2026-11-20
+
+```
+[1] run-0783e62ad4d6b6ed-p006b0013a2000048 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=a00da53bd9efe76b · d1_d2 rc=0 · accept_all rc=0
+[2] run-cf208fb4baf29a73-p006b0013a4000049 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=2fca9a3cb9e98dff · d1_d2 rc=0 · accept_all rc=0
+[3] run-7ee2365e0c15e9f8-p006b0013a600004a · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=2428f920bedfe58b · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×3 · 无红 ⇒ 续
+```
