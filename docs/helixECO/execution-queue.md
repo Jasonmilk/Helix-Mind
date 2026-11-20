@@ -6819,3 +6819,11 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
     diff 0 字节 · cf sha=8c60285fc0e2f13a · d1_d2 rc=0 · ROUND_DIR accept_all rc=0
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / calc 41*41(Met) · 2026-11-20
+
+```
+[1] period=run-cf208fb4baf29a73-p006b0028ea00002e · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=7ce5930bc6b13ced · d1_d2 rc=0 · accept rc=0
+[2] period=run-2396ad2a891d160c-p006b0028ee00002f · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=31867cb09392d819 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（同一 numbers prompt 第 8 个样本：可解析，累计 7 成 1 败）
+```
