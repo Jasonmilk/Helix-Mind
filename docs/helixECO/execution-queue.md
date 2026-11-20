@@ -6886,3 +6886,11 @@ phyt-DNA/ledger/hits-2026.jsonl
 再出现不可解析行即回到本轮读数核对。
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 43*43(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] period=run-2cd68f0b17dd22e0-p006b002960000036 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=f4d510df8f487350 · d1_d2 rc=0 · accept rc=0
+[2] period=run-cf208fb4baf29a73-p006b002963000037 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=464a9fb5d88e9753 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 10 样本：可解析，累计 9 成 1 败）
+```
