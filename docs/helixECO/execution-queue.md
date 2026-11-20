@@ -7340,3 +7340,47 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-7f0fa4563173c70a-p006b002c17000067 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=c6cc5c9df16e2392 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### B1 真撞（红）· 真撞自裁层缺陷：`accept_all` 每轮把当轮产物**写进已跟踪的冻结快照** · 已修 · 2026-11-20
+
+**撞到（红判据之「B1 真撞」）**
+```
+每轮我都跑 `bash Cellrix/tools/accept_all.sh`，而它的 ②b 段把产物就地写到
+  docs/observations/l2-casefile-2026-11-05.json
+  docs/observations/l2-d3-compare-2026-11-05.json
+  docs/observations/l2-evidence-2026-11-05.html
+⇒ **2026-11-05 的观测快照被当轮读数覆盖**。实测（发现时）Cellrix 工作树：
+  M docs/observations/l2-casefile-2026-11-05.json
+  M docs/observations/l2-evidence-2026-11-05.html
+  diff 内容：tape 由 run-1ef37e9620a67ef2-p006b001869000001 → run-cf208fb4baf29a73-p006b002c30000069；
+             input 由 "calc 15*15" → "numbers …"；end.success true → false
+```
+
+**同时暴露的读数错（同一件事的第二半）**
+```
+我之前每轮回执都写 `dirty=0`，但那只在 **helix-mind** 目录量的；
+Cellrix 已连续多轮是脏的（产物被覆盖），我从未在 Cellrix 量 —— 属「在错的对象上量」+「读到空」家族。
+```
+
+**修法（B1 授权范围内，additive / 可逆）**
+```
+Cellrix 534e59f：②b 段产物改落 `OUT="${ROUND_DIR:-$(mktemp -d)}"`（当轮目录或临时目录），
+冻结快照自此**只读**（仍是 `l2_render_test.js` 的输入）；分项读数格式不变，仅在该行加 `产物目录=$OUT`。
+改引擎文件 ⇒ `bash tools/upstream-manifest.sh --write` 重签 `tools/UPSTREAM.sha256`
+（9bf1bcb26c1c79cc → **eeb443f1dc322223**，7 个引擎文件）。
+```
+
+**改后读数（逐项来自命令）**
+```
+ROUND_DIR=/tmp/rx_run-cf208fb4baf29a73-p006b002c30000069：
+  ⓪ 指纹 rc=0 · ① rc=0/0 · diff=0 · sha=b9e7561199dea23a · ② rc=0（D1/D2）· ②b rc=0（render_test）
+  产物目录=当轮目录 · 缺口标注=2 处 · 3896 字节 · 结果：分项全绿
+默认（无 ROUND_DIR）：产物目录=mktemp 临时目录 · 缺口标注=4 处 · 4054 字节 · 分项全绿
+两次连跑后 `git status --porcelain`（Cellrix）= 仅本次两处改动 ⇒ 冻结快照不再被覆盖（dirty=0 已提交）
+```
+
+**为何是 B1 而不是 A/C**：这不是判断变化，是**自裁层（我的验收工具）真的把历史快照写坏了**，
+按纪律「B1 真撞才修」直接修并交读数；不新开 DEBTS 行、不签字、不销账。
+
+**红停声明**：本轮触到红判据「B1 真撞」⇒ **长跑在此停一轮**（非资源型暂停），
+修复+读数已落盘；下一轮从六形态继续，并**把 `git -C Cellrix status` 纳入每轮读数**（此前缺项）。
