@@ -6679,3 +6679,13 @@ D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 perio
 ROUND_DIR=/tmp/rot29 bash accept_all.sh：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0 · ③ git ls-files web = 0
 C · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Saga(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] period=run-3c367d34c1ac18b3-p006b002838000021 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=77de10343b30d758
+    ROUND_DIR=/tmp/rr6_run-3c367d34c1ac18b3-p006b002838000021 · accept_all rc=0 · d1_d2 rc=0
+[2] period=run-cf208fb4baf29a73-p006b00283d000022 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=f3977a6e2098eb90
+    ROUND_DIR=/tmp/rr6_run-cf208fb4baf29a73-p006b00283d000022 · accept_all rc=0 · d1_d2 rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
