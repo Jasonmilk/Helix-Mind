@@ -7571,3 +7571,23 @@ casefile.tool_calls=["index=0 · rate · ok=true · **25ms**"]
 ROUND_DIR=/tmp/s6_run-6445efa2b707ffc0-p006b002fc5000073 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
 三仓 dirty 全 0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0 · 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### C + 聪明调度第四用：增益=0 ⇒ 轮换 #12（插件 calc+rate）并真跑 · 双调用含 rate · 2026-11-20
+
+**轮 1（calc，同形）**：`run-721ff52e382e54e0-p006b002fe2000074` · 15 行 · AGUI=8 · tc=1 · Met · diff 0 字节 · cf sha=bc42101dea82982c · D1/D2 rc=0 · accept rc=0（① 0/0 · ② 0 · 事件8 · 缺口2）· 三仓 dirty=0/0/0 · docs rc=0 ⇒ rc 向量与上一 calc 轮逐项相同 ⇒ **增益=0** ⇒ 立即轮换。
+
+**轮换 #12**：`./fixtures`(5) → `/tmp/plugins_cr`（**calc.js + rate.js**，由 fixtures 复制）；轮末已复原 `./fixtures`，health tentacle=reachable。
+
+**轮 2（轮换后真跑：一句话两个工具，含 rate）**
+```
+POST「…calc 68*68 与 rate numerator 10 / denominator 20…report both.」
+period_id=run-d8158d7a72eedbc8-p006b002ff1000075 · jsonl=/tmp/t2round/events/run-d8158d7a72eedbc8-p006b002ff1000075.events.jsonl
+LINES=**19** · AGUI=**11** · tc=2 · attempt="planned calls: calc, rate" · **verdict=Unmet**
+tool/result ok = [True, True]（两个都在传输层成功）· HITL（_source=check/status.hitl）allowed_once=**2** · unavailable=0
+casefile.tool_calls = ["index=0 · calc · ok=true · 50ms", "index=1 · rate · ok=true · 25ms"]
+⇒ 三处已落盘判断同时被新样本复现：行数 15+4(n−1)=19 · AGUI 8+3(n−1)=11 · allowed_once=n=2；
+   且 again：传输层两个 ok=true 而整轮 Unmet（Met 要求每个调用 outcome 满足 expect）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=f7b9dff533d66e90 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+ROUND_DIR=/tmp/s8_run-d8158d7a72eedbc8-p006b002ff1000075 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口2）
+三仓 dirty 全 0 · docs 冻结快照 rc=0 · 四选一：C · 六红逐条=否 ⇒ 继续
+```
