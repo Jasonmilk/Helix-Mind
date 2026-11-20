@@ -8447,3 +8447,17 @@ ROUND_DIR=/tmp/s41_run-01d2defdf17372be-p006b003530000012 accept_all rc=0（① 
 可被下轮推翻的一句：**若出现「u=2 而 LINES≠9+2+4n」①支样本，或 check/status≠2n+1，则本式作废。**
 四选一：A（含自纠）· 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · weather Nagano：定律复核 `9+u+4n = 15` 命中 · 2026-11-20
+
+```
+period_id=run-977d3633014c0b2d-p006b003554000013
+jsonl=/tmp/t2round/events/run-977d3633014c0b2d-p006b003554000013.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · **usage=2** · **check/status=3**（=2n+1 ✓）· verdict=Met
+定律复核：9 + u(2) + 4n(4) = **15** ✓（脚本内算术，非目测）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=5ad11aba736f3594
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s42_run-977d3633014c0b2d-p006b003554000013 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+四选一：C · 六红逐条=否 ⇒ 继续
+```
