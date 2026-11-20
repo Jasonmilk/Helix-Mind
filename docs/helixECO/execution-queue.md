@@ -5875,3 +5875,40 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=b3b0a3e26d7a88b3 · ② 事件�
 ```
 
 **红判据**：六项逐条＝否 ⇒ 记 A，续下一轮。
+
+### 输入面轮换第 4 次（config 通道面）+ **红触发：B1-ze** · 2026-11-20
+
+**换的是「config 通道」面（不改文件、只改启动 env）**
+```
+config.toml 保持 `reasoning_model = "qwen3.8-27b"`（sha 98d6380f2a55132a 未变）
+启动时加 `ANAPHASE_REASONING_MODEL=coder-14b`，重启后 health 全 ok
+```
+
+**当轮读数（env 覆盖是否真的生效）**
+```
+POST「Please call the calc tool with expression 16*16 and report the result.」
+job_id=run-0ad206b551cdc564 · period_id=run-0ad206b551cdc564-p006b0018a2000001
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · **usage.model=coder-14b**（config 写的是 qwen3.8-27b）
+attempt="planned calls: calc" · verdict=Met · reply「The result of 16 * 16 is 256.」
+⇒ **env 覆盖在运行时生效**（不是仅 `config.rs:473` 的代码推断，而是本轮真跑读数）
+```
+
+**红：B1-ze（自裁层缺陷，已修）**
+```
+撞到：`check_upstream.sh` 在同场景下报 `YES src=config … model=qwen3.8-27b` ——
+      **与实际运行（coder-14b）不符，且无任何提示**（它只看 config 文件 + 调用者自己的 env）。
+修（Cellrix 1c05ba6）：读监听进程 env（`ps -Eww -p <pid>`），命中 `ANAPHASE_REASONING_(MODEL|ENDPOINT)=`
+      ⇒ 打 ⚠「config 里的值不生效」并逐条列出；无监听进程 ⇒ 明写「无法核对运行态 env」。
+sha256_16：tools/check_upstream.sh 24ec21fefdd382d3 → **692b6af30f2252e4**；
+          tools/UPSTREAM.sha256 00776ce4f5e341d3 → **3fe594d364ae3659**
+改前/改后（同场景）：改前只有首行（model=qwen3.8-27b，无提示）；改后多出
+      `⚠ 运行进程 pid=24386 自带 env 覆盖（config 里的值不生效）：ANAPHASE_REASONING_MODEL=coder-14b`
+反样本：重启时不带 env ⇒ 只有首行 + tentacle 行，**无 ⚠**（不误报）
+```
+
+**红判据逐条**
+```
+读数与已落盘判断对不上=**是**（check_upstream 的 model 值与运行态不符）· B1 真撞=**是（B1-ze）**·
+B2=否 · 门后项具名=否 · ROUND_DIR 分项 rc≠0=否 · 读数漂移=否 · phyt ledger hit=否
+⇒ **红触发**：按 objective「有红 ⇒ 落盘读数后停在该红上等 gardener」**停机**。
+```
