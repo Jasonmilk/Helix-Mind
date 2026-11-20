@@ -4317,3 +4317,36 @@ reply 原文「The result of the calculation is 144.」⇒ 对（12×12）
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
 **未动**：门后项一律不动不销账；章 A 签字 / HITL 未捆入；未写「已确认」。
+
+### C 轮次 · numbers（同 job 新 period）：计划为空 → 计划文本成为 reply，与已落盘判断一致 · 2026-11-20（本轮第 2 轮）
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「Please call the numbers tool and report exactly what it returns.」
+job_id=run-cf208fb4baf29a73 · period_id=run-cf208fb4baf29a73-p006afff9a700000b
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006afff9a700000b.events.jsonl
+LINES=**9** · AGUI=**5** · TOOLCALL=**0** · USAGE=**1** · attempt=**"no calls planned — answered directly"**
+D1/D2 rc=0（D2 读**官方副本** sha 4b5c93226838a0e7 · 8 类映射 · K-134 已裁「基线=官方副本」）
+HITL 四态全 0 · _source=tape(ring-stale)
+reply 原文 = `{"calls":[{"tool":"numbers","args":{"series":"[1, 2, 3, 4, 5]"},"expect":…}]}` ⇒ **不是答案，是计划文本**
+两次 l2_casefile（`--expect run-cf208fb4baf29a73-p006afff9a700000b`）rc=0/0 · diff **0 字节** rc=0 · sha256 均 **1981ba72e77acf1d**
+  rows=9 · tools=「本轮无工具段（0 条 tool/call）」· verdict=UNMEASURABLE（tape 里 0 条）
+另：同一 job 早前一轮（run-cf208fb4baf29a73-p006aff38da000009）是 15 行工具轮 ⇒ **同 job 不同 period 形态可不同**（44fbb47 已裁）
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c890a7b：「usage=1 + attempt="no calls planned" ⇒ 该次调用的文本直接成为 reply（常是模型复述的 JSON）；
+            是否有计划只看 attempt，reply 形状不算」。
+当轮：usage=1 · attempt="no calls planned" · tool/call=0 · HITL 全 0 · reply 是计划 JSON ⇒ **完全一致**，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：numbers 的"计划为空"形态（9 行 / usage=1 / 无 tool/call / reply=计划 JSON）稳定；
+若同一输入下出现 tool/call=1 且有 attempt="no calls planned"，则该判据被推翻，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：门后项一律不动不销账；章 A 签字 / HITL 未捆入；未写「已确认」、未归档。
