@@ -6123,3 +6123,22 @@ D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
 ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
 四选一：C（与 b6719bc / 9e4cbf1 一致）· 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · exec 被闸拦下（B1-zf 的反向反样本：拒绝路径不新增行）· 2026-11-20
+
+```
+period_id=run-818c6ba2f76f3e35-p006b0024ec000003
+jsonl=/tmp/t2round/events/run-818c6ba2f76f3e35-p006b0024ec000003.events.jsonl
+LINES=9 · AGUI 映射=5 · **tool/call=0 · tool/result=0** · HITL `unavailable=1 · kinds={"exec":1}` · allowed_once=0
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=8e9aafdf518f0830
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**这一轮对 B1-zf 是反向反样本**
+```
+B1-zf 只在 **pipeline 真正执行过并失败** 时补 `tool/call + tool/result`；
+闸拒绝路径（exec ⇒ fail-closed）**没有进入执行段** ⇒ 本轮 `tool/call=0 / tool/result=0` 是**正确读数**，
+不是"漏补"。⇒ 补行判据 = `HITL unavailable>0` ⇒ 不补；`pipeline Err` ⇒ 补。
+四选一：C · 红判据逐条=否 ⇒ 续
+```
