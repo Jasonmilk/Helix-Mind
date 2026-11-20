@@ -5315,3 +5315,36 @@ rc=**0** · 输入：当轮目录 /tmp/round_r24（EV=run-cf208fb4baf29a73-p006b
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### C 轮次 · rail 档（calc 15*4 被 rails 吞）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True（复用）
+POST「Please call the calc tool with expression 15*4 and report the result.」⇒ **rail 旁路**
+job_id=run-827c95fa53705fd2 · period_id=run-827c95fa53705fd2-p006b00107b00001f
+jsonl=/tmp/t2round/events/run-827c95fa53705fd2-p006b00107b00001f.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · HITL 四态全 0 · attempt 行不存在
+reply 原文「[rail citation …]」⇒ **判错（答非所问）**
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7 · 本 period_id）
+两次 l2_casefile（`--expect run-827c95fa53705fd2-p006b00107b00001f`）rc=0/0 · diff **0 字节** · sha=**2f255c32090ead17**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r25 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r25（EV=run-827c95fa53705fd2-p006b00107b00001f.events.jsonl）
+⓪ 引擎指纹 rc=0（OK）· ① rc=**0/0** · diff=0 · sha=**7f50058721bc1bd6**
+② 事件条数=**5**（投影 rc=0）· ② rc=**0** · ②b rc=**0** · ③ web=0 · test -d web ⇒ 1
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c47cd21（缺 attempt ⇒ rail 吞请求）+ rail 结构（6 行 / usage0 / tool0 / HITL 全 0）⇒ 完全一致，无差。
+```
+
+**t3 四选一：C · 红判据：无红**
+```
+红判据逐项：读数与已落盘判断对不上=否 · B1=无 · B2=无 · 门后项具名=无 · ROUND_DIR 分项 rc≠0=否 ·
+l2_casefile/D1·D2 漂移=否 · phyt ledger hit=否 ⇒ **无红 ⇒ 按新守护方式直接续下一轮**（不停机、不计数）。
+可推翻点：若同输入出现 attempt 行或 usage>0，rail 判定边界变了，须重判。
+```
