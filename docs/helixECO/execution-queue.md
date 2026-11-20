@@ -7639,3 +7639,29 @@ ROUND_DIR=/tmp/s10_run-376f038751fd85c7-p006b00302f000077 accept_all rc=0（① 
 可被下轮推翻的一句：**若出现 rail 命中条目与请求语义一致（或 model≠null 的 rail 轮），则①②被推翻。**
 四选一：A · 六项红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 同一句 rate 请求在**插件面不同**时都落 rail ⇒ rail 判定先于工具清单（且内容同一条）· 2026-11-20
+
+**读数（两轮同 prompt、插件面不同，逐项对照）**
+```
+prompt（两轮逐字相同）：Please call the rate tool with numerator 3 and denominator 7, then report exactly what it returns.
+[A] 插件面 /tmp/plugins_nr（numbers+rate，rate **存在**）
+    period=run-376f038751fd85c7-p006b00302f000077 · 6 行 · AGUI=5 · tc=0 · bypass="rail" · model=null
+    reply 引用同一条：`[rail citation · knowledge_base/rails/demo]` · 第 3 条 禁止行为 (civil-code#…)
+[B] 插件面 ./fixtures（5 插件，rate 亦**存在**）
+    period=run-376f038751fd85c7-p006b00304f000078 · 6 行 · AGUI=5 · tc=0 · bypass="rail" · model=null
+    reply 引用同一条：第 3 条 禁止行为 (civil-code#…)
+两轮：HITL 四态（_source=check/status.hitl）全 0 · 两次 casefile rc=0/0 · diff 0 字节
+  cf sha=[A] a26116a2dc5dabe1 / [B] 0357dcbb43a26950 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+  ROUND_DIR accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+```
+
+**A：把上轮的 A 钉成两条**
+```
+① 该 prompt **稳定**落 rail（两轮同结论），不是采样偶发；
+② rail 判定**先于工具清单**（rate 在两套插件面里都存在，仍不进入规划）⇒
+   "工具存在/不存在" 不决定是否走 rail；rail 命中内容也不随插件面变化（同一条 civil-code 条目）。
+可被下轮推翻的一句：**若同一句在某个插件面/模型下不落 rail（出现 attempt 或 model≠null），则②被推翻。**
+四选一：A · 六项红逐条=否 ⇒ 继续
+```
