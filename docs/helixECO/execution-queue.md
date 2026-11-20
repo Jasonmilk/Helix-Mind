@@ -7324,3 +7324,11 @@ ROUND_DIR=/tmp/n5 accept_all rc=0（① rc=0/0 · ② 事件条数=5（投影 rc
 [2] period=run-a8be3d1619db4710-p006b002bf0000063 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=43a61447dc5978ad · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / exec-blocked(9 行) — 台账第 100+ 轮真跑 · 2026-11-20
+
+```
+[1] period=run-cf208fb4baf29a73-p006b002c00000064 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=bb6d7674d7798e92 · d1_d2 rc=0 · accept rc=0
+[2] period=run-5a1771e3074f2a6c-p006b002c04000065 · 9 行 · tc=0 · verdict 无（exec 闸拒）· diff 0 字节 · cf sha=a2ae5be852bedef1 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
