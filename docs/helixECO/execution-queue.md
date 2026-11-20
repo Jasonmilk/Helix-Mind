@@ -4725,3 +4725,34 @@ D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）· 官方副本校验 **8
 ```
 
 **计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
+
+### C 轮次 · rail 档真跑（中文 exec 请求被 rails 吞）：与已落盘判断一致 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「用 exec 跑 echo round-check-11」
+job_id=run-7f7af192bcb0fec6 · period_id=run-7f7af192bcb0fec6-p006affff2a000014
+jsonl=/tmp/t2round/events/run-7f7af192bcb0fec6-p006affff2a000014.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · types=[turn/start, user/message, context/inject, assistant/reply, turn/end, check/status]
+reply 原文「[rail citation · knowledge_base/rails/demo] - 第 2 条 数据使用 …」⇒ **判错（答非所问）**
+HITL 四态全 0 · _source=tape(ring-stale)
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-7f7af192bcb0fec6-p006affff2a000014`）rc=0/0 · diff **0 字节**
+  命中后落点：period_id=run-7f7af192bcb0fec6-p006affff2a000014 · rows=6 · sha256 均 **b03f4878c6dd9ec8**
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c47cd21（缺 attempt ⇒ rail 吞请求）+ 「rail 档 = 6 行 / usage0 / 无 attempt」：
+当轮 6 行、无 attempt、usage=0、tool/call=0、HITL 全 0、reply 为法条引用 ⇒ **完全一致**，无差。
+（已知门后项 `d-rail-bypass-ignores-request-intent` 仍在册：本轮是它的又一次现场。）
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：中文请求「用 exec 跑 …」持续被 rails 吞（6 行 / usage0 / HITL 全 0）；
+若某轮同样输入出现 attempt 行或 usage>0，说明 rail 判定边界变了，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
