@@ -7874,3 +7874,19 @@ ROUND_DIR=/tmp/s21_run-be92a28a7547ac9a-p006b0031f1000002 accept_all rc=0（① 
 可被下轮推翻的一句：**若任一轮 tool/call 出现 `args` 字段，则①被推翻（并须改记该字段的可见范围）。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · 轮换 #20（插件 numbers+weather，qwen3.8-27b）· Morioka → Sotoyama 仍 Met · 2026-11-20
+
+```
+[轮换 #20] 面=tentacle 插件：`./fixtures`(5) → `/tmp/plugins_nw`（**numbers.js + weather.js**，由 fixtures 复制）；轮末已复原，health tentacle=reachable
+[当轮真跑] prompt：Please call the weather tool for city Morioka and report what it returns.
+  period_id=run-0783e62ad4d6b6ed-p006b003224000003
+  jsonl=/tmp/t2round/events/run-0783e62ad4d6b6ed-p006b003224000003.events.jsonl
+  LINES=15 · AGUI=8 · tc=1 · verdict=Met · model=qwen3.8-27b
+  tool/result.outcome.weather.city = **"Sotoyama, Japan"**（请求 Morioka）
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=6b93f8c42bc165c7 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+  ROUND_DIR=/tmp/s22_run-0783e62ad4d6b6ed-p006b003224000003 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+⇒ 与上轮 A 一致：请求城市与实际解析城市不一致，verdict 仍 Met；`tool/call` 无 args，参数不可由 tape 审计。
+四选一：C · 六红逐条=否 ⇒ 继续
+```
