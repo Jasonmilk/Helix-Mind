@@ -6997,3 +6997,30 @@ verdict 是**整轮聚合**：`Met` 要求**每个**调用的 outcome 都满足�
 可被下轮推翻的一句：**若某轮出现一个调用 outcome 不满足 expect 而 verdict 仍为 Met，则"全部满足才 Met"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### A 轮次 · 混合轮（calc + exec）：**exec 被拒 ⇒ 整轮一个调用都不执行**（连被放过的 calc 也不跑）· 2026-11-20
+
+**读数（真跑）**
+```
+POST「Please call the calc tool with expression 47*47 and also the exec tool with command ls, then report both.」
+⇒ job_id=run-5e1a1fd98b63388d · period_id=run-5e1a1fd98b63388d-p006b0029f8000040
+jsonl=/tmp/t2round/events/run-5e1a1fd98b63388d-p006b0029f8000040.events.jsonl
+LINES=**9** · AGUI=**5** · **tool/call=0 · tool/result=0** · verdict 无
+逐行类型：turn/start · user/message · context/inject · assistant/usage · assistant/think · assistant/attempt · assistant/reply · turn/end · check/status
+attempt="planned calls: calc, exec"
+reply（原文）= `{"calls":[{"tool":"calc","args":{"expression":"47*47"},"expect":"ok"},{"tool":"exec","args":{"command":"ls"}…`
+HITL 四态（_source=check/status.hitl）：**allowed_once=1** · **unavailable=1** · **kinds={"exec":1}** · cancelled=0 · rejected=0
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=51f9c2d36d81521d
+ROUND_DIR=/tmp/mixed accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
+```
+
+**A：判断补一条**
+```
+闸的拒绝是**轮级 fail-closed**：一轮里只要有一个调用被判 `unavailable`（本轮 exec），
+**整轮不产生任何 tool/call、tool/result** —— 即使同一轮里 calc 已被放过（`allowed_once=1`）。
+⇒ ① `allowed_once>0` 仍不能读成"有执行发生"（本轮为最强反例：allowed_once=1 而 tc=0）；
+   ② 判"某工具有没有真跑"只能看 `tool/call` 行，不能看闸计数；
+   ③ 行数回落基线（9 行）且 reply 是原始计划 JSON，与"被闸拦下"形态一致。
+可被下轮推翻的一句：**若某轮出现 unavailable≥1 且同时 tc≥1（部分执行），则"轮级 fail-closed"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
