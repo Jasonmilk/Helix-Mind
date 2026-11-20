@@ -7769,3 +7769,26 @@ ROUND_DIR=/tmp/s13_run-cf208fb4baf29a73-p006b0030d6000001 accept_all rc=0
 ⇒ 此后「插件单件」不再是可轮换面；仍可换的是组合面与模型面（4 值，已用 coder-3b / coder-14b）
 四选一：C（两轮与已落盘判断一致）· 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 + 轮换 #18（模型 coder-14b → coder-7b）· 2026-11-20
+
+```
+[1] 同形 calc（coder-14b）
+    period=run-aada7a525517f370-p006b003172000006 · jsonl=/tmp/t2round/events/run-aada7a525517f370-p006b003172000006.events.jsonl
+    15 行 · AGUI=8 · tc=1 · verdict=Met · model=coder-14b · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=c98746b95eb4863a
+    D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+    ⇒ rc 向量与上一 calc 轮逐项相同 ⇒ **增益=0** ⇒ 立即轮换
+[轮换 #18] 面=模型 · 单变量 `reasoning_model`
+    改前 coder-14b（config.toml sha16=`07e2c6d21a53c449`）→ 改后 coder-7b（sha16=`de6e3325b2e85a11`）
+    重启按 runbook 带 env：`ANAPHASE_SESSION_EVENTS_PATH=/tmp/t2round/events ./target/debug/anaphase --config config.toml &`
+    health：tentacle=True · reasoning=True · check_upstream：YES src=config · model=coder-7b
+[2] 轮换后真跑
+    period=run-de02403d874f9846-p006b00318a000001 · jsonl=/tmp/t2round/events/run-de02403d874f9846-p006b00318a000001.events.jsonl
+    15 行 · AGUI=8 · tc=1 · verdict=Met · model=coder-7b · allowed_once=1
+    reply="The result of 71 * 71 is 5041."（coder-14b 同题写作 "The result of 69 times 69 is 4761." ⇒ 措辞随模型变、判据项不变）
+    两次 casefile rc=0/0 · diff 0 字节 · cf sha=028ad1027a5ee7cf · D1/D2 rc=0
+    ROUND_DIR=/tmp/s18_run-de02403d874f9846-p006b00318a000001 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+（重启使 period 序号回到 …0000001，与已落盘「序号不持久化」一致）
+四选一：C · 六红逐条=否 ⇒ 继续
+```
