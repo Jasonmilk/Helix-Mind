@@ -7208,3 +7208,11 @@ GET /v1/agent/events ⇒ events=8 · dropped=0 · last_seq=8 · 涉及 period �
 可被下轮推翻的一句：**若某轮 /v1/chat 之后 GET ring 出现 last_seq>8 或出现当轮 period_id，则"不写 ring"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / web_search(Met) · 2026-11-20
+
+```
+[1] period=run-cf208fb4baf29a73-p006b002b0100004d · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=2161eea926d25952 · d1_d2 rc=0 · accept rc=0
+[2] period=run-7efc6c9eca30c151-p006b002b0500004e · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=9b64e36010b5f92e · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 13 样本：可解析）
+```
