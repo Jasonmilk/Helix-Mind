@@ -5729,3 +5729,35 @@ objective 原文允许"回滚 或 标未生效"，两者只居其一 ⇒ 现值�
 我上一轮把 4→0 之后仍出现的 1/4 快照读成"限流未生效"，与本轮 "disabled by maxAutonomousRuns=0" 冲突；
 以**生效读数**为准 ⇒ 4→0 是生效的，1/4 快照是旧值残留（同为"读到旧值"家族）。该判断作废。
 ```
+
+### 输入面轮换（第 1 面：换模型 coder-3b → coder-7b）+ 轮次读数 · 2026-11-20
+
+**授权依据**：objective「输入面轮换」条款（gardener 一次性长期授权）；触发条件成立：六形态连续零红（~42 轮）且每轮新增信息为零。
+
+**换的是什么（一次只换一个面）**
+```
+来源：llama-swap `GET http://127.0.0.1:8080/v1/models` ⇒ 4 个既有 id：coder-14b · coder-3b · coder-7b · qwen3.8-27b
+取值：`reasoning_model = "coder-7b"`（config.toml 行 16，原 `"coder-3b"`）
+改前 config.toml sha256_16 = **507d3f781f7c9260**
+改后 config.toml sha256_16 = **de6e3325b2e85a11**
+重启 anaphase（config 变更需重启）后：/v1/health 全 ok=True · check_upstream `YES src=config model=coder-7b`
+未新建上游、未改协议语义、未造样本。
+```
+
+**当轮读数（换模型后第一轮）**
+```
+job_id=run-9b9415e323c2210d · period_id=run-9b9415e323c2210d-p006b0017e7000001
+jsonl=/tmp/t2round/events/run-9b9415e323c2210d-p006b0017e7000001.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · usage.model=**null**（未调用 LLM，rail 旁路）
+verdict 无（tape 里 0 条）· HITL 四态全 0 · reply「[rail citation …]」⇒ 判错（答非所问）
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=**1e7f4f15190f0f85**
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=92a23f6d42afd33f · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0 · ③ web=0/test -d⇒1
+```
+
+**四选一：C · 红判据：无红**
+```
+核 c47cd21（缺 attempt ⇒ rail 吞请求）：换模型后仍是 rail（6 行 / usage0 / 无 attempt）⇒ 与已落盘判断一致。
+可推翻点（换面带来的新判别）：**若后续轮次 coder-7b 走到推理段（出现 attempt/usage），
+则说明 rail 命中与「模型能力」无关、只与检索/路由有关**；若始终 rail，则候选判断是"命中与模型无关"。
+```
