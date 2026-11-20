@@ -6937,3 +6937,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（ring 输入均为�
 [2] period=run-8e425a019c57e8b2-p006b0029a300003b · 9 行 · tc=0 · verdict 无（exec 闸拒：unavailable=1 kinds={"exec":1}）· diff 0 字节 · cf sha=b6a3d08308c9957c · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / weather Kagoshima(Met) · 2026-11-20
+
+```
+[1] period=run-cf208fb4baf29a73-p006b0029b200003c · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=e02cb5aa27efe64a · d1_d2 rc=0 · accept rc=0
+[2] period=run-430919349decce69-p006b0029b600003d · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=0171ce35347c3b34 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 11 样本，可解析）
+```
