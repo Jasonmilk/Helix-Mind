@@ -4350,3 +4350,47 @@ reply 原文 = `{"calls":[{"tool":"numbers","args":{"series":"[1, 2, 3, 4, 5]"},
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：门后项一律不动不销账；章 A 签字 / HITL 未捆入；未写「已确认」、未归档。
+
+### A 轮次 + B2 登记 · `allowed_once=1` 不等于"执行发生了"：匿名工具名被规划、闸放行、调用却消失 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True
+POST「Please call the rate tool and report exactly what it returns.」
+job_id=run-c155e3ee0879449f · period_id=run-c155e3ee0879449f-p006afff9d300000c
+jsonl=/tmp/t2round/events/run-c155e3ee0879449f-p006afff9d300000c.events.jsonl
+LINES=**9** · AGUI=**5** · TOOLCALL=**0** · USAGE=**1**
+attempt = **"planned calls: tentacle·fixture"**（模型把工具名臆造成 `tentacle·fixture`，不是 `rate`）
+reply 原文 = `{"calls":[{"tool":"tentacle·fixture","args":{"denominator":3,"numerator":5},"expect":"ok"}]}`
+HITL 四态 = **allowed_once=1** · rejected=0 · cancelled=0 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7 · 8 类映射 · K-134 已裁）· 官方副本校验 **5/5**
+两次 l2_casefile（`--expect run-c155e3ee0879449f-p006afff9d300000c`）rc=0/0 · diff **0 字节** rc=0 · sha256 均 **e55968a5ef051410**
+  rows=9 · tools=「本轮无工具段（0 条 tool/call）」· verdict=UNMEASURABLE（0 条）
+```
+
+**t2 核的是哪条判断 / 为何对不上**
+```
+已落盘（2f58a1c / 77e6926 / b6719bc）：「闸按工具类别分流：calc、numbers、weather 一律 allowed_once=1 **且执行**（tool/call=1）」，
+且 `allowed_once` 被读成"闸放行了一次"（历史三例都伴随 tool/call=1）。
+当轮反例：attempt 说**有计划**、闸 **allowed_once=1**，但 tape 里 **没有 tool/call、没有 tool/result、也没有任何错误行**，
+reply 回落到计划文本 ⇒ **闸放行 ≠ 执行发生**。
+```
+
+**A：判断改成（三档映射加第四档）**
+```
+`(usage 行数, attempt, tool/call, HITL)` 的映射补一档：
+  1 / 有（planned calls: X）/ **0** / **allowed_once=1** ⇒ **计划被解析、闸放行，但调用未落地**（工具名不存在时即此形）
+⇒ 原「allowed_once=1 ⇒ 执行过」作废；正确读法：**allowed_once 只证"闸放过一次"，不证 tool 执行**。
+⇒ 可被下轮推翻的一句：**凡 tool/call=0 的轮次，其 allowed_once 不得被读成"执行成功"；
+   若出现 tool/call>0 且 allowed_once=0，则"放行在前、执行在后"的顺序被推翻。**
+```
+
+**B2（撞门：只登记，不自裁）**
+```
+匿名/臆造的工具名（`tentacle·fixture`）被规划、被闸放行，随后**静默消失**（无 tool/call、无错误事件、reply 变计划文本）
+⇒ 属 anaphase 的**工具名解析/丢弃策略（行为面）**。
+`DEBTS.md` 增 `d-unknown-tool-name-silently-dropped`（带 revisit-on）；本轮**未改**任何解析或闸逻辑。
+```
+
+**计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
+**未动**：章 A 签字 / signoff / HITL 未捆入 · UNCOVERED / validator 基准维持门后 · 未写「已确认」、未归档。
