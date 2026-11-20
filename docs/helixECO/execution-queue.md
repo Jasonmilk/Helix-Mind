@@ -7665,3 +7665,20 @@ prompt（两轮逐字相同）：Please call the rate tool with numerator 3 and 
 可被下轮推翻的一句：**若同一句在某个插件面/模型下不落 rail（出现 attempt 或 model≠null），则②被推翻。**
 四选一：A · 六项红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · rate 家族四种措辞均落 rail（同一条 civil-code 条目）· 2026-11-20
+
+```
+四措辞（插件面 ./fixtures 或 /tmp/plugins_nr，rate 均存在）逐条：
+① Please call the rate tool with numerator 3 and denominator 7, then report exactly what it returns.
+   → run-376f038751fd85c7-p006b00302f000077（/tmp/plugins_nr）· run-376f038751fd85c7-p006b00304f000078（./fixtures）· 均 6 行 · bypass=rail
+② Use the rate tool with numerator 3 and denominator 7 and tell me the result.
+   → run-96f0bade387566df-p006b00306a000079 · 6 行 · tc=0 · bypass=rail · model=null
+③ Call rate(numerator=3, denominator=7) and report the output.
+   → run-c2be5fa27bbc95b4-p006b00306c00007a · 6 行 · tc=0 · bypass=rail · model=null
+④（上轮已记）同义请求在仅 calc 插件面亦落 rail
+[读数取 ③]：两次 casefile rc=0/0 · diff 0 字节 · cf sha=2e3ab78db9d6e9cf · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+ROUND_DIR=/tmp/s12_run-c2be5fa27bbc95b4-p006b00306c00007a accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+⇒ 复现上轮 A（rail 判定先于工具清单、内容与请求无关），**四措辞 × 两插件面零例外**；四选一：C · 六红逐条=否 ⇒ 继续
+```
