@@ -7956,3 +7956,45 @@ ROUND_DIR=/tmp/s23_run-08b1b9b194d292ee-p006b00325e000004 accept_all rc=0（① 
 可被下轮推翻的一句：**若出现型 B 但 tape 上带 tool 行（或型 A 而无 tool 行），则三型划分被推翻。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### B2 真撞（红）· 多调用执行：一个调用 NotFound ⇒ **同批每一条 `tool/result` 都写成同一个错误**（连存在的工具也被写成 NotFound）· 2026-11-20
+
+**撞到（两轮同插件面并列对照）**
+```
+插件面：/tmp/plugins_numbers（仅 numbers.js + manifest）· 模型 coder-3b（config sha `507d3f781f7c9260`）
+[批] 请求「numbers + calc 73*73」⇒ attempt="planned calls: numbers, calc"
+     period=run-b5a5cda88409f4a2-p006b0032d3000001
+     jsonl=/tmp/t2round/events/run-b5a5cda88409f4a2-p006b0032d3000001.events.jsonl
+     LINES=**13** · AGUI=11 · tc=2 · verdict 无
+     tool/result #1：{"tool":"numbers","ok":false,"source":"execution-pipeline",
+                     "outcome.error":"… tool not found or not instantiated: **calc** …"}
+     tool/result #2：{"tool":"calc","ok":false,"source":"execution-pipeline",
+                     "outcome.error":"… tool not found or not instantiated: **calc** …"}
+     ⇒ **numbers 存在且单跑正常，却在批量里被写成「calc NotFound」**
+[单] 同一插件面、同一模型，只请求 numbers
+     period=run-cf208fb4baf29a73-p006b0032df000002 · 15 行 · tc=1 · **ok=true** · verdict=Unmet
+     ⇒ 证明「numbers 在本插件面可用」，批里的 numbers 失败是**批处理联动/错误归属错配**，不是 numbers 真的不存在
+判据项：两次 casefile rc=0/0 · diff 0 字节 · cf sha=90f33b63f3f6456c（批轮）
+        D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· ROUND_DIR accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口4）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 轮末插件面已复原 ./fixtures（health tentacle=reachable）
+```
+
+**为何对不上（已落盘判断）**
+```
+已落盘 B1-zf：执行段失败 ⇒ 补 `tool/call` + `tool/result(ok=false, source=execution-pipeline)`，读作"该调用未成功"。
+当轮：**每一条 result 都被写成同一条错误**（错误文本只提到 calc），于是 `numbers` 那条读起来是"numbers 不存在" ——
+与"单跑 ok=true"直接冲突 ⇒ 结果与调用**错配**，审计会把可用的工具读成不可用。
+```
+
+**B2：撞门，只具名、不自裁（该改行为面/引擎错误归属，属方向层）**
+```
+具名项：`d-multicall-result-error-attribution`（多调用批量执行时，单点 NotFound 的错误被写到同批每条 result 上）
+证据：批轮 13 行 · 两条 result 同为 `tool not found or not instantiated: calc` · 单轮同工具 ok=true
+revisit 条件（机械）：同一插件面下，重跑「numbers + 缺失工具」批请求；
+  若 `tool=numbers` 那条的 outcome 不再是 calc 的 NotFound（或 ok=true）⇒ 视为已修，回来销这一条。
+注：本轮按 gardener 封存口径**不新增 DEBTS 行**（objective：不写 DEBTS 新行），故只在本台账具名；
+  该「具名处」与「DEBTS 必须一行」的冲突留待 gardener 裁定，不自行销账。
+可被下轮推翻的一句：**若同一批里失败项与成功项分列（各自的 outcome 各归其位），则本条不成立。**
+```
+
+**红停声明**：本轮触红判据「B2 真撞」⇒ 按「只有真撞到红才停」**停一轮**；已具名 + 给证据 + 给 revisit，不自裁、不写 DEBTS、不签字、不改引擎。
