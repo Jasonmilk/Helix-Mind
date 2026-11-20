@@ -5279,3 +5279,39 @@ rc=**0** · 输入：当轮目录 /tmp/round_r23（EV=run-480162db44413710-p006b
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+
+### C 轮次 · numbers 工具轮（verdict Unmet：outcome 无 ok 字段）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0（复用）
+POST「Please call the numbers tool and report exactly what it returns.」
+job_id=run-cf208fb4baf29a73 · period_id=run-cf208fb4baf29a73-p006b00104400001e
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b00104400001e.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2
+verdict={status:**Unmet**, reason:"failed: exec_ok, answer.delivered"}
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7 · 本 period_id）
+两次 l2_casefile（`--expect run-cf208fb4baf29a73-p006b00104400001e`）rc=0/0 · diff **0 字节** · sha=**dff223b621ad483e**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r24 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r24（EV=run-cf208fb4baf29a73-p006b00104400001e.events.jsonl）
+① rc=**0/0** · diff=0 · sha=**05ff7406df5f92fa** · ② 事件条数=**8**（投影 rc=0）· ② rc=**0** · ②b rc=**0**
+③ `git ls-files web = 0` · `test -d web ⇒ 1`
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 round34 / `d-exec-ok-names-expect-match-not-success`：numbers 的 outcome 无 `ok` 字段、expect="ok" ⇒ exec_ok 假 ⇒ Unmet。
+当轮完全一致（tool/call=1 · usage=2 · verdict Unmet · allowed_once=1）⇒ 无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：numbers 恒判 Unmet（outcome={"series":…} 无 ok 字段）；
+若某轮 numbers 出现 Met，说明 expect 对齐规则变了，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
