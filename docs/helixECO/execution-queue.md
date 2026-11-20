@@ -5378,3 +5378,23 @@ rc=**0** · 输入：当轮目录 /tmp/round_r26（EV=run-008c0296a486dc5a-p006b
 红判据逐项：读数对不上=否 · B1=无 · B2=无 · 门后项具名=无 · ROUND_DIR rc≠0=否 · 读数漂移=否 · phyt hit=否
 ⇒ **无红 ⇒ 记 C 并直接续下一轮**（不停机、不计数）。
 ```
+
+### C 轮次 · rail 档（calc 16*4 被吞）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+POST「Please call the calc tool with expression 16*4 and report the result.」⇒ **rail 旁路**
+job_id=run-d22de0b36b3d97d1 · period_id=run-d22de0b36b3d97d1-p006b0010ab000021
+jsonl=/tmp/t2round/events/run-d22de0b36b3d97d1-p006b0010ab000021.events.jsonl
+LINES=6 · AGUI 映射（② 事件条数）=5 · TOOLCALL=0 · USAGE=0 · verdict 无（tape 里 0 条 verdict/status）
+HITL 四态 {allowed_once:0,rejected:0,cancelled:0,unavailable:0,kinds:{}} · _source=tape(ring-stale)
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7 · 本 period_id）
+两次 l2_casefile（`--expect run-d22de0b36b3d97d1-p006b0010ab000021`）rc=0/0 · diff **0 字节** · sha=**f4bb8f7a7ee7f860**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r27 bash tools/accept_all.sh`**
+```
+rc=**0** · ① rc=**0/0** · diff=0 · sha=**332e4e7ce6b162f9** · ② 事件条数=**5**（投影 rc=0）· ② rc=**0** · ②b rc=**0** · ③ web=0 · test -d web ⇒ 1
+```
+
+**t3 四选一：C · 红判据：无红** ⇒ 记 C 并直接续下一轮。
