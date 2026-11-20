@@ -8244,3 +8244,26 @@ ROUND_DIR=/tmp/s33_run-fa239bc773830b94-p006b00344100000a accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · casefile 里 ②支与③支的 `verdict_status` **同串**，判支须并读 `tool_calls`；本轮中文 weather 落 rail · 2026-11-20
+
+```
+[casefile 两段实测（同一工具、两个失败支）]
+③支 run-fa239bc773830b94-p006b00344100000a：
+   tool_calls    = "本轮无工具段（tape 里 0 条 tool/call）"
+   verdict_status= "UNMEASURABLE（tape 里 0 条 verdict/status）"
+②支 run-94752d80d75ae05e-p006b003411000009：
+   verdict_status= "UNMEASURABLE（tape 里 0 条 verdict/status）"   ← **与③支同一串**
+   support_reading= {"verdict":"UNMEASURABLE（tape 里 turn/end.verdict 为 null）","session_rows":17}
+⇒ verdict_status 一处**不足以判支**；casefile 内要靠 tool_calls（"本轮无工具段" vs 4 条 ok=false）区分，
+   与三支定律「看 (verdict) × (unavailable)」一致。属读数口径记录，不改工具、不判缺陷。
+[本轮真跑] prompt：用 weather 查一下松江的天气
+  period_id=run-cd5f3ea0cbd9ce0d-p006b00348200000c
+  jsonl=/tmp/t2round/events/run-cd5f3ea0cbd9ce0d-p006b00348200000c.events.jsonl
+  LINES=6 · AGUI=5 · tc=0 · verdict 无 · assistant/reply.bypass="rail"
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=74980db2bdb03deb
+  D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+  ROUND_DIR=/tmp/s35_run-cd5f3ea0cbd9ce0d-p006b00348200000c accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C · 六红逐条=否 ⇒ 继续
+```
