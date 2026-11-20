@@ -6843,3 +6843,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-4a66cb50196fe4eb-p006b002918000033 · 9 行 · tc=0 · verdict 无 · HITL unavailable=1 kinds={"exec":1} · diff 0 字节 · cf sha=e3462f87add8d959 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / weather Kumamoto(Met) · 2026-11-20
+
+```
+[1] period=run-cf208fb4baf29a73-p006b002925000034 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=52b5f6103c281c1f · d1_d2 rc=0 · accept rc=0
+[2] period=run-1a545b329ee0af60-p006b002929000035 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=8edf571bbb6bdee0 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句累计 9 样本：8 可解析 / 1 不可解析）
+```
