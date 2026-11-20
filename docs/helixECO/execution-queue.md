@@ -7752,3 +7752,20 @@ ROUND_DIR=/tmp/s13_run-cf208fb4baf29a73-p006b0030d6000001 accept_all rc=0
 三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
 四选一：C（两轮均与已落盘判断一致：单插件面正例、模型面差异只在 reply 措辞）· 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · 轮换 #16/#17（插件 numbers 单件 / weather 单件）· 单插件面 5/5 已尽 · 2026-11-20
+
+```
+[轮换 #16] `./fixtures`(5) → `/tmp/plugins_numbers`（仅 numbers）
+  period=run-cf208fb4baf29a73-p006b00313b000004 · jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b00313b000004.events.jsonl
+  15 行 · AGUI=8 · tc=1 · verdict=Unmet · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=098ea72add1f9404
+  D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· accept_all rc=0
+[轮换 #17] `./fixtures`(5) → `/tmp/plugins_weather`（仅 weather）
+  period=run-a7c7be6453cba201-p006b00314a000005 · jsonl=/tmp/t2round/events/run-a7c7be6453cba201-p006b00314a000005.events.jsonl
+  15 行 · AGUI=8 · tc=1 · verdict=Met · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=a6c467abd901331e
+  D1/D2 rc=0 · accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+两轮后已复原 `./fixtures`，health tentacle=reachable；三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+读数：**单插件面已尽**（{calc} #7 · {rate} #11 · {web_search} #15 · {numbers} #16 · {weather} #17 = 5/5）
+⇒ 此后「插件单件」不再是可轮换面；仍可换的是组合面与模型面（4 值，已用 coder-3b / coder-14b）
+四选一：C（两轮与已落盘判断一致）· 六红逐条=否 ⇒ 继续
+```
