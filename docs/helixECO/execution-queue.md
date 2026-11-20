@@ -4756,3 +4756,32 @@ D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+
+### C 轮次 · 又一次"无关工具 + Met"：与 01a1417 / 933827f 一致 · 2026-11-20
+
+**t1 最小读数集**
+```
+POST「Name the largest planet in our solar system. One word.」
+job_id=run-8d28c62808688d2c · period_id=run-8d28c62808688d2c-p006affff3e000015
+jsonl=/tmp/t2round/events/run-8d28c62808688d2c-p006affff3e000015.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: web_search"
+verdict={status:**Met**, checks:2} · HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+reply 原文「Jupiter」⇒ 对
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-8d28c62808688d2c-p006affff3e000015`）rc=0/0 · diff **0 字节**
+  命中后落点：period_id=run-8d28c62808688d2c-p006affff3e000015 · rows=15 · sha256 均 **af59b9bda2ce73dc**
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 01a1417（verdict 不含切题性）+ 933827f（answer.delivered = 工具返回非空）：
+当轮又是"问了常识题 → 规划 web_search → verdict Met → 答案正确但与工具无关"⇒ **两条判断都复现**，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：常识题 → web_search 规划 → Met 这一形态稳定（连续两次 15 行同构）；
+若某轮 web_search 无返回（outcome 空）而 answer.delivered 仍通过，须按 933827f 的可推翻点重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
