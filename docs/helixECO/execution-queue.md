@@ -5594,3 +5594,11 @@ phyt ledger 读数（红判据之一）：`ledger/hits-2026.jsonl` 共 4696 条 
 [2] run-2f301e71f31e9287-p006b00119d000038 · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=938499c24f5974a7 · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / weather Matsuyama(Met) · 2026-11-20
+
+```
+[1] run-cf208fb4baf29a73-p006b0011ac000039 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=a22aa627bec48cd6 · d1_d2 rc=0 · accept_all rc=0
+[2] run-c51c5c9305293079-p006b0011ae00003a · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=3a570b4fa02431c3 · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 ⇒ 续
+```
