@@ -7077,3 +7077,28 @@ n 个调用 ⇒ 行数 = 15 + 4×(n−1)，AGUI 条数 = 8 + 3×(n−1)，`allow
 可被下轮推翻的一句：**若 n=4 出现 27 行/17 条以外，或某轮 allowed_once ≠ tool/call 个数，则公式被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### A 轮次 · 四调用轮（n=4）：27 行 · AGUI=17 · `allowed_once=4` ⇒ 公式在 n=4 亦成立；verdict=Unmet（numbers 拖累）· 2026-11-20
+
+**读数（真跑）**
+```
+POST「…calc 51*51 · weather Sapporo · numbers · web_search helix… report all four results.」
+⇒ job_id=run-0fb0a7b4a2cb1547 · period_id=run-0fb0a7b4a2cb1547-p006b002a67000046
+jsonl=/tmp/t2round/events/run-0fb0a7b4a2cb1547-p006b002a67000046.events.jsonl
+LINES=**27** · AGUI（bin/agui 条数）=**17** · tool/call=4 · tools=[calc, weather, numbers, web_search]
+HITL 四态（_source=check/status.hitl）：**allowed_once=4** · unavailable=0 · kinds={} · cancelled=0 · rejected=0
+attempt="planned calls: calc, weather, numbers, web_search" · verdict=**Unmet**
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+两次 l2_casefile（--expect 同一 period_id）rc=0/0 · diff 0 字节 · cf sha=6b4e1cb381b43d2a
+ROUND_DIR=/tmp/multi4 accept_all rc=0（① rc=0/0 · ② 事件条数=17（投影 rc=0）· ② rc=0 · ②b rc=0）
+```
+
+**A：公式 n=4 亦成立，且 verdict 聚合口径再证一次**
+```
+行数 = 15+4×(n−1)：n=1→15 · n=2→19 · n=3→23 · **n=4→27**（四例逐项吻合）
+AGUI = 8+3×(n−1)：n=1→8 · n=2→11 · n=3→14 · **n=4→17**（四例逐项吻合）
+`allowed_once` = n（1/2/3/4 均吻合）
+verdict：四个调用中 numbers 的 outcome 不满足其 expect ⇒ 整轮 **Unmet**（再次印证"全部满足才 Met"）
+可被下轮推翻的一句：**若出现 allowed_once ≠ tool/call 个数，或同一 n 出现公式外行数，则公式被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
