@@ -7474,3 +7474,49 @@ tentacle-transport-mcp · chain.json/rings.json。
 不标 complete、不自行唤醒、不写「已确认 / 已交付 / 已对齐官方」、不归档、不改 center、不写 DEBTS 新行；
 dirty=0 维持（三仓逐仓实测，缺项写 UNMEASURABLE 并给 rc）。
 ```
+
+### C + 聪明调度首用 · 增益=0 ⇒ 立即轮换（#9 插件面 weather+web_search）并真跑 · 2026-11-20
+
+**轮 1（同形 calc，用于判增益）**
+```
+check_upstream：YES src=config · reasoning_endpoint=http://127.0.0.1:8080/v1 · model=coder-3b
+period_id=run-4532df77a35d76f4-p006b002f4900006e · jsonl=/tmp/t2round/events/run-4532df77a35d76f4-p006b002f4900006e.events.jsonl
+15 行 · AGUI=8 · tool/call=1 · verdict=Met
+HITL 四态（_source=check/status.hitl）：allowed_once=1 · cancelled=0 · rejected=0 · unavailable=0 · kinds={}
+两次 l2_casefile（--expect 同上 period_id）rc=0/0 · diff 0 字节 · cf sha=ddf69ff28c185c47
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s1_run-4532df77a35d76f4-p006b002f4900006e accept_all rc=0
+  ① rc=0/0 · ② rc=0 · ②b rc=0 · 事件条数=8 · 缺口标注=2
+三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0
+`git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0（冻结快照一致）
+```
+
+**增益判定（按新判据机械执行）**
+```
+四选一 = C · 六项红逐条 = 否 · ROUND_DIR rc 向量（⓪0 / ①0,0 / ②0 / ②b0 / 事件条数8 / 缺口2）
+与上一同形态轮 run-ff90a597…00006a 逐项相同 ⇒ **增益=0**
+⇒ 立即按输入面轮换取下一个真实上游（不重跑同形轮、不计入轮次）
+```
+
+**轮换 #9（一次只换一个面）**
+```
+面：tentacle 插件目录
+改前：`--plugins-dir ./fixtures`（5 插件）· 改后：`--plugins-dir /tmp/plugins_ww`（**weather.js + web_search.js** 两件）
+来源：由 fixtures 复制（既有文件，未改内容、未新建上游、未改协议）
+改前配置 sha：无文件变更（tentacle 启动参数，见上）；轮末已复原 ./fixtures，health tentacle=reachable
+```
+
+**轮 2（轮换后真跑，证明增益≠0）**
+```
+POST「Please call the calc tool with expression 66*66 and report the result.」（calc 在 /tmp/plugins_ww 里缺席）
+period_id=run-24d8cc8f1760bb4e-p006b002f5a00006f · jsonl=/tmp/t2round/events/run-24d8cc8f1760bb4e-p006b002f5a00006f.events.jsonl
+LINES=**11** · AGUI=8 · tc=1 · verdict 无 · attempt="planned calls: calc"
+tool/call={"index":0,"tool":"calc"} · tool/result={"index":0,"ok":false,"source":"execution-pipeline",
+  "outcome":"…NotFound… tool not found or not instantiated: calc…"}
+⇒ **B1-zf 判据再复现**（执行段失败 ⇒ 补 call+result，ok=false、source=execution-pipeline）
+两次 l2_casefile rc=0/0 · diff 0 字节 · cf sha=7086c902449924e8 · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+ROUND_DIR=/tmp/s2_run-24d8cc8f1760bb4e-p006b002f5a00006f accept_all rc=0
+  ① rc=0/0 · ② rc=0 · ②b rc=0 · 事件条数=8 · 缺口标注=**4**（与轮 1 的 2 不同 ⇒ 读数向量确有差）
+三仓 dirty 全 0 · Cellrix docs 冻结快照 rc=0
+四选一：C（既有 B1-zf 判断一致）· 六项红逐条=否 ⇒ 继续（下轮按增益再判）
+```
