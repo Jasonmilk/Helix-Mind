@@ -6650,3 +6650,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-6414d90acd30b810-p006b0027e900001b · 15 行 · tc=1 · **Met** · HITL allowed_once=1 kinds={} unavailable=0 · diff 0 字节 · cf sha=682981c8e35f3108 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Tokushima(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] period=run-4b2f5997af08684c-p006b0027f600001c · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=d3a5f79c971efaeb · d1_d2 rc=0 · accept rc=0
+[2] period=run-cf208fb4baf29a73-p006b0027fb00001d · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=78294a11001c835e · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
