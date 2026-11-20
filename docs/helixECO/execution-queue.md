@@ -7102,3 +7102,13 @@ verdict：四个调用中 numbers 的 outcome 不满足其 expect ⇒ 整轮 **U
 可被下轮推翻的一句：**若出现 allowed_once ≠ tool/call 个数，或同一 n 出现公式外行数，则公式被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · 四调用再复现（n=4：27 行 / AGUI 17 / allowed_once=4 / Unmet）· 2026-11-20
+
+```
+period_id=run-cebced3f77ea71a3-p006b002a81000047 · jsonl=/tmp/t2round/events/run-cebced3f77ea71a3-p006b002a81000047.events.jsonl
+LINES=27 · AGUI=17 · tool/call=4 · tools=[calc, weather, numbers, web_search] · HITL allowed_once=4 · verdict=Unmet
+（请求里写了 5 个面但没点名 exec；模型仍只规划 4 个 ⇒ 未观察到 n=5）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=8bc628ab1763822c
+ROUND_DIR=/tmp/multi4b accept_all rc=0（① 0/0 · ② 17 条 · ② rc=0）· C · 无红 ⇒ 续
+```
