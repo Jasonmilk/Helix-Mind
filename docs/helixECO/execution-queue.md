@@ -5575,3 +5575,14 @@ D1/D2 三轮 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）· 三轮 d
 D2 数据源=官方副本 sha 4b5c93226838a0e7
 四选一：C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 24*4(rail) / numbers · 2026-11-20（附 phyt ledger 读数）
+
+```
+[1] run-024dbd4b6608ac6e-p006b00118a000035 · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=f1e1aa2cee4292bc · d1_d2 rc=0 · accept_all rc=0
+[2] run-cf208fb4baf29a73-p006b00118b000036 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=575b8b7b7d2c7b64 · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha 4b5c93226838a0e7
+phyt ledger 读数（红判据之一）：`ledger/hits-2026.jsonl` 共 4696 条 · `valid=false` **0 条** · 最后一条 2026-11-19 `kind=run` `valid=true`
+  ⇒ **phyt ledger hit=无**（工作区 dirty=1 仍是运行时追加，具名不提交）
+四选一：C ×2 · 红判据逐项=无红 ⇒ 续
+```
