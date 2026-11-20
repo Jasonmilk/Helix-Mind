@@ -4474,3 +4474,66 @@ D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）· reply=[rail citation�
 
 **计数**：本轮无 B1/B2（B2 只补说明、不新增实体）⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
 **未动**：章 A 签字 / signoff / HITL 未捆入 · UNCOVERED / validator 基准维持门后 · 未写「已确认」、未归档。
+
+### A 轮次 · 执行层静默失败在出口被标成 `success=true · impasse=false` · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「Please call the frobnicate tool with argument 7 and report exactly what it returns.」
+job_id=run-ab0a6fd6098bad2e · period_id=run-ab0a6fd6098bad2e-p006afffad500000f
+jsonl=/tmp/t2round/events/run-ab0a6fd6098bad2e-p006afffad500000f.events.jsonl
+LINES=9 · AGUI=5 · TOOLCALL=0 · USAGE=1 · attempt="planned calls: frobnicate"
+turn/end = {done:**true**, impasse:**false**, success:**true**, verdict:**null**, reply=计划 JSON}
+HITL = allowed_once=1 · rejected/cancelled/unavailable=0 · kinds={} · _source=tape(ring-stale)
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）· 官方副本校验 5/5
+两次 l2_casefile（`--expect run-ab0a6fd6098bad2e-p006afffad500000f`）
+  rc=0/0 · diff **0 字节** rc=0 · sha256 均 **800e0472566948a1**
+  命中后落点：period_id=run-ab0a6fd6098bad2e-p006afffad500000f · rows=9
+casefile：tools=「本轮无工具段（0 条）」· hitl allowed_once=1
+```
+
+**t2 核的是哪条判断 / 为何对不上**
+```
+已落盘（9e4cbf1 三层 + 60dd4e3 执行层无 tape 落点 + 76 行 317、:678 的 success 语义）：
+「success=true 只表示这一轮跑完了」——但当轮把这条推到更硬的位置：
+  计划被解析（attempt="planned calls: frobnicate"）· 闸放行（allowed_once=1）· **执行层静默失败**（无 tool/call）
+  ⇒ 出口仍报 **success=true / impasse=false / done=true**，`verdict=null`，
+    reply 回落到计划 JSON ⇒ 从外观看"这一轮一切正常"。
+```
+
+**A：判断改成**
+```
+执行层失败与"正常作答"在**出口三元组**（success / impasse / verdict）上完全同形；
+区分它们只能靠 **tape 里有几条 tool/call 与 attempt 的计划名是否存在**。
+⇒ 可被下轮推翻的一句：**凡 attempt 声称 planned calls、而 tool/call=0，该轮 success=true 不构成"执行成功"的证据**；
+   若出现"planned calls 且 tool/call=0 而 success=false"，说明出口已能识别执行层失败，须重判。
+```
+
+**与既有债务的关系（具名，不销账）**：本 A 与 `d-exec-ok-names-expect-match-not-success` **不是同一件**
+（那条讲"期望层措辞"，本条讲"出口三元组对执行层失败无区分"）；与 `d-unknown-tool-name-silently-dropped` **是同一现象的两个面**
+（那条讲 tape 缺行，本条讲缺行后出口仍报成功）⇒ 只在后者补一句说明，不新增实体。
+
+**计数**：本轮无 B1/B2（只补说明、不新增实体）⇒ **连续无 B1/B2 = N = 1**。
+
+### 补限定 · 三条（append-only）· 2026-11-20
+
+**① 预写收窄（上一轮末尾那句）**
+```
+「下一轮我打算打的最后一点：执行层中断走 outcome 还是 HITL unavailable」
+⇒ 收窄为**已具名可推翻点、出现才重判**：不主动造 tentacle 断链样本、不写成下轮工单、不预写检查清单。
+本轮 A（三层）仍是"当轮读数与 c47cd21 / exec_ok 那条判断对不上而动"的结果，**不扩成覆盖率作业**。
+```
+
+**② 落点补全**
+```
+· 上一轮两处 `--expect <period_id>` 占位符：补"命中后落点"写法 ——
+  `--expect <period_id>` ⇒ 输出里 `selection=expect:<period_id>`、`period_id=` 与 `rows=` 三项一起贴。
+  （本轮示例：period_id=run-ab0a6fd6098bad2e-p006afffad500000f · rows=9）
+· N=1 的落点：`execution-queue.md` **行 4398**「A 轮次 · "ok" 有三个层次…」（该节末尾写 N=1）。
+· 本轮 A 与 `d-exec-ok-names-expect-match-not-success` **不是同一件**（期望层措辞 vs 出口三元组）；
+  与 `d-unknown-tool-name-silently-dropped` **是同一现象两面** ⇒ 只在后者补说明，不新增实体、不销账。
+```
+
+**维持边界**：不为凑绿改 D1/D2 · 不换 validator 基准 · 不写「已交付 / 已确认」·
+章 A 三下签字 / signoff / HITL 不捆入 · phyt 护栏 · N=2 自 pause · dirty=0 · 未归档。
