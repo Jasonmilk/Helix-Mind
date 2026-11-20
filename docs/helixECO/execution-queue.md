@@ -8964,3 +8964,18 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮�
 三仓 dirty 0/0/0（anaphase / Cellrix / helix-mind）· docs 冻结快照 rc=0
 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · numbers 落「解析失败」型（9 行，attempt=no calls planned 但 reply 是计划 JSON）/ weather Niigata(Met) · 2026-11-20
+
+```
+[1] period=run-cf208fb4baf29a73-p006b0037d4000032 · **9 行** · tc=0 · u=1 · check=1 · verdict 无
+    attempt="no calls planned — answered directly" · bypass=**null** · model=coder-3b
+    reply 原文 = {"calls":[{"tool":"numbers","args":{"series":"[1, 2, 3, 4, 5]"},"expect":"ok"]}
+    ⇒ 属已落盘 A（8263067/70f7eaa）的「解析失败」型：attempt 说没计划，但 reply 仍是计划 JSON；
+      与 rail 支的区别再次实测成立（bypass≠"rail"、u=1 不为 0）
+    定律：无 verdict 支 8+u+2n = 9 ✓ · diff 0 字节 · cf sha=751dc895d3e6bc51 · d1_d2 rc=0 · accept_all rc=0（缺口=4）
+[2] period=run-3df38e3f7505e4c4-p006b0037d7000033 · weather Niigata · 15 行 · tc=1 · u=2 · check=3 · Met
+    diff 0 字节 · cf sha=75d494f10ca209cc · d1_d2 rc=0 · accept_all rc=0（缺口=2）
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
