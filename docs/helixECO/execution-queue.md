@@ -5996,3 +5996,42 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=79bb8d128c742737 · ② 事件�
 ```
 
 **红判据**：六项逐条＝否（无红）⇒ 记 A，续下一轮。
+
+### A 轮次 + B2 口径扩展（**红**）· coder-3b 在 calc 缺席的工具面上仍规划 calc · 2026-11-20
+
+**面**：插件面保持 2 插件子集（numbers/rate，calc 缺席）；模型面 qwen3.8-27b → **coder-3b**
+```
+来源：既有 llama-swap id；config `reasoning_model`（行 16）qwen3.8-27b → coder-3b
+config.toml sha256_16：98d6380f2a55132a → **507d3f781f7c9260**（重启后 check_upstream model=coder-3b）
+```
+
+**当轮读数**
+```
+POST「Please call the calc tool with expression 19*19 and report the result.」
+job_id=run-0dc31f18bbb2b09a · period_id=run-0dc31f18bbb2b09a-p006b001b56000001
+jsonl=/tmp/t2round/events/run-0dc31f18bbb2b09a-p006b001b56000001.events.jsonl
+LINES=9 · AGUI=5 · **TOOLCALL=0** · USAGE=1 · usage.model=coder-3b
+attempt = **"planned calls: calc"**（有计划！而 calc **不在** tentacle 的工具清单里）
+HITL = **allowed_once=1** · rejected/cancelled/unavailable=0 · kinds={}   ← **闸放行了一个不存在的工具**
+reply 原文 = ```json {"calls":[{"tool":"calc","args":{"expression":"19*19"},"expect":"ok"}]}```
+verdict 无（未进执行段）· D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=**145a92600b121030**
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=9f24e4b5c245c4b8 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+上一轮 A（06f383b）的可推翻点直接命中：「若在同样'工具不在清单'的面上出现 attempt=planned calls 且无 tool/call，
+则说明模型会规划不存在的工具，须把两例并到同一 B2 口径下重判」。
+当轮即此形（coder-3b 规划 calc，calc 不在清单，HITL 放行，无 tool/call）⇒ **与 frobnicate 例同族**。
+并且比 frobnicate 更进一步：**闸对"工具是否存在"不做校验**（allowed_once=1 而不是 unavailable）。
+```
+
+**A（保留）+ B2 口径扩展（登记，不改实现）**
+```
+A：`d-unknown-tool-name-silently-dropped` 的覆盖面由「模型臆造名字」扩为
+   「**模型规划了工具清单里不存在的工具**」——两类同机制：闸不校验存在性 ⇒ 放行 ⇒ 执行段无对应工具 ⇒ 静默消失。
+   判据仍是 attempt：有 planned calls + 无 tool/call ⇒ 落在本 B2 口径内；无 planned calls 属"模型自己没计划"（上一轮第四形）。
+B2：只扩既有行说明，**不新增实体**、不改实现。
+红判据：B2 真撞 = **是** ⇒ 按 objective **落盘后停在该红上等 gardener**。
+```
