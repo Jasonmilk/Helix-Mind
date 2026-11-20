@@ -7998,3 +7998,22 @@ revisit 条件（机械）：同一插件面下，重跑「numbers + 缺失工�
 ```
 
 **红停声明**：本轮触红判据「B2 真撞」⇒ 按「只有真撞到红才停」**停一轮**；已具名 + 给证据 + 给 revisit，不自裁、不写 DEBTS、不签字、不改引擎。
+
+### C 轮次 · B2 具名项复现（第 2 样本）：批内错误归属仍被广播 · revisit 未满足 · 2026-11-20
+
+```
+插件面 /tmp/plugins_numbers（仅 numbers）· 模型 coder-3b（config sha `507d3f781f7c9260`）
+prompt：Please call the numbers tool and also the calc tool with expression 74*74, then report both results.
+period_id=run-8f86acfdf216824c-p006b003312000003
+jsonl=/tmp/t2round/events/run-8f86acfdf216824c-p006b003312000003.events.jsonl
+LINES=13 · AGUI=11 · tc=2 · verdict 无
+tool/result：**两条**均 `ok=false` · `source=execution-pipeline` · error 同为
+  `status: NotFound, message: "tool not found or not instantiated: **calc**"`（`tool` 字段仍分别为 numbers / calc）
+⇒ 与 `run-b5a5cda88409f4a2-p006b0032d3000001` 逐项一致（第 2 样本）⇒ 具名项 `d-multicall-result-error-attribution` **复现，revisit 未满足**
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=d5cc590d68939fc5
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s26_run-8f86acfdf216824c-p006b003312000003 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口4）
+三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+轮末插件面已复原 ./fixtures（health tentacle=reachable）
+四选一：C（同一 B2 的第 2 样本，无新信息；不重复计一次红，红已在 849d48b 记并具名）· 六红逐条=否 ⇒ 继续
+```
