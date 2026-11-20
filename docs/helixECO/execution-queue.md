@@ -6827,3 +6827,11 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-2396ad2a891d160c-p006b0028ee00002f · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=31867cb09392d819 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（同一 numbers prompt 第 8 个样本：可解析，累计 7 成 1 败）
 ```
+
+### C 轮次 ×2 · weather Miyazaki(Met) / web_search(Met) · 2026-11-20
+
+```
+[1] period=run-08d785c550405896-p006b0028fd000030 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=2be069e708dc4fb9 · d1_d2 rc=0 · accept rc=0
+[2] period=run-1d926abb99aae794-p006b002902000031 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=0964a6ec9ec55327 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
