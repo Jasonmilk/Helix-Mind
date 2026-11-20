@@ -7267,3 +7267,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
     （n=2 公式再验一次：19 = 15+4×1 ✓）
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 59*59(Met) / exec-blocked(9 行, unavailable=1) · 2026-11-20
+
+```
+[1] period=run-f359647517abbc9a-p006b002b9700005b · 15 行 · tc=1 · Met · unavailable=0 · diff 0 字节 · cf sha=dd1ae507bfff0a8a · d1_d2 rc=0 · accept rc=0
+[2] period=run-7e305f831c203b20-p006b002b9a00005c · 9 行 · tc=0 · verdict 无 · unavailable=1 · diff 0 字节 · cf sha=fd7d9a52df306ee9 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
