@@ -5120,3 +5120,58 @@ ROUND_DIR 目录内 tape 与 t1 交付的 jsonl **同 period、同 sha**：
     「②b 页面（缺口留白 + 反向）」= render_test 反向检查（本轮 rc=0）
     两者**是不同编号对象**，不合并成一个"②"。
 ```
+
+### 章 A 三下齐（第二下已修并重按）· 2026-11-20
+
+**修的是什么（B1 性质，依 gardener 本条授权令执行）**
+```
+`Cellrix 5a86e80`（B2-zd）：`l2_casefile.js` 把 `turn/end.verdict = null` 写成**字符串 "null"**，
+页面据此渲染 `<dd>null</dd>` —— **空值冒充值**（留白 / 缺项 / null 三态里的第三态）。
+改为：仅当 verdict 非 null/undefined 才 `JSON.stringify`，否则 `UNMEASURABLE（tape 里 turn/end.verdict 为 null）`。
+sha256_16：`l2_casefile.js` 7cb37ebe92eeb6fd → **0e627a83eb7f6d23**
+只改渲染链：未动 93 行验收包、未动三下命令、未松「留白数=真实缺项数」判据、未把 null 硬算成留白凑绿。
+```
+
+**改前 / 改后（同一 `<ROUND>=/tmp/round_r22` · period run-9c008f637c3f3f9c-p006b00017d00001c）**
+```
+                  页面字节   留白格   <dd>null</dd>   casefile UNMEASURABLE   D3 缺项
+改前                3978        3           1                    2                1
+改后                **4082**   **4**      **0**                  2                1
+留白数分解（改后）：4 = casefile 2（verdict_status · unselected_reason）+ 支撑读数 verdict 1 + D3 1（重复检测）
+```
+
+**反样本**
+```
+① 真跑 calc 轮（turn/end.verdict="Met" · period run-69c4b42af7d98a7e-p006b00016600001b）
+   ⇒ 支撑读数 verdict=`"Met"`（按值显示，不误判为缺）· 页面 null=0 · 留白=2
+② 构造轮（把 verdict 写死为 "Met"）⇒ 同形：显示为值，不进留白
+```
+
+**第二下重按（同一 `<ROUND>`，逐项读数）**
+```
+d3_compare rc=**0** · l2_render rc=**0**
+页面：`/tmp/round_r22/refix_page.html` · **4082 字节** · sha256_16=**22dd846cb6699b88**
+留白格=**4** · `<dd>null</dd>`=**0** · 缺口声明「缺口如实标注，不假装完整」=**1**
+casefile：`/tmp/round_r22/fix1.json` · sha256_16=**f5b7d84d53029784** · UNMEASURABLE 字段=2（verdict_status · unselected_reason）
+D3：缺项=**1**（label=重复检测）
+⇒ 三态分列：留白 4 / 缺项 4（casefile2 + 支撑读数1 + D3 1）/ **null 冒充 0**
+⇒ **第二下成立**（留白数 = 真实缺项数，且缺口声明在）
+```
+
+**章 A 状态（本条 append-only 补限定）**
+```
+由「第一、三下成立；第二下判据需三分、未闭合」→
+**「三下齐 · 依 gardener 本条授权令 · Pi 执行 · 读数在此（第一下 cc7ca19c / 第二下 22dd846c / 第三下 web=0,test -d⇒1）· 可复跑」**
+不自签 · 不写「已确认 / 已交付 / 章 A 已签 8/8」· **三下判不出 8/8**（8/8 仍是章 B 实现落地，不并入）· 不归档 · 不销账。
+```
+
+**常态口径补记（append-only，只记账）**
+```
+**sha 一律先测后写**（上节②我曾先写后测，初值错误，已同节更正）。
+「先写后测」这一类归入既有 **C-059「读到空」家族**的防漏（读到的不是读数、是猜数），**不新开类目**；
+证据等级常态分列保留：实测 sha 与"曾写错的初值"都留在同节，供以后对照。
+```
+
+**边界**：本项**不并入线 1 的 A/B1/B2/C 四选一计数**、不改 goal 状态（仍 paused N=2）、不自行唤醒；
+未改 signoff.toml、未换 validator 基准、未补 SUBAGENT_*、未删 META_EVENT、未立「真跑消费验收」对象、未写 DEBTS 新行、未销账、未归档；
+章 B 余项 / signoff 矛盾 / HITL 各是各未捆入；phyt 护栏、dirty=0 维持。
