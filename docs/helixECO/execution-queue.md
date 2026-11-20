@@ -6929,3 +6929,11 @@ GET localhost:50061/v1/agent/events ⇒ 顶层键 ["dropped","events","last_seq"
 [2] period=run-8f9c6705089fac72-p006b00298b000039 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=51bd8cb7cbfd5d7c · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（ring 输入均为同一条旧 period，按上轮 A 的限定只作"输入齐备"）
 ```
+
+### C 轮次 ×2 · calc 44*44(Met) / exec-blocked(9 行) · 2026-11-20
+
+```
+[1] period=run-b7f3223f089c11fe-p006b0029a000003a · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=70b5caff53b90235 · d1_d2 rc=0 · accept rc=0
+[2] period=run-8e425a019c57e8b2-p006b0029a300003b · 9 行 · tc=0 · verdict 无（exec 闸拒：unavailable=1 kinds={"exec":1}）· diff 0 字节 · cf sha=b6a3d08308c9957c · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
