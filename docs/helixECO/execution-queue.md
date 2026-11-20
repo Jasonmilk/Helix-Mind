@@ -5417,3 +5417,27 @@ rc=**0** · ① rc=**0/0** · diff=0 · sha=**9885f632d9af7a90** · ② 事件�
 ```
 
 **t3 四选一：C · 红判据：无红** ⇒ 续下一轮。
+
+### C 轮次 · numbers 工具轮（Unmet）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+POST「Please call the numbers tool and report exactly what it returns.」
+job_id=run-cf208fb4baf29a73 · period_id=run-cf208fb4baf29a73-p006b0010ca000023
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b0010ca000023.events.jsonl
+LINES=15 · AGUI 映射=8 · TOOLCALL=1 · USAGE=2 · verdict=**Unmet**
+HITL {allowed_once:1, rejected:0, cancelled:0, unavailable:0, kinds:{}} · _source=tape(ring-stale)
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-cf208fb4baf29a73-p006b0010ca000023`）rc=0/0 · diff **0 字节** · sha=**4fd41b03dad091e7**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r29 bash tools/accept_all.sh`**
+```
+rc=**0** · ① rc=**0/0** · diff=0 · sha=**7baffbe466f62837** · ② 事件条数=**8**（投影 rc=0）· ② rc=**0** · ②b rc=**0**
+```
+
+**t3 四选一：C · 红判据：无红**
+```
+核 round34 / `d-exec-ok-names-expect-match-not-success`：numbers 的 outcome 无 ok 字段 ⇒ exec_ok 假 ⇒ Unmet ⇒ 一致。
+⇒ 记 C，续下一轮。
+```
