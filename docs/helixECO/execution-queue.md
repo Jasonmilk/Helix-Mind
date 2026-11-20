@@ -8267,3 +8267,21 @@ ROUND_DIR=/tmp/s33_run-fa239bc773830b94-p006b00344100000a accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · numbers（Unmet）+ phyt ledger 守护读数 · 2026-11-20
+
+```
+[phyt 守护口径实测] phyt-DNA/ledger/hits-2026.jsonl
+  总行=4778 · 可解析=4696 · 不可解析=82（既有，首现 2026-10-09，非今日）· **valid=false=0** · 最后 ts=2026-11-19T03:36:52+0800
+  ⇒ 无新 hit、文件未增长（mtime 未变）⇒ phyt 红判据未触发；不续期、不提交 ledger、不唤醒
+[本轮真跑] prompt：Please call the numbers tool and report exactly what it returns.
+  period_id=run-cf208fb4baf29a73-p006b00349a00000d
+  jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b00349a00000d.events.jsonl
+  LINES=15 · AGUI=8 · tc=1 · verdict=Unmet · HITL allowed_once=1/unavailable=0（_source=check/status.hitl）
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=6076c8e1054cff57
+  D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+  ROUND_DIR=/tmp/s36_run-cf208fb4baf29a73-p006b00349a00000d accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+rc 向量与上一 numbers 轮逐项相同 ⇒ 增益=0（下一轮按增益判据取下一个真实上游面）
+四选一：C · 六红逐条=否 ⇒ 继续
+```
