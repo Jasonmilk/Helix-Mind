@@ -5694,3 +5694,11 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×3 · 无红 ⇒ 续
 处置：`.pi/pi-goal-x-settings.json` → `{"maxAutonomousRuns": 0}`（harness 允许 agents 设的**执行**上限，不是 goal pause）。
 恢复：`/goal-resume`，或把该值改大/删文件 —— 任一句即恢复长跑，我照做。
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / calc 33*4(rail) · 2026-11-20
+
+```
+[1] run-cf208fb4baf29a73-p006b0013d300004e · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=ca1be34991fe65dc · d1_d2 rc=0 · accept_all rc=0
+[2] run-eedb7f87f2b874f2-p006b0013d500004f · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=905007d9e973abd7 · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红
+```
