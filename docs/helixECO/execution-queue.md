@@ -8889,3 +8889,16 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮�
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮命中 · 页面缺口=2 两轮命中
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · exec-blocked(9 行/闸拒) / rail(6 行/u=0) · 2026-11-20
+
+```
+[1] period=run-e1ccad091df2f268-p006b003728000026 · 9 行 · tc=0 · **u=1** · check=1 · verdict 无 · unavailable=1
+    ⇒ 无 verdict 支：8+u+2n = 9 ✓（②/③ 同式，n=0）
+    diff 0 字节 · cf sha=35a15e5c4b0db58e · d1_d2 rc=0 · ROUND_DIR accept_all rc=0（页面缺口=4）
+[2] period=run-b90440c9ef1308c1-p006b00372b000027 · 6 行 · tc=0 · **u=0** · check=1 · bypass="rail" · verdict 无
+    ⇒ rail 支：6 行 / u=0 ✓（与全量 census 66 份同形）
+    diff 0 字节 · cf sha=743b901920da7a76 · d1_d2 rc=0 · ROUND_DIR accept_all rc=0（页面缺口=4）
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
