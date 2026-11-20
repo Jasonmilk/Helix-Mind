@@ -6579,3 +6579,40 @@ LINES=6 · AGUI=5 · tool/call=0 · tool/result=0 · verdict 无 · reply 直接
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=7f26731748c1bfbc
 ROUND_DIR accept_all rc=0（① 0/0 · ② 5 条 · ②/②b 0）· C · 无红 ⇒ 续
 ```
+
+### C 轮次 · 输入面轮换 #6（tentacle 插件面）：B1-zf 在**新一次真跑**上复现 · 2026-11-20
+
+**轮换记录（授权内，一次只换一个面）**
+```
+面：tentacle 插件目录
+改前：`--plugins-dir ./fixtures`（5 插件：calc/numbers/rate/weather/web_search）
+改后：`--plugins-dir /tmp/plugins_subset`（**已存在**的 2 插件：numbers、rate；calc/weather/web_search 缺席）
+来源：`/tmp/plugins_subset`（此前 B1-zf 首撞时的同一子集，非新建、非造样本）
+tentacle 进程：pid 44633 → 52000（启动参数见上）；轮末已恢复 `./fixtures`，health tentacle=reachable
+```
+
+**当轮读数（真跑）**
+```
+POST「Please call the calc tool with expression 34*34 and report the result.」
+⇒ job_id=run-9a5fa0c4ecba7c20 · period_id=run-9a5fa0c4ecba7c20-p006b00278d000015
+jsonl=/tmp/t2round/events/run-9a5fa0c4ecba7c20-p006b00278d000015.events.jsonl
+LINES=**11** · AGUI=8 · verdict **无**（失败轮不写 verdict）
+tool/call=1 · data={"index":0,"tool":"calc"}
+tool/result=1 · data keys=[index, ok, outcome, outcome_sha, source, tool]
+   **ok=false · tool=calc · source=execution-pipeline**
+   outcome（字符串）解析：`{"error":"status: NotFound, message: \"tool not found or not instantiated: calc\"…"}`
+⇒ **B1-zf 判据逐条成立**：执行段失败 ⇒ tape 补 `tool/call` + `tool/result(ok=false, source=execution-pipeline)`
+   （与 `run-00c676c26f5ec20c-p006b002157000001` 旧样本 **data keys 完全一致**）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=c91cb672a0fbbc63
+ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
+```
+
+**自查（本轮差一点误判为红）**
+```
+我先用固定键集打印 `tool/result` 并在 150 字符处截断 ⇒ 屏幕上只看到 `{"ok":false,"outcome":"…`，
+一度以为 **`source` 字段丢了**（那正是"与已落盘判断对不上"的红）。
+实际 `data keys` 含 `source`，值 `execution-pipeline` —— 是我的**打印截断**造成"读到没有"，
+同属"读到空"家族（第 12 次）。⇒ 未改任何代码，未登记 B2。
+```
+
+**四选一**：C（与已落盘 B1-zf 判断一致，且为**修复后的新一次真跑复现**）· 红判据逐条=否 ⇒ 续
