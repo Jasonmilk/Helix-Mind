@@ -4438,3 +4438,39 @@ casefile：tools=['index=0 · calc · ok=true · 26ms'] · verdict={Unmet, check
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
 **未动**：章 A 签字 / signoff / HITL 未捆入 · UNCOVERED / validator 基准维持门后 · 未写「已确认」、未归档。
+
+### A 轮次 · 执行层失败在 tape 上**没有落点**（pipeline 路径 Err ⇒ 只返回 Failure，不 emit）· 2026-11-20
+
+**t1 最小读数集（当轮真跑）**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「Please call the calc tool with expression 2*21 and report the result.」⇒ 本轮落到 **rail 旁路**
+job_id=run-fc718d7351f0d3f1 · period_id=run-fc718d7351f0d3f1-p006afffa2300000e
+jsonl=/tmp/t2round/events/run-fc718d7351f0d3f1-p006afffa2300000e.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · HITL 四态全 0
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）· reply=[rail citation…]（答非所问 ⇒ 判错）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff **0 字节** · sha256 见下
+```
+
+**t2 核的是哪条判断 / 为何对不上**
+```
+上一轮 A（9e4cbf1）把失败分成三层：传输 / 业务 / 期望，并假定三层都能在 tape 上读到。
+当轮读代码（不是推断）发现**执行层失败在 tape 上没有落点**：
+  · `anaphase-helix:src/run_cycle/mod.rs:1221-1232`（legacy 路径）失败时 emit 的是 **cycle 事件** `{"tool":…,"ok":false,"error":…}`（进 ring，不进 session tape）
+  · `src/run_cycle/mod.rs:1366-1370`（**pipeline 路径**）`Err(e) => Ok(TransitionCondition::Failure)` —— **不 emit 任何东西**
+⇒ 若执行层在 pipeline 上失败（含"工具名不存在"），tape 里既没有 `tool/result`、也没有错误行 ⇒
+   **无法从 tape 区分"没执行"与"执行失败"**。
+```
+
+**A：判断改成**
+```
+失败读数只有两处有 tape 落点：**业务层**（`tool/result.outcome.ok=false`）与**期望层**（`exec_ok.actual`）；
+**执行层（pipeline Err）在 tape 上没有落点** ⇒ 缺行。
+⇒ 这也解释了 B2 `d-unknown-tool-name-silently-dropped` 的机制：不是名字解析吞掉，是**整条 pipeline 失败分支不 emit**。
+⇒ 可被下轮推翻的一句：**若某轮出现"pipeline 失败但有 tool/result 或 error 行"，说明该分支已被加上落点，须重判。**
+```
+
+**B2 记账方式**：**不新增实体**——把它并入既有 `d-unknown-tool-name-silently-dropped` 的说明（同一现象、不同触发），只追加一句机制落点，不重复计。
+
+**计数**：本轮无 B1/B2（B2 只补说明、不新增实体）⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+**未动**：章 A 签字 / signoff / HITL 未捆入 · UNCOVERED / validator 基准维持门后 · 未写「已确认」、未归档。
