@@ -5630,3 +5630,6 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 含义：goal 仍 running、guard 未改、红仍会照常落盘；只是自动续跑次数被限，恢复由 gardener 一句话（`/goal-resume` 或删该文件）。
 可推翻点：若 gard 认为应继续跑到红为止 ⇒ 删除该文件或改大数值即可，我照做。
 ```
+
+### C 轮次 · numbers(Unmet) · 2026-11-20（限流生效期内）
+run-cf208fb4baf29a73-p006b0011f400003f lines=15 tc=1 verdict=Unmet diff 0 字节
