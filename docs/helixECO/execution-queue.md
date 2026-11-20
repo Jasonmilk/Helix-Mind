@@ -5649,3 +5649,11 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] run-63f060292315ed73-p006b001373000043 · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=e95a9e9396d4672e · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Akita(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] run-f35f30ce0568e77b-p006b001380000044 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=dcf2c516db4c7ea1 · d1_d2 rc=0 · accept_all rc=0
+[2] run-cf208fb4baf29a73-p006b001384000045 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=b68b68679de003f3 · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
