@@ -5602,3 +5602,11 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 �
 [2] run-c51c5c9305293079-p006b0011ae00003a · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=3a570b4fa02431c3 · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 26*4(rail) / numbers(Unmet) · 2026-11-20
+
+```
+[1] run-a6b401786a8895a4-p006b0011c300003b · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=6d1a3c053668e96e · d1_d2 rc=0 · accept_all rc=0
+[2] run-cf208fb4baf29a73-p006b0011c400003c · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=535a9b4949fb0745 · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 ⇒ 续
+```
