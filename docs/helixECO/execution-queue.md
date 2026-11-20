@@ -7250,3 +7250,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-cf208fb4baf29a73-p006b002b5c000056 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=58271449d4953fae · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 15 样本：可解析）
 ```
+
+### C 轮次 ×2 · web_search(Met) / weather Akita(Met) · 2026-11-20
+
+```
+[1] period=run-003f6f698bc53579-p006b002b6a000057 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=117cbacef4810622 · d1_d2 rc=0 · accept rc=0
+[2] period=run-f35f30ce0568e77b-p006b002b72000058 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=f1068251f83aa852 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
