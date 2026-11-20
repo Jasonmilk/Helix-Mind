@@ -4281,3 +4281,39 @@ d1_d2 rc=0（D2 读官方副本；D1/D2 口径**未动**）· validator 基准**
 **未动/未写**：未为凑绿灯改 D1/D2 · 未换 validator 基准 · 未写「已交付 / 已确认」· 章 A 签字与 HITL 未捆入。
 **该债务行状态**：`d-uncovered-list-drift-vs-official` 现象（清单未从 `$defs` 生成）**已消除并留下生成口径**；
 但按「不自动销账」，DEBTS 行**不删**，其状态由「⏳ 待裁」改为「✅ 已裁并执行（2026-11-20）」，附本条落点。
+
+### C 轮次 · 工具轮真跑（calc 12*12）：读数与已落盘判断一致 · 2026-11-20（本轮第 1 轮）
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True
+POST「Please call the calc tool with expression 12*12 and report the result.」
+job_id=run-3952794efaa1b304 · period_id=run-3952794efaa1b304-p006afff98f00000a
+jsonl=/tmp/t2round/events/run-3952794efaa1b304-p006afff98f00000a.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: calc"
+D1/D2 rc=0（**口径已换**：D2 读**官方副本** refs/ag-ui-1.0-schema.json · sha256_16=4b5c93226838a0e7；
+             已映射 8 类；K-134 已裁「D2 基线=官方副本」）
+verdict={status:Met, checks:2, reason:"all checks passed", job_id:<=period_id>}
+HITL 四态 {allowed_once:1, rejected:0, cancelled:0, unavailable:0, kinds:{}} · _source=tape(ring-stale)
+reply 原文「The result of the calculation is 144.」⇒ 对（12×12）
+两次 l2_casefile（`--expect run-3952794efaa1b304-p006afff98f00000a`，period_id 作身份键）rc=0/0
+  diff 输出 **0 字节** rc=0 · sha256 均 **99c9765fdce2c39a**
+  selection=expect:<period_id> · rows=15 · tools=['index=0 · calc · ok=true · 52ms']
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c890a7b（有无计划只看 attempt；tool/call>0 必伴随 usage=2）+ 08f5a23（verdict.job_id 装 period_id）+
+   K-134 改判后的 D2 口径（读官方副本）：
+当轮 attempt="planned calls: calc" · usage=2 · tool/call=1 · verdict.job_id==period_id · D2 rc=0（官方副本）⇒ 全部一致。
+无差；不制造核对对象。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：D2 换官方副本后，calc 工具轮仍 rc=0 且 d2_fail=0；
+若出现 D2 红而 agui_conformance 绿（或反之）⇒ 同源关系被破坏，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+**未动**：门后项一律不动不销账；章 A 签字 / HITL 未捆入；未写「已确认」。
