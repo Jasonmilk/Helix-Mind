@@ -4605,3 +4605,35 @@ weather 走 allowed（allowed_once=1 · tool/call=1 · verdict Met），outcome 
 
 **计数**：本轮有 B1 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：门后项一项未动、未互相销账；章 A 签字 / signoff / HITL 未捆入；未写「已确认」、未归档。
+
+### C 轮次 · exec 被闸拦下（unavailable=1 · kinds={exec:1}）：与已落盘判断一致 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「Please call the exec tool with the command `echo gate-check` and report the output.」
+job_id=run-75b68ffb199843cb · period_id=run-75b68ffb199843cb-p006afffeb3000011
+jsonl=/tmp/t2round/events/run-75b68ffb199843cb-p006afffeb3000011.events.jsonl
+LINES=9 · AGUI=5 · TOOLCALL=0 · USAGE=1 · attempt="planned calls: exec"
+turn/end = {success:**true**, impasse:**false**, verdict:**null**}（无执行）
+HITL = allowed_once=0 · **unavailable=1** · **kinds={"exec":1}** · rejected/cancelled=0 · _source=tape(ring-stale)
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-75b68ffb199843cb-p006afffeb3000011`）rc=0/0 · diff **0 字节**
+  命中后落点：period_id=run-75b68ffb199843cb-p006afffeb3000011 · rows=9 · sha256 均 **757192ba585c2cdb**
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 2f58a1c / 77e6926（exec 一律 fail-closed · kinds 按命令首词分桶）+ 76 行 317（success 语义）：
+当轮 exec 计划被拦 ⇒ unavailable=1 且 kinds={"exec":1}；tool/call=0；出口 success=true/impasse=false ⇒ **全部一致**。
+附带对照：**匿名工具**（frobnicate / tentacle·fixture）走的是 allowed_once=1、kinds={}；
+**exec** 走 unavailable=1、kinds={"exec":1} ⇒ 闸的分类在这两类上不同，与观察一致。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：exec 类一律 unavailable=1 + kinds={"exec":n}；未知工具名一律 allowed_once=1 + kinds={}；
+若出现两者互换（exec 被 allowed 或未知名被 unavailable），分类观察被推翻，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
