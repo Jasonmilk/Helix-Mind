@@ -8818,3 +8818,24 @@ ROUND_DIR=/tmp/s53_run-f35f30ce0568e77b-p006b00369f00001e accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · 重放可复现性抽样（30 份，跨全部形态）：两次 casefile 输出**逐字节相同 30/30** · 2026-11-20
+
+**抽样实测（每 10 份取 1，共 30 份覆盖 ①/②/③/rail 各支；每份跑两次 `l2_casefile` 后 `cmp`）**
+```
+样本 30 · 两次输出相同 **30** · 不同 **0** · rc≠0 **0**
+⇒ 复现性不止在"当轮那一份"上成立：抽样跨形态也 100% 确定性（与「两次 casefile diff=0」口径一致）
+```
+
+**当轮真跑**
+```
+prompt：calc 89*89
+period_id=run-b53b9edda94dba6c-p006b0036be00001f
+jsonl=/tmp/t2round/events/run-b53b9edda94dba6c-p006b0036be00001f.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=fd55db6f5bcb527a
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s54_run-b53b9edda94dba6c-p006b0036be00001f accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C（无判断变化；纯复现性抽样）· 六红逐条=否 ⇒ 继续
+```
