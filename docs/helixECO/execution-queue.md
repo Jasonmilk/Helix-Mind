@@ -7821,3 +7821,21 @@ ROUND_DIR=/tmp/s13_run-cf208fb4baf29a73-p006b0030d6000001 accept_all rc=0
 可被下轮推翻的一句：**若 coder-7b 再现混排（含 `ONLY:` 的 reply），则须改记为该模型"偶发混排"并给比例。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · 轮换 #19（模型 coder-7b → qwen3.8-27b）· numbers 干净回答 · 2026-11-20
+
+```
+[轮换 #19] 面=模型 · 单变量 `reasoning_model`
+  改前 coder-7b（config.toml sha16=`de6e3325b2e85a11`）→ 改后 qwen3.8-27b（sha16=`98d6380f2a55132a`）
+  重启按 runbook 带 env（`ANAPHASE_SESSION_EVENTS_PATH=/tmp/t2round/events`）；health：tentacle=True · reasoning=True
+[当轮真跑] prompt：Please call the numbers tool and report exactly what it returns.
+  period_id=run-cf208fb4baf29a73-p006b0031c2000001 · jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b0031c2000001.events.jsonl
+  LINES=15 · AGUI=8 · tc=1 · verdict=**Unmet** · model=qwen3.8-27b · allowed_once=1
+  reply="The numbers tool returned the series: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]."（干净答案，无 `ONLY:`）
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=218b86cd2238f6b9
+  D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+  ROUND_DIR=/tmp/s20_run-cf208fb4baf29a73-p006b0031c2000001 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+（重启后 period 序号再从 …0000001 起，与已落盘「序号不持久化」一致）
+四选一：C（与已落盘「reply 形态须带样本数」一致：qwen3.8-27b 样本 1，干净答案）· 六红逐条=否 ⇒ 继续
+```
