@@ -6046,3 +6046,68 @@ State transition: Execution --Failure--> Reflection
    但**不写 `tool/result`** ⇒ 与 60dd4e3 已落盘的 A（`pipeline Err => Ok(Failure)` 不 emit）**同一机制**，
    本轮是该机制的第二个现场（第一个是臆造名 `tentacle·fixture`）。
 ```
+
+### B2 拆两半之「二」：执行段失败补 tape 行（B1-zf）· 2026-11-20
+
+**半一（不裁、维持门后）**
+```
+「闸是否校验工具存在性」属行为面 / HITL 方向层 ⇒ **本次不裁**：不扩 allowed_once 语义、不改 HITL 四态读数对象、
+不加 ListManifests 前置、不动链回原面后的现状；不写「已裁」。
+`d-unknown-tool-name-silently-dropped` 既有行**保留**（带 revisit-on 2026-12-03）、不销账、不新增实体、不写 DEBTS 新行。
+```
+
+**半二（按 B1 契约修，`anaphase-helix 472e06b`）**
+```
+撞到：插件面 = numbers/rate 子集（calc 缺席）· coder-3b 规划 calc · HITL allowed_once=1 · tool/call=0 · tape 无 tool/result，
+      而日志有 `[Execution] Pipeline execution failed: status: NotFound` ⇒ 失败在执行段、静默在 **tape 层**。
+修：pipeline `Err(e)` 分支按**既有事件类型**补 tool/call + tool/result 各一行：
+    `ok=false` · `outcome={"ok":false,"error":…,"source":"execution-pipeline"}` · 行上另带 `source`；
+    **不写 verdict、失败不写成 ok=true、不把"规划了不存在的工具"写成"调用完成"**。
+additive / 可逆：只在 Err 分支内追加 12 行，删除即回旧行为；未改协议语义、未改 D1/D2 判据。
+line budget：`src/run_cycle/mod.rs` 821 → 834（在既有 +13 fix allowance 内，`check_line_budget.py` rc=0）。
+```
+
+**改前 / 改后（同形输入、同一「calc 缺席」面；同输入无法复用同一 period — 44fbb47 已裁）**
+```
+改前 period run-0dc31f18bbb2b09a-p006b001b56000001：LINES=9 · tool/call=**0** · **无** tool/result · reply=计划 JSON
+改后 period run-00c676c26f5ec20c-p006b002157000001：LINES=**11** · tool/call=**1** · tool/result=**1**
+     result = {"ok":false,"outcome":"{\"error\":\"status: NotFound, message: \\\"tool not found or not instantiated: calc\\\"…
+               ,\"source\":\"execution-pipeline\"}","source":"execution-pipeline"}
+D1/D2 rc=0 · AGUI=8 · agui_conformance **8/8** · casefile 两次 rc=0/0 · diff 0 字节 · sha=5ba74a6a89ee3f1c
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=537f7f80609c2d8e · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**反样本（显式分栏）**
+```
+【真跑】calc 存在的面 + 成功轮 run-8579037fcfbda07e-p006b002174000001
+  ⇒ LINES=15 · tool/result.ok=[**true**] · verdict=Met ⇒ **不新增失败行、不改写成功行**
+【构造】无（本轮未用构造样本；改前那条 9 行读数本身即"无 tape 行"的真跑现场）
+```
+
+**共享验具回归**
+```
+非失败轮（rot1..rot4 四条既有 period）逐字段比对：**唯一差异**是
+  `casefile.candidate_edges` 里嵌入的 mod.rs sha16：**d26d302ab28b7c90 → 4587bb66950b2904**
+  （mod.rs 本轮被改；该字段是"判据源文件哈希"，不是本轮新加字段）⇒ 其余字段逐字段相同。
+  因此这四条的**整文件 sha 全部变化**（1e7f4f15→9a732aa3 · c229d60b→20306894 · 3949abf2→fa9ac1f3 · 367e764f→529a9b2e），
+  **不是行为漂移**，是"casefile sha 混入判据源哈希"的既有性质。
+ROUND_DIR 分项 rc 不漂：非失败轮 `ROUND_DIR=/tmp/rot3` ⇒ rc=0（① 0/0 · ② 8 条 · ② rc=0 · ②b rc=0）
+```
+
+**归因标注（不代为确认）**
+```
+「与 60dd4e3 同机制」= **推断归因**：60dd4e3 记的是 `pipeline Err => Ok(Failure)` 不 emit；
+本轮为其第二个现场（工具不在清单）。历史件 60dd4e3 **不回改**，此推断不写成已确认。
+```
+
+**链回原面后的探测读数（B1-ze ⚠ 口径未变）**
+```
+tentacle 回 `./fixtures`（5 插件）· model 回 coder-3b（config sha 507d3f781f7c9260）
+`bash tools/check_upstream.sh` ⇒ `YES src=config … model=coder-3b … env=0` + tentacle 行 · rc=0
+  **无 ⚠**（进程无 env 覆盖 ⇒ 不误报；B1-ze 的 ⚠ 仅在进程带 env 时出现，口径未变）
+health 全 ok=True
+```
+
+**收尾**：commit `anaphase-helix 472e06b`（= 远端）· 台账本节行号见文件 · dirty=0 · check_ci144 rc=0 ·
+边界：未改 objective 其余一字 · 未重立 goal · 未裁 HITL 真闭环 / validator 基准 / signoff 销账 / 章 B 余项 ·
+未写「已确认 / 已交付」· 章 A/B 未回改 · phyt 护栏维持。
