@@ -8226,3 +8226,21 @@ ROUND_DIR=/tmp/s33_run-fa239bc773830b94-p006b00344100000a accept_all rc=0（① 
 可被下轮推翻的一句：**若出现「unavailable>0 但行数≠9/AGUI≠5」，或「无 verdict 且无 unavailable 而行数≠9+2n」，则③②被推翻。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 · ②支（pipeline 失败批）的 HITL 四态全 0；①支 calc 81*81 正常 · 2026-11-20
+
+```
+[②支复核，取已落盘样本 run-94752d80d75ae05e-p006b003411000009（n=4 failure）]
+  check/status.hitl = {"allowed_once":4,"cancelled":0,"rejected":0,"unavailable":0,"kinds":{},"phase":"hitl"}
+  ⇒ **闸全放过（4/4）、无拒绝**；失败发生在执行段（ok=false/source=execution-pipeline），不是闸拒支
+  ⇒ 与三支划分一致：判支看 (有无 verdict) × (unavailable>0)
+[①支本轮真跑] prompt：calc 81*81
+  period_id=run-a2d21f90492cdffc-p006b00346a00000b
+  jsonl=/tmp/t2round/events/run-a2d21f90492cdffc-p006b00346a00000b.events.jsonl
+  LINES=15 · AGUI=8 · tc=1 · verdict=Met · HITL allowed_once=1/cancelled=0/rejected=0/unavailable=0（_source=check/status.hitl）
+  两次 casefile rc=0/0 · diff 0 字节 · cf sha=49993ca20fc9e910
+  D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+  ROUND_DIR=/tmp/s34_run-a2d21f90492cdffc-p006b00346a00000b accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C · 六红逐条=否 ⇒ 继续
+```
