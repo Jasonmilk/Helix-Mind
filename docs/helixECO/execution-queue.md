@@ -7045,3 +7045,11 @@ D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · dif
 ROUND_DIR=/tmp/railtwo accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
 四选一：C（与「reply/attempt 形态随模型×工具面变化」一致，无判断变化）· 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 49*49(Met) / weather Naha(Met) — 插件面复原后 · 2026-11-20
+
+```
+[1] period=run-fbcbe063a7786e8c-p006b002a33000042 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=3b1e8e917ffbcdac · d1_d2 rc=0 · accept rc=0
+[2] period=run-0103c4895cfcf301-p006b002a37000043 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=e4660b75e84a8caf · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
