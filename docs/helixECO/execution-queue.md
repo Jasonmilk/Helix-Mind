@@ -6894,3 +6894,30 @@ phyt-DNA/ledger/hits-2026.jsonl
 [2] period=run-cf208fb4baf29a73-p006b002963000037 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=464a9fb5d88e9753 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 10 样本：可解析，累计 9 成 1 败）
 ```
+
+### A 轮次 · `/v1/agent/events` 的 ring 只装**一条** period 的 8 个事件，且不是当轮 ⇒ casefile 的 ring 输入与当轮无关 · 2026-11-20
+
+**读数（直接 GET，不猜）**
+```
+GET localhost:50061/v1/agent/events ⇒ 顶层键 ["dropped","events","last_seq"]
+  dropped=0 · last_seq=8 · events 条数=8
+  涉及的 period 数=**1** —— 全部来自 run-8bba24c5ee368a4a-p006b0025…（今日早前的一轮 rail 轮）
+  首/末 event 的 trace_id 同为该 period；末 seq=8
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+每轮我都把该 ring 交给 `l2_casefile.js <ring> <eventsdir> …`，隐含读法：ring 里有"当轮/最近"的边。
+当轮：ring 里**只有一条旧 period 的 8 个事件**，与我刚跑的 period（…002960000036 等）无关 ⇒
+  casefile 的 ring 段（如 `candidate_edges` 里的 ring 来源）**不能读成当轮证据**。
+（这也解释了为何四条旧 period 的 casefile 唯一差异落在 `mod.rs` sha 而非 ring 内容。）
+```
+
+**A：判断补一条**
+```
+① `/v1/agent/events` 是**单轮次快照式 ring**（当前 dropped=0 / last_seq=8 / 1 条 period），不是"最近 N 轮"的汇总；
+② 每轮把它传给 casefile 只保证"输入齐备"，**不保证与当轮 period 相关** ⇒
+   引用 ring 段的读数时必须同时写明 ring 里那条 period_id；否则属"在错的对象上量"。
+可被下轮推翻的一句：**若某轮 GET 后 ring 里出现当轮 period_id（或多于一条 period），则"单轮次、且常与当轮无关"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
