@@ -6503,3 +6503,22 @@ tape 数：155 → **157**（新增两条）
    则"无去重、各跑一遍"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### A 轮次 · 同 job 的并发两个 period **各自成链**（conversation_id 不同、parent 均空）· 2026-11-20
+
+**读数**
+```
+`/v1/sessions` 里 job=run-b61c20cdf58665be 的 period 数 = 2：
+  run-b61c20cdf58665be-p006b0026bf00000c · conversation_id=自身 · parent=None
+  run-b61c20cdf58665be-p006b0026bf00000d · conversation_id=自身 · parent=None
+⇒ **同一 conversation 吗：否**（两个不同的 conversation_id，各自为根）
+```
+
+**A：判断补一条边界**
+```
+`conversation_id` = **链根 period**（此前已核）；并发同输入产生的两个 period **各自为根**
+⇒ ① 不能用 `job_id` 做跨链聚合（会把两条独立链并成一条的错觉）；
+   ② 会话列表里"看起来同题的两条"可能是并发产生的两条独立链，不是同一段对话的分支。
+⇒ 可被下轮推翻的一句：**若并发两个 period 出现相同 conversation_id 或互为 parent，则"各自成链"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
