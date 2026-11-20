@@ -7682,3 +7682,53 @@ ROUND_DIR=/tmp/s12_run-c2be5fa27bbc95b4-p006b00306c00007a accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 ⇒ 复现上轮 A（rail 判定先于工具清单、内容与请求无关），**四措辞 × 两插件面零例外**；四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### B1 真撞（红，已修）+ 轮换 #14（模型 coder-3b→coder-14b）· 冷启动漏 `ANAPHASE_SESSION_EVENTS_PATH` ⇒ 真跑成功但**零 tape** · 2026-11-20
+
+**撞到**
+```
+我按 `./target/debug/anaphase --config config.toml` 单起重启（改模型后），**没带 runbook 里的 env**：
+`Cellrix/docs/observations/acceptance-entrypoints.md:101` 写的是
+  ANAPHASE_SESSION_EVENTS_PATH=/tmp/cycle cargo run … -- --config config.toml &
+结果：POST 返回 200（`{"done":true,"model":"coder-14b","reply":"The numbers tool returned the series: 1..10"}`），
+但 /tmp/t2round/events **没有新 tape**（`ls -t` 最新仍是 19:35 的 rail 轮）；
+全盘 `find /Users/jason -name '*.events.jsonl' -newermt '-25 minutes'` = 0 条 ⇒ **事件根本没落盘**。
+⇒ 该轮的读数集（jsonl/行数/D1·D2/casefile）**全部不可交**，按口径记 **UNMEASURABLE**，不得当绿。
+```
+
+**修（B1：自裁层/操作面缺陷，直接修）**
+```
+按 runbook 带上 env 重启：
+  ANAPHASE_SESSION_EVENTS_PATH=/tmp/t2round/events ./target/debug/anaphase --config config.toml &
+重启后 health：tentacle=True · reasoning=True；再发同一句 ⇒ 新 tape 出现
+  run-cf208fb4baf29a73-p006b0030d6000001.events.jsonl（15 行）
+```
+
+**轮换 #14（一次只换一个面）**
+```
+面：模型；单变量 `reasoning_model`
+改前：coder-3b（config.toml sha16=`507d3f781f7c9260`）→ 改后：coder-14b（sha16=`07e2c6d21a53c449`）
+check_upstream（改后）：YES src=config · model=coder-14b
+（config.toml 不在 tracked 文件里 ⇒ 三仓 dirty 仍 0）
+```
+
+**当轮读数（修后真跑）**
+```
+prompt：Please call the numbers tool and report exactly what it returns.
+period_id=run-cf208fb4baf29a73-p006b0030d6000001 · jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b0030d6000001.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · verdict=**Unmet** · model=coder-14b
+reply 原文："The numbers tool returned the series: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10."（与 coder-3b 的表述不同，属模型面差异）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=778931e2d8704ff9
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s13_run-cf208fb4baf29a73-p006b0030d6000001 accept_all rc=0
+  ① rc=0/0 · ② rc=0 · ②b rc=0 · 事件条数=8 · 缺口标注=2
+三仓 dirty：anaphase-helix=0 · Cellrix=0 · helix-mind=0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+```
+
+**顺带读数（A 级，不改判据）**
+```
+新进程的 period 序号**从 0000001 重新计数**（本条 …p006b0030d6000001，而重启前已到 …0000007a）
+⇒ period_id 仍唯一（含 job hash 与时间戳段），但**不能按末尾序号比较重启前后的新旧**。
+```
+
+**红判据**：B1 真撞（已修并复跑出 tape）⇒ 本轮按红停处理；修复后同轮读数已齐，下一轮继续六形态/增益判据。
