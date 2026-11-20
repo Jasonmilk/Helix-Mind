@@ -5474,3 +5474,25 @@ ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=191807e2d9eeb184 · �
 
 四选一：C ×2 · 红判据逐项=无红 ⇒ 续下一轮
 ```
+
+### C 轮次 ×2 · numbers（Unmet）+ weather Kyoto（Met）· 2026-11-20
+
+```
+[1] numbers
+  period_id=run-cf208fb4baf29a73-p006b001102000027
+  jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b001102000027.events.jsonl
+  LINES=15 · TOOLCALL=1 · USAGE=2 · verdict=**Unmet** · HITL allowed_once=1
+  D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+  两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=2671060881693b99
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=a4bfef0a64d831c1 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+
+[2] weather Kyoto
+  period_id=run-a74e2f892ca8bd63-p006b001104000028
+  jsonl=/tmp/t2round/events/run-a74e2f892ca8bd63-p006b001104000028.events.jsonl
+  LINES=15 · TOOLCALL=1 · USAGE=2 · verdict=**Met** · HITL allowed_once=1
+  D1/D2 rc=0 · 两次 l2_casefile rc=0/0 · diff 0 字节 · sha=eef9b2218a468be0
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=89a3846023f52e33 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+
+四选一：C ×2 · 红判据逐项=无红 ⇒ 续下一轮
+（numbers 的 Unmet 与 round34 / d-exec-ok-names-expect-match-not-success 一致；weather 的 Met 与 b6719bc 一致。）
+```
