@@ -8301,3 +8301,39 @@ rc 向量与上一 numbers 轮逐项相同 ⇒ 增益=0（下一轮按增益判�
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C（三支定律与 tool_calls 归位再验一次；无判断变化）· 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 重启后接续仍只写 `resume_from`（`injected_chars=0/nodes=0`），模型靠**重跑工具**回答"刚才做了什么" · 2026-11-20
+
+**读数（真跑，带 job_id 接续；模型 coder-3b）**
+```
+POST {"message":"What did we just do?","job_id":"run-d05ff6bb6768d1bc"}
+⇒ period_id=run-7d520328f556abc2-p006b0034d900000f
+jsonl=/tmp/t2round/events/run-7d520328f556abc2-p006b0034d900000f.events.jsonl
+LINES=19 · AGUI=11 · tc=**2** · verdict=Met
+context/inject = {"chars":800,"injected_chars":**0**,"nodes":**0**,"resume_from":"run-d05ff6bb6768d1bc-p006b0034b900000e"}
+attempt="planned calls: calc, web_search"
+tool/result: calc ok=true · web_search ok=true（模型为回答"刚才做了什么"而**重跑了这两个工具**）
+reply="You just completed a calculation task. The result was 6724."（6724 = 82²，即重算而非回忆）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=a4f2878803a592fc
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s38_run-7d520328f556abc2-p006b0034d900000f accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘（首轮 A）：`job_id` 被读，写成 `context/inject.resume_from = <上一轮 period_id>`，
+但当时记的是"接续链路存在"。当轮暴露的是**实质**：
+① 重启（进程换过两次）后 `resume_from` **仍**正确指向被引用 period ⇒ 标记链路没断；
+② 但 `injected_chars=0 / nodes=0` ⇒ **没有任何记忆内容被注入**；
+③ 模型于是把上一轮的两个工具**重跑一遍**再作答（19 行、tc=2）——"接续"在行为上等于"重做"。
+```
+
+**A：判断改成**
+```
+`resume_from` 只是**引用标记**，不携带记忆：`injected_chars=0 / nodes=0` 时，
+被引用轮的上下文**没有进入本轮的模型输入**；模型只能靠重跑工具或复述 reply 来"接续"。
+⇒ 判"跨轮记忆是否生效"必须看 `injected_chars/nodes` 是否 >0，不能看 `resume_from` 是否存在。
+可被下轮推翻的一句：**若出现 `injected_chars>0` 或 `nodes>0` 的接续轮，则"标记不携带记忆"被推翻（须改记注入口径）。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
