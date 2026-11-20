@@ -4876,3 +4876,38 @@ accept_all 的 ① 不带 `--expect` ⇒ 选轮退回 mtime 规则，输出里 `
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+
+### C 轮次 · 工具轮真跑（calc 6*7）+ ROUND_DIR accept_all 分项读数：与已落盘判断一致 · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0（复用）
+POST「Please call the calc tool with expression 6*7 and report the result.」
+job_id=run-e234fc2c2cdbace3 · period_id=run-e234fc2c2cdbace3-p006b0000d6000018
+jsonl=/tmp/t2round/events/run-e234fc2c2cdbace3-p006b0000d6000018.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · verdict=Met · HITL allowed_once=1
+reply「The result of the calculation …」⇒ 对
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-e234fc2c2cdbace3-p006b0000d6000018`）rc=0/0 · diff 0 字节 · sha=**556fe7a11cc2e3c2**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r18 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r18（EV=run-e234fc2c2cdbace3-p006b0000d6000018.events.jsonl）
+① rc=**0/0** · diff=0 · sha=**d82578042b04ebcc** · ② rc=**0** · ②b rc=**0** · ③ `git ls-files web = 0` · `test -d web ⇒ 1`
+（口径同上一节：accept_all ① 不带 --expect ⇒ 与手跑 sha 不可互比）
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 b6719bc（calc 走 allowed）+ 9e4cbf1（三层）+ c890a7b（usage=2）：
+当轮 tool/call=1 · usage=2 · verdict Met · allowed_once=1 · reply 对 ⇒ **全部一致**，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：calc 工具轮恒为 15 行 / usage=2 / tool/call=1 / Met / allowed_once=1；
+若某轮 calc 出现 Unmet 或 tool/call=0，须按执行层或期望层重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
