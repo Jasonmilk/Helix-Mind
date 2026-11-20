@@ -6425,3 +6425,16 @@ total=50 · gist 为空=**47** · 非空=3
   run-5b703d3ceede86b7-…  d1_d2 rc=0 · agui_conformance **5/5**
 四选一：C（与已落盘判断一致）· 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · `sessions.preview` = 当轮 user/message 前缀（4/4 逐字匹配）· 2026-11-20
+
+```
+重新取 `/v1/sessions`（50 条，快照刷新）+ 取最新 4 份 tape 逐条比对：
+  preview 'Please call the weather tool for city Kagoshi…' ≡ user/message 同串（前缀匹配）
+  preview 'Please call the calc tool with expression 30*…' ≡ user/message（前缀匹配）
+  preview 'What did I just ask?'                            ≡ user/message（完全一致）
+  preview 'Please call the calc tool with expression 29*…' ≡ user/message（前缀匹配）
+⇒ 4/4 前缀匹配；`preview` 是**用户问题**的截断，不是 reply。
+（此前一轮曾用旧快照导致"未在列表中"的 0 输出 —— 快照过期即读数作废，已重取。）
+四选一：C（无判断变化）· 红判据逐条=否 ⇒ 续
+```
