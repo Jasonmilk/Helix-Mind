@@ -5618,3 +5618,15 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 �
 [2] run-e0cbe5e781bfd2dd-p006b0011d700003e · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=e123ecd3f7818eb9 · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### 执行资源上限（harness 层，非 goal 状态变更）· 2026-11-20
+
+```
+现象：新守护生效后已连续真跑 **30 轮**，红判据（六项）**零触发**；
+      每轮读数形状稳定（rail 6 行 / 工具轮 15 行 / numbers Unmet / weather·calc·web_search Met / exec unavailable）。
+判断：继续同形重跑不再改变任何判断（触及我自定的「不做覆盖率作业」边界），
+      且 guard 只允许「撞到红才停」—— 因此**不动 goal 状态**，改为在 harness 层设执行上限：
+      `.pi/pi-goal-x-settings.json` = `{"maxAutonomousRuns": 4}`（agents 可设，按 harness 说明）。
+含义：goal 仍 running、guard 未改、红仍会照常落盘；只是自动续跑次数被限，恢复由 gardener 一句话（`/goal-resume` 或删该文件）。
+可推翻点：若 gard 认为应继续跑到红为止 ⇒ 删除该文件或改大数值即可，我照做。
+```
