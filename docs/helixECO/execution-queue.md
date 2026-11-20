@@ -5453,3 +5453,24 @@ D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
 ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=191807e2d9eeb184 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
 四选一：C · 红判据逐项=无红 ⇒ 续下一轮
 ```
+
+### C 轮次 ×2 · weather Sapporo（工具轮）+ calc 19*4（rail 档）· 2026-11-20
+
+```
+[1] weather Sapporo（工具轮）
+  period_id=run-f41a276cef550001-p006b0010ee000025
+  jsonl=/tmp/t2round/events/run-f41a276cef550001-p006b0010ee000025.events.jsonl
+  LINES=15 · TOOLCALL=1 · USAGE=2 · verdict=Met · HITL allowed_once=1
+  D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+  两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=1fa938744a96dcc7
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=895af2dfe44a20db · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+
+[2] calc 19*4（rail 档）
+  period_id=run-bceffd0895dd5986-p006b0010f1000026
+  jsonl=/tmp/t2round/events/run-bceffd0895dd5986-p006b0010f1000026.events.jsonl
+  LINES=6 · TOOLCALL=0 · USAGE=0 · verdict 无 · HITL 四态全 0
+  D1/D2 rc=0 · 两次 l2_casefile rc=0/0 · diff 0 字节 · sha=6a53a79bf02ac4c3
+  ROUND_DIR accept_all：rc=0 · ① rc=0/0 · diff=0 · sha=f8e14d4b2b81f7da · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+
+四选一：C ×2 · 红判据逐项=无红 ⇒ 续下一轮
+```
