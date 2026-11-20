@@ -7258,3 +7258,12 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 
 [2] period=run-f35f30ce0568e77b-p006b002b72000058 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=f1068251f83aa852 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · numbers(Unmet) / 双调用 calc+weather(19 行, Met) · 2026-11-20
+
+```
+[1] period=run-cf208fb4baf29a73-p006b002b82000059 · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=79575bfe703be36b · d1_d2 rc=0 · accept rc=0
+[2] period=run-dd0ca854cb551fa3-p006b002b8600005a · **19 行** · tc=2 · Met · diff 0 字节 · cf sha=528f16d21538646c · d1_d2 rc=0 · accept rc=0
+    （n=2 公式再验一次：19 = 15+4×1 ✓）
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
