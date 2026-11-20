@@ -7174,3 +7174,11 @@ casefile 投影一致：mixed/exec2b 的 `end.success=true`，multi2 的 `end.su
 可被下轮推翻的一句：**若出现被闸拒的轮 `turn/end.success=false`，或 Unmet 轮 success=true，则上面①②被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 53*53(Met) / weather Hiroshima(Met) · 2026-11-20
+
+```
+[1] period=run-4f5af98753d2967e-p006b002adb00004b · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=852046deea44b980 · d1_d2 rc=0 · accept rc=0
+[2] period=run-9710ad97382548e3-p006b002ade00004c · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=de90a1acd8211cea · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
