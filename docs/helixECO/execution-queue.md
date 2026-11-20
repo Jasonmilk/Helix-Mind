@@ -6559,3 +6559,14 @@ LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · D1/D2 rc=0（D2=官方副本
 两次 casefile rc=0/0 · diff 0 字节 · cf sha=29a85125dc0d4038 · ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
 C · 无红 ⇒ 续
 ```
+
+### C 轮次 · exec-blocked（闸 fail-closed）——六形态第 6 形再复现 · 2026-11-20
+
+```
+period_id=run-e1ccad091df2f268-p006b00275d000013 · jsonl=/tmp/t2round/events/run-e1ccad091df2f268-p006b00275d000013.events.jsonl
+LINES=9 · AGUI=5 · tool/call=**0** · verdict 无
+HITL：unavailable=1 · kinds={"exec":1} · allowed_once=0（四态：allowed_once=0/cancelled=0/rejected=0/unavailable=1 _source=check/status）
+⇒ 闸拒 ⇒ 不产生任何 tool/call、tool/result 行（与 5af2c08 判断一致）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=f37a8e27e135c069
+ROUND_DIR accept_all rc=0（① 0/0 · ② 5 条 · ②/②b 0）· C · 无红 ⇒ 续
+```
