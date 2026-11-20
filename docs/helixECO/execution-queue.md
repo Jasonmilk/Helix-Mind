@@ -6972,3 +6972,28 @@ ROUND_DIR=/tmp/multi accept_all rc=0（① rc=0/0 · ② 事件条数=11 · ② 
 可被下轮推翻的一句：**若某轮 tc=2 而 allowed_once=1（或 usage≠2），则"闸按调用计数、usage 恒 2"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### A 轮次 · 多调用轮：**两个 `tool/result.ok=true` 但 verdict=Unmet** ⇒ Met 要求**每个**调用的 outcome 都满足 expect · 2026-11-20
+
+**读数（真跑）**
+```
+POST「Please call the numbers tool AND the calc tool with expression 46*46, then report both results.」
+⇒ job_id=run-386d69adb6944ed9 · period_id=run-386d69adb6944ed9-p006b0029e200003f
+jsonl=/tmp/t2round/events/run-386d69adb6944ed9-p006b0029e200003f.events.jsonl
+LINES=19 · AGUI=11 · attempt="planned calls: numbers, calc"
+tool/call{numbers,0} · tool/result{numbers,0,**ok=true**} · tool/call{calc,1} · tool/result{calc,1,**ok=true**}
+HITL：allowed_once=2 · unavailable=0 · kinds={} · cancelled=0 · rejected=0
+verdict/status = **Unmet**
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=5236cbd6d79a70db
+ROUND_DIR=/tmp/multi2 accept_all rc=0（① 0/0 · ② 11 条 · ②/②b 0）
+```
+
+**A：判断补一条（对上轮"多调用"的补充）**
+```
+verdict 是**整轮聚合**：`Met` 要求**每个**调用的 outcome 都满足其 expect；
+本轮两个传输层 `ok=true`，但 numbers 的 outcome 不满足 `expect:"ok"` ⇒ 整轮 **Unmet**。
+⇒ 与已落盘「verdict 只看期望层（exec_ok.actual）」一致；新点：**聚合口径是"全部满足"**，
+   且**不能**用 `tool/result.ok` 的个数推断 verdict。
+可被下轮推翻的一句：**若某轮出现一个调用 outcome 不满足 expect 而 verdict 仍为 Met，则"全部满足才 Met"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
