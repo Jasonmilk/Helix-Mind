@@ -8914,3 +8914,15 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · do
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · 三调用(23 行/Met) / weather Hiroshima(15 行/Met) · 2026-11-20
+
+```
+[1] period=run-45fc30d22c954976-p006b00375700002a · 23 行 · tc=3 · u=2 · check=7 · verdict=Met
+    定律：9+u+4n = 9+2+12 = 23 ✓ · check=2n+1 = 7 ✓ · AGUI=14
+    diff 0 字节 · cf sha=5787dc94d2be3d8f · d1_d2 rc=0 · ROUND_DIR accept_all rc=0（缺口=2）
+[2] period=run-9710ad97382548e3-p006b00375e00002b · 15 行 · tc=1 · u=2 · check=3 · verdict=Met
+    定律：9+2+4 = 15 ✓ · diff 0 字节 · cf sha=623eba1d20f6a718 · d1_d2 rc=0 · accept_all rc=0（缺口=2）
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
