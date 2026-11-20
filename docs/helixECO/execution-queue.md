@@ -7316,3 +7316,11 @@ ROUND_DIR=/tmp/n5 accept_all rc=0（① rc=0/0 · ② 事件条数=5（投影 rc
 可被下轮推翻的一句：**若某轮出现 allowed_once + unavailable ≠ 计划调用数，或出现拒绝后仍有 tool/call，则①②被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · calc 62*62(Met) / weather Fukushima(Met) · 2026-11-20
+
+```
+[1] period=run-f0fe644ecd92cc86-p006b002bed000062 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=ae11137c4855831d · d1_d2 rc=0 · accept rc=0
+[2] period=run-a8be3d1619db4710-p006b002bf0000063 · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=43a61447dc5978ad · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
