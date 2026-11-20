@@ -5610,3 +5610,11 @@ D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 �
 [2] run-cf208fb4baf29a73-p006b0011c400003c · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=535a9b4949fb0745 · d1_d2 rc=0 · accept_all rc=0
 D2 数据源=官方副本 sha 4b5c93226838a0e7 · 四选一：C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Kobe(Met) / calc 27*4(rail) · 2026-11-20
+
+```
+[1] run-a791def00501d9e0-p006b0011d400003d · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=f4ffeac598754d7b · d1_d2 rc=0 · accept_all rc=0
+[2] run-e0cbe5e781bfd2dd-p006b0011d700003e · 6 行 · tc=0 · verdict 无 · diff 0 字节 · cf sha=e123ecd3f7818eb9 · d1_d2 rc=0 · accept_all rc=0
+D2 数据源=官方副本 sha 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
