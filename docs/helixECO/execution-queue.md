@@ -6530,3 +6530,14 @@ tape 数：155 → **157**（新增两条）
 [2] run-6f16b6c3091882e0-p006b0026e900000f · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=844c3385d6fa50f3 · d1_d2 rc=0 · accept_all rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 · calc 33*33（Met）· 2026-11-20
+
+```
+check_upstream：YES src=config · model=coder-3b
+period_id=run-27118687eec993f2-p006b002727000010 · jsonl=/tmp/t2round/events/run-27118687eec993f2-p006b002727000010.events.jsonl
+LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · HITL allowed_once=1（四态：allowed_once=1/cancelled=0/rejected=0/unavailable=0）
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=0d3f44d317c8aee8
+ROUND_DIR accept_all rc=0（① rc=0/0 · ② 8 条 rc=0 · ②b rc=0）
+C · 无红 ⇒ 续
+```
