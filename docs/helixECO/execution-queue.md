@@ -7275,3 +7275,11 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-7e305f831c203b20-p006b002b9a00005c · 9 行 · tc=0 · verdict 无 · unavailable=1 · diff 0 字节 · cf sha=fd7d9a52df306ee9 · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · weather Yamagata(Met) / numbers(Unmet) · 2026-11-20
+
+```
+[1] period=run-177b59b7b6d3fd8c-p006b002ba800005d · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=cc4a6e6105d35173 · d1_d2 rc=0 · accept rc=0
+[2] period=run-cf208fb4baf29a73-p006b002bad00005e · 15 行 · tc=1 · Unmet · diff 0 字节 · cf sha=30a15d5ffd20b21b · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句累计 17 样本：16 可解析 / 1 不可解析）
+```
