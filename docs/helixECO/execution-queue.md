@@ -6142,3 +6142,23 @@ B1-zf 只在 **pipeline 真正执行过并失败** 时补 `tool/call + tool/resu
 不是"漏补"。⇒ 补行判据 = `HITL unavailable>0` ⇒ 不补；`pipeline Err` ⇒ 补。
 四选一：C · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · numbers（业务失败）：B1-zf 未过度触发（`ok=true` · 无 `source`）· 2026-11-20
+
+```
+period_id=run-cf208fb4baf29a73-p006b002500000004
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b002500000004.events.jsonl
+LINES=15 · AGUI 映射=8 · tool/call=1 · tool/result=1 · verdict=**Unmet**（exec_ok 期望层失败）
+tool/result.ok=**[True]** · `source` 字段=**[None]**（**未**被 B1-zf 覆盖）· outcome 里是业务错误
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）· AGUI=8
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=33bdb0e0cfd2bf31
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**对 B1-zf 的第三个判别点（三层失败分界）**
+```
+pipeline Ok（业务失败，如 numbers 无 `ok` 字段）⇒ tool/result **ok=true**、**无 source**（本轮）；
+pipeline Err（工具不存在/执行段失败）⇒ tool/result **ok=false** + `source=execution-pipeline`（B1-zf，上一轮）；
+闸拒绝（exec fail-closed）⇒ **不写任何 tool 行**（反向反样本，上一轮）。
+⇒ 三层各自可判，B1-zf 只接管第二层。四选一：C · 红判据逐条=否 ⇒ 续
+```
