@@ -5175,3 +5175,70 @@ D3：缺项=**1**（label=重复检测）
 **边界**：本项**不并入线 1 的 A/B1/B2/C 四选一计数**、不改 goal 状态（仍 paused N=2）、不自行唤醒；
 未改 signoff.toml、未换 validator 基准、未补 SUBAGENT_*、未删 META_EVENT、未立「真跑消费验收」对象、未写 DEBTS 新行、未销账、未归档；
 章 B 余项 / signoff 矛盾 / HITL 各是各未捆入；phyt 护栏、dirty=0 维持。
+
+### 共享验具回归复跑（`l2_casefile.js` 7cb37ebe → 0e627a83）· 2026-11-20
+
+**① 改前/改后同一输入 sha 对照（旧版由 `git show 5a86e80^:tools/l2_casefile.js` 取出，实测 sha=7cb37ebe92eeb6fd）**
+```
+【真跑】非 null 轮 · period run-69c4b42af7d98a7e-p006b00016600001b（calc 13*13，turn/end.verdict="Met"）
+  目录 /tmp/round_r21
+  改前 rc=0 · sha=**712e3ab351c63372**
+  改后 rc=0 · sha=**712e3ab351c63372**
+  diff rc=0 · **0 字节** ⇒ **sha 不变**
+
+【真跑】null 轮 · period run-9c008f637c3f3f9c-p006b00017d00001c（rail，turn/end.verdict=null）
+  目录 /tmp/round_r22
+  改前 rc=0 · sha=**cc7ca19c381757b8** · support_reading.verdict=`"null"`（**字符串**）
+  改后 rc=0 · sha=**f5b7d84d53029784** · support_reading.verdict=`UNMEASURABLE（tape 里 turn/end.verdict 为 null）`
+  ⇒ 只这一处按新口径变，其余字段不变
+```
+
+**② additive / 可逆 / 未动协议语义 + 两笔既有 B1 所引 period 的 rc 与 diff**
+```
+声明：只改 `l2_casefile.js` 里 verdict 的**序列化**（null ⇒ UNMEASURABLE 字符串）；
+  未改字段名、未改事件类型、未改 tape 载荷、未改 D1/D2 判据；可逆（`git revert 5a86e80` 即回旧口径）。
+回归 1：period run-b10fe4d164a323c5-p006afffaf4000010（B1-za 所引）
+  rc=**0/0** · diff rc=**0** · **0 字节** · sha=**99f3fea993ab5331**
+  → 与台账行 **4555** 记录的 `sha256 均 99f3fea993ab5331` **完全一致**（该记录在修复之后取，故应一致）
+回归 2：period run-43d0fd88e73c639a-p006aff031c000010（B1-q 所引）
+  rc=**0/0** · diff rc=**0** · **0 字节** · sha=**710e7fe6baaacfbf**
+  → 台账行 **2240** 记录的是 `sha=06e7e113…`（**修复前**口径）
+```
+
+**③ 具名（不当 drift、不回改、不停在"通过"）**
+```
+回归 2 的 sha 与历史记录不同，属**具名差异**，不是漂移：该 period 的旧记录取于 B1-u / B1-v / B1-y / B1-za 之前，
+那些修复**有意**给 casefile 增加了 `_ambiguous_n` / `_source` 等字段 ⇒ 字节必变。
+⇒ 结论：**修复后**的记录（回归 1）逐字节复现；**修复前**的记录不可与之比较（工具版本不同）。
+⇒ 不自行回改历史 sha、不销账；此后凡引 casefile sha 必须同时给 **l2_casefile.js 的 sha**（本轮 0e627a83eb7f6d23）。
+```
+
+**反样本（分栏，不用 ✓/OK 代输出）**
+```
+【真跑】calc 轮（verdict="Met"）⇒ 支撑读数 verdict=`"Met"` · 页面 `<dd>null</dd>`=0 · 留白格=2
+【构造】把该轮 turn/end.verdict 写死为 "Met" 的构造轮 ⇒ 同形：显示为值、不进留白
+【真跑】rail 轮（verdict=null）⇒ 支撑读数 verdict=UNMEASURABLE(...) · 页面 `<dd>null</dd>`=0 · 留白格=4
+```
+
+**补半句（行 5124 状态）**
+```
+**三下齐即本阶段闭合口径**，不另写「已签 / 已确认」；下个会话不因此再开一轮。
+```
+
+**留白 4 / 缺项 4 / 缺口声明 1 的逐项落点（确认不重复计数）**
+```
+留白格 4（页面 `<span class="gap">`）逐格：
+ 1. 支撑读数 /「verdict」        ← casefile.support_reading.verdict = UNMEASURABLE（本轮新归位）
+ 2. 未选原因 /「为什么没走另一条边」← casefile.unselected_reason   = UNMEASURABLE
+ 3. 判定 /「status」             ← casefile.verdict_status        = UNMEASURABLE
+ 4. D3 表「重复检测」行          ← d3.rows[].l2 = "repeats —"（**D3 缺项，不是 casefile 字段**）
+缺口声明 1：「缺口如实标注，不假装完整」页脚（固定声明，不随轮变化）
+⇒ 计数关系：留白 4 = casefile 字段 3（verdict_status · unselected_reason · support_reading.verdict）+ D3 缺项 1
+⇒ **不重复计数**：`verdict_status`（第 3 格）与 `support_reading.verdict`（第 1 格）是**两个不同字段**，
+   同源于 turn/end.verdict 缺失但各占一格；若按"底层缺失事实"计则为 3 项 —— 这条口径差异**具名在此，不并入判据**，
+   「留白数=真实缺项数」仍按**页面格数 = 缺项字段数**判。
+```
+
+**边界**：不并入线 1 的 A/B1/B2/C 计数 · goal 仍 paused（N=2）· 未改 signoff.toml · 未换 validator 基准 ·
+未补 SUBAGENT_* · 未删 META_EVENT · 未立「真跑消费验收」对象 · 未写 DEBTS 新行 · 未销账 · 未归档 ·
+三下判不出 8/8（8/8 仍是章 B 实现落地）· phyt 护栏 · dirty=0。
