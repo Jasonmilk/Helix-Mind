@@ -8408,3 +8408,42 @@ ROUND_DIR=/tmp/s40_run-5c3c04a4173904a8-p006b00350d000011 accept_all rc=0（① 
 可被下轮推翻的一句：**若出现 usage=3 而行数仍是公式值（不 +1），或 usage=1 的成功批，则②被推翻。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 行数精确式：`LINES = 9 + u + 4n`（①支）；`check/status` = **2n+1**（每调用两项命名检查）· 2026-11-20
+
+**数据点（全部逐行实测，五例并列）**
+```
+①支（成功/业务失败）：
+  n=1 u=2 → 15 行（run-8573427458363270-p006b0034fa000010）
+  n=2 u=2 → 19 行（run-d05ff6bb6768d1bc-p006b0034b900000e · run-a2b1a678fd838b26-p006b003368000006）
+  n=2 u=3 → 20 行（run-5c3c04a4173904a8-p006b00350d000011）
+  n=3 u=2 → 23 行（run-cdb67277976bdbbb-p006b002a47000044）
+  n=4 u=2 → 27 行（run-0fb0a7b4a2cb1547-p006b002a67000046）
+  ⇒ **LINES = 9 + u + 4n**（u=usage 行数）：(9+2+4)=15 · (9+2+8)=19 · (9+3+8)=20 · (9+2+12)=23 · (9+2+16)=27 全中
+②支（pipeline 失败）：n=1..4 → 11/13/15/17 行 = **9 + 2n**（u=1、check=1、无 verdict）
+③支（闸拒）：恒 9 行（u=1、check=1、无 tool/无 verdict）
+命名字段实测：n=1 的 check/status 三项 = ['exec_ok','answer.delivered']+hitl；
+  n=2 = ['exec_ok','answer.delivered']×2 + hitl；n=4 = ×4 + hitl ⇒ **check/status = 2n + 1**
+```
+
+**当轮真跑（同轮读数）**
+```
+prompt：calc 84*84 并详细总结做了什么、为什么（两段）
+period_id=run-01d2defdf17372be-p006b003530000012
+jsonl=/tmp/t2round/events/run-01d2defdf17372be-p006b003530000012.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · usage=2 · check/status=3 · verdict=Met（15 = 9+2+4 ✓）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=b961b0b72469ea1f
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s41_run-01d2defdf17372be-p006b003530000012 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+```
+
+**A：把近似式换成精确式（含自纠）**
+```
+我先前记的「15 + 4(n−1)」只在 u=2 时成立；正确式：
+  ①支 LINES = **9 + u + 4n**（u=assistant/usage 行数）· check/status = 2n+1 · AGUI = 5+3n
+  ②支 LINES = **9 + 2n** · ③支 LINES = **9**
+⇒ 由行数反推 n 必须同时读 u；反过来由 n 预测行数也必须先数 usage。
+可被下轮推翻的一句：**若出现「u=2 而 LINES≠9+2+4n」①支样本，或 check/status≠2n+1，则本式作废。**
+四选一：A（含自纠）· 六红逐条=否 ⇒ 继续
+```
