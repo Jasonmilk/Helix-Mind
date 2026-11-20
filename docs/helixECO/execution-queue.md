@@ -8979,3 +8979,15 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮�
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · calc 96*96(Met) / weather Toyama(Met) · 2026-11-20
+
+```
+check_upstream：YES src=config · reasoning_endpoint=http://127.0.0.1:8080/v1
+[1] period=run-332cd76b2dd9fbb4-p006b0037ec000034 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=8fbd0a334919590f
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr58_run-332cd76b2dd9fbb4-p006b0037ec000034 accept_all rc=0
+[2] period=run-9ef0e78c23d0bf3a-p006b0037f0000035 · 15 行 · tc=1 · u=2 · check=3 · Met · diff 0 字节 · cf sha=c4e981f386ca830e
+    d1_d2 rc=0 · ROUND_DIR=/tmp/rr58_run-9ef0e78c23d0bf3a-p006b0037f0000035 accept_all rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮命中 · 页面缺口=2 两轮命中
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
