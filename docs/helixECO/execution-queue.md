@@ -5912,3 +5912,39 @@ sha256_16：tools/check_upstream.sh 24ec21fefdd382d3 → **692b6af30f2252e4**；
 B2=否 · 门后项具名=否 · ROUND_DIR 分项 rc≠0=否 · 读数漂移=否 · phyt ledger hit=否
 ⇒ **红触发**：按 objective「有红 ⇒ 落盘读数后停在该红上等 gardener」**停机**。
 ```
+
+### B1-ze 契约补项 + 停法收窄（依 gardener 授权令）· 2026-11-20
+
+**① 修法被接受**：读监听进程 env 作运行态核对 + 打 ⚠ + 无监听进程明写无法核对。
+
+**② 契约补项（本轮补齐，落盘）**
+```
+additive / 可逆：只在 `YES` 分支**追加一行**运行态提示；不改 `YES/NO` 判定、不改 `src=` 口径、
+  不回改历史读数；删掉该行即回到原输出（可逆）。未动 config、未动协议语义。
+无监听进程 ⇒ 明写 `运行态 env 核对：UNMEASURABLE（50061 无监听进程；该子项 rc=4，不计入上面的 YES/NO 与 src 口径）`
+  —— 0 就写 0，不留空当通过。
+sha256_16：tools/check_upstream.sh 692b6af30f2252e4 → **bcce2e1416fb3886**
+          tools/UPSTREAM.sha256 3fe594d364ae3659 → **9bf1bcb26c1c79cc**
+```
+
+**③ 共享验具回归（改前/改后同一输入，三条）**
+```
+1) 无 env 覆盖（进程在跑）：首行 `YES src=config … model=qwen3.8-27b` + tentacle 行 · rc=0 —— **与改前逐字相同、无 ⚠**
+2) 无监听进程：首行仍 YES（脚本 rc=0）+ 新增 `UNMEASURABLE … 子项 rc=4` 行（明写不计入 YES/NO）
+3) 多形态探测输出仍可复现（四模型三形，按已落盘 period，逐个 rc 与 sha）：
+   run-9b9415e323c2210d-p006b0017e7000001  rc=0 sha=1e7f4f15190f0f85   （coder-7b · rail）
+   run-69c4b42af7d98a7e-p006b001802000002  rc=0 sha=c229d60b8c06d52b   （coder-7b · 混排）
+   run-8c59067d6a41f234-p006b00182a000001  rc=0 sha=3949abf24b789ef4   （coder-14b · 干净答案）
+   run-1ef37e9620a67ef2-p006b001869000001  rc=0 sha=367e764fbb8ae2fe   （qwen3.8-27b · 干净答案）
+```
+
+**④ 停法收窄（本条生效）**
+```
+本次「等 gardener 接受修法」为**一次性**，**不新增**「每红须确认修法」条款；
+B1 真撞仍归**自裁层**；红停后的恢复仍按既有 phyt 口径「**停了不自行唤醒**」，由 gardener 点一次火；
+**只有判据对象 / 方向层变更**才具名上移。
+```
+
+**收尾读数**：commit `Cellrix faad50f`（= 远端）· 台账本节行号见文件 · dirty=0 · check_ci144 rc=0 · fingerprint rc=0
+**边界**：未改 objective 其余一字 · 未重立 goal · 未裁 HITL / validator / signoff 销账 / 章 B 余项 ·
+未写「已确认 / 已交付 / 已对齐官方」· 未写 DEBTS 新行 · 8/8 仍只认章 B 实现落地 · 章 A/B 未回改 · phyt 护栏维持。
