@@ -4677,3 +4677,51 @@ D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）
 与 `d-exec-ok-names-expect-match-not-success` 不同件（那条讲措辞），本条讲**判定范围**，只在台账具名。
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### A 轮次 + B2 登记 · `answer.delivered` 判的是"工具返回了东西"，不是"回答交付了" · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「What is the capital of Italy? Answer in one word.」
+job_id=run-a8513d611ea218de · period_id=run-a8513d611ea218de-p006affff0b000013
+jsonl=/tmp/t2round/events/run-a8513d611ea218de-p006affff0b000013.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: web_search"
+tool/result = {ok:true, 1376ms, outcome:"{\"ok\":true,\"results\":[{\"title\":\"**Telegram Messenger**\",…}]}"}
+check exec_ok          actual="ok=true"
+check answer.delivered actual="**result produced, delivery confirmed at tool edge**"
+verdict = {status:**Met**, checks:2, all checks passed}
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+reply 原文「Rome」⇒ 对（问题答对），但**与工具返回的 "Telegram Messenger" 结果毫无关系**
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）· 官方副本校验 **8/8**
+两次 l2_casefile（`--expect run-a8513d611ea218de-p006affff0b000013`）rc=0/0 · diff **0 字节**
+  命中后落点：period_id=run-a8513d611ea218de-p006affff0b000013 · rows=15 · sha256 均 **2c97c5c2e074ea44**
+```
+
+**t2 核的是哪条判断 / 为何对不上**
+```
+上一轮 A（01a1417）：`verdict=Met` 不含"工具是否切题"。
+当轮把同一刀的**具体一格**切出来：`answer.delivered` 的 actual 写着
+「result produced, delivery confirmed at tool edge」——读起来像"回答已交付"；
+而实测它只在说"**工具返回了一条结果**"：
+  · 工具返回：Bing 搜到的 "Telegram Messenger"（与"意大利首都"无关）
+  · 回答："Rome"（对，但不来自那次搜索）
+  ⇒ 检查通过，却与"交付"语义无关。
+```
+
+**A：判断改成**
+```
+`answer.delivered` 实测语义 = "**工具返回非空**（在工具边缘确认有结果）"，**不含**：
+  ① 返回内容与问题相关 ② 回答引用了该结果 ③ 回答本身正确。
+⇒ 可被下轮推翻的一句：**凡 `answer.delivered` actual 为 "result produced, delivery confirmed at tool edge"，
+   只能推出"工具有返回"，不能推出"答案被交付/被采用"；若某轮该检查在"工具返回空"时仍通过，须重判。**
+```
+
+**B2（撞门：只登记不自裁）**
+```
+检查名 `answer.delivered` 与其判据（工具返回非空）不符 —— 与 `exec_ok` 同族但**是另一个检查** ⇒ **新实体**。
+`DEBTS.md` 增 `d-answer-delivered-names-tool-return`（带 revisit-on）；本轮**未改**任何检查逻辑。
+与 `d-exec-ok-names-expect-match-not-success` **不同件**（不同 check、不同判据），分别具名、不互相代表。
+```
+
+**计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
