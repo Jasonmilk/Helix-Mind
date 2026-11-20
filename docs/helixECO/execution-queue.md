@@ -8678,3 +8678,37 @@ ROUND_DIR=/tmp/s49_run-62bc11b170c27470-p006b00361a00001a accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 全量 census：`verdict.status` 只有 Met/Unmet 两值；`turn/end.success=false` **当且仅当 Unmet** · 2026-11-20
+
+**全量实测（309 份 tape，逐份扫字段）**
+```
+verdict/status 键并集 = ['checks','job_id','reason','status'] · status 分布 = {"Met": 131, "Unmet": 54}   ← 无第三值
+turn/end 键并集 = ['bypass','done','impasse','model','reply','success','verdict']
+turn/end.success 分布 = {"True": 255, "False": **54**}      ← False 的份数恰等于 Unmet 的份数
+turn/end.impasse 分布 = {"False": 309}                       ← 从未为 true
+当轮真跑：verdict=Met · turn/end.success=True（run-a4a9b2f3f0e97f17-p006b00363500001b）
+```
+
+**A：把两条等价关系写死**
+```
+① `verdict/status.status` 在全部 sample 里只有 **Met / Unmet**（131/54），没有第三态；
+   "缺失 verdict" 是**没有这一行**，不是某个 status 值（与 UNMEASURABLE 的表示方式不同）；
+② `turn/end.success == false`  **⇔** `verdict.status == Unmet`（54 = 54，逐份对齐）；
+   `success == true` 覆盖两类：Met（131）与**无 verdict**（124 = 255−131，含 rail/②/③）
+⇒ 所以 success=true **不**表示"成功"，success=false 则**确实**等价于 Unmet ⇒ 与 ee86fe8 的判断一致，且更强（双向）。
+可被下轮推翻的一句：**若出现 verdict=Unmet 而 success=true，或 success=false 而无 verdict，则②作废。**
+```
+
+**当轮真跑**
+```
+prompt：web_search census invariants
+period_id=run-a4a9b2f3f0e97f17-p006b00363500001b
+jsonl=/tmp/t2round/events/run-a4a9b2f3f0e97f17-p006b00363500001b.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met · turn/end.success=True
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=2ede8e17df122a53
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s50_run-a4a9b2f3f0e97f17-p006b00363500001b accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
