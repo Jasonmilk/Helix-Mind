@@ -7136,3 +7136,13 @@ ROUND_DIR=/tmp/exec2 accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）
 可被下轮推翻的一句：**若某轮计划两个同类被拒调用却出现 `unavailable=2`/`kinds{"exec":2}`，则"fail-fast 只记 1 次"被推翻。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 ×2 · 双 exec 复跑两次：`unavailable=1`/`kinds={"exec":1}` 稳定（累计 3 样本）· 2026-11-20
+
+```
+同句复跑 2 次（…000049、…00004a）：均 9 行 · AGUI=5 · unavailable=1 · kinds={"exec":1} · attempt="planned calls: exec, exec"
+⇒ 上轮 A（fail-fast 只记 1 次拒绝）在 3 个样本上稳定，无例外交
+[读数取 …00004a]：period=run-f47020ede4d0b351-p006b002ab100004a · jsonl=/tmp/t2round/events/run-f47020ede4d0b351-p006b002ab100004a.events.jsonl
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=4cc33fb995ba5f1e
+ROUND_DIR=/tmp/exec2b accept_all rc=0（① 0/0 · ② 5 条 · ② rc=0）· C · 无红 ⇒ 续
+```
