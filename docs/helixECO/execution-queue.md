@@ -9002,3 +9002,60 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮�
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮命中 · 页面缺口=2 两轮命中
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0 · 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+---
+
+## 阶段交付 · 收敛自停
+
+**节名**：阶段交付 · 收敛自停 · **本节起始行 = 9008**（`execution-queue.md` 尾部 append；与 7420 行「阶段完工 · 稳态自生长」**并列**，不回改、不覆盖）
+
+**停法**：**非红停 · 信息收敛**（不冒充红触发、不标 complete、不自行唤醒）
+
+### 一、自停三项判据（逐条给读数）
+```
+① 增益=0：最近连续轮的 四选一=C · 六项红逐条=否 · ROUND_DIR 分项 rc 向量与上一同形态轮逐项相同
+   （末轮 run-a572e9fe19bc2614-p006b003823000039：9 行 · tc=0 · u=1 · check=1 · unavailable=1 ·
+     cf sha=907e5b048a4a0cdd · d1_d2 rc=0 · accept_all rc=0（缺口=4）；上一同类 exec-blocked 轮向量相同）
+② 覆盖索引已尽：单插件面 **5/5**（{calc} #7 · {rate} #11 · {web_search} #15 · {numbers} #16 · {weather} #17）
+   · 模型面已用值 **4/4**（coder-3b / coder-7b / coder-14b / qwen3.8-27b）⇒ 无未试组合
+   · 组合面（#9 #10 #12 #20 #21 #22）全部落 C，无新增形态
+   覆盖索引末行：**第 7601 行**
+③ 存量 census 已完成且最近一次全量扫描无新 A 类判断：
+   分母 = **340 份 tape**；一次跑齐下列不变量，**违约计数 = {}（零违约）**
+   行数定律（有 verdict 9+u+4n / 无 verdict 8+u+2n / rail 6）· 命名检查 = 2n ·
+   think 恒空 · chars 恒 800 · nodes 恒 0 · injected_chars 从未 >0 ·
+   tool/call 无 args · source ∈ {null, execution-pipeline} · verdict ∈ {Met, Unmet} ·
+   turn/end.success ⇔ Unmet
+```
+
+### 二、完成口径三件落点（均有真跑证据，不回改、不重签）
+```
+① 真上游一轮 ⇒ 标准事件 ⇒ 证轨可查可重放：每轮 tape 与 casefile 两次重放 diff 0 字节、
+   抽样 30 份跨形态两次输出逐字节相同（30/30）、D1/D2 全库 312 份仅 2 份失败且那 2 份是已具名 3 行截断 tape
+② 章 A 三下齐可复跑：重放带身份（同 period 两次 diff=0 / 异 period sha 不同）· 页面留白（B2-zd 修后）
+   · 地面变化（git ls-files web = 0）
+③ 章 B 实现落地且清单由 `$defs` 生成：未覆盖清单 31 = 已映射 8 + 未覆盖 23，生成口径写死在
+   `src/agui.rs`（`generated_from`），D2 基线 = 官方副本 sha `4b5c93226838a0e7`
+```
+
+### 三、本阶段累计消耗（读数，不是结论）
+```
+目标累计：**1,370,398 tokens** · 时长 **75m17s**（goal snapshot 快照值）
+台账：9005 行 · 小节 346 个 · 覆盖索引 2 表（#1–#8 于 7450 行节内、#9–#12 于 7595 行节内、末行 7601）
+最近轮次编号范围：本会话连续真跑约 120+ 轮（含 2 次红：B1-zg `Cellrix 534e59f`、B1-zh `Cellrix 1d16a22`；
+  1 次 B2 具名未销：`d-multicall-result-error-attribution`）
+```
+
+### 四、门后项处置（维持封存，不造活、不互相销账）
+```
+HITL 真闭环 · validator 基准 · signoff 销账 · 章 B 余项 23 类 · B2 闸校验工具存在性
+⇒ 均维持「已具名、待真撞」；**不属于本阶段交付范围、不算未清项**；
+   B2 `d-multicall-result-error-attribution` 已 4 样本复现（revisit 未满足），仍在门后，不自行修、不销账。
+```
+
+### 五、此后守护方式
+```
+线 1 转**低频守护**：不再连续出轮；仅在 ① 真撞到红 或 ② gardener 点火 时启动；
+不自行唤醒、不标 complete、不改 center、不归档、不写 DEBTS 新行、不写「已确认 / 已交付 / 已对齐官方」；
+三仓 dirty=0 维持（收束时实测：anaphase-helix 0 · Cellrix 0 · helix-mind 0）。
+```
