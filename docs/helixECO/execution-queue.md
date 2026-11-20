@@ -5242,3 +5242,40 @@ D3：缺项=**1**（label=重复检测）
 **边界**：不并入线 1 的 A/B1/B2/C 计数 · goal 仍 paused（N=2）· 未改 signoff.toml · 未换 validator 基准 ·
 未补 SUBAGENT_* · 未删 META_EVENT · 未立「真跑消费验收」对象 · 未写 DEBTS 新行 · 未销账 · 未归档 ·
 三下判不出 8/8（8/8 仍是章 B 实现落地）· phyt 护栏 · dirty=0。
+
+### C 轮次 · rail 档（calc 请求被 rails 吞）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True（复用，未冷启动）
+POST「Please call the calc tool with expression 14*3 and report the result.」⇒ **rail 旁路**
+job_id=run-480162db44413710 · period_id=run-480162db44413710-p006b00102d00001d
+jsonl=/tmp/t2round/events/run-480162db44413710-p006b00102d00001d.events.jsonl
+LINES=6 · AGUI=5 · TOOLCALL=0 · USAGE=0 · HITL 四态全 0 · attempt 行不存在
+reply 原文「[rail citation …]」⇒ **判错（答非所问）**
+D1/D2 rc=0（**D2 数据源=官方副本 sha256_16=4b5c93226838a0e7** · 本 period_id）
+两次 l2_casefile（`--expect run-480162db44413710-p006b00102d00001d`）rc=0/0 · diff **0 字节** · sha=**ac2479a9e1329114** · rows=6
+```
+
+**t1b `ROUND_DIR=/tmp/round_r23 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r23（EV=run-480162db44413710-p006b00102d00001d.events.jsonl）
+⓪ 引擎指纹（`upstream-manifest.sh` 内嵌）：OK（rc 由 ⓪ 段给出，本轮 rc=0）
+① rc=**0/0** · diff=0 · sha=**34cf42aef6dc188c**
+② 事件条数=**5**（投影 rc=0）· ② rc=**0**（D1/D2）· ②b rc=**0**
+③ `git ls-files web = 0` · `test -d web ⇒ 1`
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 c47cd21（缺 attempt ⇒ rail 吞请求）+ rail 档结构（6 行 / usage0 / tool0 / HITL 全 0）：
+当轮完全一致；attempt 行**不存在**（不是空文本），与"rail 在推理段之前回答"一致 ⇒ 无差，不制造核对对象。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：英文 calc 请求仍会被 rails 吞（6 行 / 无 attempt 行 / usage0）；
+若同输入出现 attempt 行或 usage>0，说明 rail 判定边界变了，须重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
