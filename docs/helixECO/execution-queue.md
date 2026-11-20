@@ -6473,3 +6473,33 @@ LINES=15 · AGUI=8 · tool/call=1 · verdict=Unmet · diff 0 字节 · cf sha=60
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ②/②b 0）
 四选一：C · 无红 ⇒ 续
 ```
+
+### A 轮次 · 并发同输入 POST ⇒ **同 job_id 两个 period**，工具被执行两次 · 2026-11-20
+
+**读数（两条 curl 并行、同一 message）**
+```
+message =「Please call the calc tool with expression 31*31 and report the result.」
+两次响应：均 `job_id=run-b61c20cdf58665be` · model=coder-3b · success=true
+tape 数：155 → **157**（新增两条）
+  run-b61c20cdf58665be-p006b0026bf00000c：15 行 · tool/call=1 · verdict=Met · HITL allowed_once=1
+  run-b61c20cdf58665be-p006b0026bf00000d：15 行 · tool/call=1 · verdict=Met · HITL allowed_once=1
+⇒ **同一 job 两个 period，各自执行了一次 calc（工具被跑两次）**
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘（44fbb47）：同输入 ⇒ job_id 相同、period 是否复用取决于进程状态。
+当轮把这条推到并发：**并行两请求同时进入 ⇒ 各开一个 period（000c / 000d），互不加锁、互不去重**
+⇒ 补一条：**同 job_id 并发不保证"一个 job 一轮"**；两轮各自 HITL 计数 1、各自 verdict Met。
+```
+
+**A：判断改成（只记录语义，不判缺陷）**
+```
+① `job_id` 相同 **不等于** 同一轮；并发下同一 job 可对应多个 period（本轮 2 个）；
+② 由此推论：**同输入并发会让工具执行两次**（非幂等）；这属"每请求一周期、无共享状态"的直接后果
+   （`src/main.rs` 该路由注释已写明：each request assembles a fresh Helix … one single-period cycle）。
+⇒ 不判缺陷、不登记 B2（并发语义属行为面/产品取舍，且代码已声明无共享状态）；
+⇒ 可被下轮推翻的一句：**若某次并发同输入只产生 1 个 period（去重/加锁），或两个 period 共享 tool/result，
+   则"无去重、各跑一遍"被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
