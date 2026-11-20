@@ -8712,3 +8712,39 @@ ROUND_DIR=/tmp/s50_run-a4a9b2f3f0e97f17-p006b00363500001b accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 全量 census：`context/inject` 三个不变量 —— `chars` 恒 800 · `nodes` 恒 0 · `injected_chars` 从未 >0 · 2026-11-20
+
+**全量实测（含 context/inject 的 308 份 tape，逐份扫）**
+```
+键并集 = ['chars','injected_chars','nodes','resume_from']
+chars         分布 = {"800": **308/308**}            ← 恒 800
+nodes         分布 = {"0": **308/308**}              ← 恒 0
+injected_chars分布 = {"0": 241, "None": 67}          ← **从未出现正数**（67 份该字段缺失）
+resume_from   出现  = **6** 份                        ← 接续轮才会写
+当轮真跑：{"chars":800,"injected_chars":0,"nodes":0}（run-cf208fb4baf29a73-p006b00365600001c）
+```
+
+**A：把"记忆注入"这件事从"未观察到"升级为"全量未发生"**
+```
+① 在本链全部 308 份样本上，`injected_chars` **从未 > 0**、`nodes` **恒 0**
+   ⇒ 「跨轮记忆注入」不是"这次没生效"，而是**从未在这些样本上发生**；
+② `chars` 恒 800 ⇒ 上下文预算是个固定常数，不随请求长度变化（本轮 reply 请求很短也是 800）；
+③ `resume_from` 只 6 份出现 ⇒ 接续是少数路径，且即便出现也不改变①②。
+⇒ 因此任何"接续/记忆"结论都只能落在标记层（resume_from）与行为层（模型重跑工具），不能落在注入层。
+可被下轮推翻的一句：**若出现 injected_chars>0 或 nodes>0 的任一轮，或 chars≠800，则①②作废。**
+```
+
+**当轮真跑**
+```
+prompt：Please call the numbers tool and report exactly what it returns.
+period_id=run-cf208fb4baf29a73-p006b00365600001c
+jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b00365600001c.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Unmet
+context/inject = {"chars":800,"injected_chars":0,"nodes":0}
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=dd2e09e3405c8174
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s51_run-cf208fb4baf29a73-p006b00365600001c accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
