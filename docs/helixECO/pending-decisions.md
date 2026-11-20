@@ -18,6 +18,9 @@
 | 2026-11-20 | 5 | **K-134 改判**（D2 基线 = 官方副本 sha256_16=4b5c93226838a0e7；agui-1.0-min 不删改性质、不再当基准）· **四连带**（自有 schema 存废 / 78227a6 守卫不退位只换 D2 数据源 / K-134 / D1·D2 分步 D1 不动）· **章 B 第一步**（投影只产官方键；fix_window cap=24 · k_id=C-083）· **C-083 pit 先记后 fix**（pits.toml 与 fix_window 分两次提交）· **证据等级常态分列**（独立核 vs Pi 侧落仓读数） | `DEBTS` 行 106/123 · `execution-queue` 行 3982 / 4054 · `anaphase-helix 17066c0,5d71a05` · `Cellrix 6d91208,213ded6` |
 
 | 2026-10-31 | 11 | A1 分离两轴 · A2 `catastrophic_override` 默认 `Reject`（跨仓 6 处）· A3 两处 Default 合一 · A4 时效三档 · B1 Tuck 判定/anaphase 执行 · B2 `NoResponder` + 应答者注册 · C1 反射归「做」· C2 档位真值源=后果探测 · C3 不可逆清单生效+判据 · D1 `i18n-ok:` · D2 `commonintents` 不扫描 | 见台账 C-034 起 |
+| 2026-11-20 | 1 | **签字口径裁定**：queue「L2 读数齐备未签」= 唯一作数；`signoff.toml`(signed=true/2026-11-03) 降为**历史快照、不覆盖 queue**，文件未改 | `execution-queue` 行 4165（裁定本体）· 行 4127/4132（派生指针已补限定） |
+
+
 
 ## 与台账的分工（防两处漂移）
 
