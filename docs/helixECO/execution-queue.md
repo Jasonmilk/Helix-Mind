@@ -6666,3 +6666,16 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 [2] period=run-bd9ba17d7e531eb2-p006b00280e00001f · 15 行 · tc=1 · Met · diff 0 字节 · cf sha=a0153cb6993035aa · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 · calc 38*38（Met）· 2026-11-20
+
+```
+check_upstream：YES src=config · model=coder-3b · health tentacle/reasoning 均 ok
+period_id=run-d02c4ba43ecce100-p006b002827000020 · jsonl=/tmp/t2round/events/run-d02c4ba43ecce100-p006b002827000020.events.jsonl
+LINES=15 · AGUI=8 · tool/call=1 · verdict=Met
+HITL 四态（_source=check/status.hitl）：allowed_once=1 · cancelled=0 · rejected=0 · unavailable=0 · kinds={}
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+两次 l2_casefile（--expect 同一 period_id）rc=0/0 · diff 0 字节 · cf sha=acf57d092f387ee7
+ROUND_DIR=/tmp/rot29 bash accept_all.sh：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0 · ③ git ls-files web = 0
+C · 红判据逐条=否 ⇒ 续
+```
