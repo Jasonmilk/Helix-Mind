@@ -5948,3 +5948,51 @@ B1 真撞仍归**自裁层**；红停后的恢复仍按既有 phyt 口径「**�
 **收尾读数**：commit `Cellrix faad50f`（= 远端）· 台账本节行号见文件 · dirty=0 · check_ci144 rc=0 · fingerprint rc=0
 **边界**：未改 objective 其余一字 · 未重立 goal · 未裁 HITL / validator / signoff 销账 / 章 B 余项 ·
 未写「已确认 / 已交付 / 已对齐官方」· 未写 DEBTS 新行 · 8/8 仍只认章 B 实现落地 · 章 A/B 未回改 · phyt 护栏维持。
+
+### A 轮次 · 输入面轮换第 5 面（tentacle 插件子集）+ 第四种 reply 形态 · 2026-11-20
+
+**换的面（插件面：只换一个轴）**
+```
+来源：既有 `helix-tentacle/fixtures/` **子集**（未新建上游）：numbers.js / numbers.manifest.json / rate.js / rate.manifest.json → /tmp/plugins_subset
+改前启动参数：`tentacle --transport grpc --grpc-port 50051 --plugins-dir ./fixtures`（5 个插件：calc/numbers/rate/weather/web_search）
+改后启动参数：`… --plugins-dir /tmp/plugins_subset`（2 个插件：numbers/rate）⇒ **calc 不在工具清单里**
+（tentacle 无 config 文件，启动参数即配置；改前参数如上行，改后如上行）
+```
+
+**当轮读数（问 calc，工具已不在清单）**
+```
+POST「Please call the calc tool with expression 18*18 and report the result.」
+job_id=run-d84914f08e4e5a74 · period_id=run-d84914f08e4e5a74-p006b001b20000001
+jsonl=/tmp/t2round/events/run-d84914f08e4e5a74-p006b001b20000001.events.jsonl
+LINES=9 · AGUI=5 · TOOLCALL=0 · USAGE=1 · usage.model=qwen3.8-27b
+attempt = **"no calls planned — answered directly"**
+verdict 无 · HITL 四态全 0
+reply 原文 =「**The `calc` tool is not available in my current toolset.** However, I can calculate …」
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=**80a181d49d1d5587**
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · sha=79bb8d128c742737 · ② 事件条数=5（投影 rc=0）· ② rc=0 · ②b rc=0
+```
+
+**核的是哪条判断 / 结果**
+```
+上一轮 A（77bca53）的可推翻点：「若出现第四形，则"三形"只是当下样本的上限」⇒ **命中：第四形出现**。
+四/五形清单（按模型 × 面）：
+  coder-3b  · 纯计划 JSON
+  coder-7b  · 答案 + "ONLY: " + 计划 JSON（混排）
+  coder-14b · 干净答案
+  qwen3.8-27b（calc 可用）· 干净答案
+  qwen3.8-27b（calc **不可用**）· **自述"该工具不在我的工具清单里"后直接作答**
+并给出**与既有 B2 的分界**：`d-unknown-tool-name-silently-dropped` 说的是"**有计划**（attempt=planned calls）但名字不存在 ⇒ 静默消失"；
+本轮是"**没有计划**（attempt=no calls planned）+ 模型自述工具不可用 ⇒ 有交代"。
+```
+
+**A：判断改成**
+```
+① reply 形态随 **模型 × 工具面** 变化，目前至少 4 形；
+② 「工具不可用」有两种完全不同的落地：**有计划→静默**（B2 在册）与**无计划→模型自述**（本轮）；
+   判据仍是 `attempt`：有 planned calls 才谈"被吞"，无 planned calls 属"模型自己没计划"。
+⇒ 可被下轮推翻的一句：**若在同样"工具不在清单"的面上出现 attempt=planned calls 且无 tool/call，
+   则说明模型会规划不存在的工具（与 frobnicate 那次同形），须把两例并到同一 B2 口径下重判。**
+```
+
+**红判据**：六项逐条＝否（无红）⇒ 记 A，续下一轮。
