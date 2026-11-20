@@ -8902,3 +8902,15 @@ D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 定律 9+u+4n=15 两轮�
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：C ×2 · 六红逐条=否 ⇒ 继续
 ```
+
+### C 轮次 ×2 · 双调用 calc+weather(19 行/Met) / numbers(15 行/Unmet) · 2026-11-20
+
+```
+[1] period=run-751f62e33db65d0c-p006b00373e000028 · 19 行 · tc=2 · u=2 · check=5 · verdict=Met · allowed_once=2
+    定律：9+u+4n = 9+2+8 = 19 ✓ · check=2n+1=5 ✓ · AGUI=11
+    diff 0 字节 · cf sha=c3628b46652370e9 · d1_d2 rc=0 · ROUND_DIR accept_all rc=0（页面缺口=2）
+[2] period=run-cf208fb4baf29a73-p006b003744000029 · 15 行 · tc=1 · u=2 · check=3 · verdict=Unmet · allowed_once=1
+    定律：9+2+4 = 15 ✓ · check=3 ✓ · diff 0 字节 · cf sha=cf6ad6596f0f7a4a · d1_d2 rc=0 · accept_all rc=0（缺口=2）
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C ×2 · 六红逐条=否 ⇒ 继续
+```
