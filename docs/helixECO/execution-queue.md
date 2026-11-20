@@ -7546,3 +7546,28 @@ tool/call={"tool":"weather","index":0} · tool/result={"tool":"weather","index":
 ROUND_DIR=/tmp/s4_run-1b3c22066200401e-p006b002f93000071 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口4）
 三仓 dirty 全 0 · docs 冻结快照 rc=0 · 四选一：C · 六红逐条=否 ⇒ 继续
 ```
+
+### C + 聪明调度第三用：增益=0 ⇒ 轮换 #11（插件 rate）并真跑 · 首个「rate 工具往返」· 2026-11-20
+
+**轮 1（numbers，同形）**
+```
+period_id=run-cf208fb4baf29a73-p006b002fb4000072 · jsonl=/tmp/t2round/events/run-cf208fb4baf29a73-p006b002fb4000072.events.jsonl
+15 行 · AGUI=8 · tc=1 · verdict=Unmet · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=0e3a45d7b352cfa9
+D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· ROUND_DIR accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+rc 向量与上一 numbers 轮逐项相同 ⇒ **增益=0** ⇒ 立即轮换（不重跑同形轮）
+```
+**轮换 #11**：`./fixtures`(5) → `/tmp/plugins_rate`（**rate.js + rate.manifest.json**，由 fixtures 复制；schema 读自 manifest：`numerator`/`denominator`）；轮末已复原，health tentacle=reachable。
+
+**轮 2（轮换后真跑）**
+```
+POST「Please call the rate tool with numerator 10 and denominator 20, then report exactly what it returns.」
+period_id=run-6445efa2b707ffc0-p006b002fc5000073 · jsonl=/tmp/t2round/events/run-6445efa2b707ffc0-p006b002fc5000073.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · attempt="planned calls: rate" · **verdict=Unmet**
+tool/call={"tool":"rate","index":0} · tool/result={"tool":"rate","index":0,**"ok":true**,"source":null}
+casefile.tool_calls=["index=0 · rate · ok=true · **25ms**"]
+⇒ 新读数：**`rate` 是本链上第一次真跑成功的第五个工具**（calc/number/weather/web_search 之外），
+  且 **传输层 ok=true 而 verdict=Unmet** —— 与已落盘「verdict 只看期望层」一致（不是新判断，记 C）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=9c7bfa5a7259481e · D1/D2 rc=0
+ROUND_DIR=/tmp/s6_run-6445efa2b707ffc0-p006b002fc5000073 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 全 0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0 · 四选一：C · 六红逐条=否 ⇒ 继续
+```
