@@ -6322,3 +6322,31 @@ LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · HITL allowed_once=1
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · sha=f134df872a706319
 ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0 · ②b rc=0）· C · 无红 ⇒ 续
 ```
+
+### A 轮次 · gist 的按需写**只在被"推理轮"引用时发生**（rail 轮引用不写）· 2026-11-20
+
+**读数（同一 period run-ebd7f57f47d63fac，三次查询）**
+```
+① 触发前（未被引用）：`/v1/sessions` ⇒ 该 period `gist=None`
+② 用 **rail 轮**引用它（POST + job_id=run-ebd7f57f47d63fac，reply model=null ⇒ rail 旁路）
+   ⇒ 触发后 `gist` 仍 **None** ⇒ rail 路径**不写** gist
+③ 用 **推理轮**引用它（同一 job_id，reply model=coder-3b ⇒ 走到推理段）
+   ⇒ 触发后 `gist` = **"Please call the calc tool with expression 29*29 and report …"**（count=15）
+```
+
+**核的是哪条判断 / 结果**
+```
+上一轮 A（92826d1）：「gist 空 = 按需未写，不是丢标题」+ 可推翻点「触发按需写后应变非空；仍空才是真缺陷」。
+当轮把"触发条件"钉死：**只有走到推理段的引用轮会写**；rail 轮引用（②）不写。
+⇒ 既证实了上一轮 A，也把它从"按需"细化为"**推理路径才按需写**"。
+```
+
+**A：判断改成**
+```
+`gist` 的写入触发 = **该 period 被一个走到推理段的后续轮引用**（其后作为上下文/骨架）；
+rail 旁路轮引用不触发。⇒ 列表里 gist 为空，只说明"它还只被 rail 轮或从未被引用过"，
+不能读成标题缺失；也不能读成"gist 生成失败"。
+可被下轮推翻的一句：**若某 period 仅被 rail 轮引用过而 gist 非空，或仅被推理轮引用过而 gist 仍空，
+则"推理路径才按需写"这条被推翻。**
+四选一：A · 红判据逐条=否 ⇒ 续
+```
