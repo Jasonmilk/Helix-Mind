@@ -6229,3 +6229,15 @@ D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
    则"清单为空"这条被推翻，B1-zf 的传输层覆盖须重判。**
 四选一：A · 红判据逐条=否 ⇒ 续
 ```
+
+### C 轮次 · weather Nagasaki（tentacle 恢复后首轮）：读数与已落盘判断一致 · 2026-11-20
+
+```
+period_id=run-04836f1edf36145e-p006b002579000003
+jsonl=/tmp/t2round/events/run-04836f1edf36145e-p006b002579000003.events.jsonl
+LINES=15 · AGUI 映射=8 · tool/call=1 · tool/result=1（**ok=true · source=None** ⇒ 成功路径未被 B1-zf 触碰）· verdict=Met
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff 0 字节 · sha=24ac19e557697730
+ROUND_DIR accept_all：rc=0 · ① rc=0/0 · ② 事件条数=8（投影 rc=0）· ② rc=0 · ②b rc=0
+四选一：C · 红判据逐条=否 ⇒ 续
+```
