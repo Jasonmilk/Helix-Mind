@@ -8368,3 +8368,43 @@ ROUND_DIR=/tmp/s39_run-8573427458363270-p006b0034fa000010 accept_all rc=0（① 
 三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · `assistant/usage` 可 **3 条** ⇒ 行数定律不是纯 n 的函数（本轮 20 行 vs 公式 19）· 2026-11-20
+
+**读数（真跑，接续轮；同一 tape 逐行实测）**
+```
+POST {"message":"Please summarize what happened two turns ago.","job_id":"run-d05ff6bb6768d1bc"}
+period_id=run-5c3c04a4173904a8-p006b00350d000011
+jsonl=/tmp/t2round/events/run-5c3c04a4173904a8-p006b00350d000011.events.jsonl
+LINES=**20** · AGUI=**11** · tc=2 · verdict=Met
+context/inject = {"chars":800,"injected_chars":0,"nodes":0,"resume_from":"run-d05ff6bb6768d1bc-p006b0034b900000e"}
+逐行类型计数：check/status=5 · **assistant/usage=3** · tool/call=2 · tool/result=2 · 其余各 1
+三条 usage 的实际内容（第 4 / 16 / 17 行）：
+  {"model":"coder-3b","prompt_tokens":554,"completion_tokens":44,"cached_tokens":417}
+  {"model":"coder-3b","prompt_tokens":737,"completion_tokens":15,"cached_tokens":417}
+  {"model":"coder-3b","prompt_tokens":811,"completion_tokens":18,"cached_tokens":713}
+casefile.tool_calls = ["index=0 · calc · ok=true · 54ms", "index=1 · web_search · ok=true · 899ms"]
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=cefdc959b2f6dcf7
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s40_run-5c3c04a4173904a8-p006b00350d000011 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件11 · 缺口2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+```
+
+**核的是哪条判断 / 为何对不上**
+```
+已落盘两条：
+  · 行数 ①支 = 15 + 4(n−1)（n=2 ⇒ 19）
+  · `usage` 行数 = 本轮 LLM 调用次数（工具轮 2 条）
+当轮：n=2 却是 **20 行**，差额 +1 正好等于 **第三条 `assistant/usage`**（本轮 LLM 调用 3 次：规划 1 + 收尾 2）。
+⇒ 「工具轮 usage 恒 2」被推翻；「行数是 n 的纯函数」被推翻。
+```
+
+**A：改成两条带余项的口径**
+```
+① `assistant/usage` 行数 = LLM 调用次数，**可 >2**（本轮 3；第 16/17 行是 verdict 之后的两轮收尾调用）；
+② 行数 = 基础（按支：① 15+4(n−1) / ② 9+2n / ③ 9）+ **超出 2 条的 usage 行数**
+   本轮：19 + 1 = **20** ✓
+⇒ 由行数反推 n 时，必须先看 usage 条数扣掉 `(usage−2)`，否则会把 20 误当 n 的 19 或误判多一个调用。
+可被下轮推翻的一句：**若出现 usage=3 而行数仍是公式值（不 +1），或 usage=1 的成功批，则②被推翻。**
+四选一：A · 六红逐条=否 ⇒ 继续
+```
