@@ -6625,3 +6625,12 @@ LINES=15 · AGUI=8 · tool/call=1 · verdict=Met（tentacle 已复原 ./fixtures
 D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）· 两次 casefile rc=0/0 · diff 0 字节 · cf sha=9bb1954ee4c6044e
 ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0）· C · 无红 ⇒ 续
 ```
+
+### C 轮次 · weather Kochi（Met）· 2026-11-20
+
+```
+period_id=run-6f7a953aa6997cb7-p006b0027c0000017 · jsonl=/tmp/t2round/events/run-6f7a953aa6997cb7-p006b0027c0000017.events.jsonl
+LINES=15 · AGUI=8 · tool/call=1 · verdict=Met · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=08c5e623be30dddc · ROUND_DIR accept_all rc=0（① 0/0 · ② 8 条 · ② rc=0）
+C · 无红 ⇒ 续
+```
