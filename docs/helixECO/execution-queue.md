@@ -7384,3 +7384,23 @@ ROUND_DIR=/tmp/rx_run-cf208fb4baf29a73-p006b002c30000069：
 
 **红停声明**：本轮触到红判据「B1 真撞」⇒ **长跑在此停一轮**（非资源型暂停），
 修复+读数已落盘；下一轮从六形态继续，并**把 `git -C Cellrix status` 纳入每轮读数**（此前缺项）。
+
+### C 轮次 ×2 · calc 64*64(Met) / weather Toyama(Met) —— B1-zg 修后首轮，读数集**加了一项** · 2026-11-20
+
+```
+check_upstream：YES src=config · reasoning_endpoint=http://127.0.0.1:8080/v1 · model=coder-3b
+
+[1] period_id=run-ff90a597f9757c36-p006b002c7b00006a · jsonl=/tmp/t2round/events/run-ff90a597f9757c36-p006b002c7b00006a.events.jsonl
+    15 行 · AGUI=8 · tool/call=1 · verdict=Met · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=980df24ce77a4cd9
+    D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+    ROUND_DIR=/tmp/ry_run-ff90a597f9757c36-p006b002c7b00006a accept_all rc=0
+      ⓪ 指纹 OK · ① rc=0/0 diff=0 sha=4a494554062c561c · ② rc=0（D1/D2）· ②b rc=0
+      产物目录=当轮目录 · 缺口标注=2 处 · 3872 字节 · 结果：分项全绿
+    **Cellrix dirty=0**（新项：此前只量 helix-mind，漏了 Cellrix）
+[2] period_id=run-9ef0e78c23d0bf3a-p006b002c7f00006b · jsonl=/tmp/t2round/events/run-9ef0e78c23d0bf3a-p006b002c7f00006b.events.jsonl
+    15 行 · AGUI=8 · tool/call=1 · verdict=Met · 两次 casefile rc=0/0 · diff 0 字节 · cf sha=de28b189c3a4d6d8
+    ROUND_DIR=/tmp/ry_run-9ef0e78c23d0bf3a-p006b002c7f00006b accept_all rc=0
+      ⓪ OK · ① rc=0/0 sha=cbb0a8b5f9777592 · ② rc=0 · ②b rc=0 · 缺口标注=2 处 · 3877 字节
+    **Cellrix dirty=0**
+四选一：C（无判断变化；验证 B1-zg 修复后冻结快照不再被覆盖，两次连跑 tree 干净）· 红判据逐条=否 ⇒ 续
+```
