@@ -4394,3 +4394,47 @@ reply 回落到计划文本 ⇒ **闸放行 ≠ 执行发生**。
 
 **计数**：本轮有 B2 ⇒ 连续无 B1/B2 归零（N=0）。
 **未动**：章 A 签字 / signoff / HITL 未捆入 · UNCOVERED / validator 基准维持门后 · 未写「已确认」、未归档。
+
+### A 轮次 · "ok" 有三个层次：传输成功 ≠ 业务成功 ≠ 期望匹配 · 2026-11-20
+
+**t1 最小读数集**
+```
+check_upstream.sh ⇒ YES src=config rc=0
+POST「Please call the calc tool with expression not-a-number and report exactly what it returns.」
+job_id=run-34502c12fe8b6021 · period_id=run-34502c12fe8b6021-p006afff9fb00000d
+jsonl=/tmp/t2round/events/run-34502c12fe8b6021-p006afff9fb00000d.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · attempt="planned calls: calc"
+tool/result = {ok:**true**, 26ms, outcome:"{\"error\":\"expression not allowed\",\"ok\":**false**}", outcome_sha:5997…}
+check exec_ok          expect="ok" · actual="ok=false"
+check answer.delivered expect="ok" · actual="no business result in tool return"
+verdict={status:**Unmet**, checks:2, reason:"failed: exec_ok, answer.delivered"}
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+reply 原文「The calc tool return…」⇒ 如实报告工具返回
+D1/D2 rc=0（D2 读官方副本 sha 4b5c93226838a0e7）· 官方副本校验 **8/8**
+两次 l2_casefile（--expect <period_id>）rc=0/0 · diff **0 字节** · sha256 均 **a6dc4e6f29842e52**
+casefile：tools=['index=0 · calc · ok=true · 26ms'] · verdict={Unmet, checks:2}
+```
+
+**t2 核的是哪条判断 / 为何对不上**
+```
+已落盘（round34 / d-exec-ok-names-expect-match-not-success）：「两个 ok 可以一真一假 —— tool.result.ok 与 exec_ok.actual」。
+当轮把"两个 ok"拆成**三层**，且给出第三层的实证：
+  ① `tool/result.ok = true`  = **传输层**：这次 RPC 调用完成了（26ms 有响应）
+  ② `outcome = {"error":"expression not allowed","ok":false}` = **业务层**：工具内部判定这次表达式非法
+  ③ `exec_ok.actual = "ok=false"` = **期望层**：outcome 未满足本次 `expect:"ok"`
+⇒ 三层同时出现在一条 tape 里；上一轮"两真一假"的说法不够，实际是"传输真 / 业务假 / 期望假"。
+```
+
+**A：判断改成**
+```
+`ok` 的读法分三层，不可互换：
+  传输层 `tool.result.ok`（调用完成）· 业务层 `outcome.ok`（工具自身判定）· 期望层 `exec_ok.actual`（与 expect 对齐）
+⇒ **verdict 只看第三层**；`tool/result.ok=true` 不能读成"工具做成了这件事"。
+⇒ 可被下轮推翻的一句：**凡 verdict=Unmet 而 tool/result.ok=true，先看 `outcome.ok`；
+   若某轮出现 outcome.ok=true 且 exec_ok.actual="ok=false"，说明期望层与业务层判定不一致，须重判。**
+```
+
+**没有 B1 / 没有新增 B2**：三层都是同一机制的读数分层，不改实现；`d-exec-ok-names-expect-match-not-success` 仍在册未销账。
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
+**未动**：章 A 签字 / signoff / HITL 未捆入 · UNCOVERED / validator 基准维持门后 · 未写「已确认」、未归档。
