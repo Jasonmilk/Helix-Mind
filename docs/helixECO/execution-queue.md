@@ -7520,3 +7520,29 @@ ROUND_DIR=/tmp/s2_run-24d8cc8f1760bb4e-p006b002f5a00006f accept_all rc=0
 三仓 dirty 全 0 · Cellrix docs 冻结快照 rc=0
 四选一：C（既有 B1-zf 判断一致）· 六项红逐条=否 ⇒ 继续（下轮按增益再判）
 ```
+
+### C + 聪明调度第二用：增益=0 ⇒ 轮换 #10（插件 calc+numbers）并真跑 · 2026-11-20
+
+**轮 1（weather，同形）**
+```
+period_id=run-9a69430ce1280b96-p006b002f7d000070 · jsonl=/tmp/t2round/events/run-9a69430ce1280b96-p006b002f7d000070.events.jsonl
+15 行 · AGUI=8 · tool/call=1 · verdict=Met · HITL（_source=check/status.hitl）allowed_once=1/cancelled=0/rejected=0/unavailable=0/kinds={}
+两次 l2_casefile rc=0/0 · diff 0 字节 · cf sha=4ae156689087161b · D1/D2 rc=0（D2=官方副本 4b5c93226838a0e7）
+ROUND_DIR=/tmp/s3_run-9a69430ce1280b96-p006b002f7d000070 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty：0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+```
+**增益判定**：四选一=C · 六红全否 · rc 向量与上一 weather 轮逐项相同 ⇒ **增益=0** ⇒ 立即轮换（不重跑同形轮）。
+
+**轮换 #10**：`--plugins-dir ./fixtures`(5) → `/tmp/plugins_cn`（**calc.js + numbers.js**，由 fixtures 复制，未改内容）；轮末已复原，health tentacle=reachable。
+
+**轮 2（轮换后真跑）**
+```
+POST「Please call the weather tool for city Kushiro…」（weather 在 /tmp/plugins_cn 里缺席）
+period_id=run-1b3c22066200401e-p006b002f93000071 · jsonl=/tmp/t2round/events/run-1b3c22066200401e-p006b002f93000071.events.jsonl
+LINES=11 · AGUI=8 · tc=1 · verdict 无 · attempt="planned calls: weather"
+tool/call={"tool":"weather","index":0} · tool/result={"tool":"weather","index":0,"ok":false,"source":"execution-pipeline"}
+⇒ **B1-zf 在第三个工具名（weather）上复现**（此前 calc、numbers 两例）
+两次 l2_casefile rc=0/0 · diff 0 字节 · cf sha=7a20278ecf48ca42 · D1/D2 rc=0
+ROUND_DIR=/tmp/s4_run-1b3c22066200401e-p006b002f93000071 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口4）
+三仓 dirty 全 0 · docs 冻结快照 rc=0 · 四选一：C · 六红逐条=否 ⇒ 继续
+```
