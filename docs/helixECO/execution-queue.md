@@ -5398,3 +5398,22 @@ rc=**0** · ① rc=**0/0** · diff=0 · sha=**332e4e7ce6b162f9** · ② 事件�
 ```
 
 **t3 四选一：C · 红判据：无红** ⇒ 记 C 并直接续下一轮。
+
+### C 轮次 · rail 档（calc 17*4 被吞）+ ROUND_DIR accept_all · 2026-11-20
+
+**t1 当轮读数**
+```
+POST「Please call the calc tool with expression 17*4 and report the result.」⇒ **rail 旁路**
+job_id=run-787b57fdceef6cd8 · period_id=run-787b57fdceef6cd8-p006b0010bb000022
+jsonl=/tmp/t2round/events/run-787b57fdceef6cd8-p006b0010bb000022.events.jsonl
+LINES=6 · AGUI 映射=5 · TOOLCALL=0 · USAGE=0 · verdict 无（tape 里 0 条）· HITL 四态全 0 · _source=tape(ring-stale)
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-787b57fdceef6cd8-p006b0010bb000022`）rc=0/0 · diff **0 字节** · sha=**26176c4fba712a02**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r28 bash tools/accept_all.sh`**
+```
+rc=**0** · ① rc=**0/0** · diff=0 · sha=**9885f632d9af7a90** · ② 事件条数=**5**（投影 rc=0）· ② rc=**0** · ②b rc=**0**
+```
+
+**t3 四选一：C · 红判据：无红** ⇒ 续下一轮。
