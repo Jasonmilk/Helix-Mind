@@ -6809,3 +6809,13 @@ run-cf208fb4baf29a73-p006b002875000025（本轮）: attempt="no calls planned �
     ROUND_DIR=/tmp/rr8_run-c500b2248f5ea996-p006b0028c600002b · accept_all rc=0 · d1_d2 rc=0
 D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · web_search(Met) / exec-blocked(9 行) · 2026-11-20
+
+```
+[1] period=run-1dbfc3131da2be68-p006b0028d500002c · 15 行 · tc=1 · Met · HITL allowed_once=1 · diff 0 字节 · cf sha=45d11a76d7500ca7
+    ROUND_DIR=/tmp/rr9_run-1dbfc3131da2be68-p006b0028d500002c · accept_all rc=0 · d1_d2 rc=0
+[2] period=run-727e4518a9f6fef3-p006b0028da00002d · 9 行 · tc=0 · verdict 无 · HITL unavailable=1 · kinds={"exec":1} · allowed_once=0
+    diff 0 字节 · cf sha=8c60285fc0e2f13a · d1_d2 rc=0 · ROUND_DIR accept_all rc=0
+D2 数据源=官方副本 sha256_16=4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
