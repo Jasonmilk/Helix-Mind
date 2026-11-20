@@ -8537,3 +8537,18 @@ period_id=run-cf208fb4baf29a73-p006b00356f000014（numbers）· 15 行 · AGUI=8
 ROUND_DIR=/tmp/s43_run-cf208fb4baf29a73-p006b00356f000014 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 ```
+
+### C 轮次 · rail 支复核：6 行 · `u=0`（无 LLM 调用）· `model=null` · 2026-11-20
+
+```
+prompt：用 calc 算一下 85*85（中文）
+period_id=run-ba9cecdd1a6d1910-p006b0035a4000015
+jsonl=/tmp/t2round/events/run-ba9cecdd1a6d1910-p006b0035a4000015.events.jsonl
+LINES=**6** · AGUI=5 · **u=0**（无 assistant/usage 行）· tc=0 · model=**null** · bypass="rail"
+⇒ 与 census 的 rail 支（6 行 / u=0 / 66 份）逐项一致；"rail 旁路无 LLM 调用"再验一次
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=f1b2f11e02a36dba
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s44_run-ba9cecdd1a6d1910-p006b0035a4000015 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件5 · 缺口4）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：C · 六红逐条=否 ⇒ 继续
+```
