@@ -7224,3 +7224,12 @@ D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续（numbers 同句第 
 [2] period=run-a572e9fe19bc2614-p006b002b1d000050 · 9 行 · tc=0 · verdict 无 · turn/end.success=true（闸拒轮，按 A-ee86fe8 的语义）· diff 0 字节 · cf sha=97baeb19c7e8378d · d1_d2 rc=0 · accept rc=0
 D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
 ```
+
+### C 轮次 ×2 · 双调用(weather+web_search, Met, 19 行) / calc 55*55(Met) · 2026-11-20
+
+```
+[1] period=run-474b8a15d99b278d-p006b002b2b000051 · **19 行** · tc=2 · allowed_once=2 · Met · diff 0 字节 · cf sha=9f2b84ae0f04f436 · d1_d2 rc=0 · accept rc=0
+    （n=2 公式再验：19 = 15+4×1 ✓）
+[2] period=run-527d74e73d85e232-p006b002b35000052 · 15 行 · tc=1 · allowed_once=1 · Met · diff 0 字节 · cf sha=c7fb4db0d16c7c73 · d1_d2 rc=0 · accept rc=0
+D2=官方副本 4b5c93226838a0e7 · C ×2 · 无红 ⇒ 续
+```
