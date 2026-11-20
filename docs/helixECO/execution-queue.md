@@ -8646,3 +8646,35 @@ ROUND_DIR=/tmp/s48_run-1e2655adb60efe3b-p006b0035ff000019 accept_all rc=0（① 
 三仓 dirty 0/0/0 · docs 冻结快照 rc=0
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · 全量 census：命名检查只有两种且成对（`exec_ok`/`answer.delivered` 各 201 条）· `check/status` 条数恒为奇数 `2n+1` · 2026-11-20
+
+**全量实测（307 份 tape，逐份扫）**
+```
+命名检查种类 = {"exec_ok": 201, "answer.delivered": 201}   ← 只有两种，且**条数相等**（每调用一对）
+phase 字段分布 = {"hitl": 308}                             ← 只有 hitl 一个 phase
+每份 tape 的 check/status 条数分布 = {1:124, 3:172, 5:9, 7:1, 9:2}  ← 全为**奇数**，无 2/4/6
+⇒ 与 `check/status = 2n + 1` 一致（2n 条命名检查 + 1 条 hitl）
+当轮真跑：check/status=3 = 2×1+1 ✓（run-62bc11b170c27470-p006b00361a00001a）
+```
+
+**A：把 check/status 的结构钉死**
+```
+① 命名检查**只有两种**：`exec_ok` 与 `answer.delivered`，每调用各一条（全量 201/201 成对）；
+② `check/status` 恒为 **2n+1**（奇数）；出现偶数条即说明有检查缺失/重复，须当异常记；
+③ `phase` 只有 `hitl` 一个值 ⇒ 「HITL 四态」是从这条的唯一行读出来的（_source=check/status.hitl）。
+可被下轮推翻的一句：**若出现第三种 named check、或某份 tape 的 check/status 为偶数条，则本条作废。**
+```
+
+**当轮真跑**
+```
+prompt：calc 87*87
+period_id=run-62bc11b170c27470-p006b00361a00001a
+jsonl=/tmp/t2round/events/run-62bc11b170c27470-p006b00361a00001a.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · u=2 · check=3 · verdict=Met
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=bbe105327e105667
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s49_run-62bc11b170c27470-p006b00361a00001a accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口标注=2）
+三仓 dirty 0/0/0 · docs 冻结快照 rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
