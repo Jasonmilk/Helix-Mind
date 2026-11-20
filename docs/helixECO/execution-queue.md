@@ -4911,3 +4911,39 @@ rc=**0** · 输入：当轮目录 /tmp/round_r18（EV=run-e234fc2c2cdbace3-p006b
 ```
 
 **计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 2** ⇒ **主动 pause（停机，不是等菜单）**。
+
+### C 轮次 · weather Osaka 工具轮 + ROUND_DIR accept_all 分项读数 · 2026-11-20
+
+**t1 当轮读数**
+```
+探测：check_upstream.sh ⇒ YES src=config rc=0 · /v1/health 全 ok=True
+POST「Please call the weather tool for city Osaka and report what it returns.」
+job_id=run-97f5f439ab04a0da · period_id=run-97f5f439ab04a0da-p006b000105000019
+jsonl=/tmp/t2round/events/run-97f5f439ab04a0da-p006b000105000019.events.jsonl
+LINES=15 · AGUI=8 · TOOLCALL=1 · USAGE=2 · verdict=**Met**（all checks passed）
+HITL allowed_once=1 · unavailable=0 · kinds={} · _source=tape(ring-stale)
+reply 原文「The weather in Osaka, Japan is Patchy ra…」⇒ 对
+D1/D2 rc=0（D2 数据源=官方副本 sha 4b5c93226838a0e7）
+两次 l2_casefile（`--expect run-97f5f439ab04a0da-p006b000105000019`）rc=0/0 · diff 0 字节 · sha=**3773adb9207bbdbe**
+```
+
+**t1b `ROUND_DIR=/tmp/round_r19 bash tools/accept_all.sh`**
+```
+rc=**0** · 输入：当轮目录 /tmp/round_r19（EV=run-97f5f439ab04a0da-p006b000105000019.events.jsonl）
+⓪ 引擎指纹 OK · ① rc=**0/0** · diff=0 · sha=**f18cff9264bfef84** · ② rc=**0** · ②b rc=**0**
+③ `git ls-files web = 0` · `test -d web ⇒ 1`
+```
+
+**t2 核的是哪条判断 / 结论**
+```
+核 b6719bc（weather 走 allowed）+ 9e4cbf1（三层）+ c890a7b（usage=2）：
+当轮 tool/call=1 · usage=2 · verdict Met · allowed_once=1 · reply 与工具天气一致 ⇒ **全部一致**，无差。
+```
+
+**t3 四选一：C**
+```
+一句可被下轮推翻的判断：weather 工具轮恒 15 行 / usage=2 / Met / allowed_once=1；
+若某轮 weather 出现 planned calls 而 tool/call=0，按执行层静默失败重判。
+```
+
+**计数**：本轮无 B1/B2 ⇒ **连续无 B1/B2 = N = 1**。
