@@ -8337,3 +8337,34 @@ ROUND_DIR=/tmp/s38_run-7d520328f556abc2-p006b0034d900000f accept_all rc=0（① 
 可被下轮推翻的一句：**若出现 `injected_chars>0` 或 `nodes>0` 的接续轮，则"标记不携带记忆"被推翻（须改记注入口径）。**
 四选一：A · 六红逐条=否 ⇒ 继续
 ```
+
+### A 轮次 · gist 已写 ≠ 记忆被注入：同一对 period 上 `gist` 非空而 `injected_chars=0/nodes=0` · 2026-11-20
+
+**读数（同一对 period 连查）**
+```
+GET /v1/sessions ⇒
+  run-d05ff6bb6768d1bc-p006b0034b900000e（被引用者）gist = "Please call the calc tool with expression 82*82 and the web…"（**非空**）· count=19
+  run-7d520328f556abc2-p006b0034d900000f（引用者）  gist = ''（尚未被推理轮引用过）· count=19
+而引用者那一轮的 context/inject 是 {"chars":800,"injected_chars":**0**,"nodes":**0**,"resume_from":"…p006b0034b900000e"}
+⇒ **被引用轮已写出 gist，但引用轮注入 0 字符 / 0 节点**
+```
+
+**A：把两件事拆开（对 7b6c7b2 的细化）**
+```
+① gist 的"按需写"与 `context/inject` 的"注入"是**两条独立路径**：
+   前者由"被推理轮引用"触发（fc2dc67 已落盘），后者本轮实测仍为 0；
+② 所以"gist 非空"**不能**当作"记忆会进入下一轮"的证据；两者要分别给读数。
+可被下轮推翻的一句：**若出现 gist 非空且同一引用轮 `injected_chars>0` 的实例，则"两路径独立"须改记为"同源但时序不同"。**
+```
+
+**当轮真跑（同轮读数，不混用上轮）**
+```
+period_id=run-8573427458363270-p006b0034fa000010
+jsonl=/tmp/t2round/events/run-8573427458363270-p006b0034fa000010.events.jsonl
+LINES=15 · AGUI=8 · tc=1 · verdict=Met
+两次 casefile rc=0/0 · diff 0 字节 · cf sha=123a07802b2c49d1
+D1/D2 rc=0（D2 数据源=官方副本 sha256_16=4b5c93226838a0e7，所量 period 同上）
+ROUND_DIR=/tmp/s39_run-8573427458363270-p006b0034fa000010 accept_all rc=0（① 0/0 · ② 0 · ②b 0 · 事件8 · 缺口2）
+三仓 dirty 0/0/0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+四选一：A · 六红逐条=否 ⇒ 继续
+```
