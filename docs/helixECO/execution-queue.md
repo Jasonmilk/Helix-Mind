@@ -9494,6 +9494,7 @@ Cellrix：`git -C Cellrix status --porcelain` = 0 · `git -C Cellrix diff --quie
 
 **节名**：B 轴第四程 · M6 裁图 · **本节起始行 = 9493**（尾部 append；7420 / 9008 / 9066 / 9145 / 9229 / 9308 / 9409 七节不回改、不覆盖）
 **授权**：gardener 最终点火令（只读）· 不重立 goal、不改旧 objective、不 resume、不标 complete
+**本节 append 提交**：`58e0108`（引入本节；行号 9493 指本节标题行）
 **目标**：把「缺陷一（若裁 A）」的**对象**与三张面钉成可裁状态；不修 A、不转绿、不建窗、不补 23 类、不去 FlowModus 取选路依据
 
 ### ① 前置对象（裁图首项）：**`payload.data` ≠ `AuditEntry` 序列化视图（映射不成立）**
