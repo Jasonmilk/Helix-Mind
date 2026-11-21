@@ -9487,3 +9487,107 @@ Cellrix：`git -C Cellrix status --porcelain` = 0 · `git -C Cellrix diff --quie
 未销 B2·HITL·L2「签」·validator·章 B 余项 / 未预先做选路依据 emit / 落盘未写外部名号 /
 未写「已交付·已确认·已对齐官方」/ 未写 DEBTS 新行 / 六节未回改 / 三仓 dirty=0 维持。
 ```
+
+---
+
+## B 轴第四程 · M6 裁图
+
+**节名**：B 轴第四程 · M6 裁图 · **本节起始行 = 9493**（尾部 append；7420 / 9008 / 9066 / 9145 / 9229 / 9308 / 9409 七节不回改、不覆盖）
+**授权**：gardener 最终点火令（只读）· 不重立 goal、不改旧 objective、不 resume、不标 complete
+**目标**：把「缺陷一（若裁 A）」的**对象**与三张面钉成可裁状态；不修 A、不转绿、不建窗、不补 23 类、不去 FlowModus 取选路依据
+
+### ① 前置对象（裁图首项）：**`payload.data` ≠ `AuditEntry` 序列化视图（映射不成立）**
+```
+实测证据链（本机副本，文件 sha16 均实取）：
+  gov.rs:227-234     治理面 `record(&p, "request", &trace_id, json!({destination, action:"forward",
+                     route_tier, messages, session, caller}))` —— payload 由 gateway 构造
+  ledger.rs:30-45    `record()` 把 payload 包成 `json!({"kind": kind, "trace_id": trace_id, "data": payload})`
+                     再 `chain.append(&SystemClock, entry)`（`tuck_audit` 链）
+  audit_api.rs:146-150  读审计日志行：`v.get("payload")` → `payload.kind` / `payload.data`
+  tuck-audit/lib.rs:19-20  hash 规范 = canonical(seq, ts, **payload**, prev_hash)
+  tuck-core/audit.rs:52-70 `AuditEntry` 键集 = entry_id/timestamp/decision/risk_level/modality/
+                     override_flag/source/identity_label/prev_hash/hash（sha16=890c311eb4c8499a）
+⇒ 两者键集与载体都不同：**payload 是 gateway 侧的 JSON 体**（含 trace_id），`AuditEntry` 是另一结构。
+⇒ **不得默认「裁 A = 改 `AuditEntry`」**：真实载体是 `gov.rs` 的 `record(...)` payload（及其读取侧）。
+   缺陷一原文（CONVERGENCE:111）写的正是「`payload.data` 的键只有 action/caller/demap_miss/
+   destination/messages/route_tier/session/status」——与 gov.rs 构造的键一致，**不是** AuditEntry 字段。
+```
+
+### 面一 文档面（已知，预置读数）
+```
+C1 三仓定义：CONVERGENCE:90-94（Anaphase ledger / Tuck 审计链 / Cellrix 证轨；Helix-Mind 不在链上）
+join 键：:97-99（ADR-0041 §7.2 改 period_id，传播到 Tuck traceparent = B18；原文自注「至今未完成」）
+B18 证据：:103-105（三处含 Tuck 链 `payload.trace_id`）；缺陷一落点 :111（payload.data 无 model）
+B18-e2e 证据文件：**当前树不存在** ⇒ `CONVERGENCE:103` 相对链接为**死链**
+  历史 blob：`cc9729f:docs/helixECO/B18-e2e-2026-10-09.md` · **140 行** · sha16=**008c23c59d2c1c46**
+  删除提交：`34a0b07`「chore(helixECO): 清理 2026-10-09 的一次性会话产物（94 → 8）」⇒ 该版本 blob 为空（0 行）
+  ⇒ 状态：**当前树 UNMEASURABLE（死链）**；证据只取历史 blob；**不改原文、不写 DEBTS 新行**
+时间层分列：:98「未完成」= 键传播前；:103/:193「已完成」= 2026-10-09 实测已交付 ⇒ 不判文档错
+```
+
+### 面二 运行时面（对象 = Tuck 审计链 payload / 其落盘产物，**不是 AuditEntry 字段**）
+```
+审计日志路径来源：`Tuck/config.toml:9` `log_path = "/Users/jason/Developer/Jasonmilk/.helix/tuck/audit.log"`
+实测：该文件**不存在**；`.helix/tuck/` 目录为空（``ls -la`` 仅 . 与 ..）
+⇒ 状态 **UNMEASURABLE（本机无产物）**：无法测 payload.trace_id / model / period_id 在落盘面的实际占比
+沿用上程：/v1/audit **http=404 · 0 B**（端点不存在）；/v1/trace `configured:false`（opt-in 默认关，未配、未重启）
+```
+
+### 面三 hash 面（不裁不改）：**两候选之外还有第三态，卡漏了它**
+```
+compute_hash 九字段（audit.rs，sha16=890c311eb4c8499a）：
+  prev_hash · entry_id · timestamp · decision · risk_level · modality · override_flag · source · identity_label
+候选一 入 `AuditEntry` 链（固定字段列表）：加字段 ⇒ 校验器口径变更 ⇒ 旧条目在新校验下需「版本位 + 旧条目只按旧 9 字段校验」
+  否则属**语义回溯改写**（非物理改行，但与「append-only，由读者拒绝脏数据」意图冲突）；标【不可逆】
+候选二 不入链：合规，但须写明「model / period_id **不在防篡改范围**：审计链只记录、不证明」
+**第三态（实测存在，卡的二分法未列）**：入 `payload` 链 —— `tuck-audit/lib.rs:19-20` 的 hash = canonical(seq, ts, payload, prev_hash)，
+  即**整包 payload 入摘要**，每条只哈希自身 payload ⇒ 给 `payload.data` 加 `model/period_id`
+  **不会使历史条目失效**（旧条目 payload 未变），且新字段**自动进入防篡改范围**（优于候选二）
+  ⇒ 这一态需在 A 裁时被显式选择，不能默认落在「入 AuditEntry」上
+```
+
+### ② 作数产物
+```
+(a) A 裁图（逐项状态）
+  首项 载体映射                = **已具名（映射不成立；真实载体 = gov.rs payload）**
+  真实载体字段（model/period_id）= 仍**待裁**（加在 payload.data：键集要定；或另立 payload 子键）
+  compute_hash                 = 若走 payload 路 ⇒ **不变更**（第三态）；若走 AuditEntry 路 ⇒ 需版本位【不可逆】
+  生产者                        = 已具名两处：`traceparent`（:97 传播面）· `payload.trace_id`（:104 实证存在）
+  历史迁移                      = 第三态**不需要**；AuditEntry 路**必需**
+  ADR Superseded + N→D→A 三层同步 = 需（HM VISION:36 ADR 两态；:37 生态级变更须三层同更）
+  Tuck 全量回归                  = 需（`cargo test --all-features`；Tuck 不带 feature 会差 40——硬禁令 4 的咒语）
+  【不可逆】标记                 = 按 `phyt docs/PROTECTION.md`（26824 B · sha16=ffc6ab0a60f89a2c）:417 授权三级、
+                                 :425 ② 升级（不可逆 ⇒ 停下来附证据请示）、:426 ③ 禁行、:430 三句判据引用，不复制正文
+  B 继续时的零动作              = AuditEntry 不动 · compute_hash 不动 · hash_version 不加 · Tuck 仓零改动 ·
+                                 /v1/trace 不配 · 不重启 · 不新增面 · ADR 不动
+  一次裁定声明                  = 依 :244「不可逆决策不宜无限等待」：本裁图齐备后由 gardener 作一次正式裁定
+                                 （A 立项 / B 继续并给理由），本程不自动续跑
+(b) 一条只读读数（红因分开计数，命令 /tmp/m6_cutmap.py）
+  counts: **deadlink=1 · noartifact=1 · mapping_unnamed=0 · pending=6** · **rc=1（红=作数读数，不是失败）**
+  mapping_unnamed=0 的依据：`gov.rs record(...)` + `ledger.rs kind/trace_id/data` 双双命中（脚本实判）
+  不写「M6 已收尾 / 已转绿」；缺陷一仍 `CONVERGENCE:115` 登记待裁决
+```
+
+### ③ 硬边界遵守
+```
+未碰 FlowModus 仓（F2:51 / F4:53；中心命题:110「FlowModus 不在 DAG 链上」）/ 零代码·零配置·零重启 /
+未新增端口·代理·入口 / 未改 CORS / 未改历史数据行 / 未解 F1·M7 四条件 / `git ls-files web` 仍 0 /
+未写 include_str! / 未销 B2·HITL·L2「签」·validator·章 B 余项 / 未预先做选路依据具名 /
+落盘未写外部名号 / 未写「已交付·已确认·已对齐官方」/ 未写 DEBTS 新行 / 七节未回改 / 四仓 dirty=0
+```
+
+### ④ 就地处理（本令最终版）
+```
+本机行号与授权令副本不同处具名分列、不判文档错：
+  · 硬禁令编号：本机 **禁令2=:122 / 禁令3=:123 / 禁令6=:126**（授权令给 :122/:123/:126 ⇒ 与**本机一致**；
+    Pi 上一轮把「禁令3」标成 :122 是**我的记录错误**，此处自纠，不改 CONVERGENCE 原文）
+  · 缺陷二赋值行：本机 :348（已修）；授权令副本 :329/:330；CONVERGENCE:113 记 :305 ⇒ 三处时间/副本差，分列不互相印证
+```
+
+### ⑤ 停法
+```
+增益≠0（前置对象映射从"未具名"变为"已判定不成立" + hash 面补出第三态）· 六项红逐条为否
+（读数与已落盘判断一致；无 B1/B2 新撞；无门后项新具名；ROUND_DIR 未跑；l2_casefile/D1·D2 未跑；phyt 无新 hit）
+字段枚举完且无新缺口 ⇒ **自停：非红停 · 信息收敛**；不换轮数阈值、不自行唤醒、不标 complete。
+累计消耗（goal snapshot 量级）：约 1.58M tokens / 约 1h50m。
+```
