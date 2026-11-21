@@ -9139,3 +9139,86 @@ pi 快照（自停节 ②）写「模型面 4/4」；第 17 面回执（轮换 #
 方向层仍归 gardener、撞到才具名找人 · phyt 不续期 · `ledger/hits` 具名不提交 ·
 hook 不自动唤醒 · 撞到才上移 · 勿增实体 · 三仓 dirty=0 维持（收束与本节实测均 0/0/0）。
 ```
+
+---
+
+## 官方 SDK 互操作对照 · 首次
+
+**节名**：官方 SDK 互操作对照 · 首次 · **本节起始行 = 9145**（`execution-queue.md` 尾部 append；7420 / 9008 / 9066 三节不回改、不覆盖）
+**授权依据**：gardener 本条授权令（不需另行裁定、不点火、不立 goal、不改收束状态）
+**对象**：`ag-ui-protocol/ag-ui` 官方 SDK（npm `@ag-ui/core` + `@ag-ui/client`），**不是本机链自测**
+
+### ① 起链读数（由我执行，未让 gardener 敲基础命令）
+```
+进程（实测 ps 命令行）：
+  76872  llama-swap --config /Users/jason/llama-swap/config.yaml
+  7268   ./target/debug/tentacle --transport grpc --grpc-port 50051 --plugins-dir ./fixtures
+  88272  ./target/debug/anaphase --config config.toml        （带 ANAPHASE_SESSION_EVENTS_PATH=/tmp/t2round/events）
+health（11 项，ok=11/11）：trace · ledger · session_notes · tentacle · mind · tuck · cellrix · reasoning · judge · cap_http · reasoning_credentials
+当轮真跑（确认链可用）：POST calc 9*9 → job_id=run-43d0fd88e73c639a
+  period_id=run-43d0fd88e73c639a-p006b01513500003c · 15 行 · agui=8 条 · d1_d2 rc=0
+`cargo run --bin up`：**当前不可用** —— 实测在 `mind grpc not ready on :50052 within 20s` 停住；
+  具名：「Mind :50052 未监听（helix-mind-cli 未起）」；**不修 Mind、不补门**，本轮改用「手工三件套」。
+```
+
+### ② 官方 SDK 取用（包版本 + 落点 + sha）
+```
+npm i @ag-ui/core@1.0.5 @ag-ui/client@1.0.5（另带 rxjs 7.8.1 与 @ag-ui/{encoder,proto}）
+落点：/tmp/agui-sdk/node_modules/@ag-ui/{core,client}/   （临时目录，不入任何仓）
+dist sha256_16：core/dist/index.js = cc576fd084612f7f（26523 B）· client/dist/index.js = fada5d282edd8131（91287 B）
+官方 SDK 自报：PROTOCOL_VERSION = 1.0 · EventType 常量数 = 31
+schema 基准（不改、不重取、不换 validator 基准确认）：
+  授权令给的 /data/workspace/ag-ui-1.0-official-schema.json **本机不存在**；
+  本仓副本 Cellrix/docs/observations/refs/ag-ui-1.0-schema.json = **94359 B · sha256_16=4b5c93226838a0e7**，
+  与授权令给的 size/sha 逐项相同 ⇒ 以该副本为基准（路径映射如实登记，不代为补文件）
+```
+
+### ③ 用官方 SDK 读已落盘标准事件（两类样本各一）
+```
+样本产物：bin/agui 投影（我执行，rc=0）
+  tool 轮：/tmp/agui_tool.jsonl  ← run-332cd76b2dd9fbb4-p006b0037ec000034 · 8 事件 · sha16=a46f3932e54a152b
+  rail 轮：/tmp/agui_rail.jsonl  ← run-b90440c9ef1308c1-p006b00372b000027 · 5 事件 · sha16=9eacc281ae9bb335
+官方 SDK 逐类（isRecognizedEvent + verifyEvents(序列) + enforceEvents(序列)，rxjs 7.8.1 驱动）：
+  tool 8 类：RUN_STARTED · TOOL_CALL_START · TOOL_CALL_END · TOOL_CALL_RESULT ·
+             TEXT_MESSAGE_START · TEXT_MESSAGE_CONTENT · TEXT_MESSAGE_END · RUN_FINISHED
+             ⇒ 8/8 isRecognizedEvent=true · verifyEvents 接受整条（events=8）· enforceEvents 接受（events=8）
+  rail 5 类：RUN_STARTED · TEXT_MESSAGE_START · TEXT_MESSAGE_CONTENT · TEXT_MESSAGE_END · RUN_FINISHED
+             ⇒ 5/5 isRecognizedEvent=true · verifyEvents 接受（events=5）· enforceEvents 接受（events=5）
+  被拒：**0**（两样本、逐事件、零抛错）
+  未覆盖（本链从未投影、SDK 侧有定义）：**23 类**，见 ④
+字段级差异（对照官方副本 $defs 的 required；按 type.const 定位 def）：
+  RUN_STARTED/TOOL_CALL_START/TOOL_CALL_END/TOOL_CALL_RESULT/TEXT_MESSAGE_CONTENT/TEXT_MESSAGE_END/RUN_FINISHED：缺=无 · 多=无
+  TEXT_MESSAGE_START：required=[type,messageId] 全齐；多出一个 `role` 字段，而 role **在 properties 内**（非 required）⇒ 合规，不计差异
+rc：官方 SDK 两样本均 0；自写 D1/D2 以 `--agui` 读同一份产物：tool rc=0（d1_fail=[] d2_fail=[] events=8）· rail rc=0（events=5）
+  注：`--agui` 参数须放在文件之后，放前面会被读成文件名 ⇒ rc=4「UNMEASURABLE: 需要 <session-events.jsonl>」（实测）
+```
+
+### ④ 三列分列（不判谁对）
+```
+列 A 官方 SDK：类型层 13/13 识别 · 序列层 2/2 接受 · 字段层 required 零缺 · 被拒 0
+列 B 自写 agui_conformance：tool **8/8 通过 rc=0** · rail **5/5 通过 rc=0**（其输出自陈「不是官方判定」）
+列 C 差集：**空**（13 个样本事件在 A、B 两列同为「接受」，无 A 拒 B 过、也无 A 过 B 拒的项）
+  差集只具名、到此为止：**不写「已对齐官方 / 已确认 / 已交付」**。
+31 类中未投影的 23 类（「已具名、待真撞」，不算失败、不补实现、不写 DEBTS 新行）：
+  TEXT_MESSAGE_CHUNK · TOOL_CALL_ARGS · TOOL_CALL_CHUNK · STATE_SNAPSHOT · STATE_DELTA · MESSAGES_SNAPSHOT ·
+  ACTIVITY_SNAPSHOT · ACTIVITY_DELTA · RAW · CUSTOM · RUN_ERROR · STEP_STARTED · STEP_FINISHED ·
+  REASONING_START · REASONING_MESSAGE_START · REASONING_MESSAGE_CONTENT · REASONING_MESSAGE_END ·
+  REASONING_MESSAGE_CHUNK · REASONING_END · REASONING_ENCRYPTED_VALUE · SUBAGENT_STARTED ·
+  SUBAGENT_FINISHED · SUBAGENT_ERROR
+```
+
+### ⑤ 压回 9066「交付终态 · 范围边界」
+```
+线 2/3/4/5 与待裁三件（B2 错误归属修 / HITL 真闭环立项 / L2 签字）保持封存「后续立项候选」：
+  不属本阶段未清项、不构成续跑前置、不因本节再罗列而变成待办、不互相销账。
+分层测试矩阵里 7 项 ⚠ **未在本节运行** ⇒ 具名为「未测、属后续候选」；
+  不读成「全量套件已绿」，也不算缺口（本节只做官方 SDK 互操作对照，不承担全量回归）。
+本节不改 7420 / 9008 / 9066 三节，不改 goal 状态（paused · 非红停 · 信息收敛），不点火、不自行唤醒、不标 complete。
+```
+
+### ⑥ 维持
+```
+不写「已对齐官方 / 已交付 / 已确认」· 不归档 · 不改 center · 8/8 仍只认章 B 实现落地、不并入 ·
+章 A/B 不回改不重签 · 方向层仍归 gardener、撞到才具名找人 · phyt 护栏维持（不续期 · ledger/hits 具名不提交 ·
+hook 不自动唤醒 · 撞到才上移 · 勿增实体）· 三仓 dirty=0 维持（本节写入后实测 0/0/0）。
+```
