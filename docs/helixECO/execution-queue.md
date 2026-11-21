@@ -9302,3 +9302,103 @@ GET /v1/audit
 不销 B2·HITL·L2「签」·validator·章 B 余项 / 落盘不写外部名号 / 未动配置（config.toml sha 未变）/
 不重启服务（沿用现有三进程）/ 不写「已交付·已确认·已对齐官方」/ 不写 DEBTS 新行 / dirty=0 维持。
 ```
+
+---
+
+## B 轴第二程 · M6 收尾
+
+**节名**：B 轴第二程 · M6 收尾 · **本节起始行 = 9308**（`execution-queue.md` 尾部 append；7420 / 9008 / 9066 / 9145 / 9229 五节不回改、不覆盖）
+**授权**：gardener 点火令（B 轴第二程 · M6 收尾只读长跑｜最终点火令）· 不重立 goal、不改旧 objective、不 resume、不标 complete
+**目标**：把 `CONVERGENCE:193` 两条缺陷定位到**文件·行号·字段**；不是修 FlowModus、不是建窗、不是补 23 类、不是把断言转绿
+
+### ① 起链与两键（复用上程三 PID，未重启）
+```
+:8080  pid=76872  llama-swap --config /Users/jason/llama-swap/config.yaml
+:50051 pid=7268   tentacle --transport grpc --grpc-port 50051 --plugins-dir ./fixtures
+:50061 pid=88272  anaphase --config config.toml
+env 核对（ps -Eww）：ANAPHASE_SESSION_EVENTS_PATH=/tmp/t2round/events
+health：11/11 ok（trace · ledger · session_notes · tentacle · mind · tuck · cellrix · reasoning · judge · cap_http · reasoning_credentials）
+`cargo run --bin up`：仍停 `mind grpc :50052` ⇒ 具名，不修 Mind、不补门
+
+真跑一轮（calc 13*13）：reply="The result of 13*13 …" · success=true
+  job_id    = run-69c4b42af7d98a7e
+  period_id = run-69c4b42af7d98a7e-p006b01f62000003e
+```
+
+### ②-A 源码事实（可读；每项给文件·行号·sha16）
+| 项 | 实测 | 判定 |
+|---|---|---|
+| `Tuck/crates/tuck-core/src/audit.rs:52` `AuditEntry` 字段全集 | `entry_id · timestamp · decision · risk_level · modality · override_flag · source · identity_label · prev_hash · hash`（文件 sha16=`890c311eb4c8499a`） | **AuditEntry 无 `model` / 无 `period_id`**（不写「Tuck 无 model 字段」：`tuck-gateway/src/notify.rs:20`、`capability.rs:24/:51` 确有 model ⇒ 收窄依据具名） |
+| `anaphase-helix/src/run_cycle/reasoning.rs:348` | `let model = self.run_config.reasoning_mode.clone();` → `:349` `trace.record(&ts, &trace_id, &model, …)`（sha16=`40b599a3641d9e33`） | **trace 的 model 实参来源 = `reasoning_mode`（认知模式）** |
+| `anaphase-helix/src/trace.rs:54-55` | 注释 `/// The reasoning model name.` · 字段 `pub model: String`（sha16=`cc33f8c1a4668fea`；参数 `:170`、赋值 `:178`） | **注释/实参语义错配**（注释说模型名，实参给认知模式） |
+| `anaphase-helix/src/run_cycle/usage.rs:29` | `"model": meta.model`（upstream metadata） | **tape 的 `usage.model` 来源 = 上游 `meta.model`** |
+| 卡里「`flowmodus.rs:51-52` 唯一来源」 | **本机无 `flowmodus.rs`**（随 M5 移除） | 属**旧副本行号**；按硬边界「两副本具名分列、不互相印证」记录，不判矛盾 |
+
+### ②-B 运行时状态（逐项给命令 / rc / sha / 落点）
+```
+GET /v1/events?period_id=run-69c4b42af7d98a7e-p006b01f62000003e
+  rc=0 · 3891 B · sha16=84812a60d5f45c1d · events=15 · usage.model=coder-3b · verdict=Met
+  ⇒ **唯一确证源**
+GET /v1/trace?trace_id=run-69c4b42af7d98a7e
+  rc=0 · {"configured":false,"count":0,"entries":[]}（路由 main.rs:123；config.rs:125 Option，注释「None = trace off (opt-in)」）
+  ⇒ 具名**未通电**；不配 `reasoning_trace_path`、不重启
+GET /v1/audit
+  **http=404 · 0 B** ⇒ 端点不存在，UNMEASURABLE；不上、不另指替代源
+WAL / ProveTrack 落盘产物（就地复检，**与卡里的「本机无」不同，按 ④ 就地记**）：
+  helix-mind/data/wal/00000000.wal  60706 B · sha16=46d599ddc228bd79 · mtime 2026-11-18 ⇒ 本 period 命中 **0** · `coder-3b` 命中 **0**
+  Cellrix/data/wal/00000000.wal     4603462 B · sha16=41858f6d7ee97bcd · mtime 2026-10-10 ⇒ 命中 0 / 0
+  Tuck 侧 WAL / audit / prove-track 产物：**无**（`find Tuck -name '*.wal'` 0 命中；无 `~/.tuck`）
+  ⇒ 结论不变：**这些落盘面不含本 period 的 model**（UNMEASURABLE），且 Tuck 侧无产物
+CONVERGENCE:193「三处实测两两不同且互相匹配」所依具体面（payload / SAP header / gateway API）
+  ⇒ **未具名 ⇒ UNMEASURABLE**：不改原文、不回改、不写 DEBTS、不写成「已否证」
+```
+
+### ③ 作数产物（三件，不是「三源转绿」）
+```
+(a) 字段级定位
+   缺陷一（Tuck 无 model）：`tuck-core::AuditEntry`（audit.rs:52-70）字段全集十条，**无 model、无 period_id**
+     ⇒ 该记录无法承载 C1 的 model 腿；`tuck-gateway` 的 model 是 capability/notify 面，不是审计记录。
+   缺陷二（认知模式当模型）：`reasoning.rs:348` 把 `run_config.reasoning_mode` 作为 model 实参传给 `trace.record`（:349），
+     写入 `trace.rs:55 pub model: String`（注释 :54 声称「model name」）⇒ **注释与实参语义错配**。
+(b) 源码层断言（可红可绿，标明【源码层】；命令与 rc 如下）
+   $ python3 /tmp/trace_model_src.py anaphase-helix/src/run_cycle/reasoning.rs
+     GREEN rc=0 | 确认不同源：trace.record 的 model 实参来自 reasoning_mode（:348）
+   $ python3 /tmp/trace_model_src.py /tmp/fake_reasoning.rs     # 构造片段：let model = meta.model.clone();
+     RED   rc=1 | trace.model 已改用上游 model（缺陷二不再成立）: :1
+   ⇒ 绿 = 确认「trace 源(reasoning_mode) ≠ tape 源(usage.rs:29 meta.model)」；若源码改为 meta.model 则红。
+     本断言是**源码层**，不包装成「运行时 join 读数转红」。
+   （自纠一行：该断言脚本初版窗口写成 `range(i, max(0,i-12), -1)`，漏检首行 ⇒ 反样本误判 rc=4；
+     改为 `max(-1,i-12)` 后正/反样本分别 rc=0 / rc=1。）
+(c) 运行时三源 join 状态标注
+   tape：有值（`coder-3b` / Met / outcome_sha）
+   Tuck：**无字段、无落盘产物** ⇒ UNMEASURABLE
+   trace：**未通电** ⇒ UNMEASURABLE
+   ⇒ 三源 join 不成立、不要求转绿；join 键固定为 `period_id`，未用 trace_id、未用 ring 旧值
+```
+
+### ④ 就地处理记录（按点火令 ④，不以此停/上移）
+```
+卡假设「WAL / ProveTrack 落盘产物本机无」——复检后**有两处 WAL**（helix-mind / Cellrix）但**不含本 period 与 model**，
+且 Tuck 侧确无。按就地条款：具名 + 给 rc/sha/命中数 + 落盘记此行，继续本程，不回桌、不要求补裁。
+```
+
+### ⑤ 停法（复用既有判据，不新造）
+```
+增益：本轮读数向量（去掉 period_id）= 源码两处定位 + 运行时三源状态；与 B 轴第一程（9229）比，
+  新增「缺陷一/缺陷二的文件·行号·字段」与「源码层断言绿/红」⇒ 增益≠0，不触发换面。
+六项红：逐条为否（读数与已落盘判断一致 · 无新 B1/B2 撞 · 无门后项新具名 · ROUND_DIR 分项未跑故不涉及 ·
+  l2_casefile/D1·D2 未漂移 · phyt ledger 无新 hit）。
+字段枚举完且无新缺口 ⇒ 本程**自停：非红停 · 信息收敛**；不换轮数阈值、不自行唤醒、不标 complete。
+累计消耗（goal snapshot 量级）：约 1.46M tokens / 约 1h30m。
+已知缺陷复现（model 腿不可 join）属**已登记缺陷**，按点火令 3) 不触发六项红停、不上移、不销账。
+```
+
+### ⑥ 硬边界遵守（逐条自证）
+```
+不碰 FlowModus 仓（F2 CONVERGENCE:51 / F4 :53）· 落点仅 Anaphase/Tuck/Cellrix 只读 ·
+M5「摘面不摘核」维持（main.rs 适配器构造＝HTTP 核；FlowModus 面 :942 注释已退役）·
+不建 UI / 不新增端口·代理·入口 / 不改 CORS / 不改配置 / 不重启 / 零代码改动 ·
+不解 F1·M7 四条件 / 不动 web/（`git ls-files web` 仍 0）/ 不写 include_str! ·
+不销 B2·HITL·L2「签」·validator·章 B 余项 / 落盘未写外部名号 / 不写「已交付·已确认·已对齐官方」·
+不写 DEBTS 新行 / 两格（F1 语义限定 + 跨源可达）未触发、仍封存 / dirty=0 维持。
+```
