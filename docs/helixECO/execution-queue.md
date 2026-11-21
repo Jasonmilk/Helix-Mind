@@ -9223,3 +9223,81 @@ rc：官方 SDK 两样本均 0；自写 D1/D2 以 `--agui` 读同一份产物：
 章 A/B 不回改不重签 · 方向层仍归 gardener、撞到才具名找人 · phyt 护栏维持（不续期 · ledger/hits 具名不提交 ·
 hook 不自动唤醒 · 撞到才上移 · 勿增实体）· 三仓 dirty=0 维持（本节写入后实测 0/0/0）。
 ```
+
+---
+
+## B 轴第一程 · 事实连通
+
+**节名**：B 轴第一程 · 事实连通 · **本节起始行 = 9229**（`execution-queue.md` 尾部 append；7420 / 9008 / 9066 / 9145 四节不回改、不覆盖）
+**授权**：gardener 点火令（B 轴第一程 · 事实连通长跑｜点火前增量修订版）· 不重立 goal、不改旧 objective、不 /goal-resume、不标 complete
+**交付物**：② 的「为什么」字段地图 + ③ 的一条可红可绿读数；**不是**界面、不是三源转绿
+
+### ① 起链与三键
+```
+进程（实测命令行）：
+  8080  llama-swap --config /Users/jason/llama-swap/config.yaml
+  50051 ./target/debug/tentacle --transport grpc --grpc-port 50051 --plugins-dir ./fixtures
+  50061 ./target/debug/anaphase --config config.toml     （带 ANAPHASE_SESSION_EVENTS_PATH=/tmp/t2round/events）
+health：11/11 ok（trace · ledger · session_notes · tentacle · mind · tuck · cellrix · reasoning · judge · cap_http · reasoning_credentials）
+`cargo run --bin up`：当前不可用（停 `mind grpc :50052` 20s）⇒ 具名，不修 Mind、不补门。
+
+真跑一轮（calc 12*12）：reply="144" · success=true
+  job_id    = run-3952794efaa1b304                （tape 首行实测）
+  period_id = run-3952794efaa1b304-p006b01ee1800003d
+  trace_id  = **UNMEASURABLE**：tape 单行键无 trace_id；/v1/agent/events ring 当前 8 条、trace_id 集合只有
+              run-8bba24c5ee368a4a-p006b0032c2000000（旧 period，非本轮）⇒ ring 未更新，本轮取不到 trace_id
+```
+
+### ② 字段地图（逐项：命令 → rc → sha/落点 → 状态）
+```
+GET /v1/events?period_id=run-3952794efaa1b304-p006b01ee1800003d
+  rc=0 · 3841 B · sha16=eb19b34e0401e26f · configured=true · events=15
+  ⇒ **本程唯一确证源**（完整 tape 时间线，turn/start 起）
+
+GET /v1/trace?trace_id=run-3952794efaa1b304
+  rc=0 · body={"configured":false,"count":0,"entries":[]}
+  源码落点：路由 main.rs:123 · 配置 config.rs:125 `reasoning_trace_path: Option<String>`（注释「None = trace off (opt-in)」）
+  ⇒ 具名「设计上 opt-in 默认关；本程不配、不重启、不通」
+
+GET /v1/audit
+  **http=404 · bytes=0**（路由表 0 命中）
+  ⇒ 具名 UNMEASURABLE（端点不存在）；不另指读取路径、不读 WAL 替代、不写「前端没做」
+```
+
+| 必点名字段 | 落点（本 period 实测） | 状态 |
+|---|---|---|
+| `assistant/usage.data.model` | `coder-3b`（2 条 usage，同值） | **已在 tape** |
+| `verdict/status.data.reason` | `"all checks passed"` · status=`Met` | **已在 tape** |
+| `tool/result.data.outcome_sha` | `472a62d3` · ok=true · source=null（**不在 verdict 上**） | **已在 tape** |
+| `context/inject.data` | `{chars:800, injected_chars:0, nodes:0}` | **当前语料无激活证据**（非零是结构可做：`tests.rs:173` nodes=8 · `:179` injected_chars=412；`types_and_stream.rs:265-267` 注释 `detail`=SA-Core choice 挂此事件） |
+| `tool/call` 入参 | keys=`['expect','index','tool']`（无 args；我侧 225/225 零例外） | **已知无值** |
+| `router 候选集 / score_and_entropy_sample` | tape/trace/audit 三处均无（源在 FlowModus `router.rs`，`ADR-0048.index.md:329`「router 有候选解析，没有运行时转移」·`:333`「再由 score_and_entropy_sample 挑一个」） | **源头未落盘 UNMEASURABLE**（不造理由、不写成前端缺失） |
+
+### ③ 可红可绿读数（本程唯一作数产物）
+```
+断言 = events 单源内部一致性：同一 period 的 period_id 逐行一致 + job_id 唯一 + tool call/result 配对
+       + assistant/usage.model 与 verdict/status 同轴
+正样本（period=…p006b01ee1800003d）：
+  {"events":15,"job_id":["run-3952794efaa1b304"],"types":12,"usage_models":["coder-3b"],
+   "verdict":"Met","tool_calls":1,"tool_results":1,"fail":[]}  ⇒ **rc=0（绿）**
+反样本（同一份数据、故意传错 period_id，仅示"可红"，不与当轮混写）：
+  {"fail":["period_id 逐行不一致: ['run-3952794efaa1b304-p006b01ee1800003d']"]}  ⇒ **rc=1（红）**
+三源 join：仅作状态标注，不要求转绿（trace 未通电 / audit 不存在 / trace_id 取不到）
+```
+
+### ④ 长跑机制与停法（一字不改，复用既有判据）
+```
+增益 = 当轮读数向量（去掉 period_id）与同形态已落盘判断的差；增益=0 ⇒ 按输入面轮换只换一个面。
+六项红 = 唯一停/上移触发。字段全集枚举完且无新缺口 ⇒ **自停**，标「非红停 · 信息收敛」。
+本轮读数：字段 6 格全部有确定状态（确证 3 / 无值 1 / 未通电 1 / 源头未落盘 1 / 端点不存在 1 之一格），
+  无新缺口 ⇒ 本程至此自停（非红停 · 信息收敛），不换轮数阈值、不自行唤醒、不标 complete。
+累计消耗（goal snapshot）：约 1.41M tokens / 约 1h20m 量级（取快照值，不精确到秒）。
+```
+
+### ⑤ 硬边界遵守（逐条自证）
+```
+不建 UI / 不起独立项目 / 不新增端口·代理·入口（未动任何 serve 面）/ 不改 CORS / 不解 F1 与 M7 四条件 /
+不动 web/ 生产资产（`git ls-files web` 仍 0）/ 不写 include_str! / 不改引擎（本轮零代码改动）/
+不销 B2·HITL·L2「签」·validator·章 B 余项 / 落盘不写外部名号 / 未动配置（config.toml sha 未变）/
+不重启服务（沿用现有三进程）/ 不写「已交付·已确认·已对齐官方」/ 不写 DEBTS 新行 / dirty=0 维持。
+```
