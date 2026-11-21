@@ -9410,6 +9410,7 @@ M5「摘面不摘核」维持（main.rs 适配器构造＝HTTP 核；FlowModus �
 
 **节名**：B 轴第三程 · trace 事实单源 · **本节起始行 = 9409**（`execution-queue.md` 尾部 append；7420 / 9008 / 9066 / 9145 / 9229 / 9308 六节不回改、不覆盖）
 **授权**：gardener 点火令（B 轴第三程）· 即 `CONVERGENCE:115` 登记项中**缺陷二**的本次裁决（append-only 留痕）· 不重立 goal、不改旧 objective、不 resume、不标 complete
+**本节 append 提交**：`cc3560f`（引入本节；行号 9409 指本节标题行）
 **范围**：仅 `reasoning.rs` 写入语义与同段注释；**缺陷一（`AuditEntry` 无 model/period_id）保持 :115 登记待裁决，本程不碰、不裁、不预立项**
 
 ### ① 起链与两键（复用上程三 PID，未重启）
