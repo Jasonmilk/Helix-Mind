@@ -9403,3 +9403,86 @@ M5「摘面不摘核」维持（main.rs 适配器构造＝HTTP 核；FlowModus �
 不销 B2·HITL·L2「签」·validator·章 B 余项 / 落盘未写外部名号 / 不写「已交付·已确认·已对齐官方」·
 不写 DEBTS 新行 / 两格（F1 语义限定 + 跨源可达）未触发、仍封存 / dirty=0 维持。
 ```
+
+---
+
+## B 轴第三程 · trace 事实单源
+
+**节名**：B 轴第三程 · trace 事实单源 · **本节起始行 = 9409**（`execution-queue.md` 尾部 append；7420 / 9008 / 9066 / 9145 / 9229 / 9308 六节不回改、不覆盖）
+**授权**：gardener 点火令（B 轴第三程）· 即 `CONVERGENCE:115` 登记项中**缺陷二**的本次裁决（append-only 留痕）· 不重立 goal、不改旧 objective、不 resume、不标 complete
+**范围**：仅 `reasoning.rs` 写入语义与同段注释；**缺陷一（`AuditEntry` 无 model/period_id）保持 :115 登记待裁决，本程不碰、不裁、不预立项**
+
+### ① 起链与两键（复用上程三 PID，未重启）
+```
+:8080 pid=76872 · :50051 pid=7268（--plugins-dir ./fixtures）· :50061 pid=88272
+health 11/11 ok
+真跑一轮（calc 14*14，**运行进程仍是旧二进制**——本令不重启）：reply="196"
+  job_id    = run-8c59067d6a41f234
+  period_id = run-8c59067d6a41f234-p006b01ff1800003f
+```
+
+### ② 唯一写入（additive · 可逆 · 带回归；未动 FlowModus 仓）
+```
+a) `reasoning.rs` 写 trace.model 处：`run_config.reasoning_mode` → `self.reason.last_model()`
+   （`last_model()` 定义在 `adapters/mod.rs:227`，是 `last_meta()` 的派生视图；
+     与 tape 源 `usage.rs:22 agent.reason.last_meta()` → `:29 "model": meta.model` **同源**）
+   `UpstreamMeta.model: Option<String>`（`adapters/usage.rs:72`）⇒ 用 `if let Some(model)` 取值，
+   **不 unwrap、不造 null/占位值**；当上游未报 model 时**不写该行**（"absent stays absent"）
+b) 同批仅修注释：`reasoning.rs` 原写「the same key … the Tuck audit chain carry, so Cellrix joins
+   body + chain by it」与实测不符（`AuditEntry` 无 trace_id/period_id；`tuck-gateway` 只转发
+   `x-tuck-trace`，不入 `AuditEntry`）⇒ 改为如实表述并标 UNMEASURABLE pending
+c) 本程**不给 `AuditEntry` 加字段**、**不改 `compute_hash`**、**不加 hash_version**、**不补生产者**
+   ⇒ 结构性绕开「入链断历史 / 不入链不防伪」「字段在场恒空」两处风险，不需裁定
+
+sha：`reasoning.rs` 40b599a3641d9e33 → **6ad005af3a746ba7** · `tests/reasoning_trace.rs` **1b2e6c9be1315b47**
+（我侧副本行号为 reasoning.rs:329/:330、adapters/mod.rs:220/:229；**本机副本为 reasoning.rs:348/:349** ⇒ 两副本不互相印证）
+```
+
+### ③ 作数产物（三件）
+```
+(a) 缺陷二字段级闭合：trace.model 写入源 == `self.reason.last_model()` == `last_meta().model`
+    == tape `assistant/usage.model` 唯一源；落点 reasoning.rs（新）:344-353 与 usage.rs:22/:29
+(b) 同一断言的两个版本（均标【源码层】，不升格运行事实、不冒充变异体验伪）：
+    $ python3 /tmp/trace_model_v2.py v1   ⇒  v1 RED rc=1（"不同源"不再成立；第 2 程 9308 记的 v1 绿到此失效）
+    $ python3 /tmp/trace_model_v2.py v2   ⇒  v2 GREEN rc=0（同源确认）
+    v2 反样本（把 patch 等价回退到临时副本 /tmp/rev.rs）⇒ rc=1（红），未动仓内文件
+(c) 运行时状态：
+    GET /v1/events?period_id=run-8c59067d6a41f234-p006b01ff1800003f
+      rc=0 · 3841 B · sha16=a2bbb8dc0be114e8 · events=15 · usage.model=coder-3b · verdict=Met（唯一确证源）
+    /v1/trace ⇒ opt-in 默认关（未通电、未配 reasoning_trace_path、未重启）
+    Tuck 运行时落盘产物 / CONVERGENCE:193「三处匹配」所依具体面 ⇒ **UNMEASURABLE**
+    **不声称运行时三源 join 转绿；不写「M6 已收尾/已转绿」——缺陷一仍登记待裁决**
+```
+
+### ④ 回归（具名，不报未运行数）
+```
+anaphase: cargo build rc=0 · ci/check_line_budget.py rc=0（ratchet held）
+          cargo test --all-features --no-fail-fast ⇒ **0 FAILED**（23 个测试二进制，含修复后 2 passed 的 reasoning_trace）
+            ⚠ 首跑有 1 个失败：tests/reasoning_trace.rs:42 `reasoning_round_trip_is_recorded_redacted`
+              —— 因 fixture 用 NoopReasoningAdapter（无 model）⇒ 新语义下不写行 ⇒ 文件不存在。
+              按「不造占位值」不能改回行为，改 fixture：新增 ModelReportingAdapter 报 `Some("test-model")`；
+              修后该测试 2 passed。此为我改动引出的真失败，非既有红。
+Tuck：本程未动 ⇒ `git -C Tuck status --porcelain | wc -l` = **0**（边界读数，未跑 Tuck 全量、不计其 dirty 为改动）
+Cellrix：`git -C Cellrix status --porcelain` = 0 · `git -C Cellrix diff --quiet HEAD -- docs/observations/` rc=0
+```
+
+### ⑤ 就地处理
+```
+本程未再遇对象错位/端点不存在；行号与授权令给的副本不同（我 348/349 vs 卡 329/330）⇒ 按硬边界具名分列，不判矛盾。
+```
+
+### ⑥ 停法
+```
+增益≠0（缺陷二从"已定位"推进到"已改+回归绿+双版本断言"）· 六项红逐条为否
+（读数与已落盘判断一致；无 B1/B2 新撞；无门后项新具名；ROUND_DIR 未跑故不涉及；l2_casefile/D1·D2 未跑故不涉及；phyt 无新 hit）
+字段枚举完且无新缺口 ⇒ **自停：非红停 · 信息收敛**；不换轮数阈值、不自行唤醒、不标 complete。
+累计消耗（goal snapshot 量级）：约 1.52M tokens / 约 1h40m。
+```
+
+### ⑦ 硬边界遵守
+```
+未碰 Tuck 写入（:115 仅裁缺陷二）· 未建 UI / 未新增端口·代理·入口 / 未改 CORS / 未配 reasoning_trace_path /
+未重启（沿用三 PID）/ 未解 F1·M7 四条件 / `git ls-files web` 仍 0 / 未写 include_str! /
+未销 B2·HITL·L2「签」·validator·章 B 余项 / 未预先做选路依据 emit / 落盘未写外部名号 /
+未写「已交付·已确认·已对齐官方」/ 未写 DEBTS 新行 / 六节未回改 / 三仓 dirty=0 维持。
+```
