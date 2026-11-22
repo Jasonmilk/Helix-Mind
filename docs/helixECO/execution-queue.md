@@ -9915,3 +9915,104 @@ B 类「看不到」五项仍按窗顶界碑逐条单裁（工具入参 / 选模
 
 **末句**：B 类「看不到」各项仍按窗顶界碑逐条单裁，不自动续跑；M7 不因此解冻；
 B 轴缺陷一仍 `CONVERGENCE:115` 登记待裁决，依 `PROTECTION.md:244` 另一次显式指令裁定。
+
+---
+
+## 接上 · phyt 仪器接线与台账体检
+
+**节名**：接上 · phyt 仪器接线与台账体检 · **本节起始行 = 9921**（尾部 append；既有各节不回改、不覆盖；对本令之前任何节的补充一律另起新页、标「自本节起生效」）
+
+### 一、口径（先写死）
+```
+【电表不同源】phyt-DNA/tools/meter.sh 的 T_gate / f / override_rate / 心跳红率，全部来自
+  phyt 母仓 ledger/hits-2026.jsonl 的 kind:run / kind:task 样本（母仓天然无生产样本 ⇒ f=? 不是 f=0）
+  ⇒ 落盘标「来源 = phyt 母仓 ci-local 样本」。
+  本链 `/v1/chat` + tape **无计量入口** ⇒ **每程消耗 = UNMEASURABLE**（不填 0、不拿「约」字换皮、不再用「接电表」字样）。
+  若引用 goal snapshot，须三标：来源＝会话级量级估计 / 口径＝估计非仪表 / 不可与 phyt 表相加·对比·并列。
+【红与报数分开】真红 = ci-local **3c 原文**「逾期未销 5 条」；「缺 revisit-on 的行」是**报数不判红**，不是红数。
+  一切数字引 3c 命令 + 原始输出；**不得用自写正则计数或当选择器**（上一轮自写正则得 45/46，作废）。
+【phyt 红 ≠ 本链红】phyt 的红只作用于 phyt 仓（其 CI 不推送）；本链红仍按本链六项判。
+  两者不互相代替、不互相豁免；phyt 现红不得被「封存」消化，必走 ② 上移或人裁。
+【依据分界】本令与落盘只引 Pi 侧成文（路径写全）：
+  phyt-DNA/VISION_self.md(4175 B · 684926e9c9a80ac9):3/:11/:22/:25/:42-51/:58 ·
+  phyt-DNA/VISION.md(5318 B · cc5f0e6ae2d8ba2d):45-46/:88-89 ·
+  phyt-DNA/docs/PROTECTION.md(26824 B · ffc6ab0a60f89a2c):417-432/:244 ·
+  phyt-DNA/docs/MULTIMETER.md(16663 B · 9ccea1fa4ea3d228):107-108/:124/:245-246 ·
+  phyt-DNA/decisions/ADR-20261025-meter-must-be-on-duty.md(9353 B · 59c7bda728462f3f):17-22/:51-54 ·
+  phyt-DNA/DEBTS.md(33943 B → 改后 e23fa66b678896ec):8/:10/:65/:111-113 ·
+  Cellrix VISION:409/:495 · CONVERGENCE 覆盖记录格式
+  两份验收/重抄实证与 A·B·C 三份研究：Pi 本机 0 命中 ⇒ UNMEASURABLE（本机无此文件），行号不进正文
+```
+
+### 二、① 自治三件（已执行）
+```
+(1) 电表标源 + 本链 UNMEASURABLE：口径见「一」；本程消耗栏 = **UNMEASURABLE（本链无计量入口）**，
+    未填 0、未写「约 X tokens」。
+(2) 台账 sha 体检（零新增真相层实体 · 无 manifest.json / 映射表 / 构建体系）
+    校验器：`helix-mind/tools/check-queue-sha.py`（零依赖、只读、不改旧节、不给旧节贴 stale）
+      2704 B · sha16=**17a3525b7de2ebf2**
+    格式写死：`- 生效：<相对路径> sha16=<16hex>`（其他历史写法按快照、不解析、不报错）
+    三态与首轮实测：
+      首轮（写入生效行之前）：`0 hits / 9917 scanned => UNMEASURABLE` · **rc=4**（非全绿）
+      正例夹具 /tmp/qsha：`1 hits / 1 scanned consistent 1` · **rc=0**
+      反例夹具（改一字节）：`STALE recorded=f5b866b5d4c4f34e actual=3d9bde12f67f974b` · **rc=1**
+      缺文件夹具：`UNMEASURABLE (file missing)` · **rc=4**
+    定性：① 自治（加仪器、不改行为面、不动权威卷、双夹具能红）；② 档位不因本脚本扩档。
+    未调用、未修改 phyt 仓内 `check-baseline.sh` / `UPSTREAM.sha256` 任何一件。
+(3) 本节最小字段见下「六、」。
+```
+
+### 三、② 升级两件（本令即具名授权；授权人 = gardener；时间 = 2026-11-23；原文 = 本令）
+```
+(a) 补 DEBTS 表 revisit-on（范围由 ci-local 3c 判据定义，**不用自写正则当选择器**）
+    改前 sha16 = **20f75c60051554e2** → 改后 **e23fa66b678896ec**
+    补的行数 = **45 条 data 行**（新增 `· revisit-on: 2026-12-21`，属**首次登记**非延期）
+    ★ 5 条逾期行（d-phyt-pre-gap-a/b/c · d-phyt-phantom-complete · d-phyt-3c-scope，日落 2026-11-08）
+      **一字未动** ⇒ 复跑 3c 仍红。
+(b) 「把 d-phyt-debts-audit 接进 ci-local」——**就地具名对象错位：该审计已在 ci-local 3c 内**（源码注释记 2026-10-25
+    「自维护闭环最后一环」）⇒ **本程未改 ci-local、未新增判据**；`d-phyt-debts-audit` 已由 3c 承担。
+硬线遵守：补字段**不销红**；到期只改日期 ⇒ 红；不自动通过/拒绝/转轮。
+复跑原始输出（`bash tools/ci-local.sh --fast`，rc=**1**）：
+  `3c · DEBTS 日落审计（账本之外的债） 逾期未销 5 条：d-phyt-pre-gap-a(日落2026-11-08)；…`
+  `缺 revisit-on 的行（报数不判红）6 条`（补字段前为 51 条）
+  `★ RED: DEBTS 有逾期未销的债` ⇒ **红仍在，未宣布转绿**
+```
+
+### 四、人裁（Pi 不代拍）
+```
+5 条逾期未销债（真红）：d-phyt-pre-gap-a · d-phyt-pre-gap-b · d-phyt-pre-gap-c ·
+  d-phyt-phantom-complete · d-phyt-3c-scope（均日落 2026-11-08）
+三选一由 gardener 裁：① 真解 ② 延期（= 新日落 + 理由 + 授权人，不是把 2026-11-08 换个日期） ③ 接受红停。
+裁定前保持红停、不销账、不改写成「门后项」。
+```
+
+### 五、体检读数（本节的生效清单 = 第一份可判对象）
+```
+- 生效：helix-window/server.js sha16=d478677e184481aa
+- 生效：helix-window/vendor/marked.min.js sha16=15fabce5b65898b3
+- 生效：helix-window/vendor/highlight.min.js sha16=837a6fa5b0c736b5
+- 生效：helix-window/vendor/github-dark.min.css sha16=9f208d022102b1d0
+- 生效：helix-window/vendor/LICENSES.md sha16=473a3399cd0c70b3
+- 生效：helix-mind/tools/check-queue-sha.py sha16=17a3525b7de2ebf2
+（历史节按**时点快照**读：9704 的 server.js 5944 B 与 9824 的 10899 B 属正常演进，不判 stale、不回改补标）
+```
+
+### 六、最小字段
+```
+裁定：见二/三 · 理由：见一（口径）与 phyt 成文锚点 · 边界：见七 · 失效条件：
+  `helix-window/server.js`、任一 vendored 组件、`LICENSES.md`、`check-queue-sha.py` 实读 sha
+  与本「五」记录不符 ⇒ 本体检口径作废重裁（重裁只追加新节）。
+背书人 = gardener · 生效区间 = 自本节起 · 授权人 = gardener · 时间 = 2026-11-23 ·
+commit = `见本节补记行` · 四仓 dirty 见末
+```
+
+### 七、边界
+```
+未改 phyt 的 VISION_self.md / DNA.md / SPEC.md / RNA.md / VISION.md；未给 phyt 加判据/加功能/当考官/LLM 自评；
+未建第二真相台账地图；未因 phyt 红停窗线；未碰流式四区划分（归 C 轴另程）；未碰 B 轴缺陷一；未解 M7；
+未接 AG-UI；未碰 FlowModus；未动 web/ 生产资产；未改 CORS/配置；未重启；未新增端口·代理·入口；
+落盘未写外部名号；未写「已交付/已确认/已对齐官方」
+phyt-DNA：`DEBTS.md` 已改（授权内补字段）· `ledger/hits-2026.jsonl` 由 ci-local 自记账（4779→4780 行）**具名不提交**
+```
+
+**末句**：phyt 红仍待 gardener 裁定；M7 不因此解冻；B 轴缺陷一仍 `CONVERGENCE:115` 登记待裁决。
