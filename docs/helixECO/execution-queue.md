@@ -9818,3 +9818,99 @@ health 11/11 ok
 
 **末句**：本共识失效条件见「五」；M7 不因此解冻；B 轴缺陷一仍 `CONVERGENCE:115` 登记待裁决，
 依 `PROTECTION.md:244` 由 gardener 另一次显式指令裁定，不自动续跑、不无限停等。
+
+---
+
+## C 轴第二程 · 交互基元升级
+
+**节名**：C 轴第二程 · 交互基元升级 · **本节起始行 = 9824**（尾部 append；7420 / 9008 / 9066 / 9145 / 9229 / 9308 / 9409 / 9493 / 9598 / 9704 十节不回改、不覆盖）
+**授权人 / 时间**：gardener 点火令（最终版）· 2026-11-21
+
+### 一、对旧节的补充（追加新节、不回改）
+```
+对「C 轴第一程 · 外部边界共识」(9704) 失效条件的补充，**自本节起生效**：
+  `server.js`、任一 vendored 组件、`LICENSES.md` 实读 sha 与本节记录不符 ⇒ 该共识作废重裁。
+通则（写死）：今后一切对旧节的补充一律**追加新节**并标「自本节起生效」；append-only 不因「顺手补一句」而废。
+```
+
+### 二、形态与许可义务（省力但不越界）
+```
+长在 C 轴第一程的 `server.js` 上：同一文件 / 同一 HELIX_WINDOW_PORT / 同一个面；未新增端口·代理·入口。
+vendored 全部为**预构建运行时资产**（不 npm、不打包、不容器、不入 Cellrix、不写 include_str!；ADR-0022 §1.4 三条同守）：
+  vendor/marked.min.js         35479 B  sha16=15fabce5b65898b3   MIT（保留上游版权头）
+  vendor/highlight.min.js     121727 B  sha16=837a6fa5b0c736b5   BSD-3-Clause（保留上游版权头）
+  vendor/github-dark.min.css    1315 B  sha16=9f208d022102b1d0   BSD-3-Clause
+  vendor/LICENSES.md            1258 B  sha16=473a3399cd0c70b3   本地许可义务载体（点名组件/版本/上游/许可）
+  vendor/LICENSE.marked.txt     2942 B  sha16=8e3a3f82f59a6095   上游许可原文
+  vendor/LICENSE.highlight.txt  1514 B  sha16=6c081431591d9df6   上游许可原文
+  server.js                    10899 B  sha16=d478677e184481aa
+接待台目录**不在任何 git 仓**（`git rev-parse --is-inside-work-tree` 实测不是仓库）
+  ⇒ **sha + LICENSES.md 是唯一可追溯凭证**（本层原因已具名）。
+分界写死：LICENSES.md 属本地许可义务载体、非成文正文；许可文件里必须点名组件；
+  本节描述它时只记 sha、不写外部名号（硬禁令 6 / ECOSYSTEM:49-51），任何人不得拿「正文不点名」删除或匿名化该文件。
+ADR-0022 §1.4 第 1 条按本机逐字定性（就地处理）：原文是**理由陈述**（"不复制任何代码 ⇒ 不触发许可义务；
+  但仍留来源说明"）⇒ 本程以「vendored + 保留版权头 + LICENSES.md + 源说明」接住该后果，
+  记一次覆盖：理由=持有人要省力借零件 / 范围=仅交互基元层 / 验证=LICENSES.md 与各 sha。
+多 period 切换：**列表与每次切换一律上游重取**，前端不留列表/行缓存；本链**无「列出 period」端点**
+  ⇒ 以显式 period_id 输入为准（就地具名，不新增端点、不新增面）。
+```
+
+### 三、交付判据读数（可红可绿；判定工具已具名）
+```
+判定工具：`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` **158.0.8127.37**（--headless=new --dump-dom）
+步骤 0 复测（形状未变）：SSE = `data:{"delta":…}` ×N + `data:{"done":true,…}`；
+  /v1/events?period_id= 顶层键 `configured/events/missing`，单条键 `data/job_id/period_id/seq/time/type`
+
+断言 A 流式不回退
+  A1 逐行到达：**23 帧 · 首帧 3.308s · 末帧 3.848s · 时间戳去重 23 ⇒ 是**
+  A2 delta 累积 == terminal.reply：**否（红）**
+     实测：delta 尾部 = `"tool":"calc","args":{"expression":"19*19"},"expect":"ok"}]}`；terminal.reply = `361`
+     成因（具名）：`/v1/chat` 的 SSE delta 流是**规划段**（含 calls JSON），**答复只在 terminal 出现**
+     ⇒ 判据 A2 按原措辞不成立；本程据此把 UI 拆成「规划流」与「最终答复」两块（如实呈现，不合并冒充）
+断言 B 渲染不丢语义（headless dump-dom /selftest）
+  rc=0 · 1453 B · 关键串命中：标题 2 / 粗体 2 / `const x = 42` 1 / 项目甲 2 / 项目乙 2
+  · `hljs-` span 2 · `<pre>` 1 · `<strong>` 1 ⇒ **是**
+断言 C 折叠不改行数（同一 fixture 两次 dump）
+  默认态：`<details` 4 · data-rows 4 · open 标记 0；展开态：`<details` 4 · data-rows 4 · open 标记 4 ⇒ **行数不变，是**
+断言 D 无残留（拆两半）
+  静态：页面 `localStorage.` 调用 0 · `indexedDB.` 调用 0（源码仅一处注释提及）⇒ 是
+  运行时：periodA `run-3a4de404ab1b3b40-p006b03506600…` events=8 = tape 8（sha16=341244e31df54cb0）
+          periodB `run-0dc31f18bbb2b09a-p006b0350b6000046` events=14 = tape 14（sha16=ae6b5fa8a1d67c70）
+          两 period 载荷不同 ⇒ 回放来自 /v1/events 而非本地缓存 ⇒ 是
+          （自纠：首次取两组 period 恰好都是 14 行，导致「行数不同」判否；改为按行数显式挑两组后成立
+            —— 这是我的取数选样错误，不是链缺陷）
+断言 E 缺字段仍标看不到（静态）
+  五行各命中 1（工具入参 / 为什么选这个模型 / 这一轮原文 / Tuck 链 / 审批·Stop）· 假工具参数卡片 0 ⇒ 是
+
+当轮真跑：`period_id=run-0dc31f18bbb2b09a-p006b0350b6000046`
+  tape 行数读取命令 `wc -l < /tmp/t2round/events/<period>.events.jsonl` ⇒ **14**
+  tape 文件 sha16 = **1344663003cd0f72**
+窗内可见：规划流逐字出现 → 最终答复单独成块 → 时间线可折叠（`details`）→ 按 period 回放
+```
+
+### 四、落盘措辞边界（防「断言全绿冒充手感达标」）
+```
+本程只交上述断言读数；「好不好用 / 顺不顺手」属持有人评价。
+不写「体验达标 / 顺手达标 / 已交付」；不拿断言全绿冒充手感达标。
+B 类「看不到」五项仍按窗顶界碑逐条单裁（工具入参 / 选模型依据 / 原文 / Tuck 链 / 审批·Stop）。
+```
+
+### 五、停法与消耗
+```
+增益≠0（A 类交互基元落地 + 许可义务闭合 + 一条真实红 A2 具名）· 六项红逐条为否
+（A2 属**已具名的链侧事实**：delta=规划段，不触发红停、不上移、不销账）
+字段枚举完且无新缺口 ⇒ **自停：非红停 · 信息收敛**；不换轮数阈值、不自行唤醒、不标 complete。
+累计消耗（goal snapshot 量级）：约 1.72M tokens / 约 2h20m（快照量级，不精确到秒）。
+```
+
+### 六、边界与维持
+```
+未碰 FlowModus（F2:51 / F4:53）· 未改引擎 · 未改 CORS · 未改配置 · 未重启内核（50061 pid 未动）·
+未新增第二个端口·代理·入口 · 未动 web/ 生产资产（ADR-0021:3/:9）· 未写 include_str! ·
+未解 F1·M7 四条件 · 未销 B2·HITL·L2「签」·validator·章 B 余项 · 未碰 B 轴缺陷一 ·
+落盘正文未写外部名号 · 未写「已交付/已确认/已对齐官方」· 未写 DEBTS 新行 · 十节未回改
+四仓 dirty=0（anaphase-helix 0 · Cellrix 0 · helix-mind 0 · Tuck 0）· `Cellrix docs/observations` rc=0 · health 11/11
+```
+
+**末句**：B 类「看不到」各项仍按窗顶界碑逐条单裁，不自动续跑；M7 不因此解冻；
+B 轴缺陷一仍 `CONVERGENCE:115` 登记待裁决，依 `PROTECTION.md:244` 另一次显式指令裁定。
