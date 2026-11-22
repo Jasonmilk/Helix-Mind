@@ -9592,3 +9592,108 @@ compute_hash 九字段（audit.rs，sha16=890c311eb4c8499a）：
 字段枚举完且无新缺口 ⇒ **自停：非红停 · 信息收敛**；不换轮数阈值、不自行唤醒、不标 complete。
 累计消耗（goal snapshot 量级）：约 1.58M tokens / 约 1h50m。
 ```
+
+---
+
+## B 轴第五程 · 审计边界三格
+
+**节名**：B 轴第五程 · 审计边界三格 · **本节起始行 = 9598**（尾部 append；7420 / 9008 / 9066 / 9145 / 9229 / 9308 / 9409 / 9493 八节不回改、不覆盖）
+**授权**：gardener 最终点火令（只读）· 不重立 goal、不改旧 objective、不 resume、不标 complete
+**目标**：把「若裁 A」前必须量齐的三格钉成确定状态；不修 A、不裁入链/不入链、不转绿、不建窗、不补 23 类
+
+### 格一 append 序列化边界（实现层已坐实 + 补 sha）
+```
+实现：`Tuck/crates/tuck-audit/src/lib.rs:115-122`
+  digest() = sha256( serde_json::to_vec(&(self.seq, &self.ts, &self.payload, &self.prev_hash)) )
+⇒ 序列化对象 **= 完整 payload** ✓；与 :19-20 契约注释（canonical, whitespace-free, 固定字段序）**一致** ⇒ 不判文档错
+canonical 归属：**自写编码器** —— 全文件 `JCS` / `8785` 类规范 **0 命中**（仅 RFC 3339 时间戳提到 RFC）
+⇒ 缺口具名：跨实现验证器若按**任何具名归一化规范**处理，不会与 `serde_json` 输出逐字节相同；
+   风险只具名、不上机制，落盘不写外部规范名（硬禁令 6 / ECOSYSTEM:49-51 不点名）
+sha16：lib.rs = **b6aed8bc3c9011fd**（30641 B）· Cargo.toml = **0f85ecbb64f9d319**（566 B）
+```
+
+### 格二 model 值来源（请求/响应两列，不写「拿不到 ⇒ UNMEASURABLE」）
+```
+请求侧（转发前）：gov.rs **:159 / :179 / :228** —— 注释「before anything leaves」在 :226 同段
+  ⇒ 此刻上游尚无响应 ⇒ **model 结构上不可达**
+响应侧（上游之后）：gov.rs **:324（流式）· :360（非流式）· :369（错误分支）**
+  `resp_body` 在 :366 作用域内 ⇒ **具备取值条件，但现有 payload 未取**
+现有 payload 键（两侧）= status / demap_miss / session / caller / (error) —— **均无 model**，与 CONVERGENCE:111 键集对上
+record( 调用点实测 = **6 处**（159/179/228 request · 324/360/369 response）；授权令写 7 处（另 :103）
+  ⇒ 就地具名差异（:103 处无 record( 命中），不判错
+运行时探针（读只读，直询上游推理端 8080）：rc=0 · 顶层 keys = choices/created/id/**model**/object/
+  system_fingerprint/timings/usage · **model="coder-3b"** ⇒ **上游确实报 model**
+  ⚠ 探针对象 = 上游端，不是 Tuck 的 resp_body；Tuck 侧 resp_body 等价性 **UNMEASURABLE**（无运行时产物）
+⇒ 若裁 A，落点 = **响应侧三条 record（324/360/369）**，不是请求侧 :228；
+  traceparent(:97) / payload.trace_id(:104) 只生产 trace_id，**不得据此当 model 已具名**
+```
+
+### 格三 威胁模型分档（三列；不写「需另建锚定」，机制已在 crate 内）
+```
+机制现状：Cargo.toml `default = []` / `anchor = ["dep:ed25519-dalek", "dep:base64"]`（sha16=0f85ecbb64f9d319）
+lib.rs:154-159 原文：anchor feature 每 N 条把链头签名写入链内 anchor 记录；
+  「A full-file replacement … passes verify_chain but **fails verify_anchors** — that is the value of an external witness」
+现有回归：lib.rs:688 tamper_edit_payload · :712 tamper_delete_row · :734 tamper_reorder · **:821 full_chain_replacement_fails_anchors**
+K24 坑（lib.rs:162-165）：Arc 与 anchor 同被 cfg 门住 ⇒ 关闭时 E0425；`--workspace --all-features` 看不见，
+  只有 `-p tuck-audit --all-features` 才露，已进 verify.sh ⇒ **「启用 anchor」不是零成本开关**
+```
+| 档 | 现有链覆盖什么 | anchor 是否启用 | 缺口 / 门 |
+|---|---|---|---|
+| ① 内部意外 · 无写权限外部人 | 改 payload(:688)/删行(:712)/重排(:734) 均可检出 | 默认 `[]` 未启用 | 整段替换链可自洽通过 `verify_chain`（:158）⇒ 只有 anchor 能拒；本档主要靠文件权限 |
+| ② 有写权限运营者 | 同上 + anchor 启用后可拒「全文件重写」（:821） | 未启用（默认） | 需显式启用 feature 且有签名器注入；受 K24 门影响（逐 crate 编译才露） |
+| ③ 跨组织不可信审计方 | 纯链 + 本机锚定**只到"能发现重写"** | 未启用 | **外部见证缺失**：无第三方 head 发布/时间戳 ⇒ 双方各自持链时无法互证；本程只列，不裁、不上 Merkle、不默认全量签名 |
+```
+（每档只列「覆盖 / 是否启用 / 缺口」，不裁、不新增机制）
+
+### 沿用上程（不重复取值）
+```
+/v1/audit **http=404 · 0 B**（端点不存在）· /v1/trace `configured:false`（opt-in 默认关，未配、未重启）·
+`.helix/tuck/` 运行时产物 **无**（`Tuck/config.toml:9` 指向 `…/.helix/tuck/audit.log`，文件不存在）⇒ UNMEASURABLE
+三份「Tuck审计契约」研究文档（授权令给 9623 B / 29104 B / 41395 B）在**本机 0 命中** ⇒ 具名 UNMEASURABLE
+  （不写成"生态不存在"，不与沙盒副本互相印证；格一/格三承重已改取代码事实）
+```
+
+### ② 作数产物
+```
+(a) 三格状态表
+  格一 序列化边界      = **已具名**（实现层 sha b6aed8bc3c9011fd；canonical 自写、未指名规范）
+  格二 model 值来源    = **已具名到位置**（请求侧不可达 / 响应侧三条 record 具备条件且上游实测报 model）·
+                         仍 UNMEASURABLE：Tuck resp_body 是否等价（无产物）
+  格三 威胁模型        = **已具名三档**（机制已有 anchor feature，默认关；K24 门具名）· 需另裁：是否启用
+  不对称（一句结论）：**入链 = 现有结构零改动（整包 payload 已进 hash，新字段自动入防篡改范围）**；
+     **只记录不入链 = 须改 hash 契约 + 版本位 + 迁移判据【不可逆】**
+  A 若立项：落点 = **响应侧三条 record（324/360/369）+ model 值来源具名**，不是请求侧 :228
+(b) 一条只读读数（命令 /tmp/audit3.py，红因分开计数）
+  counts: contract_docs_missing=3 · tuck_runtime_artifact_missing=1 · canonical_not_named=1 ·
+          anchor_default_off=1 · pending=6 · **rc=1（红=作数读数，不是失败）**
+  不写「M6 已收尾 / 已转绿」；缺陷一仍 `CONVERGENCE:115` 登记待裁决
+```
+
+### ③ 硬边界遵守
+```
+零代码·零配置·零重启 · 未碰 FlowModus 仓（F2:51 / F4:53）· 未新增端口·代理·入口 · 未改 CORS ·
+未改历史数据行 · 未改 compute_hash · 未加 hash_version · **未启用 anchor** · 未解 F1·M7 四条件 ·
+`git ls-files web` 仍 0 · 未写 include_str! · 未销 B2·HITL·L2「签」·validator·章 B 余项 ·
+未预先做选路依据具名 · 落盘未写外部名号 · 未写「已交付·已确认·已对齐官方」· 未写 DEBTS 新行 ·
+八节未回改 · 四仓 dirty=0
+```
+
+### ④ 就地处理（本令最终版）
+```
+对象错位/缺失已就地具名三处：① 三份契约文档本机缺失（改取代码事实）；② record( 调用点 6 vs 卡写 7；
+③ 上游探针对象 = 8080 而非 Tuck resp_body（等价性 UNMEASURABLE）。均不回桌、不要求补裁。
+```
+
+### ⑤ 停法
+```
+增益≠0（三格从"待量"变为"已量"：格一补 sha、格二请求/响应两列 + 上游实测、格三补 anchor 现状与 K24 门）·
+六项红逐条为否（读数与已落盘判断一致；无 B1/B2 新撞；无门后项新具名；ROUND_DIR 未跑；l2_casefile/D1·D2 未跑；phyt 无新 hit）
+字段枚举完且无新缺口 ⇒ **自停：非红停 · 信息收敛**；不换轮数阈值、不自行唤醒、不标 complete。
+累计消耗（goal snapshot 量级）：约 1.63M tokens / 约 2h00m。
+```
+
+### ⑥ 末句
+```
+三格齐备后，依 `phyt docs/PROTECTION.md`（26824 B · sha16=ffc6ab0a60f89a2c）:244「不可逆决策不宜无限等待」，
+由 gardener 作**一次正式裁定**（A 立项 / B 继续并给理由）；本程不自动续跑、不无限停等。
+```
