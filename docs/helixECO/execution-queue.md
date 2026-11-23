@@ -10331,3 +10331,60 @@ queue 末节 = 10033「解 phyt push 通道 · 红归信号位」，**未含**�
 ```
 
 **末句**：phyt 红仍待 gardener 裁定（**4 条真缺口**三选一，不催；3c-scope 机械维持、不动作）；M7 不因此解冻；B 轴缺陷一仍 `CONVERGENCE:115` 登记待裁决。
+
+---
+
+## 自伤红定位 · phyt 3b 悬空 gate_id（我制造的那条）
+
+**节名**：自伤红定位 · phyt 3b 悬空 gate_id · **本节起始行 = 10337**（尾部 append；既有各节不回改）
+**性质**：我**自己**在 2026-11-23 用「反样本」探测时写坏了一行真账本 ⇒ 触发 phyt 硬门 `hard:true` ⇒ 该仓 push 通道再闭。
+
+### 一、根因（三层，逐层给行号）
+```
+① 探针会写账（我未先查）：`phyt-DNA/tools/validate.sh:307-309` —— `--probe` 会把结果写成一行
+   `{"source":"probe","gate_id":<被探测的 id>,"kind":"probe","note":…}` 追加进**真账本** `ledger/hits-2026.jsonl`。
+② 我用假门 id 做反样本：`--probe ADR-29991231-no-such-gate` ⇒ 写入**第 5010 行**
+   `{"ts":"2026-11-23T17:43:46+0800","gate_id":"ADR-29991231-no-such-gate","verdict":"block","source":"probe",…}`
+③ 该行撞硬门：`decisions/ADR-20261012-ledger-new-lines-parseable-and-referenced.md`
+   （`hard: true` · `applies-to: ["ledger/hits-*.jsonl"]`）判据「新增行的 gate_id 必须有真源」
+   ⇒ probe 复现原文：`基线（未注入）: 红 → 新增行不合规 1 处：第 5010 行 gate_id=ADR-29991231-no-such-gate 无真源`
+   ⇒ `ci-local` **3b · 基线红必须作数 `★ RED (1 条闸门基线红 · 0 条闸门腐化)`**
+```
+
+### 二、后果（比我上一版路线写的更重）
+```
+phyt **全量** `ci-local` 手工跑（`bash tools/ci-local.sh`）：**rc=1 · elapsed 169s · 23 行输出**
+  红两条：
+    3b · 基线红必须作数  ★ RED (1 条闸门基线红)   ← 本节主题（我制造的）
+    3c · DEBTS 逾期未销 5 条（既有）
+  OK 的部分（如实报，不夸大）：3 心跳 OK（41 个 ADR · probe-all 一次）· 5a hook_test **9 passed** ·
+    5 spec-lint OK · 4b unproven（待夹具）· 5b OK
+⇒ 我 hook 的 ratchet 基线只覆盖 3c 的 5 个 id，**不覆盖 3b** ⇒ `pre-push` 会以「其他红步骤」阻断推送
+⇒ 现行 phyt 推路径只能：**先手工跑全量（让慢层真跑过）+ `--no-verify` + 三件留痕**
+```
+★ 为什么不能"就地删那行"：删=改历史数据行（硬禁令 3 / append-only），且属 ② 升级 ⇒ **不擅自做**。
+
+### 三、我已改的做法（① 自治，已实证）
+```
+安全反样本 = 账本外置：`PHYT_LEDGER=/tmp/<dir> bash tools/validate.sh --probe <id>`
+  实证（本轮跑）：假门 `ADR-29991231-no-such-gate` ⇒ **rc=2**（拓扑失配）· 真账本行数 **5039 未变**（写入落 /tmp）
+  真门 `ADR-20261009-readme-must-be-a-truthful-entry` 同法 ⇒ **rc=0**（反例守住）· 真账本仍 5039
+⇒ 写死：**今后一切 probe 类反样本必须 `PHYT_LEDGER=/tmp/...`**；真账本只由 ci-local 正式运行写。
+```
+
+### 四、三选一（不擅自裁，交 gardener）
+```
+(a) 授权删除第 5010 行（越 append-only，但它是**今日我制造的伪记录**，删除时留痕说明：谁删/为何/原文备份到 /tmp）
+(b) 授权把 3b 这条并入 `pre-push` 的 ratchet 基线（改 hook ⇒ ② 升级）：与 5 条 DEBTS 并列，
+    效果 = 推通道恢复，且 3b 仍随回执上移
+(c) 保持现状：phyt 推送继续「手工全量 + --no-verify + 三件留痕」，直到你裁
+若只想先止血、不裁结构：选 (c) 零成本；想让通道常开：选 (a) 或 (b)（都需你一句授权）。
+```
+
+### 五、边界
+```
+未删/未改任何账本行；未改 hook；未改 phyt 判据；未改权威卷；未推送；未点火；
+本节只定位 + 记录已改的探针做法；phyt `dirty=1`（ledger 自记账，具名不提交）维持。
+```
+
+**末句**：phyt 红仍待 gardener 裁定（4 条真缺口三选一 + `d-phyt-3c-scope` 维持 + **本条 3b 三选一**）；M7 不因此解冻；B 轴缺陷一仍 `CONVERGENCE:115` 登记待裁决。
