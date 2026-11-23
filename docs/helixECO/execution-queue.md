@@ -10521,3 +10521,66 @@ P3 = **I5 是工程立项**（Cellrix 侧 slice 原语 + 正反样本；CONVERGE
 ```
 
 **末句**：两拍仍待 gardener 裁定（① phyt 4 条真缺口，不催；② B 轴缺陷一 A/B）；5010 行 (a)/(b) 需显式授权、(c) 为默认；M7 不因此解冻；B 轴缺陷一仍 `CONVERGENCE:115`。
+
+---
+
+## 电表 v1 · 事后会计可量（收窄我上一轮「本链无计量入口」）
+
+**节名**：电表 v1 · 事后会计可量 · **本节起始行 = 10527**（尾部 append；既有各节不回改）
+**授权 = 持有人「同意推进」+ 本条**；★ 本件属 **① 自治**（只读 tape、零改行为面、可逆、三态有 rc 判据、读数在主体外）。
+
+### 一、先自纠一句（判断变化）
+```
+我上一轮写「本链 /v1/chat + tape **无计量入口** ⇒ 每程消耗一律 UNMEASURABLE」——**过宽**。
+本机实读：`assistant/usage` 行本来就带 `prompt_tokens / completion_tokens / cached_tokens / model`，
+⇒ **事后会计（post-hoc accounting）是可量的**；缺的只是**事前拦截**（无 live 计量端点 / 无超帽前阻断）。
+正确表述：**「无事前拦截，但事后可会计」**；仍不可量的只剩「上游未报 usage 的那些轮」（见下）。
+```
+
+### 二、工具落点与判据
+```
+`helix-mind/tools/meter_tape.py` · 4345 B · sha16=**8e9a7e97c82c5122**
+判据（三态，绝不合并）：
+  measured      = 有 usage 行 ⇒ 求和（prompt+completion；cached 单列）
+  rail (真 0)   = `assistant/reply.bypass=="rail"` 且无 usage 行 ⇒ **真的 0**（该轮没有 LLM 调用）
+  UNMEASURABLE  = 既非 rail 又无 usage 行 ⇒ **计入、绝不当 0**
+exit：0 = 已会计 · 1 = 超 `--cap` · 4 = 存在 UNMEASURABLE（或目录为空）
+读数在主体外：脚本只读历史 tape、不注入上下文、不改链；硬帽是 CLI 参数，不进 prompt。
+```
+
+### 三、四态夹具（本机实跑，rc 逐个单取——上一轮我用 `| head` 读 rc 得到假 0，已按纪律重取）
+```
+/tmp/mfix/measured（1 条 usage 120 tokens）⇒ rc=**0** · measured 1 · UNMEASURABLE 0
+/tmp/mfix/rail（bypass=rail，无 usage）    ⇒ rc=**0** · rail(真 0) 1
+/tmp/mfix/unmeas（无 usage 且非 rail）      ⇒ rc=**4** · UNMEASURABLE 1
+/tmp/mfix/cap（1000 tokens）--cap 500        ⇒ rc=**1** · 「RED 超帽」
+/tmp/mfix/cap --cap 2000                     ⇒ rc=**0** · ok
+```
+
+### 四、全语料读数（本机实跑）
+```
+tapes 320 份（目录内实读）· measured **257** · rail(真 0) **59** · UNMEASURABLE **4**
+合计 tokens = **266182**（prompt **249699** + completion **16483** · cached **181228**）
+单轮最大（top3）：run-7efc6c9e… 3257 · run-c07e37c0… 2858 · run-7f0fa456… 2683（均 coder-3b · calls=2）
+4 份 UNMEASURABLE 的成因（已核 tape 类型）：8 行、`model=coder-3b`、`bypass=None`、**无 usage 行**
+  ⇒ 上游未报 usage，`run_cycle/usage.rs` 的设计是「**未报就不写行**（absent stays absent）」⇒ 该轮消耗不可量
+  ⇒ 这是**诚实 UNMEASURABLE**，不是漏写；电表按三态记账，不把它压成 0。
+```
+
+### 五、仍待定（不擅自补，属 ②/方向层）
+```
+① **载体未定**：偏好数据（转录层）写到哪里？候选 `anaphase-helix/config.toml`(gitignored) / `~/.helix/`(仓外) /
+   FlowModus `registry/`（但 F2 ⛔ + M5 已降级为**离线建议工具** ⇒ 写它会把离线件拉回路径，冲突）。
+② **线 6 授权原文未具名**：本机 `PROTECTION:432`「授权要具名（谁、何时、原文）」——
+   你给的是「同意推进」，可用于**启动电表**（本节已做），但**不足以放开偏好写入**；
+   要放偏好层，需一句明确授权原文落盘。
+③ **硬帽阈值未定**：`--cap` 目前只能手工给；默认值/分档（按轮/按日/按月）未裁 ⇒ 不发明默认值。
+```
+
+### 六、边界
+```
+未改链行为面；未写偏好/权重；未碰 FlowModus；未改任何判据；未销红；未改日期；
+本节只加一台只读电表 + 三态夹具；phyt `dirty=1` 维持（ledger 自记账）。
+```
+
+**末句**：phyt 4 条真缺口与 B 轴缺陷一 A/B 仍待 gardener 裁定（不催）；5010 行 (a)/(b) 需显式授权、(c) 默认；M7 不因此解冻；B 轴缺陷一仍 `CONVERGENCE:115`；**偏好层放权（线 6）等一句具名授权 + 载体选择**。
