@@ -11738,3 +11738,49 @@ period=`run-c9afc4275b254238-p006b05eec9000008` · store=/tmp/t2round/events（2
 交付：Cellrix `2b1ffb8`；12/12 rc=0；本节。
 停法：未撞红 ⇒ 按序进入 P0d 格（P0d 的棘轮归零另算，不以 P0b 绿替代）。
 ```
+
+---
+
+## P0d 单一性（执行序第六格）· **判据红**：13 多写者 / 130 未归零 / 六旁路四条敞开
+
+**节名**：P0d 读数（红，停此格）· **本节起始行 = 11744**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）· **撞红，按停法停在本格**
+
+### 一、判据（成文 `对比V12.md:496-534`）与读数
+```
+命令：`node Cellrix/tools/p0d_writer_map_check.js`
+  字段 **37** · **唯一写入者 13** · **多写入者 13** · **无写入点 11**
+  绕过计数器 **130**（本格退出条件要求 **0**）
+多写入者（前 10，全量见 `--list`）：
+  SemanticSnapshot.status ← ui/widgets/anaphase_widget.rs, security_notification.rs, tentacle_widget.rs,
+                             protocol/anaphase.rs, tentacle.rs, transport/anaphase_client.rs, tentacle_client.rs
+  SemanticNode.id        ← ui/app/handler.rs, renderer.rs, tui/widgets/action_button.rs, ui/widgets/tentacle_widget.rs,
+                             protocol/anaphase.rs, tentacle.rs, transport/{anaphase,helix_mind,tentacle}_client.rs
+  SemanticSnapshot.semantic_tree ← ui/renderer.rs, protocol/parser.rs
+  AppState.{active_view,active_slot_nodes,current_agent,input_action,chat_focused,error} ← handler.rs + app.rs(+state.rs)
+六条旁路现状（只报不改）：
+  ① 字段公开：AppState **20/20 pub** ⇒ **敞开**
+  ② 反序列化直构造：`SemanticSnapshot` derive `Deserialize`（`snapshot.rs` 4 处）⇒ **敞开**
+  ③ 内部可变性：`ui/src` 里 `Cell`/`RefCell` 命中 **0** ⇒ **已封**
+  ④ 写入 API 模块可见性：唯一 `impl AppState` 在 `state.rs`，但写入点散在 13 个文件 ⇒ **敞开**
+  ⑤ test 构造器：`state.rs` 只有 1 个 `new()`，无受约束 fixture ⇒ **敞开**
+  ⑥ 依赖写入 API：同上（写入点不在单一模块）⇒ **敞开**
+⇒ **P0d 判据红**（①②④⑤⑥ 未封 + 棘轮 130 ≠ 0）。
+```
+
+### 二、为什么停在这里（按停法，不自行跨格）
+```
+把 37 个字段改成 newtype 写入者、把字段私有化、让反序列化走意图入口、再改写 **130** 个直写点 ——
+这是**对 UI 状态树的重构**（`ui/src` 13 个文件），不是补一个判据。它可以做，但一旦做错，
+P0.5 的两个 renderer 与 P1 的进程轴都会建在动过的地基上。
+⇒ 按「真撞红即停并具名」：本节只交读数与具名缺口，**不改写**；等你裁定下一步形态（见末段三选）。
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：新增 1 个检查脚本；未改任何 Rust 源码、未动 web/、未改 VISION/DNA/ADR、未改 CI-144 词汇、未新增面。
+交付：Cellrix `4f3647b`（脚本）；本节；读数 13/13/11 + 130 + 六旁路 1/6 已封。
+停法：**撞红即停**（P0d 归零不可能在本格内"顺手"完成）；不进入 P0.5/P1/P2/P3。
+三选（等你一句，不催）：(a) 现在做全量重构（37 字段 newtype + 130 点改写）；(b) 分批：先封 `SemanticSnapshot`
+  六字段 + 其旁路（②④），棘轮同步下调；(c) 先降格为"登记缺口 + 只封反序列化一条"，把 P0d 留到 P1 之后。
+```
