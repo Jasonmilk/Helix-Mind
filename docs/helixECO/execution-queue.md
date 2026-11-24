@@ -11985,3 +11985,50 @@ CI：`.github/workflows/ci.yml` 增一步（按名跑 `p3_bridge_pty`）
   会让 P0.5 与 P2 的新地基重新搬家 ⇒ 按原停法**挂明账、不自行重构、不回桌问**。
 下一步（不自行唤醒）：等你 `/goal-resume` 或新指令；或按 `PROTECTION:425` 另开一次具名授权做那两格。
 ```
+
+---
+
+## P0d B 批（进行中）· AppState 私有化：B1 五字段 + B2a 三字段，棘轮 130→127
+
+**节名**：P0d B 批进度 · **本节起始行 = 11991**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv66zld-uyliwv`）· 分批交付，每批留绿
+
+### 一、已完成的两小批（Cellrix，各自单提交）
+```
+B1（`857fce7`）：`cockpit` · `slot_nodes` · `active_slot_nodes` · `manual_slot_overrides` · `active_agents`
+  ⇒ 字段私有 + getter；写入收敛到 `ui/src/app/writers.rs`（set / insert / push / retain）
+B2a（`9dab86e`）：`is_zen_mode` · `mouse_capture` · `pending_chat`
+  ⇒ 私有 + getter；三个翻转点改 `writers::set_*`
+读数：workspace **349 passed · rc=0**（两批后各跑一次）
+     AppState 多写入者 **9 → 8** · 唯一写入者 9 → 7（写点搬进 writers.rs，不是消失）
+     棘轮直写点 **130 → 127**（三个赋值变写入者调用）· baseline 重冻 127
+反样本（两批各一条，皆可红）：
+  · 在 handler.rs 加 `state.cockpit = None;` ⇒ 多写入者回到 9、`p0d_writer_map_check` **rc=1**
+  · 在 ui/src 放 `state.pending_chat = true;` 探针 ⇒ `p0c_ratchet_check` **rc=1**
+```
+
+### 二、一次被回退的尝试（具名，不藏）
+```
+试过用正则一次性迁移剩余 12 个字段（`state.X = v;` → `writers::set_X(state, v)`）：
+  它把**跨行语句**与**比较表达式**一起改写（`if state.active_view == …` 变成赋值），一口气 99 个错误。
+处置：`git checkout -- ui/src` 回退到 B1 绿点（回退后 349 passed），改用**逐文件手改**。
+教训（已进纪律）：**结构化改写的单位是语句，不是行**；正则跨行改写必撕语句。
+旁证（探针盲区）：扫描器的接收者白名单是 `self/state/app/renderer/st`，用 `s.field = v` 的直写**扫不出来**
+  ⇒ 这一条写在此处，作为该仪器的**已知盲区**，不当作"没有这种写法"。
+```
+
+### 三、剩余（本格未闭合）
+```
+未私有化 12 字段（含嵌套可变）：`snapshot` · `active_view` · `error` · `current_agent` · `last_heartbeat` ·
+  `last_response` · `input_action` · `chat_focused` · `input_buffer` · `chat_history` · `focus_manager` · `prove_track`
+`focus_manager` / `prove_track` / `input_buffer` / `chat_history` 是**方法式修改**（`.push/.insert/.focus_next`），
+  必须给写入者方法而非"getter + 就地改"。
+P0d 判据仍红：AppState 多写入者 8 > 0 · 棘轮 127 > 0 ⇒ **不写「P0d 已闭合」**。
+```
+
+### 四、边界 / 交付 / 停法
+```
+边界：只改 `ui/src/app/{state.rs,writers.rs,..}` 与调用点；未动 web/、VISION/DNA/ADR、CI-144 词汇、phyt 账本。
+交付：Cellrix `857fce7` · `9dab86e`；本节。
+停法：未撞红（每批收尾都 349 passed）⇒ 继续下一小批（按原授权，不回头问形态）。
+```
