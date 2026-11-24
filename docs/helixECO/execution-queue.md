@@ -11313,3 +11313,76 @@ python3 tools/cellrix_logic_verify.py  ⇒ **rc=0**
 均**非新增需求 · 非今日开工 · 未授权 · 不点火**（`PROTECTION:432` 探讨不作凭据）。
 ```
 > 为何补：这是「窗 ≠ 体验本体」同族的**第二次**收窄。不补，下一次就会把「地基浇完」读成「体验已交付」。
+
+---
+
+## 三件只读读数 + ⑦ 覆盖 + 两处自纠（AG-UI 数字降级 · 七缺拆账）
+
+**节名**：三件只读读数 / ⑦ 覆盖 / 两处自纠 · **本节起始行 = 11319**（尾部 append；旧节不回改，按覆盖链读）
+**性质**：① 自治只读（未改代码/判据；未派活；未点火）
+
+### 一、覆盖第 ⑦ 条（AG-UI 数字一并降级）
+```
+台账上一节第 ⑦ 条写的「AG-UI = 16 项能力 / 5 类」**同样是二手**，与 GLM 的"16 事件类型"同罪 ⇒ **一并降级**。
+现行口径（依持有人本轮贴出的官方 Overview 逐字，我侧未联网复读）：
+  · 官方「Building blocks (today & upcoming)」列 **13 条**（Streaming chat … Custom events）；
+  · 全页**未给**"能力分类数"、**未给**"事件类型数" ⇒ 任何 N=16 的说法**无一手依据**；
+  · 官方那句可用作底座论据：「The protocol describes an **event stream rather than a rendering target** —
+    a terminal, a mobile app, or a chat platform can each act as a client.」
+  · 仍在：`Cellrix/tools/agui_conformance.js` 性质不变（自写最小校验器 + 官方 schema 冻结副本，非合规证明）。
+```
+
+### 二、自纠一：G1③ 不是 UNMEASURABLE（端点在 **anaphase** 侧，我搜错了仓）
+```
+上节（11178）我把 `/v1/refs`、`/v1/periods/tombstone` 判 0 命中 ⇒ 只因我只 grep 了 **Cellrix**。
+实际 `anaphase-helix/src/main.rs` 路由表 **19 条**，含 `/v1/refs`(:454, GET)、`/v1/periods/tombstone`(:440)、
+  `/v1/sessions`(:158)、`/v1/events`(:271)、`/v1/trace`(:122)、`/v1/bind/*`、`/v1/crystallize` 等。
+⇒ G1③ 更正为：**端点存在且在 anaphase 侧**；Cellrix 侧**客户端载体**随 `web/` 删除 ⇒
+  「形态可核、客户端不可核」。UNMEASURABLE 的范围收窄到"客户端"这一半。
+```
+
+### 三、自纠二：「七缺全在事实层」**过宽**——实测应拆 3 + 4
+```
+实测（本机，端点实调 + tape 字段）：
+【事实层真缺（3）】
+  · 工具入参：`tool/call` keys = `expect · index · tool` ⇒ **无 args**（225 行零例外仍成立）
+  · thinking：`assistant/think` keys = `text`，**槽位在、内容恒空**（此前 238/238 空）
+  · stop / 审批：`/v1/stop`、`/v1/approve`、`/v1/hitl` 命中 **0** ⇒ 无入口
+【数据已齐、只缺 UI（4）】
+  · 左栏历史：`GET /v1/sessions?limit=3` **实调有数据**（conversation_id · count · first_ts · last_ts · job_id · model）
+  · 状态栏：`turn/end` keys 含 `model · success · verdict · bypass · impasse`；`assistant/usage` 含
+    `prompt/completion/cached/reasoning_tokens` ⇒ 模型/用量/运行状态**都在 tape 里**
+  · 命令输出：`tool/result` keys = `duration_ms · index · ok · outcome · outcome_sha · tool` ⇒ 结果摘要**有**
+    （入参缺，故"卡片"仍不完整；outcome 是否含 stdout ⇒ 本节未逐字读，记 `UNMEASURABLE`）
+  · trajectory：`/v1/events`（tape 时间线）在；`/v1/trace`（reasoning trace）**opt-in 默认关**（`config.rs:121/:124`）
+⇒ 结论更正：**工作台七缺 = 3 个事实层缺口 + 4 个 UI 未做**；"会与可倒查一起长"仍成立（共同底座不变），
+  但**不能**再说"七缺都不缺在 UI 层"。
+```
+
+### 四、S303 三形态的机制（本轮从 `resolve_one` 读到）
+```
+`session_events/identity.rs:191 resolve_one` → `resolve_period`：
+  `Resolved::One(id)` ⇒ Ok ；`Ambiguous(ids)` ⇒ **Err（拒绝，绝不挑一个）** ；`None` ⇒ Err
+  注释原文：「`Id` ⇒ at most one file. `Job` ⇒ every period whose rows carry that job id, which is zero,
+  one, or many. **Never picks one.**」
+⇒ 三形态由此闭合解释（只读、不建议）：
+  形态 A 全断（`run-233a86e…` 263/263）：客户端每轮把**同一 job id** 交回 ⇒ 该 job 已有多段 ⇒ **Ambiguous ⇒ Err**
+    ⇒ `resume_period = None` ⇒ 每段成新根；
+  形态 B 链式（`run-f911e60…` 105/128）：客户端把**上一段的 period id**（唯一）交回 ⇒ `One` ⇒ 链上；
+  形态 C 固定父（`run-d46f067…` 19/19）：一直交**同一个 period id** ⇒ 每段挂同一父（分叉）。
+```
+
+### 五、三处措辞收窄（照办）
+```
+· 「你点头的那一格」→ **「依赖顺序说明（不催、不进待裁表）」**；
+· 「共同待办源」→ **「缺口对照表（只读读数，不派活）」**；
+· 「给 tool/call 落 args / 开 trace」→ 只报 **「缺哪个字段 / 哪个端点 404 / 哪个开关默认关」**，不写方案句。
+```
+
+### 六、边界
+```
+只读（grep / curl / 读 tape）；未改 Cellrix 与 anaphase；未跑 cargo；未改判据；
+未裁 P0a 归类、未裁 M7、未派活、未点火；未碰 phyt 账本与 FlowModus；未销红、未改日期。
+```
+
+**末句**：三件读数已交（AG-UI 数字降级 · G1③ 端点收窄 · 七缺拆 3+4 · S303 三形态机制闭合）；两处自纠见上；两拍仍待 gardener 裁定（不催）；M7 保持冻结；goal 保持 paused。
