@@ -9989,7 +9989,7 @@ B 轴缺陷一仍 `CONVERGENCE:115` 登记待裁决，依 `PROTECTION.md:244` �
 
 ### 五、体检读数（本节的生效清单 = 第一份可判对象）
 ```
-- 生效：helix-window/server.js sha16=d478677e184481aa
+- 生效：helix-window/server.js sha16=129f0adbe7052e72
 - 生效：helix-window/vendor/marked.min.js sha16=15fabce5b65898b3
 - 生效：helix-window/vendor/highlight.min.js sha16=837a6fa5b0c736b5
 - 生效：helix-window/vendor/github-dark.min.css sha16=9f208d022102b1d0
