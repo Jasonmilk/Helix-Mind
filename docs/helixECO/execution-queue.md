@@ -11223,3 +11223,49 @@ python3 tools/cellrix_logic_verify.py  ⇒ **rc=0**
 ```
 
 **末句**：G1②③④ 三项 `UNMEASURABLE`，同因 = 证据载体在 `web/`、已被 `725c66f` 删除（可复取）；G1 **未闭合**；两拍仍待 gardener 裁定（不催）；M7 保持冻结；goal 保持 paused。
+
+---
+
+## G1① 只读核查：`apply()` **不存在**（按文档要求写「不存在」+ M5 接入点）
+
+**节名**：G1① 只读核查（不存在）· **本节起始行 = 11229**（尾部 append；旧节不回改）
+**性质**：① 自治只读；**G1 仍未闭合**（②③④ UNMEASURABLE，见上节）
+
+### 一、读数（本机实跑，Cellrix `1d16a22` 工作树）
+```
+`apply` 相关命中 = **1**，且不计入本体：
+  `transport/src/uds.rs:60` `fn apply_socket_permissions`（套接字权限，与意图无关）
+⇒ **`apply()` 不存在**（无 `fn apply_intent` / 无写事件流的 apply 入口）
+`Ci144Intent` 类型：**不存在**（`grep -n 'Ci144Intent'` ⇒ 0）
+  protocol 侧只有 **字段级** `intent: String`（`protocol/src/anaphase.rs:289/:312/:316/:350-353`），
+  是"一段预览文本"的载体，不是意图结构，也不是入口。
+写入事件的最近入口在 anaphase 侧（`emit_period_start` 等，`anaphase-helix/src/session_events/types_and_stream.rs:274`），
+**不经任何 Cellrix `apply()`** ⇒ 绕行面存在（与 `VISION.md` §二「◐ 意图入口 apply：现状仍存在绕过调用点」一致）。
+```
+
+### 二、按文档要求的两句（不扩写）
+```
+① 结论：**不存在**。接入点 = `M5`（CI-144 ↔ AG-UI 适配器 ADR）——`对比V12.md:1048` 的 §0.9 表：
+   「意图入口 apply | 未进代码（M5 适配器 ADR 才接入） | G1①」。
+② 「apply 能排除哪两个世界」= **有 apply / 无 apply**（世界对可答 ⇒ 该格具备判据资格）；
+   但**本格今天不可判**：既然 `apply()` 不存在，"有 apply"那一世界在本树无实例 ⇒ 只能报"不存在"，
+   不能报"判据红/绿"。
+```
+
+### 三、G1 五问的当下总账（只读部分到此为止）
+```
+① apply()            → **不存在**（本节）
+② 状态归属           → UNMEASURABLE（载体 `web/tests/layering_test.js` 已被 725c66f 删）
+③ WebUI 通信形态     → UNMEASURABLE（`/v1/refs`、`/v1/periods/tombstone` 全仓 0 命中）
+④ transport attach   → UNMEASURABLE（`refs_round_trip_test.js` 已被删）
+⑤ render 纯          → 覆盖率 18 文件/38 位点已扫，显式不纯排除；**闭合判据（P0.5 双渲染 diff）未做**
+⇒ **G1 不能闭合**：1 项"不存在"、3 项 UNMEASURABLE、1 项"未闭合"。
+```
+
+### 四、边界
+```
+只读（grep）；未 checkout 任何被删文件、未改 Cellrix、未跑 cargo、未跑 web 测试；
+未裁 P0d 预算、未开工 P0.5/P1/P3、未给修复建议；未碰 phyt 账本与 FlowModus；未销红、未改日期、未解 M7。
+```
+
+**末句**：`apply()` 确证**不存在**，接入点 `M5`；G1 五问**不能闭合**（1 不存在 / 3 UNMEASURABLE / 1 未闭合）；两拍仍待 gardener 裁定（不催）；M7 保持冻结；goal 保持 paused。
