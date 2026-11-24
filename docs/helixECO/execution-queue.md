@@ -11658,3 +11658,45 @@ CI：`.github/workflows/ci.yml` 增两步 —— P0a 默认契约（判红）；
 交付：Cellrix `docs/hash-domain.md` · `tools/p0a_domain_check.js` · `.github/workflows/ci.yml`（单提交）；本节。
 停法：未撞红（默认契约 rc=0）；债务日期缺 7 条已具名为"未定格"，按序进入 P0c 格，不因此停全线。
 ```
+
+---
+
+## P0c 绕过棘轮（执行序第四格）· 宏 + CI grep + 兜底，存量冻结 130
+
+**节名**：P0c 收口 · **本节起始行 = 11664**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）
+
+### 一、判据（成文 `对比V12.md:433-452`）与读数
+```
+成文三条机制：① `bypass!()` 宏（绕过 apply() 的直改点必须调用，宏内计数 +1，CI 读计数断言不增）
+              ② CI grep（对 `state.` 直写模式正则扫描，新增未走宏的点 ⇒ 红）
+              ③ 兜底（两者结果不一致 ⇒ 红）；判据「计数器可读、可 CI 输出」；变异「新增直改点 ⇒ 计数 +1 ⇒ 红」
+实现（Cellrix，单提交 `089c662`）：
+  `protocol/src/bypass.rs`         `BYPASS_COUNT: AtomicUsize` + `count()` + `record()`（无堆分配、无锁）
+  `protocol/src/bypass_macro.rs`   `bypass!(&'static str)` —— 理由串编译期常量，宏内 record()
+  `tools/p0c_ratchet_check.js`     扫描 `ui/src · protocol/src · transport/src` 的直写点
+  `docs/bypass-baseline.json`      存量冻结 **130 站点**（身份 = 文件 + 归一化语句，**不用行号**：行号会漂 = 假红）
+读数（本机）：
+  `node tools/p0c_ratchet_check.js`                        ⇒ **rc=0**「直写点=130（baseline=130）· PASS 存量未增」
+  反样本 A（加一个未登记直写点 `state.rogue_field = 1`）   ⇒ **rc=1**「新增 1 个直写点（棘轮只减不增）」
+  反样本 B（`bypass!("probe")` 空标注、无写入）             ⇒ **rc=1**「宏调用 1 · 命中站点 0（差额 1）」= 兜底生效
+  复原后复读两遍                                               ⇒ 两次都是 **130 / rc=0**（旧有计数未增）
+  Rust 侧：`cargo test -p cellrix-protocol --lib` ⇒ **136 passed**（含 `bypass::tests` 计数器自测）
+  全量：`cargo test --workspace --no-fail-fast` ⇒ **rc=0 · passed 328 · failed 0**
+CI：`.github/workflows/ci.yml` 增 `P0c · 绕过棘轮（判红）` 一步。
+```
+
+### 二、结论
+```
+退出条件（成文）＝「计数器上线并接入 CI，数字不再增长即可（**不需要归零**——归零是 P0d 的事）」
+⇒ 计数器在（原子 + 宏）· CI 在（三步：P0c/P0a/S303）· 存量 130 已冻结且复读不增 ⇒ **该格判据满足**。
+未做（本格范围外，具名）：把 130 个存量点逐个改写成 `bypass!` 标注（属 P0d 的归零动作，不在 P0c 要求内）。
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：新增 3 个文件 + 1 份 baseline + CI 一步 + lib.rs 两行接线；未改 VISION/DNA/ADR、未改 CI-144 词汇、
+      未动 web/、未新增面/端口/端点；未记录"销红"。
+交付：Cellrix `089c662`；全量 rc=0 / 328 passed；本节。
+停法：未撞红 ⇒ 按序进入 P0b∥P0d 格（先 P0b 后 P0d，二者判据互不替代）。
+```
