@@ -11570,3 +11570,55 @@ tape（`.helix/events` · 2026-09-28→10-10）：
       Cellrix dirty=0 · Tuck dirty=0 · anaphase dirty=0（提交后复核）。
 停法：未撞红（三仓 failed 0）⇒ 按序进入 S303 格。
 ```
+
+---
+
+## S303 续接断裂点（执行序第二格）· 修复 + 六判据真跑
+
+**节名**：S303 收口 · **本节起始行 = 11576**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）· 真跑读数 · 测试载体**不在 `web/`**
+
+### 一、根因（两个缺陷，都在"交回什么"上）
+```
+① 服务端终帧只给 `job_id`（`anaphase-helix/src/main.rs:684-694`）：客户端拿不到**period id**，
+   只能把 job id 回传；而 job id 拥有多段时 `resolve_one` 判 `Ambiguous ⇒ Err`（`identity.rs:191-201`
+   「Never picks one」）⇒ 每次发送都成新根 = 原缺陷。
+② 客户端（`helix-window/server.js:95`）`body: JSON.stringify({message})` —— **从不带 `job_id`**；
+   done 帧又回退 `obj.period_id || obj.job_id` ⇒ 把 job id 当续接目标，正好落进①的坑。
+```
+
+### 二、修复（两处，零新面）
+```
+anaphase（commit `4274678`）：
+  · `main.rs` TurnDone 增第三元 `Option<String>`，终帧加 `"period_id"`，值取
+    `agent.context.period_id.clone().filter(is_period_id)`（读循环自己的 context，不重算）；
+  · `session_events/types_and_stream.rs` 增访问器 `pub fn period_id(&self) -> &str`（只读，不加字段）。
+helix-window（**非 git 仓**，无 sha 可交；dirty 记 UNMEASURABLE）：
+  · 新增纯函数 `chooseTarget(pinned, last)`；发送时带 `job_id`；done 帧只在**未钉住**时推进默认目标；
+  · `#period` 输入框 + 既有「刷新」按钮＝钉住分叉目标（复用既有控件，**不新增入口**）。
+判据载体：`Cellrix/tools/s303_continuation_check.js`（commit `2e130c9`），**不在 `web/`**。
+```
+
+### 三、判据（成文 `对比V12.md:350-372`）与读数
+```
+命令：`node Cellrix/tools/s303_continuation_check.js --events /tmp/t2round/events`
+store=/tmp/t2round/events · 日期范围 2026-11-20→11-23 · 分母=该目录 tape 份数
+  PASS ④ 终帧 period_id          period_id=run-c9afc4275b254238-p006b05eec3000005（旧行为只有 job_id）
+  PASS ① 点最新 ⇒ 续接          resume_from == 上一段（期望一致）
+  PASS ② 中间节点 ⇒ 续接        resume_from == 中间段（不只有最新可续接）
+  PASS ③ 钉住不被覆盖           连发后 resume_from 仍 == 钉住段，未被"最新"覆盖
+  PASS ③' 客户端带 job_id 且不覆盖钉住（静态：sendsTarget=true keepsPinned=true）
+  PASS 变异 总是最新 ⇒ 红       目标函数改成"总是最新"后 resume_from=最新段 ≠ 钉住段 ⇒ ③ 会红
+  合计 **6/6** · 脚本 **rc=0**
+anaphase 全量回归：`cargo test --all-features --no-fail-fast` ⇒ **rc=0 · passed 521 · failed 0**
+```
+
+### 四、边界 / 交付 / 停法
+```
+边界：只改 anaphase 两处 + helix-window 客户端；未动 web/、未改 VISION/DNA/ADR、未改 CI-144 词汇、
+      未新增端点/面、未碰 phyt。
+交付：anaphase `4274678` · Cellrix `2e130c9` · 本节；rc 见上。
+停法：未撞红 ⇒ 按序进入 P0a 格。
+偏差具名：① 探针会写真实 tape（store 为 `/tmp/t2round/events`，非 `.helix/events` 默认库）；
+          ② `helix-window` 非 git 仓 ⇒ 其改动无提交、dirty 记 UNMEASURABLE；③ 50061 已用新二进制重启（pid 15516）。
+```
