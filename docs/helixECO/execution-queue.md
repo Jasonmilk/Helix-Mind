@@ -11531,3 +11531,42 @@ tape（`.helix/events` · 2026-09-28→10-10）：
 ```
 > 为何补：这一族刚发生过一次（把归档读成"Pi 做完了"）——与「按标签搜 DNA 八条」「M7 条件 4」「三份 ADR-0048」同款：
 > **按标签认，不按内容认**。旧行不涂（`CONVERGENCE:123`），只加此指针。
+
+---
+
+## G3 门对账（执行序第一格）· 三仓实跑 vs 声明
+
+**节名**：G3 门对账收口 · **本节起始行 = 11537**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）· 读数为本机真跑
+
+### 一、判据（该格成文原文）与读数
+```
+成文：`docs/Cellrix-里程碑与验收标准-对比V12.md:62`
+  「G3 · 门对账（v4 新增）｜三仓判据各跑一遍，数字 vs 声明｜🔴 未跑（第一个动作）」
+  「E1/E2 = M4② 交接文档声明已完成（端到端 2 passed，§370）⇒ G3 须以判据确认」(`:99`)
+实跑（本机，Cellrix `1d16a22` / Tuck `c833034` / anaphase `6862774`）：
+  Cellrix   `cargo test --workspace --no-fail-fast`   ⇒ **rc=0 · passed 327 · failed 0**
+  Tuck      `cargo test --all-features --no-fail-fast`⇒ **rc=0 · passed 451 · failed 0**
+  anaphase  `cargo test --all-features --no-fail-fast`⇒ **rc=0 · passed 521 · failed 0**
+  （--list 计数 330 / 459 / 532：差额为 ignored 与 doc-test 过滤项）
+  E1/E2 判据：`cargo test --all-features --test approval_outcome` ⇒ **rc=0 · 2 passed**
+    （`the_four_outcomes_are_reachable_and_pairwise_distinct` · `the_four_outcomes_are_counted`）
+```
+
+### 二、对账结论（按「声明是线索，判据是真相」）
+```
+① E1/E2：声明「端到端 2 passed」⇒ **实测 2 passed，相符** ⇒ 状态**无需回滚**。
+② 测试分母：声明「三仓 296 / 96 / 116」与文中「349」⇒ **实测 1299**（327+451+521）⇒ **声明全部作废**，
+   分母改 **1299**（numbers: 327/451/521）。
+③ 已在权威卷就地更正（不改原子原则、只改这两个数字格）：
+   `:62` G3 状态 🔴未跑 → 🟢 已跑（含实测三数与 E1/E2 相符）；
+   `:328` 「分母待 G3 实测」→ 分母 = 1299，296/96/116 与 349 作废。commit `bfb2779`（Cellrix）。
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：只跑测试与两行数字更正；未改 VISION/DNA/ADR 原子原则、未改 CI-144 词汇、未动 web/、未新增面/端口。
+交付：本节（11537 起）+ Cellrix `bfb2779`；三仓 rc 全 0、failed 全 0；
+      Cellrix dirty=0 · Tuck dirty=0 · anaphase dirty=0（提交后复核）。
+停法：未撞红（三仓 failed 0）⇒ 按序进入 S303 格。
+```
