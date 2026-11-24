@@ -12032,3 +12032,47 @@ P0d 判据仍红：AppState 多写入者 8 > 0 · 棘轮 127 > 0 ⇒ **不写「
 交付：Cellrix `857fce7` · `9dab86e`；本节。
 停法：未撞红（每批收尾都 349 passed）⇒ 继续下一小批（按原授权，不回头问形态）。
 ```
+
+---
+
+## P0d B 批收口 · AppState 20 字段全私有，多写入者 9 → 0，棘轮 130 → 88
+
+**节名**：P0d B 批收口 · **本节起始行 = 12038**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv66zld-uyliwv`）
+
+### 一、读数（Cellrix `42864e0`，接前节 `857fce7` / `9dab86e`）
+```
+`node tools/p0d_writer_map_check.js`
+  协议侧字段=14 · 仍 pub 的字段=0 · compile_fail 样例=3      ⇒ 14 字段由**编译器**保证单一写入者
+  AppState 侧：唯一写入者=13 · **多写入者=0** · 无写入点=7      （起始值是 9 多写入者）
+  绕过计数器=**88**（本格目标 0，属 p0d-c 的条款）
+grep 证据（20 字段在 writers.rs / state.rs 之外的直写次数）：**20/20 全为 0**
+  唯一一处 `.error =` 命中在 `ui/src/widgets/prove_track.rs:62` —— 那是 `ProveTrackViewState` **自己的**字段，
+  不是 `AppState.error`（同类名字撞车，已在检查器里用"代码里真的用到 AppState"收窄）
+`node tools/p0c_ratchet_check.js` ⇒ 直写点 **88**（baseline 重冻 88，前值 127）· PASS 存量未增
+`cargo test --workspace --no-fail-fast` ⇒ **349 passed · 0 failed · rc=0**
+```
+
+### 二、这一批里做对的两件事（都进纪律）
+```
+① **逐语句手改，不跨行正则**：前一轮用正则批量迁移把跨行语句与比较式一起改写（99 错），回退后改为
+   逐文件、逐语句迁移；编译器当护栏，每步都保持 349 passed。
+② **检查器自己也要防名字撞车**：`state.error` 在一个只"提到 AppState"的文件里被误判为第二写入者；
+   收窄为"代码里真的出现 `: &mut AppState` / `AppState::` / `impl AppState`"后，多写入者才归零。
+   ⇒ 同族教训第二次：**按内容认，不按名字认**。
+```
+
+### 三、剩余（P0d 未闭合，具名）
+```
+p0d-c：棘轮 **88 → 0** —— 把 88 个直写点逐个改写成写入者调用（本轮只降到 88，未完成）。
+      分布与写法要先枚举再动；每批仍按"可逆优先 + 每批可红 + baseline 同步下调"。
+p0d 判据仍红：`p0d_writer_map_check` rc=1 **只因**棘轮项（多写入者已 0、协议侧已编译期保证）。
+```
+
+### 四、边界 / 交付 / 停法
+```
+边界：只改 `ui/src`（app.rs / app/handler.rs / app/state.rs / app/writers.rs / widgets/*）+ 检查器脚本；
+      未动 web/、VISION/DNA/ADR、CI-144 词汇、phyt 账本。
+交付：Cellrix `857fce7` · `9dab86e` · `42864e0`；本节。
+停法：未撞红（每步 349 passed）⇒ 下一步进 p0d-c（棘轮归零），再进 P1。
+```
