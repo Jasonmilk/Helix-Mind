@@ -11835,3 +11835,86 @@ CI：`.github/workflows/ci.yml` 增两步（按名跑 grid 与 render_twice）�
 交付：Cellrix `82d9c92`；97/333 passed 双绿；本节。
 停法：未撞红 ⇒ 按序进入 P1 格（进程轴，唯一大刀）。
 ```
+
+---
+
+## P1 进程轴（执行序第八格）· 测量器 **2/8**，挂已知红，不重构
+
+**节名**：P1 读数（红，已知）· **本节起始行 = 11841**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）· 撞红 ⇒ **挂明账 · 不做架构级重构 · 按序继续**
+
+### 一、读数（成文 `对比V12.md:558-588` 八场景）
+```
+测量器：`transport/tests/p1_process_axis.rs`（`#[ignore]`，按需跑；不进 CI 门——否则整仓常红 = 用噪音替读数）
+命令：`cargo test -p cellrix-transport --test p1_process_axis -- --ignored --nocapture`
+  PASS  多客户端竞争   registry len=2 · 两个 client 同时在册，第二个不踢第一个
+  PASS  断线重连       unregister→len=1 · 同名 re-register→len=2（**仅注册表层，状态回原位未证**）
+  ABSENT socket 权限   `new_server` Ok 但 socket 文件此刻未绑定（绑定在 `spawn_run`）⇒ 权限位不可测
+  ABSENT 会话删除语义  transport 侧无 `delete_session` API ⇒ 资源释放/句柄失效无从验
+  ABSENT 协议版本      握手无 version gate ⇒ 版本不匹配不会被明确拒绝
+  ABSENT 背压          `unbounded_channel` 出现 1 次 ⇒ 无界通道，慢客户端只增长内存
+  ABSENT 崩溃/重启恢复 transport 侧无重建路径（重建在 anaphase 的 session_events 重放）
+  ABSENT 重连后 hash 一致 需「两进程消费同一事件流」才有跨重连 hash 对照
+  合计 **2/8** · rc=101（**故意红**）
+默认测试集不受影响：`cargo test --workspace --no-fail-fast` ⇒ **rc=0 · 338 passed**（`#[ignore]` 生效）
+```
+
+### 二、为什么不做（按原停法，不自行裁定）
+```
+P1 是成文自标的「唯一大刀」：守护进程边界 + attach/detach + URL 三段式 + 广播双编码 + 八场景。
+把它做绿 = 改 transport 的进程模型与事件广播，**P0.5 的双 renderer 与 P2 的 keymap 都会坐在它上面**。
+⇒ 本轮只交测量器与红清单，不重构；红线与 P0d 同族（架构级形态未定 ⇒ 已知红）。
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：新增 1 个测量器 + transport 根导出 4 个既有类型（`CellrixDaemonConfig`/`ClientRegistry`/`UdsServer`/`UdsSession`）；
+      未改进程模型、未动 web/、未改 VISION/DNA/ADR、未新增面/端口、未新增端点。
+交付：Cellrix `6e089d7`（测量器）· `588ee49`（P2 + ignore 化）；本节。
+停法：红 ⇒ 挂明账，按序进入 P2（已成）；不回头问。
+```
+
+---
+
+## P2 交互模式 + keymap 数据化（执行序第九格）· 4 判据绿 + 变异可红
+
+**节名**：P2 收口 · **本节起始行 = 11879**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）
+
+### 一、判据（成文 `对比V12.md:588-612`）与读数
+```
+成文三条：① 换一个 keymap 文件 ⇒ 视图变、事实层零改动；② agent 能 QueryMode / SwitchMode（**仅交互模式**）；
+          ③ 运行模式只在契约层出现，**无任何切换入口**（出现 SwitchRunMode 类意图 ⇒ 红）；
+          退出：换 keymap 无需重编译事实层；底栏提示由 keymap 数据自动生成
+实现（Cellrix `588ee49`）：
+  `protocol/src/interaction_mode.rs`  `InteractionMode{Normal,Pane,Tab,Locked}` + `next()`（**住事实层**）
+  `ui/src/keymap.rs`                  `KeyMap::from_json/from_path`（运行期读数据）· `resolve(mode, chord)` ·
+                                      `hints(mode)`（底栏提示由数据生成）· `DEFAULT_JSON = include_str!(../assets/keymap.json)`
+  `ui/assets/keymap.json`             **数据文件**（5 条绑定，含 mode/chord/action/hint）
+读数（本机 `cargo test`）：
+  PASS `swapping_the_data_changes_the_keys`  换 JSON ⇒ `ctrl+e` 解析从 `switch_view` 变 `switch_view_v2`，**零代码改动**
+  PASS `hints_follow_the_data`               提示随数据变（内置 vs 替换后不同）
+  PASS `mode_is_an_argument_not_state`       同一 chord 在 normal=None / pane=detach_pane ⇒ **模式不在视图层**
+  PASS `no_run_mode_switch_verb_exists`      两个 crate 全扫：无 `SwitchRunMode`/`set_run_mode`/`switch_run_mode`
+  PASS `switching_interaction_mode_cycles_through_all_four`  normal→pane→tab→locked→normal
+  变异（红，实跑）：往 `protocol/src/` 放一个 `set_run_mode` 探针文件 ⇒ 该测试 **FAILED**
+      （`forbidden run-mode switch verb set_run_mode in protocol/src/__p2_probe.rs`）⇒ 复原后 PASS
+  `cellrix-ui --lib` 101 passed · `cellrix-protocol --lib` 137 passed · workspace **338 passed · rc=0**
+CI：`.github/workflows/ci.yml` 增一步（keymap + interaction_mode 两条按名跑）
+```
+
+### 二、具名局限
+```
+① keymap 已"可换不重编译视图层"，但**尚未接进 TUI 的按键循环**（`ui/src/app` 仍走既有分支）——
+   本格判据是"换文件即换键 + 提示由数据生成 + 模式归属"，这三条成立；**接键**属 TUI 瘦化，未做。
+② `QueryMode` 的**事件流落点**未做（agent 读模式需事件行）⇒ 上表 ② 只证了 enum 与切换语义，未证"agent 读得到"。
+   （成文把"mode 不在事件流 ⇒ 红"列为变异；本节如实记为**未证**，不写成绿。）
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：新增 1 个事实层模块 + 1 个视图层模块 + 1 份数据 + 4 测试 + CI 一步；依赖只加 `serde`（ui 已有 serde_json）；
+      未动 web/、未改 VISION/DNA/ADR、未改 CI-144 词汇、未新增面/端口/端点。
+交付：Cellrix `588ee49`；338 passed rc=0；本节。
+停法：未撞红 ⇒ 按序进入 P3（终端桥 + bridge 声明 + 项目注册表，三者同批）。
+```
