@@ -12263,3 +12263,92 @@ helix-mind `meter_tape.py --selftest`                       ⇒ **5/5**
    要开新段须带【判据 / 边界 / 交付 / 停法】**四段具名原文**，非一句话、非 resume。
    盘上 4 份 open / paused 多为历史交付终态，拉起会把终态读成待办。
 ```
+
+---
+
+## P2-1 / P2-2 护栏接线 · 模式进事件流 + 键循环改读数据
+
+**节名**：P2-1/P2-2 收口 · **本节起始行 = 12269**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwva1fup-kpsqef`）
+
+```
+P2-1（Cellrix `dbfa3c3`，`protocol/src/mode_event.rs`）
+  行形状：`{"type":"interaction/mode","period_id":…,"seq":N,"time":…,"data":{"mode":"pane"}}`
+  读数 `cargo test -p cellrix-protocol --lib mode_event` ⇒ **3 passed · rc=0**
+    · 四模式 normal→pane→tab→locked 依次可读，**last write wins**
+    · **反样本**：没有该行 ⇒ `read_mode=None`；把行删掉 ⇒ 又 None（不得用默认值冒充"读到 normal"）
+    · 行是普通 JSON，外部 reader 不依赖本 crate 也能解析
+P2-2（同提交，`ui/src/keymap.rs` + `ui/src/app/dispatch.rs` + 键循环）
+  读数 `cargo test -p cellrix-ui --lib keymap` ⇒ **6 passed · rc=0**；`--lib dispatch` ⇒ **3 passed · rc=0**
+    · 同一按键在两份 keymap 数据下给出不同动作（`ctrl+e`→`switch_view` vs `switch_view_v2`；`f2`→`cycle_interaction_mode`）
+    · **反样本**：把"查数据"换成写死 `ctrl+e` 的解析器 ⇒ 读不到 `f2` 那一格，与数据驱动结果**可分**
+  键循环已接：先按数据解析动作 → `switch_view` / `cycle_interaction_mode` 由 dispatch 处理，其它动作 Passthrough 交回默认处理器；
+  模式循环**同批写 mode 事件**（`CELLRIX_MODE_EVENTS` 配置路径时），把 P2-1 接成端到端。
+边界：未改 VISION/DNA/ADR、未动 web/、未新增面/端口/端点；`key_map`（旧硬编码表）保留为回退，未删。
+停法：未撞红 ⇒ 进 P3-1。
+```
+
+---
+
+## P3-1 PTY 五契约 · 5/5 各带对照
+
+**节名**：P3-1 收口 · **本节起始行 = 12293**（尾部 append；旧节不回改）
+
+```
+命令：`cargo test -p cellrix-transport --test p3_pty_contracts` ⇒ **5 passed · 0 failed · rc=0**（0.78s）
+  c1 信号转发：SIGINT 发到**进程组**（`kill(-pid)`）⇒ 命令打印 `GOT_INT`；
+     对照：**不发信号**的同一 pane ⇒ 既无 GOT_INT，且 `wait_timeout` 判 `TimedOut`（仍在跑）
+  c2 环境隔离：`env -i` 起底 ⇒ 显式 `P3FOO=bar` 到达、`HOME` 为 unset；
+     对照：普通 `spawn` ⇒ `P3FOO` 不存在（继承父环境 ≠ 隔离）
+  c3 超时：`sleep 30` + 300ms ⇒ `TimedOut` 且 <3s 收口；对照：`true` ⇒ `Exited`
+  c4 孤儿清理：drop ⇒ 整组收口（孙进程被收走）；
+     对照：让孙进程**忽略 HUP** 后只杀父 ⇒ 孙进程**仍活** ⇒ 收口只能靠整组 SIGKILL（不是 HUP 的功劳）
+  c5 命令权限：`CommandPolicy::allow(["/bin/sh"])` ⇒ 清单外 `/bin/cat` **被拒并具名**
+附带修正（同提交 `19db747`）：master fd 改**非阻塞**，`WouldBlock` 与 EOF 显式区分——
+  阻塞读把"什么都没发生"变成 30 秒等待，而**等待不是判据**（c1 由 30.25s 降到 0.8s）。
+边界：只改 `transport/src/pty.rs` + 两个测试文件；未新增端点；未动 web/。
+停法：未撞红 ⇒ 进 P1-D。
+```
+
+---
+
+## P1-D 跨进程写序列化 · 编号唯一连续 + 竞态确定性可抓
+
+**节名**：P1-D 收口 · **本节起始行 = 12315**（尾部 append；旧节不回改）
+
+```
+实现：`transport/src/seq_stream.rs` —— 取号（读 max）与写入**在同一个 `flock(LOCK_EX)` 区间内**；
+      另设 `append_with_seq`（无锁，显式编号）**只作反样本**，不进生产路径。
+命令：`cargo test -p cellrix-transport --test p1d_seq_stream` ⇒ **3 passed · rc=0**（连跑 4 次稳定）
+  ① 单进程两线程各 100 条 ⇒ 200 条 **唯一且 0..199 连续**
+  ② **两个进程**各 50 条（`cellrix-seq-writer` 测试二进制）⇒ 100 条 **唯一且连续**
+  ③ **反样本（确定性，不靠抢时序）**：两个进程被指定写**同一个编号** ⇒ 判据必须抓红
+     ★ 实测暴露一个比"重复"更早的坏法：两个无锁写者会在**字节级交错**，行先坏掉（连 JSON 都不成立）
+     ⇒ 判据接受「重复 **或** 坏行」并**具名是哪一种**，不假装只有一种失败模式
+边界：新增 `transport/src/bin/cellrix-seq-writer.rs`（测试用二进制，不开网络、不做业务）；未新增面/端口/端点。
+停法：未撞红 ⇒ 进重跑门。
+```
+
+---
+
+## 重跑门（五项按名 + workspace + 三检）
+
+**节名**：重跑门（护栏接线轮）· **本节起始行 = 12334**（尾部 append；旧节不回改）
+
+```
+cellrix-ui --lib keymap::                       ⇒ 6 passed · rc=0
+cellrix-protocol --lib interaction_mode         ⇒ 1 passed · rc=0
+cellrix-protocol --lib mode_event               ⇒ 3 passed · rc=0
+cellrix-transport --test p3_bridge_pty          ⇒ 5 passed · rc=0
+cellrix-transport --test p1_process_axis        ⇒ 1 passed · rc=0（八场景 8/8）
+cellrix-transport --test p3_pty_contracts       ⇒ 5 passed · rc=0
+cellrix-transport --test p1d_seq_stream         ⇒ 3 passed · rc=0
+cargo test --workspace --no-fail-fast           ⇒ **375 passed · 0 failed · rc=0**
+node tools/p0d_writer_map_check.js              ⇒ rc=0（14 字段编译期 + AppState 多写入者 0）
+node tools/p0c_ratchet_check.js                 ⇒ rc=0（状态树直写点 0 / baseline 0）
+helix-mind check-queue-sha.py                   ⇒ 6 hits · stale 0 · UNMEASURABLE 0
+helix-mind meter_tape.py --selftest             ⇒ 5/5
+check_ci144_profile.py                          ⇒ rc=0
+七仓 dirty：helix-mind 0 · Cellrix 0 · anaphase-helix 0 · Tuck 0 · FlowModus 0 · helix-tentacle 0 ·
+            phyt-DNA 1（ledger 自记账，具名不提交）
+```
