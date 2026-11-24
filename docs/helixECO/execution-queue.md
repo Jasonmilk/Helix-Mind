@@ -11622,3 +11622,39 @@ anaphase 全量回归：`cargo test --all-features --no-fail-fast` ⇒ **rc=0 ·
 偏差具名：① 探针会写真实 tape（store 为 `/tmp/t2round/events`，非 `.helix/events` 默认库）；
           ② `helix-window` 非 git 仓 ⇒ 其改动无提交、dirty 记 UNMEASURABLE；③ 50061 已用新二进制重启（pid 15516）。
 ```
+
+---
+
+## P0a hash_domain（执行序第三格）· 落纸 + 枚举断言 + 双契约
+
+**节名**：P0a 收口（不闭合）· **本节起始行 = 11628**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）
+
+### 一、判据（成文 `对比V12.md:401-433`）与读数
+```
+成文三条：① 每个状态字段都被归类（在域内 / 债务型 / 边界型）② 债务型全部带退休日期
+          ③ 边界型全部写明为何永久；退出条件「hash_domain 定义落盘，脚本可枚举所有字段并断言已归类」
+落纸：`Cellrix/docs/hash-domain.md`（域内 17 · 债务型 7 · 边界型 13 = **37**，逐行带 `文件:行号`）
+脚本：`Cellrix/tools/p0a_domain_check.js`（解析四个结构体源码的 `pub name:` 逐字段核表）
+读数（本机）：
+  `node tools/p0a_domain_check.js`              ⇒ **rc=0**「全部字段已归类、边界型有理由（37 字段）」
+  `node tools/p0a_domain_check.js --strict`     ⇒ **rc=1**「RED 7 处：债务型缺退休日期」
+  反样本①（删表中一行 ≡ 源码新增未登记字段）   ⇒ **rc=1**「RED 1 处不合规」（`AppState.input_buffer`）
+  反样本②（把 1 条债务型改成真实日期 2027-03-31）⇒ strict 从 7 红降到 **6 红**（该行转绿，判据有分辨力）
+CI：`.github/workflows/ci.yml` 增两步 —— P0a 默认契约（判红）；S303 四判据（无本地链 ⇒ rc=4 ⇒ 记 notice 不判红）
+```
+
+### 二、结论（不粉饰）
+```
+① 归类完整性 + 边界型理由：**绿**（37/37，反样本可红）。
+② 债务型退休日期：**红 7 条**（`UNMEASURABLE`——退休日期属 owner 决定，本格不编日期）。
+⇒ **P0a 未闭合**（`--strict` 红），只能写"归类表落纸 + 枚举脚本可红"；不写「P0a 已闭合」。
+两个契约刻意分开命名：默认绿 ≠ P0a 闭合；闭合只看 `--strict`。
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：新增一份文档 + 一个脚本 + CI 两步；未改 VISION/DNA/ADR、未改 CI-144 词汇、未动 web/、未新增面/端口/端点。
+交付：Cellrix `docs/hash-domain.md` · `tools/p0a_domain_check.js` · `.github/workflows/ci.yml`（单提交）；本节。
+停法：未撞红（默认契约 rc=0）；债务日期缺 7 条已具名为"未定格"，按序进入 P0c 格，不因此停全线。
+```
