@@ -12155,3 +12155,75 @@ p0d 判据仍红：`p0d_writer_map_check` rc=1 **只因**棘轮项（多写入�
 交付：Cellrix `129a956`；本节。
 停法：未撞红 ⇒ 进 P1 B 批（删除会话 + 背压）。
 ```
+
+---
+
+## P1 B 批 · 删除语义 + 背压（2 场景 ABSENT → PASS）
+
+**节名**：P1 B 批 · **本节起始行 = 12161**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv66zld-uyliwv`）
+
+### 一、读数（Cellrix `0fc478f`）
+```
+`cargo test -p cellrix-transport --lib sessions` ⇒ 3 passed
+  `delete_kills_the_old_handle`        delete 后 `alive()=false` · 旧句柄 `send=Err(Deleted)` · 注册表 len=0 · 二次 delete 是 no-op
+  `a_full_channel_is_counted_not_absorbed` 容量 2 · 第三帧 `Err(Full)` · `dropped()=1`（**背压被计数，不被吸收**）
+  `policy_is_explicit_and_readable`    策略是枚举（`DropNewest` / `Block`），可读可配
+测量器两行（`p1_process_axis`）：
+  PASS 会话删除语义   delete=true · 旧句柄 send=Err(Deleted) · 注册表 len=0
+  PASS 背压          capacity=2 · 第三帧=Err(Full) · dropped=1 · policy=DropNewest
+```
+### 二、边界 / 停法
+```
+边界：新增 `transport/src/sessions.rs`（会话表 + 有界通道 + 计数器），未新增端口/端点；未动 web/、VISION/DNA/ADR。
+停法：未撞红 ⇒ 进 P1 C 批。
+```
+
+---
+
+## P1 C 批 · 重建 + 跨客户端一致（2 场景 ABSENT → PASS，八场景 8/8）
+
+**节名**：P1 C 批 · **本节起始行 = 12184**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv66zld-uyliwv`）
+
+### 一、读数（同提交 `0fc478f`）
+```
+`cargo test -p cellrix-transport --lib replay` ⇒ 3 passed
+  `restart_rebuilds_the_same_hash`          两客户端看同一 session ⇒ 同 hash；重启重建 ⇒ 同 hash；事件确实被重放
+  `dropping_an_in_domain_event_changes_the_hash`  少一条 `turn/end` ⇒ hash 必变（判据有分辨力）
+  `boundary_events_do_not_enter_the_hash`   追加 `assistant/usage` ⇒ hash 不变（**作用域如实**：非域事件不参与）
+`cargo test -p cellrix-transport --test p1_process_axis` ⇒ **8/8 · rc=0**（已从 `#[ignore]` 转为**常驻门**）
+  socket 权限 PASS · 多客户端 PASS · 断线重连 PASS · 会话删除 PASS · 协议版本 PASS · 背压 PASS
+  崩溃/重启恢复 PASS  重启前后域 hash `ff3e04978df6dcbe` == `ff3e04978df6dcbe`
+  重连后 hash 一致 PASS 两客户端同 session 域 hash `ff3e04978df6dcbe` == 同值
+```
+### 二、具名局限（不写会变假绿）
+```
+① hash 用的是 **P0a 域**（status + 节点 label/content/focused），**边界型**（usage / 外部观测）明确不入域，
+   并有一条测试证明"入域才影响 hash"。
+② 「两客户端**并发写**无冲突」：本节给的是"两客户端各自重建同一 session ⇒ hash 一致"+"注册表允许两客户端并存"；
+   **未做**真正的并发写入竞争（那需要 P1 的进程级 daemon 与写序列化）。⇒ 这一子项记为**部分**，不写成"已验证并发写".
+③ 重建是**只读重放**，不执行意图（成文 v4.2：重放 ≠ 重做外部副作用）。
+```
+
+---
+
+## 重跑门（P0.5 / P2 / P3 五项按名，旧绿不作凭据）
+
+**节名**：重跑门 · **本节起始行 = 12211**（尾部 append；旧节不回改）
+
+```
+cellrix-ui --lib grid::                                    ⇒ 4 passed · **rc=0**
+cellrix-ui --lib render_twice_produces_an_identical_grid   ⇒ 1 passed · **rc=0**
+cellrix-ui --lib keymap::                                  ⇒ 4 passed · **rc=0**
+cellrix-protocol --lib interaction_mode                    ⇒ 1 passed · **rc=0**
+cellrix-transport --test p3_bridge_pty                     ⇒ 5 passed · **rc=0**
+cargo test --workspace --no-fail-fast                      ⇒ **358 passed · 0 failed · rc=0**
+node tools/p0d_writer_map_check.js                         ⇒ **rc=0**（14 字段编译期 + AppState 多写入者 0）
+node tools/p0c_ratchet_check.js                            ⇒ **rc=0**（状态树直写点 0 / baseline 0）
+helix-mind `check-queue-sha.py`                            ⇒ **6 hits · stale 0 · UNMEASURABLE 0**
+helix-mind `meter_tape.py --selftest`                       ⇒ **5/5**
+`check_ci144_profile.py`                                   ⇒ **rc=0**
+七仓 dirty：helix-mind 0 · Cellrix 0 · anaphase-helix 0 · Tuck 0 · FlowModus 0 · helix-tentacle 0 ·
+            phyt-DNA 1（ledger 自记账，具名不提交）
+```
