@@ -11511,3 +11511,23 @@ tape（`.helix/events` · 2026-09-28→10-10）：
 ```
 
 **末句**：第 0 层四项读数已交；**P0a 判据仍红**（债务型 7 条无退休日，`UNMEASURABLE`）；outcome 转 measured（exec 类未采样）；think 缺的是"没给"且 A/B 不可分（`UNMEASURABLE`）；S303-B 双证闭合；两拍不催。
+
+**【goal 归档指针 · 补记】**（不另起节；只补"别按标签认"，不发令、不授权）
+```
+盘上实情（`.pi/goals/`，本机实读）：
+· **archived/ 共 12 份，12/12 都是 `status: "complete"`**（其中 10 份 `skipAuditor: true`）：
+    mvob8orn-g3gdv1 10-25 · mvoc2xck-3ud2y5 10-25 · mwgwv8fn-9kgcqn 11-14 · mwgxd6xb-jy1vlc 11-14
+    mwgy3tjy-yj3dyg 11-14 · mwjfvj1e-q6zrmh 11-16 · mwmf7ems-a8rz6j 11-18 · mwmfvtcp-9x45q4 11-18
+    mwmgamh3-vx0ntq 11-18 · mwmloz8m-r3d40y 11-18 · **mwnts33v-wevw0i 11-19** · **mwv3j361-2o8zup 11-24**
+· **active/ 3 份，全是 `status: "paused"`**：mwgzvyf3-nvxfw7 11-14 · mwmmu76m-yb5oax 11-18 · mwosnk7d-fqm6wt 11-20
+⇒ **判读规则**：归档 goal 一律按 **`createdAt` + `archivedPath` + objective 内容**认，**不按 `status:"complete"` 标签认**——
+  `complete` 只说明"那次自定范围跑完了"，**不等于**其结论已验收、**不等于**当前进度、**不等于**任何新授权。
+单独点名 `mwnts33v-wevw0i`（`archived/goal_2026112001302917_mwnts33v-wevw0i.md` · 10609 B · 84 行 ·
+  `createdAt 2026-11-19T17:29:46Z` · `skipAuditor:true` · usage tokens 504,787）：
+  其 objective 是「单条真链上继续长跑」，正文 rail 出现 6 次、四选一 7 次 ⇒ **属 2026-11-19/20 的 C 轮次
+  （rail 真跑 / 四选一 C）历史归档**；**不是 M8**、**不是当前进度**、**不构成任何授权**（`PROTECTION:432`）。
+同一条同样适用于**我本轮刚关掉的 `mwv3j361-2o8zup`**（第 0 层只读，11-24 归档）：它只证"第 0 层四项读数已交"，
+  不证 P0a 已闭合（债务型 7 条无退休日仍红）、不证 M8 已开工。
+```
+> 为何补：这一族刚发生过一次（把归档读成"Pi 做完了"）——与「按标签搜 DNA 八条」「M7 条件 4」「三份 ADR-0048」同款：
+> **按标签认，不按内容认**。旧行不涂（`CONVERGENCE:123`），只加此指针。
