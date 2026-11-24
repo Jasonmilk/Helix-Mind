@@ -12227,3 +12227,16 @@ helix-mind `meter_tape.py --selftest`                       ⇒ **5/5**
 七仓 dirty：helix-mind 0 · Cellrix 0 · anaphase-helix 0 · Tuck 0 · FlowModus 0 · helix-tentacle 0 ·
             phyt-DNA 1（ledger 自记账，具名不提交）
 ```
+
+**【覆盖指针 · P1 C 的并发子项已补证】**（append；旧行不涂）
+```
+上节「P1 C 批」二·② 写的「未做真正的并发写入竞争」**已作废**（Cellrix `b5f4e7b`）：
+新增 `two_clients_writing_concurrently_do_not_corrupt_the_registry`：
+  两线程各自 send + broadcast 200 次（通道 16）⇒ 两个句柄仍 `alive()`（**通道满 ≠ 句柄失效**，这条断言本身上一轮写错过）；
+  两个线程竞删同一 session ⇒ **恰好一方成功**（不重复释放）；失败方句柄下次 send ⇒ `Err(Deleted)`；
+  结束后注册表自洽（len=1）· `dropped()` 单调且 ≥1。
+读数：`cargo test -p cellrix-transport --lib sessions` ⇒ **4 passed**；`cargo test --workspace --no-fail-fast` ⇒ **359 passed · rc=0**；
+      `p1_process_axis` ⇒ **8/8 · rc=0**（常驻门）。
+仍留的边界（不夸大）：并发是在**会话表/Sessions** 这一层证的（同一进程内），**不是**跨进程 daemon 的写序列化
+  （那需要 P1 的进程边界 + max+1 竞态处置，属后续格）。
+```
