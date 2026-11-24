@@ -11172,3 +11172,54 @@ python3 tools/cellrix_logic_verify.py  ⇒ **rc=0**
 ```
 
 **末句**：G3 门对账两脚本均 rc=0，缺口 16 处与 §0.9 一致；**图自洽 ≠ 里程碑闭合**；两处数字口径为 UNMEASURABLE；两拍仍待 gardener 裁定（不催）；M7 保持冻结；goal 保持 paused。
+
+---
+
+## G1②③④ 只读核查：三项同因 `UNMEASURABLE`（证据载体随 `web/` 被删）
+
+**节名**：G1②③④ 只读核查（UNMEASURABLE）· **本节起始行 = 11178**（尾部 append；旧节不回改）
+**性质**：① 自治只读（零写权限，只 grep / 读 git 历史）；**G1 未闭合**，本步只交读数
+
+### 一、读数：文档点名的证据，在当前树 **0 命中**
+```
+`对比V12.md:87-105`（G1 五问 · 附线索）对 ②③④ 各点了一个线索，逐个核：
+  G1② 状态归属 → 线索 `M0 layering_test` + `nav_state_test`   ⇒ 代码命中 **0**（全仓，排除 target）
+  G1③ WebUI 通信 → 线索 `GET/PUT /v1/refs`、`POST /v1/periods/tombstone` ⇒ 端点命中 **0**
+  G1④ attach    → 线索 `§317 多 ref 已落地`（VISION 引 `refs_round_trip_test.js:88-106` 绿）⇒ 命中 **0**
+```
+
+### 二、同因：四个证据文件都在 `web/tests/`，已被 `725c66f` 真删
+```
+`725c66f` `2026-11-15`「[large] t4：web/ 真删（1396 → 0）」· shortstat **169 文件 · +15 / −42,353**
+被删的正是这四条判据的载体（父提交可取回，行数为实测）：
+  web/tests/layering_test.js         **134 行**
+  web/tests/nav_state_test.js        **222 行**
+  web/tests/refs_round_trip_test.js  **192 行**
+  web/tests/fork_entry_test.js       ** 77 行**
+父提交 `725c66f^` 的 `web/` 跟踪文件 = **164**；当前树 `git ls-files web` = **0**
+```
+
+### 三、判定（按「声明是线索，判据是真相」）
+```
+②③④ 一律记 **UNMEASURABLE**——不是红、不是绿：
+  证据载体不在当前树 ⇒ 判不了；但**可复取**（`git show 725c66f^:<path>`）。
+连带后果（只记录，不裁）：
+  · G1② 本要决定 **P0d 预算**（守"视图零写"还是"全字段单一写者"）⇒ P0d 预算**当前无法定**；
+  · G1④ 本要确认 `§317` **仍在网且绿** ⇒ 无法确认；
+  · `VISION.md` §二「⇢ URL 寻址：`refs_round_trip_test.js:88-106` 绿」这句，其**证据已不存在**
+    ⇒ 结论应读作「曾有该判据且当时绿，现载体已删」，不得读作"现在仍绿"。
+```
+
+### 四、口径（本条起生效）
+```
+凡引 `web/tests/*`、`/v1/refs`、`/v1/periods/tombstone` 作"在网且绿"的证据，必须同时写：
+**该文件当前树是否存在**（`git ls-files <path>` 条数）+ **删除提交**；缺一即 `UNMEASURABLE`。
+```
+
+### 五、边界
+```
+只读（grep / git show / git ls-files）；未 checkout 任何文件、未改 Cellrix、未跑 cargo、未跑 web 测试；
+未裁 G1 结论、未裁 P0d 预算、未开工 P0.5/P1/P3；未碰 phyt 账本与 FlowModus；未销红、未改日期、未解 M7。
+```
+
+**末句**：G1②③④ 三项 `UNMEASURABLE`，同因 = 证据载体在 `web/`、已被 `725c66f` 删除（可复取）；G1 **未闭合**；两拍仍待 gardener 裁定（不催）；M7 保持冻结；goal 保持 paused。
