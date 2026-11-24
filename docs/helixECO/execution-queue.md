@@ -12126,3 +12126,32 @@ p0d 判据仍红：`p0d_writer_map_check` rc=1 **只因**棘轮项（多写入�
 交付：Cellrix `e23f02c`；本节。
 停法：未撞红 ⇒ 下一步 P1 A 批（socket 权限位可测 + 协议版本闸）。
 ```
+
+---
+
+## P1 A 批 · socket 权限位可测 + 协议版本闸（2 场景 ABSENT → PASS）
+
+**节名**：P1 A 批 · **本节起始行 = 12132**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv66zld-uyliwv`）
+
+### 一、读数（Cellrix `129a956`）
+```
+`cargo test -p cellrix-transport --test p1_process_axis -- --ignored --nocapture` ⇒ **4/8**
+  PASS socket 权限      mode=Some("600") · 配置=600 · （`bind_listener()` 里 unlink→bind→chmod 一步到位）
+  PASS 协议版本         match_ok=true · mismatch_err=true
+                        msg=`protocol version mismatch: peer=2 local=1 (refused, no silent downgrade)`
+  PASS 多客户端竞争      registry len=2 · 两 client 同时在册
+  PASS 断线重连          unregister→同名 re-register 回原位（仅注册表层，状态回原未证）
+  ABSENT 会话删除 / 背压 / 崩溃重启重建 / 跨重连 hash   ← 后两批 + p1-c
+`cargo test -p cellrix-transport --lib version` ⇒ 2 passed（同版本放行 / 新旧版本都拒绝且两端数字点名）
+`cargo test --workspace --no-fail-fast` ⇒ **351 passed · 0 failed · rc=0**
+`p0d_writer_map_check` ⇒ rc=0 · `p0c_ratchet_check` ⇒ rc=0（P0d 收口未被本批打破）
+反样本：版本不匹配 ⇒ **Err 且消息含 `no silent downgrade`**；权限位读数 = **配置值 600**（不是恰好的 0o777 也可以）
+```
+
+### 二、边界 / 交付 / 停法
+```
+边界：只改 `transport/src/{uds.rs,version.rs,lib.rs}` + 测量器；未动 web/、VISION/DNA/ADR、CI-144 词汇、phyt。
+交付：Cellrix `129a956`；本节。
+停法：未撞红 ⇒ 进 P1 B 批（删除会话 + 背压）。
+```
