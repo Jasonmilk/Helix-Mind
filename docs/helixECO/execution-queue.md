@@ -11018,3 +11018,71 @@ M7-2（`SESSION-DAG:132`）的"孤根数"在**两个 store 上都能算**，但�
 ```
 
 **末句**：两拍仍待 gardener 裁定（不催）；线 6 与可倒查线均未授权；**M7-2 有两格未定（达标线 · 分母 store）、M7 保持冻结**；B 轴缺陷一仍 `CONVERGENCE:115`；goal 保持 paused。
+
+---
+
+## 两项只读核查：G1⑤ render 覆盖率 · S303 断裂点两栏
+
+**节名**：G1⑤ / S303 只读核查 · **本节起始行 = 11024**（尾部 append；旧节不回改）
+**性质**：① 自治只读（未改任何代码/判据；未落盘判定；未开工 P0.5/P1/P3）
+
+### 一、G1⑤ render 纯：覆盖率 18 文件 / 38 位点全扫
+```
+口径：`grep -rl 'fn render'`（排除 target）⇒ **18 文件 · 38 个 `fn render` 位点**；逐文件全扫非纯模式
+      （SystemTime · Instant::now · Utc/Local::now · chrono:: · Date.now · rand:: · thread_rng · random() ·
+        std::fs:: · env::var · static mut · AtomicU · Mutex< · RwLock<）
+文件级命中：**1 个文件 5 处** —— `Cellrix/ui/src/widgets/security_notification.rs`
+      `:24` use SystemTime · `:144` `static NEXT_ID: AtomicU64` · `:146` `SystemTime::now()`（`SecurityEvent::new`）
+      `:355` `SystemTime::now()`（`cleanup_expired`）
+位点级：每个 `fn render` 的**签名窗口（8 行）内非纯 = 0**；render 体内**不构造**该非纯对象
+      （全文件唯一 `SecurityEvent::new` 在 `:680`，字符串为「测试标题/测试详情」⇒ 测试内）
+接收者分布：`&mut self` **1**（`ui/src/renderer.rs:71`）· `&self` 6 · `self` 25 · 无接收者 6
+rc = 0
+⇒ **只写「显式不纯已排除」**。G1⑤ 的**闭合判据是 P0.5「同一 state 渲两次 ⇒ 字符网格 diff 必空」**，**未做**；
+  且 `&mut self` 的那一位点**跨调用驻留未排除** ⇒ **不得写「G1⑤ 已闭合」**。
+```
+
+### 二、S303 断裂点（只两栏，不含修复建议）
+```
+【栏一 · 哪些节点会断】
+  判定链（本机实读行号）：
+    `anaphase-helix/src/main.rs:571` 只有 `body.job_id` 存在才走续接分支；
+    `:587-592` `resolve_one(dir, job)` + `is_period_id` 过滤 ⇒ **解析不到 period id 就是 None**；
+    `:598-600` `resume_job`（scope）与 `resume_period`（lineage）**两字段分开**；
+    `run_cycle/reasoning.rs:227` `resume_from = self.context.resume_period.as_deref()`。
+  ⇒ **会断的节点 = 同一 job 下的第 2..N 段**（首段天然无父；第 2 段起若客户端没把上一段 period id 传给
+    `job_id`，则该段 `resume_period = None` ⇒ 成新根）。
+  实测（本节时刻，两 store 分列，不合并）：
+    `.helix/events`（2026-09-28→10-10）periods **668** · roots **484** ⇒ **463 属「同 job 多段仍成根」** · 21 属「job 只出现一次」
+    `/tmp/t2round/events`（2026-11-20→11-23）periods **21** · roots **17** ⇒ **2 属「同 job 多段」** · 15 属「job 只出现一次」
+  说明：`job 只出现一次`这一类是**每轮新 job** 的调用形态（我的长跑 harness 即如此），**不属 S303**。
+
+【栏二 · 依据哪条事件缺失】
+  缺的是 **`context/inject` 的 `data.resume_from`**：
+    写入点 `anaphase-helix/src/session_events/types_and_stream.rs:274`（形参）· `:321-322`
+    （`if let Some(r) = resume_from { data["resume_from"] = json!(r) }`）；
+    该字段自述为 **MACHINE-READABLE lineage** —— `src/session_events/query.rs:98`。
+  **不是**缺 `turn/start`（其 payload 只有可选 `mode` 键）；**不是**缺 `ref/move`（那是腾位/持有者路径）；
+  断的是 `resume_period`（lineage）这一路未设，`resume_job`（scope）即使有值也不补位。
+```
+
+### 三、吸收的三条边界（照办）
+```
+① G1⑤ rc=0 只能读「显式不纯已排除」；闭合判据 = P0.5 双渲染 diff 必空；`&mut self` 驻留未排除 ⇒ 不写「已闭合」；
+② S303 只写上面两栏，**不写修复建议**（防变相催 A/B、防替对象决定顺序）；
+③ T0 在执行序 `docs/Cellrix-里程碑与验收标准-对比V12.md:424`；**三线映射未认领 ⇒ 只具名、不挂下一步、不排期**。
+```
+
+### 四、驳回一条
+```
+GLM 的「分母规则一上，两格自动闭合」**不采纳**：用一条"规则"消掉一次待裁，属建议冒充判据；
+M7-2 的两格（达标线 · 分母 store）仍待 gardener 裁定，本步未动。
+```
+
+### 五、边界
+```
+只跑 grep / 读文件 / 统计两个 store；未改 Cellrix 任何源码、未改 anaphase、未跑 cargo、未改判据；
+未开工 P0.5 / P1 / P3；未碰 phyt 账本与 FlowModus；未销红、未改日期、未解 M7、未写「已交付/已确认」。
+```
+
+**末句**：G1⑤ 有覆盖率读数但**未闭合**；S303 有断点定位但**未修**（且按约束不给建议）；两拍仍待 gardener 裁定（不催）；**M7 保持冻结**；P3 多项目视图仍「已具名 · 未授权 · 不点火」；goal 保持 paused。
