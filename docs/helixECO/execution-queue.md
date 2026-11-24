@@ -11918,3 +11918,50 @@ CI：`.github/workflows/ci.yml` 增一步（keymap + interaction_mode 两条按�
 交付：Cellrix `588ee49`；338 passed rc=0；本节。
 停法：未撞红 ⇒ 按序进入 P3（终端桥 + bridge 声明 + 项目注册表，三者同批）。
 ```
+
+---
+
+## P3 终端桥 PTY + bridge 声明 + 项目注册表（执行序第十格）· 5/5 绿 + 双向变异
+
+**节名**：P3 收口 · **本节起始行 = 11924**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）
+
+### 一、判据（成文 `对比V12.md:612-641`）与读数
+```
+成文判据：① 一个外部 TUI 活在 pane 里且**可交互**（只显示不能交互 ⇒ 红）
+          ② 新增一个项目 = **只加一份 bridge 声明**，本系统零改动（要改代码才接入 ⇒ 红）
+          ③ 三件同批（终端桥 + bridge 声明 + 项目注册表）；退出：接入第 2 个项目时 Cellrix 侧 diff 为空
+          ④ v4.2 PTY 运行时契约：退出码 · SIGWINCH 尺寸变化 · 信号转发 · 环境 · 超时 · 孤儿清理 · 权限
+实现（Cellrix `3171f21`）：
+  `transport/src/pty.rs`            **`forkpty`**（真伪终端，不是管道）+ `write_all` / `read` / `resize`(TIOCSWINSZ + SIGWINCH) / `wait` / Drop 收 fd+子进程
+  `protocol/src/bridge.rs`          `BridgeDecl`（id · launch 数组不经 shell · capabilities · size）+ `ProjectRegistry::load_dir`（坏声明**报错不吞**）
+  `examples/bridges/{alpha,beta}.json`  两份声明=两个项目（数据，不是代码）
+读数（本机）：
+  PASS `pty_pane_is_interactive`        交互式 shell **回显** `P3_PTY_OK`（真 tty 行为）
+  PASS `resize_reaches_the_child`       子进程 `stty size` 先报 `24 80`，resize 后报 `30 100` ⇒ **SIGWINCH 到位**
+  PASS `second_project_is_data_only`    一份声明=1 项目；加第二份=2 项目，**零代码改动**
+  PASS `two_declaration_files_are_enough_and_source_names_none` 读目录两份 ⇒ `["alpha","beta"]`；注册表**非测试源码里没有任何项目名**
+  PASS `pipe_is_not_a_pane`（**变异 A**）管道不冒充 tty：写进去的裸字节**不被回显** ⇒ 判据能分辨"截图 vs 桥"
+  PASS `a_bad_declaration_is_named_not_swallowed`（**变异 B**）空 id / 无 launch / 重名 ⇒ 显式 Err
+  `cargo test -p cellrix-transport --test p3_bridge_pty` ⇒ **5 passed · rc=0**
+  全 workspace ⇒ **rc=0 · 346 passed · failed 0**
+CI：`.github/workflows/ci.yml` 增一步（按名跑 `p3_bridge_pty`）
+```
+
+### 二、具名局限（不写会变假绿）
+```
+① 已测的"外部程序"是 `/bin/sh -i`（证明**可交互**）；**未测**一个真实 TUI（htop/zellij 类）的完整键盘语义
+  （功能键、鼠标、备用屏）⇒ 属 P3 的"第 1 个外部 TUI"目标，本节只到"pty 可交互 + 尺寸可达"。
+② v4.2 七项契约：`SIGWINCH` ✅ · 退出码（`wait` 提供）✅ 未加断言 · **信号转发 / 环境隔离 / 超时策略 /
+   孤儿 PTY 清理 / 外部命令权限** 五项**未做**（Drop 只 kill SIGTERM 主进程，不处理进程组）。
+③ "接入第 2 个项目时 Cellrix 侧 diff 为空"：本节以"两份声明文件即可 + 源码零项目名"**结构性**证明；
+   **未**做端到端（真起两个 pane 再 diff 渲染）——那需要 P1 的多客户端边界。
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：新增 `transport/src/pty.rs` + `protocol/src/bridge.rs` + 2 份声明 + 1 个集成测试 + CI 一步 + `libc` 依赖；
+      未动 web/、未改 VISION/DNA/ADR、未改 CI-144 词汇、未新增面/端口/端点（PTY 是本地进程，不开网络）。
+交付：Cellrix `3171f21`；5 passed / 全 workspace 346 passed rc=0；本节。
+停法：未撞红 ⇒ 执行序十格全部走过；**剩余已知红两格**（P0d 单一性、P1 进程轴 2/8）不自行重构。
+```
