@@ -11386,3 +11386,128 @@ python3 tools/cellrix_logic_verify.py  ⇒ **rc=0**
 ```
 
 **末句**：三件读数已交（AG-UI 数字降级 · G1③ 端点收窄 · 七缺拆 3+4 · S303 三形态机制闭合）；两处自纠见上；两拍仍待 gardener 裁定（不催）；M7 保持冻结；goal 保持 paused。
+
+---
+
+## 第 0 层只读收口：P0a 归类表（37 字段）· outcome measured · think 落点 · S303-B 双证
+
+**节名**：第 0 层只读收口 · **本节起始行 = 11392**（尾部 append；旧节不回改）
+**性质**：① 自治只读（未改代码/判据；未点火）；goal `mwv3j361-2o8zup` 第 0 层
+
+### 一、P0a 字段归类表（分母先纠正）
+```
+草案写的「SemanticSnapshot 7 + SemanticNode 8」**是错的**；按源码逐字段枚举，真实分母：
+  `protocol/src/snapshot.rs` · `SemanticSnapshot` = **8** 字段（:7 :8 :9 :10 :11 :12 :20 :28）
+  `protocol/src/snapshot.rs` · `SemanticNode`     = **6** 字段（:34 :35 :36 :37 :38 :39）
+  `ui/src/app/state.rs`    · `AppState`          = **20** 字段（:36…:76）
+  `protocol/src/view_hash.rs` · `HashContext`    = **3** 字段（:12 :14 :15）← 现存的"域"外壳
+  ⇒ **合计 37 字段**（34 + 3），本节逐行归类，无遗漏。
+现存域：`view_hash.rs`（**751 B · 21 行 · `041cdcce481881fb`**）只有类型 `HashContext{snapshot, slot_bindings,
+theme_version}` + 一句注释「排除瞬态排版」；**无逐字段归类表、无退休日期** ⇒ P0a 判据今天 **红**（下面第 2 条）。
+```
+
+| # | 字段 | 出处 | 归类 | 理由 |
+|---|---|---|---|---|
+| 1 | `epoch_time` | snapshot.rs:7 | **债务型** | wall-clock 值，重放必漂 |
+| 2 | `status` | :8 | 在域内 | 快照自述状态，可由事件派生 |
+| 3 | `metrics` | :9 | **边界型** | 外部观测度量，事件流无法重建 |
+| 4 | `semantic_tree` | :10 | 在域内 | 投影本体 |
+| 5 | `active_focus` | :11 | 在域内 | 快照声明 |
+| 6 | `layout_overrides` | :12 | **债务型** | 瞬态排版（`view_hash.rs:9` 注释即「排除瞬态排版」） |
+| 7 | `pfp` | :20 | 在域内 | 协议物理特征，确定性 |
+| 8 | `sap` | :28 | 在域内 | 安全证明，确定性 |
+| 9 | `SemanticNode.id` | :34 | 在域内 | 语义节点 id（确定性） |
+| 10 | `.node_type` | :35 | 在域内 | 枚举 |
+| 11 | `.label` | :36 | 在域内 | 文本 |
+| 12 | `.content` | :37 | 在域内 | 子键若含外部值 ⇒ 降债务型（待 P0a 子键细分） |
+| 13 | `.slot_binding` | :38 | 在域内 | 即 `HashContext.slot_bindings` |
+| 14 | `.focused` | :39 | 在域内 | 由 focus 派生 |
+| 15 | `AppState.snapshot` | state.rs:36 | 在域内 | 域的本体 |
+| 16 | `.cockpit` | :39 | **边界型** | 外部 agent 活快照（轮询刷新） |
+| 17 | `.prove_track` | :42 | **边界型** | 外部 Tuck 链投影，活状态 |
+| 18 | `.active_view` | :44 | **边界型** | UI 活状态 |
+| 19 | `.error` | :45 | **边界型** | 活状态 |
+| 20 | `.focus_manager` | :46 | 在域内 | 焦点可由事件重放派生 |
+| 21 | `.last_heartbeat` | :47 | **债务型** | `Instant`（单调时钟，跨进程不可重放） |
+| 22 | `.slot_nodes` | :48 | **债务型** | `HashMap` 迭代序 |
+| 23 | `.active_slot_nodes` | :49 | **债务型** | `HashMap` 迭代序 |
+| 24 | `.manual_slot_overrides` | :53 | **债务型** | `HashSet` 迭代序 |
+| 25 | `.is_zen_mode` | :54 | **边界型** | UI 活状态 |
+| 26 | `.mouse_capture` | :55 | **边界型** | 终端活状态 |
+| 27 | `.active_agents` | :56 | **边界型** | 活状态 |
+| 28 | `.current_agent` | :57 | **边界型** | 活状态 |
+| 29 | `.input_action` | :61 | **边界型** | 未提交意图（可被拒绝，T1 之外） |
+| 30 | `.chat_focused` | :65 | **边界型** | 活状态 |
+| 31 | `.input_buffer` | :66 | **边界型** | 未提交文本 |
+| 32 | `.chat_history` | :69 | **债务型** | 现由 UI 累积；目标态应由事件流派生 |
+| 33 | `.last_response` | :71 | 在域内 | 派生自 `turn/end.reply` |
+| 34 | `.pending_chat` | :76 | **边界型** | 启动一次性标记 |
+| 35 | `HashContext.snapshot` | view_hash.rs:12 | 在域内 | 域本体 |
+| 36 | `.slot_bindings` | :14 | 在域内 | 与 #13 同源 |
+| 37 | `.theme_version` | :15 | 在域内 | 版本串；变更会使历史 hash 失效 ⇒ 须版本锚定（风险已记） |
+
+```
+合计：在域内 **17** · 债务型 **7** · 边界型 **13** = **37**（与分母一致）
+P0a 判据状态（今天）：
+  · 「每个字段都被归类」→ 由本节补齐 ⇒ **本表可绿**（但表在台账里，脚本尚未枚举 ⇒ 退出条件未达）
+  · 「债务型全部带退休日期」→ **7/7 无日期** ⇒ 记 `UNMEASURABLE`（退休日须 owner 定，**本节不编日期**）⇒ **判据红**
+  · 「边界型全部写明为何永久」→ 13/13 已写理由 ⇒ 该项绿
+  ⇒ **P0a 不能标闭合**：债务型退休日缺 7 条。
+```
+
+### 二、`tool/result.outcome`：从 UNMEASURABLE → **measured**
+```
+样本（`/tmp/t2round/events`，2026-11-20→11-23，全部 tape 里每种 tool 取首例）：
+  calc       ok=true  len=26  `{"ok":true,"result":"256"}`
+  numbers    ok=true  len=33  `{"series":[1,2,3,4,5,6,7,8,9,10]}`
+  weather    ok=true  len=187 `{"ok":true,"weather":{"city":"Haiki, Japan","now":{...}}}`
+  web_search ok=true  len=433 `{"ok":true,"results":[{"title":"Extra Utilities 2 … ,"url":"https://…`
+写入点/截断规则（实读）：
+  `src/run_cycle/mod.rs:1355` `"outcome": r.data` —— **原样写工具返回 payload，无截断**；
+  `:1356` `"outcome_sha": crate::trace::short_sha(&r.data)`；`src/trace.rs:37-42` short_sha = sha256 **前 4 字节**（8 hex）
+  失败路径 `mod.rs:1361-1381`：`{"ok": false, "error": …, "source": "execution-pipeline"}`（每个计划过的调用各写一条）
+⇒ 结论：outcome = 工具**结构化返回体**（JSON 串），非 stdout 直出；**shell/exec 类工具的 outcome 未采样**
+  （本轮语料只有 calc/numbers/weather/web_search）⇒ 该子格仍 `UNMEASURABLE`，不写成"含 stdout"。
+```
+
+### 三、`assistant/think` 空文本：**写入点无条件，缺的是"没给"**
+```
+写入点：`src/run_cycle/reasoning.rs:328-336`
+  `self.context.reasoning_think = thinking_sink.lock().unwrap().clone();` → `emit(Think, {"text": reasoning_think})`
+  （emit 在推理循环之后**无条件执行**，只要有 session_events；retry 时会 `:292` 清空 sink）
+sink 由谁填：只在**流式接口** `reason_stream(&prompt, mode, trace_id, tx, thinking_sink)`（`reasoning.rs:262`）
+  → `adapters/http_reasoning.rs:149`；填点两处：`:184`（纯 JSON 回退分支 `*thinking = think.clone()`）
+  与 `:220`（SSE 分支 `push_str(think)`），**取值字段 = `choices[0].delta.reasoning_content`**（`:214`）
+非流式接口 `reason(&prompt, mode, trace_id)`（`reasoning.rs:268-270` 分支）**没有 sink 参数** ⇒ 结构上必空
+`/v1/chat` 只有 `Accept: text/event-stream` 才挂 `stream_tx`（`src/main.rs:565` / `:612`）
+⇒ 判定：**不是"给了没写"**（写入点无条件、流式两分支都写 sink）；空有两个因：
+  因 A（结构）：非 SSE 请求走 `reason()` ⇒ sink 永不填 ⇒ think 必空；
+  因 B（模型侧）：SSE 请求但上游不返回 `reasoning_content` ⇒ 空。
+区分 A/B 需要「该轮是否 SSE」的落盘标记 —— **tape 未记录该标记** ⇒ 该区分 `UNMEASURABLE`（不按推测归因）。
+```
+
+### 四、S303 形态 B 双证（tape + 代码）
+```
+tape（`.helix/events` · 2026-09-28→10-10）：
+  `run-f911e602dcba3236` **128 段**，其中 **105 段**的 `context/inject.data.resume_from` **指向同 job 上一段**
+    （首段指向 `run-d46f06724ec6995e-p006ac1a393000001`）⇒ 链式形态存在
+  对照：`run-233a86e49afbc98c` **263 段 0 段有 resume_from**（形态 A 全断）
+代码：
+  `src/session_events/identity.rs:191 resolve_one` → `resolve_period`：`One ⇒ Ok` · `Ambiguous ⇒ Err`
+    · `None ⇒ Err`；注释原文「`Job` ⇒ every period whose rows carry that job id, which is zero, one, or many.
+    **Never picks one.**」
+  调用链：`main.rs:571`（`body.job_id` 存在才走）→ `:587-592` `resolve_one` + `is_period_id` 过滤
+    → `:598-600` `resume_period` → `reasoning.rs:227` `resume_from = resume_period`
+    → `types_and_stream.rs:321-322`（`data["resume_from"] = r`）
+⇒ 机制：交回**上一段 period id**（唯一）⇒ `One` ⇒ 写入 resume_from（形态 B）；
+  交回**同一 job id**（该 job 已多段）⇒ `Ambiguous` ⇒ 拒绝 ⇒ 新段成根（形态 A）。两栏，不建议。
+```
+
+### 五、边界
+```
+只读（read / grep / git / curl 本机 / 读 tape）；未改 Cellrix·anaphase·Tuck 任何源码；未跑 cargo；
+未点火 P0.5/P1/P2/P3、未修 S303、未落 args、未加 stop 端点；未碰 web/、phyt 账本、FlowModus；
+未裁 A/B、未裁 M7-2、未动 5010；未销红、未改日期。
+```
+
+**末句**：第 0 层四项读数已交；**P0a 判据仍红**（债务型 7 条无退休日，`UNMEASURABLE`）；outcome 转 measured（exec 类未采样）；think 缺的是"没给"且 A/B 不可分（`UNMEASURABLE`）；S303-B 双证闭合；两拍不催。
