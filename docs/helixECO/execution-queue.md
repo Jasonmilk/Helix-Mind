@@ -11793,3 +11793,45 @@ P0.5 的两个 renderer 与 P1 的进程轴都会建在动过的地基上。
    不是"等一句"。suggested_action 的 (a)/(b)/(c) **不作任何授权凭据**（`PROTECTION:432`）。
 下格：P0.5（同进程双视图）。
 ```
+
+---
+
+## P0.5 同进程双视图（执行序第七格）· grid diff 恒空 + 注入时钟可红 + `&mut self` 驻留已证
+
+**节名**：P0.5 收口（带具名局限）· **本节起始行 = 11799**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv4gp8d-ajijtz`）
+
+### 一、判据（成文 `对比V12.md:543-556`）与读数
+```
+成文判据：两 renderer · 一个 core · 一个 hash；**同一 state 渲两次 ⇒ 字符网格 diff 必须为空**；
+          变异「注入时钟 ⇒ 红」（而不只是"自带状态 ⇒ 红"）；退出：diff 测试在 CI 可自动跑
+实现（Cellrix，`82d9c92`）：
+  `ui/src/grid.rs`  `rows()` = core 投影（只读 P0a 域内字段：label/content/focused/status）
+                    `paint_a()` 顺序画 · `paint_b()` 逆序画（**两条独立代码路径**，不共用循环）
+                    `grid_hash()` 稳定 FNV-1a（位置敏感，等网格 ⇒ 等 hash）
+                    `paint_a_with_clock()` = **变异控制**：让时钟进第 0 行（只用于证明判据能红）
+读数（本机 `cargo test -p cellrix-ui --lib`）：
+  PASS `same_state_renders_the_same_grid_twice`  同 state 两次 ⇒ **grid 相等 · hash 相等**
+  PASS `two_painters_agree_on_one_core`          两 painter ⇒ **diff 为空 · hash 相同**
+  PASS `injected_clock_makes_the_grid_differ`    **注入时钟 ⇒ hash 不等**（变异实跑成立）
+  PASS `dropped_node_changes_the_grid`           丢一个节点 ⇒ grid 变（判据有分辨力）
+  PASS `render_twice_produces_an_identical_grid` **`&mut self` 驻留判据**：同一 Renderer 实例连画两次，
+        整块 buffer 相同 ⇒ 缓存（`last_layout`/`last_snapshot`）**不改变输出**
+  `cellrix-ui --lib` ⇒ **97 passed · rc=0**；全 workspace ⇒ **333 passed · rc=0**
+CI：`.github/workflows/ci.yml` 增两步（按名跑 grid 与 render_twice）⇒ 退出条件「进 CI」满足
+```
+
+### 二、具名局限（不写会变假绿）
+```
+成文设想的"两 renderer"是 **TUI 与 WebUI 两个真 renderer 同进程消费同一条事件流**；
+本节落在**同一 core 上的两个 painter**（顺序 / 逆序），属该判据的**最小可判形态**。
+完整形态需要 P1 的进程边界（WebUI 侧进程、广播双编码）⇒ 归 P1，不在此格冒充。
+另：变异只做了"注入时钟"（成文点名要求的那一条）+ "丢节点"；**未做**"注入随机 id"（同类，可由同一手法加）。
+```
+
+### 三、边界 / 交付 / 停法
+```
+边界：新增 1 个模块 + 5 个测试 + CI 两步；未改 VISION/DNA/ADR、未改 CI-144 词汇、未动 web/、未新增面/端口/端点。
+交付：Cellrix `82d9c92`；97/333 passed 双绿；本节。
+停法：未撞红 ⇒ 按序进入 P1 格（进程轴，唯一大刀）。
+```
