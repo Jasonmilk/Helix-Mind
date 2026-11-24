@@ -12076,3 +12076,53 @@ p0d 判据仍红：`p0d_writer_map_check` rc=1 **只因**棘轮项（多写入�
 交付：Cellrix `857fce7` · `9dab86e` · `42864e0`；本节。
 停法：未撞红（每步 349 passed）⇒ 下一步进 p0d-c（棘轮归零），再进 P1。
 ```
+
+---
+
+## P0d C 批收口 · 棘轮 88 → 0，P0d 判据全绿（收窄口径已具名）
+
+**节名**：P0d C 批收口 · **本节起始行 = 12082**（尾部 append；旧节不回改）
+**性质**：② 放行格（`goal mwv66zld-uyliwv`）
+
+### 一、读数（Cellrix `e23f02c`）
+```
+`node tools/p0d_writer_map_check.js` ⇒ **rc=0**
+  协议侧字段=14 · 仍 pub=0 · compile_fail 样例=3 · AppState 多写入者=**0** · 绕过计数器=**0**
+`node tools/p0c_ratchet_check.js`     ⇒ 状态树直写点 **0**（baseline 0，前值 88）
+  非状态树字段直写=85（**只计数，不作门**）· bypass! 标注 1 处在域外（NOTE，不判红）
+`cargo test --workspace --no-fail-fast` ⇒ **349 passed · 0 failed · rc=0**
+反样本（双向，皆实测）：
+  · handler.rs 加一条状态树直写 ⇒ p0c **rc=1**（状态树直写点=1）
+  · app.rs 加一个**确定性**第二写入器（`state.error = Some("deterministic")`）⇒ **p0d 与 p0c 皆 rc=1**；
+    移除后 rc=0（确定性第二写入器也必红——这条正是本格 Ω 检验要求的世界对）
+```
+
+### 二、口径变更（重要，必须写明，否则下次会被读成"数字变好"）
+```
+棘轮原来数的是"三个 crate 里所有 `self.x =`"——那里面绝大多数是**普通结构体赋值**
+（renderer 缓存 / selection 坐标 / ToolExecutionStatus 等），永远到不了 0，除非把半个代码库改名。
+现改为：
+  ① 字段集合取 `docs/hash-domain.md`（P0a 的**单一源**，不外挂第二份清单）；
+  ② 跳过受权写入者文件（`protocol/src/{snapshot,intent}.rs`、`ui/src/app/{writers,state}.rs`）；
+  ③ 只在**代码里真的持有 AppState/SemanticSnapshot/SemanticNode/HashContext** 的文件里计。
+域外 85 处仍在打印，但**不作门**——"Rust 不许赋值"从来不是本格判据。
+⇒ 88→0 是**口径收窄 + 真实归零**两者共同结果；两者都写在正文，不许只报 0。
+```
+
+### 三、P0d 六条旁路总账（判据 1 要求逐条有读数）
+```
+① 字段私有         ✅ 14/14（仍 pub=0）· AppState 20/20 无 pub
+② 反序列化         ✅ `SemanticSnapshot`/`SemanticNode` 经 `SnapshotWire`/`NodeWire` → `From` → 唯一构造点
+③ 无 Cell/RefCell  ✅ ui/src 命中 0
+④ 模块可见性       ✅ 写入 API 只在 `writers.rs` + `intent.rs`（字段私有 ⇒ 外部构造不出）
+⑤ test 构造器      ✅ 测试同样走 `IntentApplier`（grid/renderer/layout 的 fixture 已改）
+⑥ 静态依赖         ✅ 20 字段在 writers.rs/state.rs 之外直写 = 0（grep 证据见前节）
+```
+
+### 四、边界 / 交付 / 停法
+```
+边界：只改 `tools/p0c_ratchet_check.js` + `docs/bypass-baseline.json`（0 站点）；未改业务代码、未动 web/、
+      未改 VISION/DNA/ADR、未改 CI-144 词汇、未碰 phyt。
+交付：Cellrix `e23f02c`；本节。
+停法：未撞红 ⇒ 下一步 P1 A 批（socket 权限位可测 + 协议版本闸）。
+```
