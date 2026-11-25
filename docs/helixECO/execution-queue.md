@@ -12603,3 +12603,31 @@ CI：`.github/workflows/ci.yml` 增一步（跑 pass 方向；无活体 ⇒ rc=4
   ② 「未配置」是当轮配置事实，「能力不存在」是持久化结论 —— 两者不得互替；
   ③ 判据自身随环境变（读活体），防「该绿时反而红」（T3 的镜像）。
 ```
+
+**【configured=false 五项 · 三栏核查（不判"预期/非预期"）+ 反样本常驻 CI】**（append；旧行不涂）
+```
+栏一：项名 · 栏二：当轮值（`GET /v1/health`）· 栏三：**有无成文标注"预期状态"**（文件:行）
+  项名            当轮值                                              有无成文标注「预期状态」
+  trace           configured=false · ok=true · "not configured"       **有**：`anaphase-helix/docs/PLAN.md:38`
+                                                                      「`reasoning_trace_path` 可选开启」；
+                                                                      `docs/archive/growth/2026-09-14-record-oldest.md:167`
+                                                                      「`reasoning_trace_path`（None=默认关闭）」
+  ledger          configured=false · ok=true · "not configured"       **无** ⇒ `UNMEASURABLE`（挂明账）
+  session_notes   configured=false · ok=true · "not configured"       **无** ⇒ `UNMEASURABLE`（挂明账）
+  mind            configured=false · ok=true · "not configured"       **无「预期状态」标注** ⇒ `UNMEASURABLE`
+    最接近的是 `docs/decisions/ADR-0045-one-endpoint-string-one-interpretation.md:20/:132` 的**观测行**
+    （`mind configured=false ok=true`）与 growth 的「Mind 缺失 fail-open」——那是**行为**标注，不是"预期关闭"
+  tuck            同上                                                **无「预期状态」标注** ⇒ `UNMEASURABLE`（ADR-0045 亦仅观测行）
+  cellrix         同上                                                **无「预期状态」标注** ⇒ `UNMEASURABLE`
+    （`docs/decisions/ADR-0046-one-wiring-declaration-launchers-derive.md:93` 讲的是未配置时的**行为**）
+⇒ 本块只报三栏，**不判"预期 / 非预期"**；无标注的 5 项一律 `UNMEASURABLE` 挂明账，**不写成缺陷**。
+  「没开 ≠ 没有」与「没开 ≠ 本该开」是两条不同的边界，本块守后者。
+
+反样本常驻 CI（`Cellrix d8f3f87`，固定夹具、不依赖活体、期望值写死）：
+  `injected` + configured=false                      ⇒ 期望 rc=1（实际 1）
+  `nonexistent`（强否定）                            ⇒ 期望 rc=1（实际 1）
+  `injected` + configured=true + 夹具有注入行         ⇒ 期望 rc=0（实际 0，**该绿时不误红**）
+  `injected` + configured=true + 夹具无注入行         ⇒ 期望 rc=1（实际 1，断言不得借环境放行）
+  `absent`   + configured=false                      ⇒ 期望 rc=0（实际 0）
+  夹具：`fixtures/inject/{injected,none}/`（store 目录形态）；路径指错（给文件）⇒ **rc=4 UNMEASURABLE**，不崩栈
+```
