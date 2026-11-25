@@ -12718,3 +12718,10 @@ t2 · 门清单完整性核证（本块分析，未新增面）
 ⑤ `complete` 只认**本工单**：不认案卷 / 验收 / 授权；`skipAuditor` 照旧（归档判读规则：按 createdAt /
    archivedPath / objective 内容认，不按 `status:"complete"` 标签认）。
 ```
+
+**【补正 · 上块「待提交」落为实 sha】**（append；旧行不涂）
+```
+上块 ④ 写的「`Cellrix 待提交`」按覆盖链更正为：**`Cellrix 419e58c`**（`tools/gate_inventory_check.js` + CI 硬门一步）。
+读数复核（本块时刻）：`node tools/gate_inventory_check.js` ⇒ **rc=0** · `CI 步骤数=21 · 硬门要求=10 · notice 要求=3 · 仅本地=7`
+  · `cargo test --workspace --no-fail-fast` ⇒ **377 passed / 0 failed**
+```
