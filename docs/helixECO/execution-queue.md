@@ -12381,3 +12381,59 @@ check_ci144_profile.py                          ⇒ rc=0
     本机已落盘 G1①：`apply()` **不存在**（接入点 = M5，门后）。定签名若写成实现，等于把门后项提前实现；
     写成"接口边界条款 + compile-fail 样例"则与现状相容。
 ```
+
+---
+
+## P0c 补盲 + G1-R 判据载体重建 · 两件 ① 自治件
+
+**节名**：P0c 补盲 / G1-R · **本节起始行 = 12387**（尾部 append；旧节不回改）
+**性质**：① 自治（只读核证 + 测试载体；不改权威卷、不新增面）
+
+### 一、P0c 扫描器补盲（Cellrix `62529e6`）
+```
+问题：接收者白名单只有 `self/state/app/renderer/st` ⇒ `s.error = None` 这类直写**扫不出来**（已具名的盲区）。
+改法：任意标识符接收者都算写入点；精度改由三层收窄保证 ——（a）字段必须在 `docs/hash-domain.md` 状态树集合里
+      （b）文件必须真的持有 AppState/SemanticSnapshot/SemanticNode/HashContext（c）跳过受权写入文件。
+读数（补盲后重取）：
+  · 状态树直写点 **0**（baseline 重冻 0 · frozen_at 2026-11-25）—— 旧 0 作废、按新扫描器重记
+  · 域外直写计数 **88 → 217**：增量为「新看得见的接收者」，**不是新增写入**（已在正文写明，防被读成回退）
+反样本：在 handler.rs 放 `fn _p0c_blind_probe(s: &mut AppState) { s.error = None; }`
+  ⇒ 补盲前 rc=0（漏），补盲后 **状态树直写点=1 ⇒ rc=1**；移除后 rc=0
+```
+
+### 二、G1-R 三问可测化（Cellrix `0c0eb76`，`tools/g1_audit_check.js`）
+```
+背景：G1②③④ 的判据载体在 `web/tests/`，随 `web/` 删除（`725c66f`）⇒ 长期 UNMEASURABLE。
+新读数（命令 `node tools/g1_audit_check.js`）⇒ **3/3 绿 · rc=0**
+  ② 状态归属     AppState 多写入者=0 · bypass=0 · **layout 不依赖 ui**=true
+  ③ WebUI 通信形态  路由=**18** 条 · 缺=无（含 `/v1/refs` `/v1/periods/tombstone` `/v1/events` `/v1/sessions` `/v1/trace`）
+  ④ transport attach  `GET /v1/refs` ⇒ ok=true · refs 数组=true · **条数=5**（活链实回）
+三条各有反样本（皆实测）：
+  ② 加确定性第二写入器 ⇒ **多写入者=1 ⇒ rc=1**
+  ③ 临时副本删掉 `/v1/refs` ⇒ **路由=17 · 缺=/v1/refs ⇒ FAIL**
+  ④ 指向死端口 ⇒ **UNMEASURABLE（rc=4）**，不写成绿
+附带修的两个真缺陷（都属"读数工具自己会骗人"）：
+  · node 进程在 stdout 未刷完时退出 ⇒ 管道被截断在 **8192 字节**，JSON 变半截 ⇒ 调用方 parse 失败；
+    改为 `fs.writeSync(1, …)` 直写 + 写完即退（若继续跑，摘要行会污染 JSON 尾部）
+  · `p0d_writer_map_check --json` 原先自己 `process.exit(1)` 判红 ⇒ 调用方 `execFileSync` 被异常打断；
+    改为 JSON 分支**只输出不判红**（附 `appMulti` 字段），判红留给默认契约
+CI：`.github/workflows/ci.yml` 增一步（`--skip-live`；④ 无活链 ⇒ rc=4 记 notice，不判红）
+```
+
+### 三、G1 五问总账（更新）
+```
+① apply()      ⛔ 不存在（接入点 M5，门后）—— 未变
+② 状态归属     ✅ 可测且绿（本机仪器，不再依赖 web/）
+③ WebUI 形态   ✅ 可测且绿（服务端路由 18 条，含五个必需端点）
+④ attach       ✅ 可测且绿（活链 GET /v1/refs 实回 5 条）；无活链时 rc=4 不冒充绿
+⑤ render 纯    ◐ 覆盖率读数在（38 位点/18 文件）；闭合判据 P0.5 已绿，但**G1⑤ 自身仍标未闭合**
+⇒ **G1 仍不能闭合**（① 不存在、⑤ 未按文档口径闭合）；只是②③④从 UNMEASURABLE 变成有读数。
+```
+
+### 四、边界 / 交付 / 停法
+```
+边界：只改 `tools/p0c_ratchet_check.js`、`tools/p0d_writer_map_check.js`（JSON 分支）、新增 `tools/g1_audit_check.js`、
+      `docs/bypass-baseline.json`（重冻）、CI 一步；未改业务代码、未动 web/、未改 VISION/DNA/ADR、未新增面/端口/端点。
+交付：Cellrix `62529e6` · `0c0eb76`；workspace **375 passed · rc=0**；本节。
+停法：未撞红 ⇒ ① 件继续（下一步：把 G1⑤ 的闭合口径与 P0.5 的关系写清；不再扩面）。
+```
