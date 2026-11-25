@@ -12631,3 +12631,59 @@ CI：`.github/workflows/ci.yml` 增一步（跑 pass 方向；无活体 ⇒ rc=4
   `absent`   + configured=false                      ⇒ 期望 rc=0（实际 0）
   夹具：`fixtures/inject/{injected,none}/`（store 目录形态）；路径指错（给文件）⇒ **rc=4 UNMEASURABLE**，不崩栈
 ```
+
+---
+
+## 现状一屏（每数字带分母/口径/时刻）+ JW-Zen 六原则对账 + 路线分档
+
+**节名**：现状一屏 / 六原则 / 路线 · **本节起始行 = 12637**（尾部 append；旧节不回改）
+**性质**：① 自治（只读读数 + 台账；不改权威卷、不新增面）
+
+### 一、现状一屏（全部本机实读；store 类读数带路径与日期范围）
+```
+仓         anaphase-helix 4274678 · Cellrix d8f3f87→e984260 · helix-mind cee9f29 · Tuck c833034
+           FlowModus 6986dc5 · helix-tentacle 2554ebf · phyt-DNA 2f2adb3（dirty=1 ledger 自记账，具名）
+测试       Cellrix `cargo test --workspace --no-fail-fast` ⇒ **377 passed / 0 failed / rc=0**
+门（本地） g1_audit 3/3 rc=0 · p0d rc=0 · p0c rc=0 · 注入守卫 5 用例 · trace 一致性 5 用例
+活链       :8080 / :50051 / :50061 / :50070 各有进程 · health **11/11 ok**
+           configured=false 项 7：trace · ledger · session_notes · mind · tuck · cellrix · reasoning_credentials
+语料 A     `.helix/events` **tapes 668** · 日期 2026-09-28 → 10-10（历史支）
+语料 B     `/tmp/t2round/events` **tapes 22** · 日期 2026-11-21 → 11-24（本轮长跑支）
+           ⚠ 同一目录本会话内先后读到 21 → 31 → 22 ⇒ **分母会漂移**，引用必须带时刻（本条即时刻）
+台账       queue **12633 行 / 60 节**（本块前）· 体检 `6 hits · stale 0` · 电表 selftest **5/5**
+```
+
+### 二、JW-Zen 六原则逐条对账（一句一条，能指就读数，读不出就 UNMEASURABLE）
+```
+事实单源   支撑：状态树 37 字段归类落纸（`Cellrix/docs/hash-domain.md`），AppState 多写入者 **0**、旁路棘轮 **0**；
+           缺口：**治理未立**（ADR-0047 里 `所有者/审批/vocab_version/弃用` 0 命中）⇒ 按原文「无治理 = 未实现」记「未实现」。
+职责单一   支撑：`IntentApplier` / `app/writers.rs` 是唯一写入点；keymap / 模式 / 适配器各自只隐藏一个变化决策。
+依赖解耦   支撑：`layout` **不依赖** `ui`（g1_audit ② 读数）；`web/` 已删、Cellrix 不再依赖它。
+           缺口：跨进程写序列化只到「编号不交错」（P1-D），**未证「效果与事件同事务」**⇒ 该子项 UNMEASURABLE。
+复用       支撑：DNA §6 契约复用（CI-144 协议家族 / Crossterm）；三同不齐处只许契约复用（适配器门后）。
+按需       支撑：`/v1/trace` opt-in 默认关（health `configured=false`）；看板/缓存类一律不常驻。
+极致节能   **UNMEASURABLE**：缺「总量趋势」双报告（只有强度指标：tokens 快照、测试数）；
+           ⇒ 不得声称"自研更省"（与本条硬约束一致）。
+```
+
+### 三、路线分档（依赖序；**不排期、不摊菜单**）
+```
+① 可做（可逆 + 可红 + 不改行为面）：本块已把现有件走完（补盲 / G1-R / G1⑤ 口径 / P0a 三栏 / trace 一致性 / 门清单）
+② 需具名四段（判据/边界/交付/停法）才动：P0b 进程级重放 · M6 缺陷一 A/B · M7-2 两格 · M7-3 I5 slice
+封存（同层、未授权）：两拍（phyt 4 条 · B 轴缺陷一）· 线 6 · 可倒查线 · 多项目视图 · M5 · P4+
+```
+
+### 四、本块两件 ① 读数
+```
+t1 · trace 默认状态一致性（`Cellrix e984260`，`tools/trace_default_check.js`）
+   `--claim off`（活体 configured=false）        ⇒ **rc=0** 断言 ↔ 标注 ↔ 当轮一致
+   `--claim on`                                  ⇒ **rc=1** 与标注矛盾（标注写"可选开启/None=默认关闭"）
+   `--claim off --configured true`               ⇒ **rc=1** 被当轮反驳
+   `--claim off --anaphase /tmp`（无标注）        ⇒ **rc=1** 自拟口径（无成文标注支撑不得当结论）
+   成文标注出处：`anaphase-helix/docs/PLAN.md:38` · `docs/archive/growth/2026-09-14-record-oldest.md:167`
+t2 · 门清单完整性核证（本块分析，未新增面）
+   进 CI（硬门）：Rust workspace 门（含 P1 八场景 / P1-D / 五契约 / 真 TUI / uds / parser）· ⑤ 地基仪器 ·
+                 P3 bridge · P2 · P0.5×2 · P0b · 注入守卫（pass + 5 反样本）· G1 三问 · P0c · P0a · S303(无服务跳过)
+   进 CI（传递）：p0d writer map（经 g1_audit 的 `--json` 调用覆盖）
+   仅本地（具名，不补面）：D1/D2 检查 · AG-UI 一致性 · L2 casefile/render/prefs · ADR anchor · L1 manifest
+```
