@@ -12687,3 +12687,34 @@ t2 · 门清单完整性核证（本块分析，未新增面）
    进 CI（传递）：p0d writer map（经 g1_audit 的 `--json` 调用覆盖）
    仅本地（具名，不补面）：D1/D2 检查 · AG-UI 一致性 · L2 casefile/render/prefs · ADR anchor · L1 manifest
 ```
+
+**【四格补正 · 7 项分母 · trace 用例语义 · notice≠硬门 · complete 只认工单】**（append；旧行不涂）
+```
+① `configured=false` 的分母：**7 项**（快照时刻 **2026-11-26T04:31:00** 本机）——
+   `trace · ledger · session_notes · mind · tuck · cellrix · reasoning_credentials`；health **11/11 ok**。
+   与前份的分母差异**具名、不互证**：
+     · 「**5 项无标注**」= 那份三栏核查里**有 6 行**、其中 5 行无「预期状态」标注（trace 有）⇒ 分母是 **6 行**；
+     · 本次是 **7 项**（多出 `reasoning_credentials`，那份表没列它，因为当时按"6 行"的口径取的是端点类）。
+   ⇒ 5 / 6 / 7 是**三个不同分母**（有无标注的计数 / 核查行数 / configured=false 项数），不得互相印证。
+② trace 五用例的**语义逐条**（`Cellrix e984260`；判的是「成文预期状态标注 ↔ 当轮值/语料一致」，
+   **不判** `configured=true` 合法与否）：
+     `--claim off`（活体 false）          ⇒ rc=0  断言 off 与标注「可选开启/None=默认关闭」+ 当轮一致
+     `--claim on`                          ⇒ rc=1  **on 不是成文预期状态标注** ⇒ 自拟口径
+     `--claim on --configured true`        ⇒ rc=1  **同上因**（不是因为 configured=true 非法；两例同因 ⇒ 实际 **4 类**语义）
+     `--claim off --configured true`       ⇒ rc=1  断言被当轮反驳（off 与 false 配对才成立）
+     `--claim off`（无标注副本 `/tmp`）     ⇒ rc=1  无成文标注 ⇒ 自拟口径
+   保留原句：trace 的成文预期状态是「**可选开启**」（`anaphase-helix/docs/PLAN.md:38` ·
+   `docs/archive/growth/2026-09-14-record-oldest.md:167`），标注**没有被改写**。
+③ **notice 模式 ≠ CI 硬门**：trace 一致性步骤用 `::notice::` 兜底（无活体时 rc=4 不阻断）
+   ⇒ **不计入硬门清单**；上一块 t2 的"进 CI（硬门）"列表里**没有**它，也没写它是硬门（本块把这句写死防混读）。
+   若要把"CI 已守"读成事实，需要**反样本在常驻阻断门**里失败才算数 ⇒ 本块补了第二件 ① 的可红件。
+④ t2 现在**作为第二件 ① 补齐命令 + 输出 + rc + 反样本 rc**（`Cellrix 待提交`，`tools/gate_inventory_check.js`）：
+     命令：`node tools/gate_inventory_check.js` ⇒ **rc=0**
+     输出：`CI 步骤数=20 · 硬门要求=10 · notice 要求=3 · 仅本地=7` + `PASS 硬门齐 / notice 就位 / 仅本地门文件在 / workspace 门在`
+     反样本 A（删 `P0c · 绕过棘轮` 步骤）        ⇒ `FAIL 缺硬门步骤：P0c · 绕过棘轮` ⇒ **rc=1**
+     反样本 B（剥掉 trace 步骤的 `::notice::`）   ⇒ `FAIL notice 步骤未含 ::notice:: 兜底` ⇒ **rc=1**
+     口径注：CI 的 Rust 门实为 `cargo test --all-features`（虚拟 workspace 根 ⇒ 覆盖全成员），
+       本机跑的是 `--workspace --no-fail-fast` ⇒ **两者等价但名字不同**，判据按内容认其一。
+⑤ `complete` 只认**本工单**：不认案卷 / 验收 / 授权；`skipAuditor` 照旧（归档判读规则：按 createdAt /
+   archivedPath / objective 内容认，不按 `status:"complete"` 标签认）。
+```
