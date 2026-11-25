@@ -12494,3 +12494,13 @@ G1 总账不变：**G1 仍不能闭合**——① `apply()` 不存在（接入�
 附带（标签漂移，按内容认）：上一轮回复里把审查方写成「YC」，历轮是「YB」——同一对象、不同标签，
   已在此具名，不单独发令；后续按内容认，不按标签认。
 ```
+
+**【P0a 治理归属核查 · 第 3 条证据补强（不改判定）】**（append；旧行不涂）
+```
+上一块把 `AppState.last_heartbeat` 记为「有（最弱）」。本轮实读把"最弱"收紧为**有**，并给出载体：
+  · 线上事件确实带时间：`protocol/src/agent_event.rs:13` `Heartbeat { epoch: u64 }`；
+  · 写入点：`ui/src/app.rs:225-226`（收到 `AgentEvent::Heartbeat` ⇒ `writers::set_last_heartbeat(&mut self.state, Instant::now())`）；
+  · 判定使用点：`ui/src/app.rs:162-163`（`last_heartbeat().elapsed() > heartbeat_timeout` ⇒ 报连接丢失）。
+  ⇒ 「可用事件自带的时间替代本地 `Instant`」**成立且可指认**（`epoch` 已是 wire 上的时间戳）。
+结论不变：**依据存在（7/7），仍需 owner 具名审批**；不填日期、不改 `--strict`、不改档。
+```
