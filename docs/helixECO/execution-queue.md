@@ -12472,3 +12472,25 @@ G1 总账不变：**G1 仍不能闭合**——① `apply()` 不存在（接入�
    （`对比V12.md` 75135 B · `a8e73e22e1fa5edd`；`:95` 原文是「render 纯函数｜无线索｜真查（决定 P0.5 预算）」
    —— 它要的是"真查"的结论，不是把这些结论回填成 G1⑤ 绿。）
 ```
+
+**【P0a 治理归属核查（两栏，不填日期、不改 --strict、不改档）】**（append；旧行不涂）
+```
+口径：只答两件事 ——「有无本地可推导**依据**」+「依据出处」。**可推导 ≠ 已审批**；
+      本块不填退休日期、不改 `--strict` 判据、不把 7 条从「owner 裁」改档。
+
+| # | 债务字段 | 本地可推导依据 | 依据出处 |
+|---|---|---|---|
+| 1 | `SemanticSnapshot.epoch_time` | **有**：每行事件自带 `time`，快照的 wall-clock 可由事件时间替代 | tape 行形状（`turn/start`/`turn/end` 均有 `time`）· `protocol/src/snapshot.rs:8/:82` |
+| 2 | `SemanticSnapshot.layout_overrides` | **有**：只在布局引擎读一次，属瞬态排版 | `layout/src/layout_engine.rs:202`（`snapshot.layout_overrides()`） |
+| 3 | `AppState.last_heartbeat` | **有（最弱）**：可用"最后收到事件的时间"替代；但它是运行期 liveness 信号 | `ui/src/app/state.rs:47/:84` · 写入者 `ui/src/app/writers.rs:52` |
+| 4 | `AppState.slot_nodes` | **有**：每帧由 `layout_output` 派生后写回 ⇒ 缓存而非事实 | `ui/src/app.rs:373`（`writers::set_slot_nodes(&mut self.state, layout_output.slot_nodes.clone())`） |
+| 5 | `AppState.active_slot_nodes` | **有**：同上，随 `layout_output` 派生 | 同上（P1 会话表另一路径：`writers::insert_active_slot_node`） |
+| 6 | `AppState.manual_slot_overrides` | **有**：司机手动切槽的缓存，可从交互事件重放 | `ui/src/app/writers.rs`（`insert_manual_slot_override`） |
+| 7 | `AppState.chat_history` | **有**：同一事实已在 tape 的 `turn/end.reply` 里，UI 侧只是累积副本 | tape `turn/end.data` 键集含 `reply` · `ui/src/app/handlers` 推入路径 |
+
+结论句（按裁定口径写死）：
+  **「依据存在（7/7 都能指出可推导的落点，第 3 条最弱），仍需 owner 具名审批。」**
+  ⇒ 挂明账、不催、不填日期、不动判据；`--strict` 保持 rc=1 不动。
+附带（标签漂移，按内容认）：上一轮回复里把审查方写成「YC」，历轮是「YB」——同一对象、不同标签，
+  已在此具名，不单独发令；后续按内容认，不按标签认。
+```
