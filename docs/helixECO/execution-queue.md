@@ -12437,3 +12437,20 @@ CI：`.github/workflows/ci.yml` 增一步（`--skip-live`；④ 无活链 ⇒ rc
 交付：Cellrix `62529e6` · `0c0eb76`；workspace **375 passed · rc=0**；本节。
 停法：未撞红 ⇒ ① 件继续（下一步：把 G1⑤ 的闭合口径与 P0.5 的关系写清；不再扩面）。
 ```
+
+**【G1⑤ 口径收口 · render 纯到哪一层】**（append；旧行不涂）
+```
+读数（本机 `Cellrix 0c0eb76` 工作树；命令见下）：
+  全仓 `fn render` 位点 **39** 处；接收者分布 `&mut self` **1**（`ui/src/renderer.rs:71`）· `&self` 6 · `self` 25 · 无接收者 7
+  非纯模式（时钟/随机/IO/全局可变）在**签名窗口内 0 处**；`security_notification.rs` 的 5 处时钟/原子落在
+  `SecurityEvent::new` / `cleanup_expired` 上，**不在任何 render 体内**（唯一 `SecurityEvent::new` 调用在测试里）
+结论（分层，不合并成一句）：
+  · **输出纯**：同一 state 两次渲染 ⇒ 字符网格相同。证据 = `grid::two_painters_agree_on_one_core` +
+    `render_twice_produces_an_identical_grid`（`&mut self` 缓存写入**不改变**输出）。
+  · **副作用非纯**：`Renderer::render(&mut self, …)` 会写 `last_layout` / `last_snapshot` 缓存。
+  ⇒ G1⑤ 的答案不是"纯"或"不纯"，是 **「输出纯 · 副作用有缓存写入」**，缓存已被一条测试隔离。
+预算后果（成文 `:95` 问的就是这句）：P0.5 **不因"render 非纯"上调**（输出已证纯、grid diff 已落地）；
+  若将来要求"无副作用"再单独立项（当前文档未要求）。
+G1 总账不变：**G1 仍不能闭合**——① `apply()` 不存在（接入点 M5）；⑤ 由"无线索"变为**有分层答案**，
+  但未按文档口径标"已闭合"（文档要求的是判据，不是结论句）。
+```
