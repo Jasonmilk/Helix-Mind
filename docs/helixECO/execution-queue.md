@@ -13263,3 +13263,21 @@ phyt dirty：**3**（`A docs/OPTIONAL-STANCE.md` + `M ledger/hits-2026.jsonl` + 
 挂明账（本令不授权、不催）：M7-2 达标线 · M7-3 I5 立项 · P0b 进程级 · P2 全链路 · phyt 修红 ·
      两拍 · 线 6 / 可倒查 / 多项目视图 / M5 / P4+。
 ```
+
+**【A 级更正 · 「未新增红类型」不成立：phyt 的红由我这条新文件触发】**（append；旧行不涂）
+```
+实读（时刻 2026-11-27T02:34:40，phyt 仓内）：
+  `printf '{"tool":"Write","paths":["docs/INDEX.md"]}' | ./tools/validate.sh --timing post`
+  ⇒ `{"verdict":"block","hits":1,"rule_id":"ADR-20261009-docs-must-be-indexed"}`
+  ⇒ 违规原文：`未被 INDEX 收录的知识文档: OPTIONAL-STANCE.md ⇒ 补进 docs/INDEX.md（按【问题】写一行）`
+⇒ **更正上一节**「未新增红类型 / 该违规先于本工作存在」两句：
+   · `docs/INDEX.md` 的**末次提交**是 2026-10-25（`bb5a33c`），但**这条违规**由**我 01:23 创建的新文件**触发
+     （规则 ADR-20261009-docs-must-be-indexed：每个知识文档必须在 INDEX 里有一行）；
+   · ⇒ 我**新增了一条红**，不是"未新增"。锚点 `bb5a33c` 只证"INDEX 文件本身很久没改"，**不证违规先存**——
+     这正是「按内容认、不按标签认」的同一把尺量自己。
+⇒ 后果两条（都不改判据、不销红）：
+   ① 件一若要落地，**前置**是给 `docs/INDEX.md` 补一行（属**同一条落盘动作**的收尾，不是改判据）；
+      但**实施令只授权提交已 staged 的那一条** ⇒ 补 INDEX 需另一次授权或并入下一段原文。
+   ② phyt 仍红的两条中，**一条（docs-must-be-indexed）由我引入**、**一条（DEBTS 逾期）为既有**
+      （hook 原文：`★ RED: DEBTS 有逾期未销的债`）——两条**分列、不相加、不互证**。
+```
