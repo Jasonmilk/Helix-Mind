@@ -13281,3 +13281,58 @@ phyt dirty：**3**（`A docs/OPTIONAL-STANCE.md` + `M ledger/hits-2026.jsonl` + 
    ② phyt 仍红的两条中，**一条（docs-must-be-indexed）由我引入**、**一条（DEBTS 逾期）为既有**
       （hook 原文：`★ RED: DEBTS 有逾期未销的债`）——两条**分列、不相加、不互证**。
 ```
+
+---
+
+## 实施原文 v2.2 执行 · 件一推被拒（新增红 1）· 件二 (i) 绿 / (ii) UNMEASURABLE · S4 起不来（具名）
+
+**节名**：v2.2 执行回执 · **本节起始行 = 13287**（尾部 append；旧行不涂）
+**性质**：② 授权执行轮（owner 原文 2026-11-27 · v2.2）
+
+### 件一 · phyt 交付 (乙)
+```
+S1（02:55:57）：`docs/INDEX.md` 加一行（仅指向新文件）⇒ `validate.sh` 对该文件 **verdict=pass · hits=0**
+  ⇒ 红① `ADR-20261009-docs-must-be-indexed` **真解**（不是绕过）
+commit（02:56:01）：`git commit --no-verify` 仅两条（`OPTIONAL-STANCE.md` + `INDEX.md`）⇒ **rc=0 · HEAD `d0938fa`**
+  三件留痕：命令如上 ｜ 原始输出＝前面 02:28:43 hook 拒提交原文（`⛔ ci-local 未全绿`）｜ 时刻 02:56:01
+push（02:56:04）⇒ **rc=141 · 被 pre-push 拒**：
+  `★ 其他红步骤: 1 · 资产完整性 ★ RED` ｜ `3b 基线红必须作数 ★ RED (2 条)` ｜ `3c DEBTS 逾期未销 5 条`
+  `⛔ pre-push: 存在【新增红】⇒ 拒绝推送`
+★ 诚实读法：这次 **不是"同类已知读数"** —— `1 · 资产完整性` 是**新增红**，
+  成因：hook 早前「资产基线同批重算」改了 `M tools/baseline.sha256`，而本令提交范围**未含**该文件
+  ⇒ 提交后基线文件在树上与已提交版本不一致 ⇒ 资产完整性转红。**我引入的新红，已具名**。
+兜底分支（本令已授权）：**(乙) 记 `UNMEASURABLE`**（未 push ⇒ clone 拿不到）· **不判失败、不回退**；
+  (甲) 本机工作树可读 = **已交付**（`d0938fa` 已提交，本地可读）。两栏并置、不相加。
+phyt dirty 新值（03:00）：**2**（`M ledger/hits-2026.jsonl` · `M tools/baseline.sha256`）；
+  红② 48 条照旧、hook 未改、本次为**单次例外**；不写「已修好 / 红已销 / 门已放行」。
+```
+
+### 件二 · M6-A（从 Tuck `dirty=0` 绿点重起）
+```
+(i) 可达判据（全部实测）：
+  · `cargo build -p tuck-gateway --all-features` ⇒ **rc=0**
+  · `cargo test -p tuck-gateway --all-features` ⇒ **54 passed**（含新增 2 条：`response_payload_names_the_model_when_declared` /
+    `response_payload_leaves_model_null_when_absent`）+ `access_gate_test` **8 passed**
+  · `cargo test -p tuck-audit --test m6a_chain_model` ⇒ **2 passed**：
+      正样本 `chain_with_model_in_payload_verifies`（payload 带 model 后 `verify_chain` **ok**）
+      反样本 `tampering_after_the_model_field_is_detected`（改 model 名字 ⇒ `ok=false` + `first_break` 具名）
+  · 改动：`gov.rs` 抽 `response_payload(status, misses: u64, session: &str, caller: &Value, model: Option<&str>)`；
+    `model_label` 在**准入块之外**取（`if let Some(table)` 之外），并在 `unfold` 的 FnMut 内**逐次 clone**
+    ⇒ 跨闭包捕获改造完成（限那一条 `record` 调用链）。
+  · 形态自判：取 **形态甲（入 hash 路）**——既有 `payload` 整包入 hash；历史条不动、新条 hash 变属预期。
+    **A/B 裁定分支未预裁**；构造夹具（`/tmp/m6a`）标「构造」，不与本块真跑读数混写。
+(ii) 三仓 join 端到端 ⇒ **UNMEASURABLE**（S4 未起，见下）· 不判失败、不回退、不排期。
+S4（启动既有声明 `:60052`）⇒ **失败，具名**：
+  02:59:44 首次：`./target/debug/tuck --config config.example.toml` ⇒ 启动后 **`Error: Io(Os { code: 2, NotFound })`**
+  03:00:00 二次（把 `log_path`/`store_path` 指到 `/tmp/tuckrun`，**未改仓内任何文件**）⇒ **同样 NotFound**；
+  `:60052` 仍无监听（`lsof` 空）、`/v1/audit` http=000。
+  ⇒ 判为**启动前置缺失**（缺失路径未定位），按令「若实读判需改监听面定义 ⇒ 具名挂账」就近记**挂账**：
+     **解除条件 = 定位该 NotFound 的具体路径**（`config.example.toml` 里 `log_path=/var/log/tuck/audit.log`、
+     `store_path=/etc/tuck/credentials.enc` 为首次怀疑但已替换仍失败）· **不催、不排期**。
+```
+
+### 停法与三检
+```
+停：件一 push 撞**新增红**（资产完整性）⇒ 按兜底记 UNMEASURABLE、不判失败、不回退；件二 (ii) 因 S4 未起记 UNMEASURABLE；一轮做完即停。
+不写「M6 已闭合/已验收」；A/B 未预裁；phyt 两组红（红① 已真解 / 红② 48 条照旧）分列不相加。
+```
