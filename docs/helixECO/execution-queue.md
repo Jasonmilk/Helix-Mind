@@ -12874,3 +12874,22 @@ t2 · 门清单完整性核证（本块分析，未新增面）
   **不写**「I5 已实现/已可用」，**不立项**、**不写实现建议**。
 边界：本节只读；未改代码、未改判据、未动 `web/`、未碰 phyt。
 ```
+
+**【四格补正 · M4 单结论 · 链长穷尽 · 消费面 · complete 只认核证】**（append；旧行不涂）
+```
+① M4 单一结论：**具名红（未闭）** —— 依据：端到端载体存三条读数，均**不覆盖"四类转移"**。
+   · `upstream_live`：文件自述三态原文「可达 ⇒ 必须 ok / 不可达且未设 `ANAPHASE_UPSTREAM_REQUIRED=1` ⇒ NEEDS-INPUT 并 pass /
+     不可达且设了 ⇒ 具名 panic」；本机 rc=0 但输出 `NEEDS-INPUT: mind@50052 · tuck@60052` ⇒ **属"未接入"，非绿**。
+   · `ANAPHASE_UPSTREAM_REQUIRED=1` ⇒ rc=101 ⇒ 这是**预期定性红**（我主动置档触发），**非意外撞红**；故不触发"为何仍跨 m6/m7-2/m7-3"一问。
+   · `ci144_anaphase_live`（`ANAPHASE_BIN=<anaphase-helix/target/debug/anaphase>`）⇒ rc=0 **1 passed**；
+     性质 = **握手/Manifest/snapshot/action 往返**（文件头原文），**非四类转移端到端** ⇒ **不得标"端到端判据实跑通过"**。
+   ⇒ 结论句：**M4 = 具名红（缺四类转移端到端载体）**；库内 8 passed 与上述 1 passed 均不顶替。
+② m6 收窄落账：**A 分支的"零 hash 变更"只对「历史条」成立**——`tuck-audit/src/lib.rs:118` canonical 含 `payload`
+   ⇒ 新条（含加 `model` 后）hash 变、其后 `prev_hash` 连带变。**零 hash 标域 = 历史条**。
+   三仓 join 面可达性：本轮**只有**审计链侧（Tuck 仓代码）读到；ledger 与证轨两侧**本块未取读数** ⇒ 记 **缺项（未测）**，不用推断补。
+③ m7-2 穷尽性：分布来自前一轮有效读数（`{1:472, 2:5, 3:3, 4:1, 5:1, 7:1, 161:1}` ⇒ 链数 **484** = roots，periods **668**），
+   上块只列 top5 ⇒ **top5 链数 482，差 2 条 = 7 链 1 + 161 链 1**；`/tmp` 侧 `{1:10, 2:1, 5:2}` ⇒ 13 链 = roots ✅、periods 22 ✅。
+   ★ 本块试算脚本曾用"文件路径当父键"比对 period id ⇒ 输出 `{1:484}` 属**读数工具错**，不作数（不写成分布）。
+④ m7-3 消费面：`grep -rn 'sessions?root\|sessions?limit' Cellrix` ⇒ **0 命中** ⇒ **Cellrix 侧无消费面**（该读数为本块实跑，0 就写 0）。
+   `truncated` / `limit=2` 两参数只作**该次调用**的读数，**不外推**服务端行为边界。
+⑤ `complete` 只认**本工单的核证动作**（命令/输出/rc/时刻），**不认** M4 闭、案卷、授权；`skipAuditor` 照旧。
