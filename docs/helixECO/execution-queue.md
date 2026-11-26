@@ -12814,3 +12814,63 @@ t2 · 门清单完整性核证（本块分析，未新增面）
 ④ 「下一件（②）」收成：**② 档依赖序首项 · 未授权 · 不排期**（不写成待开项、不写成等一句）。
 已收不重发：整段升格收窄 · 九门三数不互证 · P3 与 `web/` 边界 · 具名 2 条 vs 整体 8 条。
 ```
+
+---
+
+## 里程碑推进（M4 定性 / M6 核证 / M7-2 分母 / M7-3 现状）
+
+**节名**：里程碑推进一轮 · **本节起始行 = 12820**（尾部 append；旧节不回改）
+**性质**：① 只读核证（含跑既有端到端/库内测试）；② 件不点火
+
+### 一、M4 定性：**端到端载体存在，但都不覆盖「四类转移」⇒ 仍按文档口径未闭**
+```
+① `anaphase-helix` 时刻 18:30:22 · `cargo test --all-features --test upstream_live`
+   无 REQUIRED ⇒ **rc=0**，但输出是 `NEEDS-INPUT: upstream unreachable at mind@50052 · tuck@60052`
+     （该文件三态设计：不可达且未设 REQUIRED ⇒ NEEDS-INPUT 并 pass）⇒ **不是绿，是"未接入"**
+   加 `ANAPHASE_UPSTREAM_REQUIRED=1` ⇒ **rc=101 具名红**：`NEEDS-INPUT: mind@…50052 · tuck@…60052` 连不上
+② `Cellrix` 时刻 18:30:35 · `ANAPHASE_BIN=<anaphase-helix/target/debug/anaphase> cargo test -p cellrix-transport --test ci144_anaphase_live -- --ignored`
+   ⇒ **rc=0 · 1 passed**（`live_manifest_snapshot_actions`：stdio 跨仓握手/Manifest/snapshot/action 往返）— **真端到端**
+③ 但 M4 的判据是「**失败四类具名 + 集合内转移**」：② 覆盖的是传输/协议面，**不覆盖审批四类转移**；
+   库内 `approval_outcome` 8 passed 亦属**库内逻辑判据**（无服务/HTTP/子进程）。
+⇒ **M4 = 按文档口径未闭**，缺口具名：**缺一个"四类转移"端到端载体**；不得用 8 passed 或 ② 顶替。
+```
+
+### 二、M6 只读核证：落点清楚；**A 分支的前提要收窄**（本轮读出的真隐患）
+```
+缺陷一（= B 轴缺陷一）落点一：`Tuck/crates/tuck-core/src/audit.rs:52-72` `AuditEntry`
+  字段清单（8+2）：`entry_id · timestamp · decision · risk_level · modality · override_flag · source ·
+  identity_label · prev_hash · hash` ⇒ **无 `model`、无 `period_id`**
+  其 `compute_hash()`（`audit.rs:81-91`）只哈希上述字段，**不含 payload**
+落点二（真正的响应侧载体）：`Tuck/crates/tuck-gateway/src/ledger.rs:30-46` `record()`
+  体：`let entry = json!({"kind": kind, "trace_id": trace_id, "data": payload}); chain.append(&SystemClock, entry)`
+  ⇒ 落盘走 `tuck-audit::AuditRecord`，其 `compute_hash`（`crates/tuck-audit/src/lib.rs:118`）为
+  `canonical = serde_json::to_vec(&(self.seq, &self.ts, &self.payload, &self.prev_hash))`
+  ⇒ **payload 整包入 hash**（第三态成立）
+★ A 分支前提收窄（本轮更正）：说「payload 路**零 hash 变更**」**不成立**——
+   往 `data` 里加 `model` ⇒ **该条 hash 变、其后各条 `prev_hash` 连带变**（历史条不变，新条必变）。
+   准确说法应是：**「历史条不变；新条 hash 变，链继续」**；若要"零变更"须改成不进 hash 的旁路（那是另一种设计，属 ② 决定）。
+```
+
+### 三、M7-2 分母重算（两 store 分列；**达标线仍挂账，不裁"可接受"**；时刻 18:31:05）
+```
+.helix/events         periods **668** · roots **484** · 日期 2026-09-28→10-10
+   链长分布 top5 = {1:472, 2:5, 3:3, 4:1, 5:1} · 单 period 链 472 · job 数 68 · 多段 job 13
+/tmp/t2round/events   periods **22** · roots **13** · 日期 2026-11-21→11-24
+   链长分布 = {1:10, 2:1, 5:2} · 单 period 链 10 · job 数 13 · 多段 job 2
+⇒ 两 store **不相加、不互证**；根占比 484/668=72.5% ‖ 13/22=59.1%（后者分母随 GC 漂移，见前节 21→31→22）
+⇒ **达标线未定**（本块不裁），M7-2 仍 ⛔。
+```
+
+### 四、M7-3 只读现状（I5 切片；只引被调 period；时刻 18:31:08）
+```
+`GET /v1/sessions?root=run-8bba24c5ee368a4a-p006b05ee9f000000` ⇒ http=200
+  顶层键 = ["configured","periods","root","truncated"] · **periods 返回 1 条**
+  首条原文（截断）= {"conversation_id":"run-8bba24c5ee368a4a-p006b05ee9f000000","count":15,
+                    "first_ts":"2026-11-24T20:08:41Z","gist":null,"job_id":"run-c9afc4275b254238",
+                    "last_ts":"2026-11-24T20:08:42Z","model":…}
+对照 `GET /v1/sessions?limit=2`（不带 root）⇒ http=200 · periods 2 条 ·
+  首条键 = [conversation_id, count, first_ts, gist, job_id, last_ts, model, name, parent, period_id, preview, rejected, rejection_log, reply, status]
+⇒ 只报读数：root 形态返回该根的 1 条（带 `truncated` 字段）；不带 root 走"最近 N 条"形态。
+  **不写**「I5 已实现/已可用」，**不立项**、**不写实现建议**。
+边界：本节只读；未改代码、未改判据、未动 `web/`、未碰 phyt。
+```
