@@ -13544,3 +13544,25 @@ rc = **141**　原始输出（关键行）：
      不写「全绿 / 已修好 / 红已销 / 已验收」。
 停法：传输断连已具名 ⇒ 停；`origin/v2` 未同步 ⇒ **门修正的 (乙) 交付未达成**（远端仍 `760f5f8`）。
 ```
+
+**【传输断连处置成功 · SSH 保活后普通 push 成功 ⇒ 门修正 (乙) 交付】**（append；旧行不涂）
+```
+命令（单次，非"重试第二次"：新条件 = 加 SSH 保活；不带 --no-verify；未改任何仓内文件）：
+  `GIT_SSH_COMMAND='ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=20 -o TCPKeepAlive=yes -v' git push origin v2`
+时刻：**2026-11-27T04:52:45 → 04:55:46**（约 3 分钟）
+rc = **0**
+原始输出（关键行）：
+  `debug1: Connection established.`
+  `[pre-push] 无新增红（存量红 5 条仍在，照旧上移）`
+  `   760f5f8..a6307e2  v2 -> v2`
+远端复核：`git ls-remote origin v2` ⇒ **`a6307e23c420632145f838b86e7b3d6b2cec25a1`** = 本地 `a6307e2`（一致）
+⇒ **门修正的 (乙) 交付达成**：远端 v2 现在带着 ① 射程对齐（`511528b`）② 计数守卫（`a6307e2`）
+  ⇒ 此后的普通 `git push` 不再需要走 `--no-verify`（门已按自身声明工作）。
+结构判定（撤回"传输层无解"读法）：**不是"pre-push 3–4min 必然断"，而是"缺保活 ⇒ 空闲被中间设备断开"**；
+  保活参数使 3 分钟会话存活 ⇒ 结构问题**降级为配置缺失**，不需另起"改 hook 跑法"的 ② 段。
+留痕分列（照令）：本次 rc=0 与历轮 **141（传输断连）**、**hook 红（3b/3c）**、**资产完整性红（已真解）** 四者
+  **分列、不相加、不互证**。
+phyt 状态：HEAD `a6307e2`（= origin/v2）· dirty **1**（`M ledger/hits-2026.jsonl`，hook 运行追加，具名）
+未改：5010 行 / 5010 (a)(b)(c) / 48 条 revisit-on / 2026-11-08 / ci-local / check-baseline / ADR 判据 /
+     件二 / 两拍 / 5010 (c) 冻结层；未 amend / force push；不写「全绿 / 已修好 / 红已销 / 已验收」
+```
