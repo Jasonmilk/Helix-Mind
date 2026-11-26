@@ -12914,3 +12914,12 @@ t2 · 门清单完整性核证（本块分析，未新增面）
 ⑤ 三检待补（本块没带，不重跑）：上块**未附** `meter 5/5` / 七仓 dirty / workspace rc ⇒
    本块记为**待补**，下份汇总一处补；**不重复跑**以造"看起来在动"的读数。
 ```
+
+**【三检补记（前块「待补」已补，不重发同名令）】**（append；旧行不涂）
+```
+时刻 2026-11-26T19:38：`meter_tape.py --selftest` ⇒ **5/5** · `cargo test --workspace --no-fail-fast` ⇒ **377 passed / 0 failed**
+· 七仓 dirty：helix-mind 0 · Cellrix 0 · anaphase-helix 0 · Tuck 0 · FlowModus 0 · helix-tentacle 0 ·
+  phyt-DNA **1**（ledger 自记账，具名不提交）
+· 门：p0d rc=0 · p0c rc=0 · g1_audit rc=0 · gate_inventory rc=0 · trace rc=0 · inject rc=0
+· queue 12916 行 / 62 节 · 体检 6 hits · stale 0 · health **11/11 ok**（configured=false 7）
+```
