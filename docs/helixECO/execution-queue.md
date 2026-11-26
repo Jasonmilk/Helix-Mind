@@ -13089,3 +13089,18 @@ dirty / 红 / 快照：
 三检（本块补，不重跑同形轮）：workspace **377 passed / 0 failed** · `check-queue-sha` 6 hits stale 0 · `meter 5/5` ·
    `ci rc=0` · 七仓 dirty：helix-mind 0 · Cellrix 0 · anaphase 0 · Tuck 0 · FlowModus 0 · tentacle 0 · **phyt 2（具名）**。
 ```
+
+**【补测 · phyt step-4 全量扫描（"未新增红类型"由推断升为实测）】**（append；旧行不涂）
+```
+命令（phyt 仓内，逐文件，与 `ci-local.sh:205` 同形）：
+  `for f in $(git ls-files '*.md' '*.py' '*.sh' '*.yml'); do printf '{"tool":"Write","paths":["%s"]}' "$f" | ./tools/validate.sh --timing post; done`
+读数（时刻 2026-11-27T01:42:39 → 01:44:33）：
+  · **scanned = 168** 个已跟踪文件 · **耗时 114s**
+  · **违规（rc=2）清单 = `docs/INDEX.md`**（唯一一条，本块之前就在）
+  · **`docs/OPTIONAL-STANCE.md` 不在违规清单**（命中计数 0）⇒ 前块"未新增红类型"**由逻辑推断升为实测**
+口径分辨（防混读，两步不同射程）：
+  · 本条量的是 **step 4（逐文件 validate）** 的红：**1 个文件**
+  · 历轮说的「ci-local 红（4 真缺口 + 1 自伤）」是**全量 ci-local**（多步）的口径，本块**未重跑全量** ⇒ 两数**不相加、不互证**
+本格**改判了上一版哪句 + 覆盖链位置**：上一版只以"该文件 validate rc=0"支撑"未新增红类型"（单点推断）⇒
+  本块以 **168 文件全扫 + 违规清单比对**支撑（实测）；位置 = 台账 `afda419` 之后本节。
+```
