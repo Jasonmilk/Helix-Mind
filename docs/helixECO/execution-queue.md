@@ -13800,3 +13800,21 @@ P1（#1 D_max + 定义「族」检索式域）状态不变：**仍待 owner 单�
    ⇒ "裁 A 还是 B" 只指 **M6-A / M6-B 两个实现形态**，不指提醒方案、不指次数口径。
 ⑤ 边界：上一行那条"引用须带坐标"本轮**不收窄成门**，只此一句；两向反样本（(b) 收进 `calc()` 后改一行必红 / 不改为绿）**未跑**，仍归 owner。
 ```
+
+**【M6 A/B 前置 · 四组只读读数】**（append 于 13675 节尾；①、旧行不涂、**非权威**、不裁 A/B、不推进主线）
+```
+时刻 2026-11-28T07:16:43–07:16:48 · phyt 零改动 · 未装门 · 构造读数 ≠ 运行事实
+G1 链的成文声明（`Tuck/crates/tuck-audit/src/lib.rs:12-13` sha16 `b6aed8bc3c9011fd`）原句：
+   "The chain only guarantees: append-only, deterministic, tamper-evident."
+   ⇒ 可记录即可三条；**必须抗抵赖一栏无成文**（检索式 `non-repudiat|抗抵赖|不可否认` 于 `crates/ docs/` = 0）⇒ `UNMEASURABLE`。
+G2 `model` = **调用方自报**（`tuck-gateway/src/gov.rs:104` `body.get("model")`，同值 `:118` 又用于路由 `Target`）；
+   规范化/白名单/服务端锚定 = 无（无 `fn model_label`，无签名覆盖）；三层语义（ID/weights/serving）未分层，仅单一字符串；
+   治理文档命中 0 ⇒ 按件判 **无治理 = 未实现**（不写成已实现）。
+G3 `response_payload` `gov.rs:58-72`（sha16 `637397a9b864451c`）：payload 五字段 `status/demap_miss/session/caller/model`；
+   preimage = `(seq, ts, payload, prev_hash)` 定序（`tuck-audit/src/lib.rs:118`）⇒ **payload 整包入 hash，无 post-hash 填充**；
+   未声明 model 时为 `null`、不编默认（`gov.rs:705-709` 测试原句）；`prev_hash` 连带范围 = 该条之后全部条。
+G4 构造读数边界（/tmp 非任何仓）：算法 SHA-256 over 定序四元组 · 输入 = 构造 payload · 目录 = `/tmp/m6a`；
+   形态乙两值 hash 相等（构造）**非**运行事实；三仓 e2e **不可跑**：① Tuck 路由表无 `/v1/ledger`（含 ledger 的 route 行 = 0）
+   ② `:60052` `/dev/tcp` rc=1（无监听） ③ anaphase `:50061/v1/events` **200**（dummy period n=0，keys `configured/error/events/missing`）
+   ⇒ 三仓 e2e `UNMEASURABLE`；旧三面摘要本轮重取，不互证。
+```
